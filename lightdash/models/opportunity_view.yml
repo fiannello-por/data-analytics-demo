@@ -1,0 +1,115 @@
+type: model
+name: opportunity_view
+sql_from: 'data-analytics-306119.sfdc.OpportunityViewTable'
+label: 'Opportunity View'
+group_label: 'Sales Operations'
+
+dimensions:
+  # --- Hyperlink dimensions ---
+  - name: AccountName
+    type: string
+    label: 'Account Hyperlink'
+    urls:
+      - label: 'Open Account'
+        url: '${row.AccountLink.raw}'
+
+  - name: OpportunityName
+    type: string
+    label: 'Opp Hyperlink'
+    urls:
+      - label: 'Open Opportunity'
+        url: '${row.OpportunityLink.raw}'
+
+  - name: AccountLink
+    type: string
+    hidden: true
+
+  - name: OpportunityLink
+    type: string
+    hidden: true
+
+  # --- Date dimensions ---
+  - name: CloseDate
+    type: date
+    label: 'Close Date'
+    time_intervals: [day, week, month, quarter, year]
+
+  - name: CreatedDate
+    type: date
+    label: 'Created Date'
+    time_intervals: [day, week, month, quarter, year]
+
+  - name: contract_start_date__c
+    type: date
+    label: 'Contract Start Date'
+    time_intervals: [day, week, month, quarter, year]
+
+  - name: Quarter
+    type: string
+    label: 'Quarter'
+    sql: "CONCAT(CAST(EXTRACT(YEAR FROM ${TABLE}.CloseDate) AS STRING), '-Q', CAST(EXTRACT(QUARTER FROM ${TABLE}.CloseDate) AS STRING))"
+
+  # --- String dimensions ---
+  - name: Division
+    type: string
+
+  - name: Type
+    type: string
+
+  - name: ProductFamily
+    type: string
+    label: 'Product'
+
+  - name: BookingPlanOppType2025
+    type: string
+    label: 'Booking Plan Opp Type 2025'
+
+  - name: Owner
+    type: string
+
+  - name: SDR
+    type: string
+
+  - name: OppRecordType
+    type: string
+    label: 'POR / R360'
+
+  - name: SE
+    type: string
+
+  # --- Numeric dimensions ---
+  - name: Age__c
+    type: number
+    label: 'Age'
+
+  # --- Filter helper dimensions ---
+  - name: Id
+    type: string
+    primary_key: true
+    hidden: true
+
+  - name: StageName
+    type: string
+    label: 'Stage Name'
+
+  - name: Won
+    type: boolean
+    label: 'Won'
+
+  - name: ACV
+    type: number
+    label: 'ACV (raw)'
+    hidden: true
+
+metrics:
+  users_sum:
+    type: sum
+    sql: ${TABLE}.Users
+    label: 'Users'
+
+  acv_dollars:
+    type: sum
+    sql: ${TABLE}.ACV
+    label: 'ACV $'
+    format: 'usd'
+    round: 0
