@@ -7,13 +7,15 @@ group_label: 'SFDC'
 dimensions:
   - name: id
     type: string
+    sql: ${TABLE}.Id
     primary_key: true
 
   - name: lastname
     type: string
+    sql: ${TABLE}.lastname
 
 metrics:
   user_count:
     type: count_distinct
-    sql: ${TABLE}.id
+    sql: ${TABLE}.Id
     description: Total unique users

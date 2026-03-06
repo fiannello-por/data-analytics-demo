@@ -8,6 +8,7 @@ dimensions:
   # --- Hyperlink dimensions ---
   - name: AccountName
     type: string
+    sql: ${TABLE}.AccountName
     label: 'Account Hyperlink'
     urls:
       - label: 'Open Account'
@@ -15,6 +16,7 @@ dimensions:
 
   - name: OpportunityName
     type: string
+    sql: ${TABLE}.OpportunityName
     label: 'Opp Hyperlink'
     urls:
       - label: 'Open Opportunity'
@@ -22,83 +24,164 @@ dimensions:
 
   - name: AccountLink
     type: string
+    sql: ${TABLE}.AccountLink
     hidden: true
 
   - name: OpportunityLink
     type: string
+    sql: ${TABLE}.OpportunityLink
     hidden: true
 
   # --- Date dimensions ---
   - name: CloseDate
     type: date
+    sql: ${TABLE}.CloseDate
     label: 'Close Date'
-    time_intervals: [day, week, month, quarter, year]
+    time_intervals: [DAY, WEEK, MONTH, QUARTER, YEAR]
 
   - name: CreatedDate
     type: date
+    sql: ${TABLE}.CreatedDate
     label: 'Created Date'
-    time_intervals: [day, week, month, quarter, year]
+    time_intervals: [DAY, WEEK, MONTH, QUARTER, YEAR]
 
   - name: contract_start_date__c
     type: date
+    sql: ${TABLE}.contract_start_date__c
     label: 'Contract Start Date'
-    time_intervals: [day, week, month, quarter, year]
+    time_intervals: [DAY, WEEK, MONTH, QUARTER, YEAR]
+
+  - name: QualifiedDate
+    type: date
+    sql: ${TABLE}.QualifiedDate
+    label: 'Qualified Date'
+    time_intervals: [DAY, WEEK, MONTH, QUARTER, YEAR]
+
+  - name: InstallDate
+    type: date
+    sql: ${TABLE}.InstallDate
+    label: 'Install Date'
+    time_intervals: [DAY, WEEK, MONTH, QUARTER, YEAR]
 
   - name: Quarter
     type: string
-    label: 'Quarter'
     sql: "CONCAT(CAST(EXTRACT(YEAR FROM ${TABLE}.CloseDate) AS STRING), '-Q', CAST(EXTRACT(QUARTER FROM ${TABLE}.CloseDate) AS STRING))"
+    label: 'Quarter'
 
   # --- String dimensions ---
   - name: Division
     type: string
+    sql: ${TABLE}.Division
 
   - name: Type
     type: string
+    sql: ${TABLE}.Type
 
   - name: ProductFamily
     type: string
+    sql: ${TABLE}.ProductFamily
     label: 'Product'
 
   - name: BookingPlanOppType2025
     type: string
+    sql: ${TABLE}.BookingPlanOppType2025
     label: 'Booking Plan Opp Type 2025'
 
   - name: Owner
     type: string
+    sql: ${TABLE}.Owner
 
   - name: SDR
     type: string
+    sql: ${TABLE}.SDR
 
   - name: OppRecordType
     type: string
+    sql: ${TABLE}.OppRecordType
     label: 'POR / R360'
 
   - name: SE
     type: string
+    sql: ${TABLE}.SE
+
+  - name: SDRSource
+    type: string
+    sql: ${TABLE}.SDRSource
+    label: 'SDR Source'
+
+  - name: OpportunitySegment
+    type: string
+    sql: ${TABLE}.OpportunitySegment
+    label: 'Segment'
+
+  - name: Queue_Region__c
+    type: string
+    sql: ${TABLE}.Queue_Region__c
+    label: 'Region'
+
+  - name: StrategicFilter
+    type: boolean
+    sql: ${TABLE}.StrategicFilter
+    label: 'Strategic Filter'
+
+  - name: Gate1CriteriaMet
+    type: boolean
+    sql: ${TABLE}.Gate1CriteriaMet
+    label: 'Gate 1 Criteria Met'
+
+  - name: AccountId
+    type: string
+    sql: ${TABLE}.AccountId
+    label: 'Account Id'
+
+  - name: AccountOwner
+    type: string
+    sql: ${TABLE}.AccountOwner
+    label: 'Account Owner'
+
+  - name: OwnerDepartment
+    type: string
+    sql: ${TABLE}.OwnerDepartment
+    label: 'Owner Department'
 
   # --- Numeric dimensions ---
   - name: Age__c
     type: number
+    sql: ${TABLE}.Age__c
     label: 'Age'
 
   # --- Filter helper dimensions ---
   - name: Id
     type: string
+    sql: ${TABLE}.Id
     primary_key: true
     hidden: true
 
   - name: StageName
     type: string
+    sql: ${TABLE}.StageName
     label: 'Stage Name'
 
   - name: Won
     type: boolean
+    sql: ${TABLE}.Won
     label: 'Won'
+
+  - name: Accepted
+    type: boolean
+    sql: ${TABLE}.Accepted
+    label: 'Accepted by AE'
 
   - name: ACV
     type: number
+    sql: ${TABLE}.ACV
     label: 'ACV (raw)'
+    hidden: true
+
+  - name: HardImpValueUSD
+    type: number
+    sql: ${TABLE}.HardImpValueUSD
+    label: 'Hard Imp Value USD'
     hidden: true
 
 metrics:
@@ -111,5 +194,17 @@ metrics:
     type: sum
     sql: ${TABLE}.ACV
     label: 'ACV $'
+    format: 'usd'
+    round: 0
+
+  sqo_count:
+    type: count
+    sql: ${TABLE}.Id
+    label: 'SQO Count'
+
+  hard_imp_value_usd:
+    type: sum
+    sql: ${TABLE}.HardImpValueUSD
+    label: 'HardImpValueUSD'
     format: 'usd'
     round: 0
