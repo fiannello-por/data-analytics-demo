@@ -1,0 +1,52 @@
+name: Owner Performance
+description: null
+tableName: opportunity_view
+updatedAt: "2026-03-06T19:44:22.296Z"
+metricQuery:
+  exploreName: opportunity_view
+  dimensions:
+    - opportunity_view_Owner
+  metrics:
+    - opportunity_view_acv_dollars
+    - opportunity_view_sqo_count
+  filters:
+    dimensions:
+      id: root
+      and:
+        - id: won_filter
+          target:
+            fieldId: opportunity_view_Won
+          values:
+            - true
+          operator: equals
+  sorts:
+    - fieldId: opportunity_view_acv_dollars
+      descending: true
+  limit: 500
+  metricOverrides: {}
+  dimensionOverrides: {}
+  tableCalculations: []
+  additionalMetrics: []
+  customDimensions: []
+chartConfig:
+  type: table
+  config:
+    columns:
+      opportunity_view_Owner:
+        name: Owner
+        frozen: true
+      opportunity_view_sqo_count:
+        name: "# of Deals"
+      opportunity_view_acv_dollars:
+        name: ACV
+    hideRowNumbers: true
+    showColumnCalculation: true
+slug: owner-performance
+tableConfig:
+  columnOrder:
+    - opportunity_view_Owner
+    - opportunity_view_acv_dollars
+    - opportunity_view_sqo_count
+spaceSlug: shared
+version: 1
+downloadedAt: "2026-03-06T20:02:06.744Z"

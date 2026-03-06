@@ -1,0 +1,325 @@
+name: Sales Performance
+description: ""
+updatedAt: "2026-03-06T19:59:23.997Z"
+tiles:
+  - x: 0
+    "y": 0
+    h: 7
+    w: 36
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ""
+      hideTitle: false
+      chartSlug: sqos-over-time
+      chartName: SQOs Over Time
+    tileSlug: sqos-over-time
+  - x: 0
+    "y": 7
+    h: 9
+    w: 36
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ""
+      hideTitle: false
+      chartSlug: closed-won-opportunities
+      chartName: Closed Won Opportunities
+    tileSlug: closed-won-opportunities
+  - x: 0
+    "y": 16
+    h: 9
+    w: 18
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ""
+      hideTitle: false
+      chartSlug: performance-by-period
+      chartName: Performance by Period
+    tileSlug: performance-by-period
+  - x: 18
+    "y": 16
+    h: 9
+    w: 18
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ""
+      hideTitle: false
+      chartSlug: product-mix
+      chartName: Product Mix
+    tileSlug: product-mix
+  - x: 0
+    "y": 25
+    h: 10
+    w: 36
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ""
+      hideTitle: false
+      chartSlug: quarterly-breakdown
+      chartName: Quarterly Breakdown
+    tileSlug: quarterly-breakdown
+  - x: 0
+    "y": 35
+    h: 10
+    w: 36
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ""
+      hideTitle: false
+      chartSlug: owner-performance
+      chartName: Owner Performance
+    tileSlug: owner-performance
+  - x: 0
+    "y": 45
+    h: 10
+    w: 36
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ""
+      hideTitle: false
+      chartSlug: one-time-revenue
+      chartName: One Time Revenue
+    tileSlug: one-time-revenue
+  - x: 0
+    "y": 55
+    h: 14
+    w: 36
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: markdown
+    properties:
+      title: Legend / Glossary
+      hideTitle: false
+      content: >
+        | Term | Definition | Term | Definition |
+
+        |------|------------|------|------------|
+
+        | **Account Hyperlink** | Company name of the Account, hyperlinked to
+        Salesforce CRM URL | **SDR** | Sales Development Representative assigned
+        to the opportunity |
+
+        | **Opp Hyperlink** | Name of the Opportunity, hyperlinked to its
+        Salesforce URL | **SE** | Sales Engineer assigned to the opportunity |
+
+        | **Close Date** | Date the opportunity was/is expected to close | **SDR
+        Source** | Lead source channel (Inbound, AE Sourced, Outbound, AM
+        Sourced, Tradeshow, Partnerships) |
+
+        | **Owner** | Sales rep who owns the opportunity | **Age** | Number of
+        days since the opportunity was created |
+
+        | **Division** | Geographic division (US or UK) | **ACV** | Annual
+        Contract Value - the annualized recurring revenue value of the deal |
+
+        | **Type** | Category of deal (New Business, Migration, Existing
+        Business, Renewal, Consulting, Credit Card) | **HardImpValueUSD** |
+        One-time implementation/hardware revenue in USD |
+
+        | **Product Family** | Product line (Syrinx, Rental Elite) | **Won** |
+        Whether the opportunity has been marked as won (true/false) |
+
+        | **Stage** | Current sales stage of the opportunity | **Accepted** |
+        Whether the opportunity was accepted by the Account Executive |
+
+        | **POR / R360** | Whether the opportunity is Point of Rental or Rental
+        360 | **SQO Count** | Sales Qualified Opportunity count - number of
+        accepted new business opportunities |
+
+        | **Booking Plan Opp Type 2025** | Classification for 2025 booking plan
+        | **Users** | Number of user licenses on the opportunity |
+
+        | **Quarter** | Fiscal quarter derived from Close Date | **Install
+        Date** | Expected or actual installation date |
+
+        | **Contract Start Date** | Date the contract begins | **Created Date**
+        | Date the opportunity was created in Salesforce |
+      hideFrame: false
+filters:
+  metrics: []
+  dimensions:
+    - label: Date Range
+      target:
+        fieldId: opportunity_view_CloseDate
+        tableName: opportunity_view
+      values:
+        - 12
+      disabled: false
+      operator: inThePast
+      required: false
+      settings:
+        completed: false
+        unitOfTime: months
+      tileTargets:
+        quarterly-breakdown:
+          fieldId: opportunity_view_CloseDate
+          tableName: opportunity_view
+        one-time-revenue:
+          fieldId: opportunity_view_CloseDate
+          tableName: opportunity_view
+        performance-by-period:
+          fieldId: opportunity_view_CloseDate
+          tableName: opportunity_view
+        closed-won-opportunities:
+          fieldId: opportunity_view_CloseDate
+          tableName: opportunity_view
+        product-mix:
+          fieldId: opportunity_view_InstallDate
+          tableName: opportunity_view
+        owner-performance:
+          fieldId: opportunity_view_CloseDate
+          tableName: opportunity_view
+        sqos-over-time: false
+    - label: Type
+      target:
+        fieldId: opportunity_view_Type
+        tableName: opportunity_view
+      values: []
+      operator: equals
+      tileTargets:
+        sqos-over-time: false
+    - label: Division
+      target:
+        fieldId: opportunity_view_Division
+        tableName: opportunity_view
+      values: []
+      operator: equals
+      tileTargets:
+        sqos-over-time: false
+    - label: Owner
+      target:
+        fieldId: opportunity_view_Owner
+        tableName: opportunity_view
+      values: []
+      operator: equals
+      tileTargets:
+        sqos-over-time: false
+    - label: Accepted
+      target:
+        fieldId: opportunity_view_Accepted
+        tableName: opportunity_view
+      values: []
+      operator: equals
+      tileTargets:
+        sqos-over-time: false
+    - label: Strategic Filter
+      target:
+        fieldId: opportunity_view_StrategicFilter
+        tableName: opportunity_view
+      values: []
+      operator: equals
+      tileTargets:
+        sqos-over-time: false
+    - label: Segment
+      target:
+        fieldId: opportunity_view_OpportunitySegment
+        tableName: opportunity_view
+      values: []
+      operator: equals
+      tileTargets:
+        sqos-over-time: false
+    - label: Region
+      target:
+        fieldId: opportunity_view_Queue_Region__c
+        tableName: opportunity_view
+      values: []
+      operator: equals
+      tileTargets:
+        sqos-over-time: false
+    - label: SE
+      target:
+        fieldId: opportunity_view_SE
+        tableName: opportunity_view
+      values: []
+      operator: equals
+      tileTargets:
+        sqos-over-time: false
+    - label: Gate 1 Criteria Met
+      target:
+        fieldId: opportunity_view_Gate1CriteriaMet
+        tableName: opportunity_view
+      values: []
+      operator: equals
+      tileTargets:
+        sqos-over-time: false
+    - label: Booking Plan Opp Type
+      target:
+        fieldId: opportunity_view_BookingPlanOppType2025
+        tableName: opportunity_view
+      values: []
+      operator: equals
+      tileTargets:
+        sqos-over-time: false
+    - label: Product Family
+      target:
+        fieldId: opportunity_view_ProductFamily
+        tableName: opportunity_view
+      values: []
+      operator: equals
+      tileTargets:
+        sqos-over-time: false
+    - label: SDR Source
+      target:
+        fieldId: opportunity_view_SDRSource
+        tableName: opportunity_view
+      values: []
+      operator: equals
+      tileTargets:
+        sqos-over-time: false
+    - label: SDR
+      target:
+        fieldId: opportunity_view_SDR
+        tableName: opportunity_view
+      values: []
+      operator: equals
+      tileTargets:
+        sqos-over-time: false
+    - label: POR v R360
+      target:
+        fieldId: opportunity_view_OppRecordType
+        tableName: opportunity_view
+      values: []
+      operator: equals
+      tileTargets:
+        sqos-over-time: false
+    - label: Account Id
+      target:
+        fieldId: opportunity_view_AccountId
+        tableName: opportunity_view
+      values: []
+      operator: equals
+      tileTargets:
+        sqos-over-time: false
+    - label: Account Owner
+      target:
+        fieldId: opportunity_view_AccountOwner
+        tableName: opportunity_view
+      values: []
+      operator: equals
+      tileTargets:
+        sqos-over-time: false
+    - label: Owner Department
+      target:
+        fieldId: opportunity_view_OwnerDepartment
+        tableName: opportunity_view
+      values: []
+      operator: equals
+      tileTargets:
+        sqos-over-time: false
+  tableCalculations: []
+tabs:
+  - name: Tab2
+    uuid: 9eb52c24-3af0-44e9-b125-50f0b3ef3681
+    order: 1
+  - name: Tab 1
+    uuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    order: 0
+slug: sales-performance
+spaceSlug: point-of-rental-revops-analytics-demo/revenue
+version: 1
+downloadedAt: "2026-03-06T20:02:04.327Z"

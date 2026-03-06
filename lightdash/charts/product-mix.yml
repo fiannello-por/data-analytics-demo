@@ -1,0 +1,49 @@
+name: Product Mix
+description: null
+tableName: opportunity_view
+updatedAt: "2026-03-06T19:38:31.522Z"
+metricQuery:
+  exploreName: opportunity_view
+  dimensions:
+    - opportunity_view_ProductFamily
+  metrics:
+    - opportunity_view_acv_dollars
+  filters:
+    dimensions:
+      id: root
+      and:
+        - id: won_filter
+          target:
+            fieldId: opportunity_view_Won
+          values:
+            - true
+          operator: equals
+  sorts:
+    - fieldId: opportunity_view_acv_dollars
+      descending: true
+  limit: 10
+  metricOverrides: {}
+  dimensionOverrides: {}
+  tableCalculations: []
+  additionalMetrics: []
+  customDimensions: []
+chartConfig:
+  type: pie
+  config:
+    isDonut: true
+    metricId: opportunity_view_acv_dollars
+    showValue: false
+    showLegend: true
+    valueLabel: outside
+    groupFieldIds:
+      - opportunity_view_ProductFamily
+    legendPosition: horizontal
+    showPercentage: true
+slug: product-mix
+tableConfig:
+  columnOrder:
+    - opportunity_view_ProductFamily
+    - opportunity_view_acv_dollars
+spaceSlug: shared
+version: 1
+downloadedAt: "2026-03-06T20:02:06.744Z"
