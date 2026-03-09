@@ -1,0 +1,65 @@
+name: "Total: Annual Pacing"
+description: null
+tableName: opportunity_view
+updatedAt: "2026-03-09T15:48:28.132Z"
+metricQuery:
+  exploreName: opportunity_view
+  dimensions: []
+  metrics:
+    - opportunity_view_annual_pacing_acv
+  filters:
+    dimensions:
+      id: root
+      and:
+        - id: won_filter
+          target:
+            fieldId: opportunity_view_Won
+          values:
+            - true
+          operator: equals
+        - id: acv_positive
+          target:
+            fieldId: opportunity_view_ACV
+          values:
+            - 0
+          operator: greaterThan
+        - id: stage_filter
+          target:
+            fieldId: opportunity_view_StageName
+          values:
+            - Closed Won
+          operator: equals
+        - id: exclude_goals
+          target:
+            fieldId: opportunity_view_Id
+          operator: notNull
+        - id: date_filter
+          target:
+            fieldId: opportunity_view_CloseDate
+          operator: inTheCurrent
+          settings:
+            unitOfTime: years
+  sorts: []
+  limit: 1
+  metricOverrides: {}
+  dimensionOverrides: {}
+  tableCalculations: []
+  additionalMetrics: []
+  customDimensions: []
+chartConfig:
+  type: big_number
+  config:
+    label: Annual Pacing $
+    style: K
+    selectedField: opportunity_view_annual_pacing_acv
+    showComparison: true
+    comparisonLabel: vs. prev year
+    comparisonFormat: percentage
+    showBigNumberLabel: true
+slug: total-annual-pacing
+tableConfig:
+  columnOrder:
+    - opportunity_view_annual_pacing_acv
+spaceSlug: shared
+version: 1
+downloadedAt: "2026-03-09T15:49:11.524Z"

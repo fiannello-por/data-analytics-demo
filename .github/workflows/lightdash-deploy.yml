@@ -1,0 +1,29 @@
+name: Deploy to Lightdash
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "lightdash/**"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Lightdash CLI
+        run: npm install -g @lightdash/cli
+
+      - name: Authenticate with Lightdash
+        run: lightdash login --token ${{ secrets.LIGHTDASH_API_TOKEN }} --url ${{ secrets.LIGHTDASH_URL }}
+
+      - name: Deploy semantic layer
+        run: lightdash deploy --project ${{ secrets.LIGHTDASH_PROJECT_UUID }}
+
+      - name: Upload charts and dashboards
+        run: lightdash upload

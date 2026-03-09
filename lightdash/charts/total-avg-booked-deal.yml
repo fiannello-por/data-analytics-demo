@@ -1,0 +1,62 @@
+name: "Total: Avg Booked Deal"
+description: null
+tableName: opportunity_view
+metricQuery:
+  exploreName: opportunity_view
+  dimensions: []
+  metrics:
+    - opportunity_view_avg_acv
+  filters:
+    dimensions:
+      id: root
+      and:
+        - id: won_filter
+          target:
+            fieldId: opportunity_view_Won
+          values:
+            - true
+          operator: equals
+        - id: acv_positive
+          target:
+            fieldId: opportunity_view_ACV
+          values:
+            - 0
+          operator: greaterThan
+        - id: stage_filter
+          target:
+            fieldId: opportunity_view_StageName
+          values:
+            - Closed Won
+          operator: equals
+        - id: date_filter
+          target:
+            fieldId: opportunity_view_CloseDate
+          values:
+            - 12
+          operator: inThePast
+          settings:
+            completed: false
+            unitOfTime: months
+  sorts: []
+  limit: 1
+  metricOverrides: {}
+  dimensionOverrides: {}
+  tableCalculations: []
+  additionalMetrics: []
+  customDimensions: []
+chartConfig:
+  type: big_number
+  config:
+    label: Avg Booked Deal
+    style: K
+    selectedField: opportunity_view_avg_acv
+    showComparison: true
+    comparisonLabel: vs. prev year
+    comparisonFormat: percentage
+    showBigNumberLabel: true
+slug: total-avg-booked-deal
+tableConfig:
+  columnOrder:
+    - opportunity_view_avg_acv
+spaceSlug: shared
+version: 1

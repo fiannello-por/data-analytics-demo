@@ -1,21 +1,341 @@
 name: Sales Performance
 description: ""
-updatedAt: "2026-03-06T19:59:23.997Z"
+updatedAt: "2026-03-09T15:48:36.813Z"
 tiles:
   - x: 0
     "y": 0
-    h: 7
-    w: 36
+    h: 1
+    w: 8
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: markdown
+    properties:
+      title: New Logo
+      hideTitle: false
+      content: "# New Logo"
+      hideFrame: true
+  - x: 8
+    "y": 0
+    h: 1
+    w: 8
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: markdown
+    properties:
+      title: ""
+      hideTitle: false
+      content: "# Expansion"
+      hideFrame: true
+  - x: 16
+    "y": 0
+    h: 1
+    w: 8
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: markdown
+    properties:
+      title: ""
+      hideTitle: false
+      content: "# Migration"
+      hideFrame: true
+  - x: 24
+    "y": 0
+    h: 1
+    w: 12
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: markdown
+    properties:
+      title: ""
+      hideTitle: false
+      content: "# Total"
+      hideFrame: true
+  - x: 0
+    "y": 1
+    h: 2
+    w: 4
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
       title: ""
-      hideTitle: false
-      chartSlug: sqos-over-time
-      chartName: SQOs Over Time
-    tileSlug: sqos-over-time
+      hideTitle: true
+      chartSlug: new-logo-bookings-acv
+      chartName: "New Logo: Bookings $"
+    tileSlug: new-logo-bookings-acv
+  - x: 4
+    "y": 1
+    h: 2
+    w: 4
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ""
+      hideTitle: true
+      chartSlug: new-logo-bookings-count
+      chartName: "New Logo: Bookings #"
+    tileSlug: new-logo-bookings-count
+  - x: 8
+    "y": 1
+    h: 2
+    w: 4
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ""
+      hideTitle: true
+      chartSlug: expansion-bookings-acv
+      chartName: "Expansion: Bookings $"
+    tileSlug: expansion-bookings-acv
+  - x: 12
+    "y": 1
+    h: 2
+    w: 4
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ""
+      hideTitle: true
+      chartSlug: expansion-bookings-count
+      chartName: "Expansion: Bookings #"
+    tileSlug: expansion-bookings-count
+  - x: 16
+    "y": 1
+    h: 2
+    w: 4
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ""
+      hideTitle: true
+      chartSlug: migration-bookings-acv
+      chartName: "Migration: Bookings $"
+    tileSlug: migration-bookings-acv
+  - x: 20
+    "y": 1
+    h: 2
+    w: 4
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ""
+      hideTitle: true
+      chartSlug: migration-bookings-count
+      chartName: "Migration: Bookings #"
+    tileSlug: migration-bookings-count
+  - x: 24
+    "y": 1
+    h: 2
+    w: 6
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ""
+      hideTitle: true
+      chartSlug: total-bookings-acv
+      chartName: "Total: Bookings $"
+    tileSlug: total-bookings-acv
+  - x: 30
+    "y": 1
+    h: 2
+    w: 6
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ""
+      hideTitle: true
+      chartSlug: total-bookings-count
+      chartName: "Total: Bookings #"
+    tileSlug: total-bookings-count
+  - x: 0
+    "y": 3
+    h: 2
+    w: 8
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ""
+      hideTitle: true
+      chartSlug: new-logo-annual-pacing
+      chartName: "New Logo: Annual Pacing"
+    tileSlug: new-logo-annual-pacing
+  - x: 8
+    "y": 3
+    h: 2
+    w: 8
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ""
+      hideTitle: true
+      chartSlug: expansion-annual-pacing
+      chartName: "Expansion: Annual Pacing"
+    tileSlug: expansion-annual-pacing
+  - x: 16
+    "y": 3
+    h: 2
+    w: 8
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ""
+      hideTitle: true
+      chartSlug: migration-annual-pacing
+      chartName: "Migration: Annual Pacing"
+    tileSlug: migration-annual-pacing
+  - x: 24
+    "y": 3
+    h: 2
+    w: 12
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ""
+      hideTitle: true
+      chartSlug: total-annual-pacing
+      chartName: "Total: Annual Pacing"
+    tileSlug: total-annual-pacing
+  - x: 0
+    "y": 5
+    h: 2
+    w: 8
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ""
+      hideTitle: true
+      chartSlug: new-logo-close-rate
+      chartName: "New Logo: Close Rate"
+    tileSlug: new-logo-close-rate
+  - x: 8
+    "y": 5
+    h: 2
+    w: 8
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ""
+      hideTitle: true
+      chartSlug: expansion-close-rate
+      chartName: "Expansion: Close Rate"
+    tileSlug: expansion-close-rate
+  - x: 16
+    "y": 5
+    h: 2
+    w: 8
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ""
+      hideTitle: true
+      chartSlug: migration-close-rate
+      chartName: "Migration: Close Rate"
+    tileSlug: migration-close-rate
+  - x: 24
+    "y": 5
+    h: 2
+    w: 12
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ""
+      hideTitle: true
+      chartSlug: total-close-rate
+      chartName: "Total: Close Rate"
+    tileSlug: total-close-rate
   - x: 0
     "y": 7
+    h: 2
+    w: 8
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ""
+      hideTitle: true
+      chartSlug: new-logo-avg-age
+      chartName: "New Logo: Avg Age"
+    tileSlug: new-logo-avg-age
+  - x: 8
+    "y": 7
+    h: 2
+    w: 8
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ""
+      hideTitle: true
+      chartSlug: expansion-avg-age
+      chartName: "Expansion: Avg Age"
+    tileSlug: expansion-avg-age
+  - x: 16
+    "y": 7
+    h: 2
+    w: 8
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ""
+      hideTitle: true
+      chartSlug: migration-avg-age
+      chartName: "Migration: Avg Age"
+    tileSlug: migration-avg-age
+  - x: 24
+    "y": 7
+    h: 2
+    w: 12
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ""
+      hideTitle: true
+      chartSlug: total-avg-age
+      chartName: "Total: Avg Age"
+    tileSlug: total-avg-age
+  - x: 0
+    "y": 9
+    h: 2
+    w: 8
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ""
+      hideTitle: true
+      chartSlug: new-logo-avg-booked-deal
+      chartName: "New Logo: Avg Booked Deal"
+    tileSlug: new-logo-avg-booked-deal
+  - x: 8
+    "y": 9
+    h: 2
+    w: 8
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ""
+      hideTitle: true
+      chartSlug: expansion-avg-booked-deal
+      chartName: "Expansion: Avg Booked Deal"
+    tileSlug: expansion-avg-booked-deal
+  - x: 16
+    "y": 9
+    h: 2
+    w: 8
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ""
+      hideTitle: true
+      chartSlug: migration-avg-booked-deal
+      chartName: "Migration: Avg Booked Deal"
+    tileSlug: migration-avg-booked-deal
+  - x: 24
+    "y": 9
+    h: 2
+    w: 12
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ""
+      hideTitle: true
+      chartSlug: total-avg-booked-deal
+      chartName: "Total: Avg Booked Deal"
+    tileSlug: total-avg-booked-deal
+  - x: 0
+    "y": 11
     h: 9
     w: 36
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
@@ -27,9 +347,21 @@ tiles:
       chartName: Closed Won Opportunities
     tileSlug: closed-won-opportunities
   - x: 0
-    "y": 16
-    h: 9
-    w: 18
+    "y": 20
+    h: 7
+    w: 14
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ""
+      hideTitle: false
+      chartSlug: sqos-over-time
+      chartName: SQOs Over Time
+    tileSlug: sqos-over-time
+  - x: 14
+    "y": 20
+    h: 7
+    w: 15
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
@@ -38,10 +370,10 @@ tiles:
       chartSlug: performance-by-period
       chartName: Performance by Period
     tileSlug: performance-by-period
-  - x: 18
-    "y": 16
-    h: 9
-    w: 18
+  - x: 29
+    "y": 20
+    h: 7
+    w: 7
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
@@ -51,9 +383,9 @@ tiles:
       chartName: Product Mix
     tileSlug: product-mix
   - x: 0
-    "y": 25
-    h: 10
-    w: 36
+    "y": 27
+    h: 11
+    w: 26
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
@@ -62,10 +394,10 @@ tiles:
       chartSlug: quarterly-breakdown
       chartName: Quarterly Breakdown
     tileSlug: quarterly-breakdown
-  - x: 0
-    "y": 35
-    h: 10
-    w: 36
+  - x: 26
+    "y": 27
+    h: 11
+    w: 10
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
@@ -75,8 +407,8 @@ tiles:
       chartName: Owner Performance
     tileSlug: owner-performance
   - x: 0
-    "y": 45
-    h: 10
+    "y": 38
+    h: 11
     w: 36
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
@@ -87,8 +419,8 @@ tiles:
       chartName: One Time Revenue
     tileSlug: one-time-revenue
   - x: 0
-    "y": 55
-    h: 14
+    "y": 49
+    h: 22
     w: 36
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: markdown
@@ -96,49 +428,105 @@ tiles:
       title: Legend / Glossary
       hideTitle: false
       content: >
-        | Term | Definition | Term | Definition |
+        | Term | Definition | Date Dimension (if applicable) | Rules &amp; key
+        notes |
 
-        |------|------------|------|------------|
+        |------|------------|-------------------------------|-------------------|
 
-        | **Account Hyperlink** | Company name of the Account, hyperlinked to
-        Salesforce CRM URL | **SDR** | Sales Development Representative assigned
-        to the opportunity |
+        | **ACV** | Annual Contract Value used for bookings and pipeline. | - |
+        Recurring only; one-time revenue tracked separately. |
 
-        | **Opp Hyperlink** | Name of the Opportunity, hyperlinked to its
-        Salesforce URL | **SE** | Sales Engineer assigned to the opportunity |
+        | **Accepted to Closed Won (Avg)** | Average number of days from
+        Accepted date to Closed Won date. | Accepted Date -&gt; Close Date | - |
 
-        | **Close Date** | Date the opportunity was/is expected to close | **SDR
-        Source** | Lead source channel (Inbound, AE Sourced, Outbound, AM
-        Sourced, Tradeshow, Partnerships) |
+        | **Attach Rate (POR One)** | % of Closed Won with POR One attached. |
+        Close Month | - |
 
-        | **Owner** | Sales rep who owns the opportunity | **Age** | Number of
-        days since the opportunity was created |
+        | **Avg. Age** | Average number of days opps have been open (or sitting
+        in a stage). | Varies (Created-&gt;Submitted, Submitted-&gt;Accepted,
+        etc.) | - |
 
-        | **Division** | Geographic division (US or UK) | **ACV** | Annual
-        Contract Value - the annualized recurring revenue value of the deal |
+        | **Avg. Booked Deal (ACV)** | Average ACV amount of Closed Won
+        opportunities where ACV &gt; 0 | Close Date | - |
 
-        | **Type** | Category of deal (New Business, Migration, Existing
-        Business, Renewal, Consulting, Credit Card) | **HardImpValueUSD** |
-        One-time implementation/hardware revenue in USD |
+        | **Avg. Users** | Average (mean) number of users (licenses/seats)
+        across Closed Won opps. | Close Date | - |
 
-        | **Product Family** | Product line (Syrinx, Rental Elite) | **Won** |
-        Whether the opportunity has been marked as won (true/false) |
+        | **Bookings (ACV)** | Sum of ACV for Closed Won opportunities in
+        period. | Close Date | Exclude one-time revenue unless stated. |
 
-        | **Stage** | Current sales stage of the opportunity | **Accepted** |
-        Whether the opportunity was accepted by the Account Executive |
+        | **Close Rate** | # of Closed Won opportunities divided by # of ALL
+        closed opportunities (won, lost, etc) | Close Date | - |
 
-        | **POR / R360** | Whether the opportunity is Point of Rental or Rental
-        360 | **SQO Count** | Sales Qualified Opportunity count - number of
-        accepted new business opportunities |
+        | **Current Year Annual Pacing** | Year-end projection based on YTD
+        bookings pace. | Year-to-date window | Directional. |
 
-        | **Booking Plan Opp Type 2025** | Classification for 2025 booking plan
-        | **Users** | Number of user licenses on the opportunity |
+        | **EQL (Expansion / Migration)** | Expansion Qualified Lead from an
+        existing customer. | Case Created Date OR Opportunity Created Date |
+        Expansion &amp; Migration top of funnel. Inside sales case = Inbound. |
 
-        | **Quarter** | Fiscal quarter derived from Close Date | **Install
-        Date** | Expected or actual installation date |
+        | **Expansion** | Upsell/cross-sell within existing customers. | - |
+        Opportunity Type = Existing Business |
 
-        | **Contract Start Date** | Date the contract begins | **Created Date**
-        | Date the opportunity was created in Salesforce |
+        | **Migration** | Move legacy/on-prem to current SaaS platform/plan. | -
+        | Opportunity Type = Migration |
+
+        | **Net Growth YoY** | Percent change vs prior rolling period. | Rolling
+        windows | - |
+
+        | **New Logo** | First-time customer acquisition motion. | - |
+        Opportunity Type = New Business |
+
+        | **One-time Revenue** | Non-recurring revenue (services, hardware,
+        implementation). | Close Date | - |
+
+        | **Owner (Account)** | Account Owner | - | - |
+
+        | **Owner (Opportunity)** | Opportunity Owner | - | - |
+
+        | **Product Family** | Product grouping (Elite, Expert, Essentials,
+        Syrinx, Record360, etc.) | - | - |
+
+        | **Renewals** | Extends an existing subscription term. | - |
+        Opportunity Type = Renewal |
+
+        | **RollingYearRentalRevenue** | Trailing-12 rental revenue. | Rolling
+        12 months | Compare vs RollingLastYear for YoY. |
+
+        | **SAL (Migration)** | Sales Accepted Lead (Gate 1 complete) for a
+        migration opportunity. | Gate 1 Completed Date | Opportunity Type =
+        Migration |
+
+        | **SDR** | SDR of record on the opportunity | - | - |
+
+        | **SQL (Expansion)** | Expansion Sales Qualified Lead from an EQL. |
+        Opportunity Created Date | Opportunity Type = Existing Business |
+
+        | **SQL (Migration)** | Sales Qualified Lead where the customer is
+        migrating from a competitor. | Created Date / Discovery Scheduled Date |
+        Opportunity Type = Migration |
+
+        | **SQO (Expansion)** | Expansion Qualified Opportunity from an EQL. |
+        Expansion Qualified Date | Opportunity Type = Existing Business |
+
+        | **SQO (Migration)** | Sales Qualified Opportunity for a migration
+        opportunity. | Qualified Date | Opportunity Type = Migration |
+
+        | **SQO Users** | User/seat count for opportunities that reached SQO. |
+        Qualified Date (sales_qualified_date__c) | - |
+
+        | **Segment** | Business segment; based on # of Users. Velocity = up to
+        3 Users, SMB = between 4 - 35 Users, Mid-Market = between 36 - 150
+        Users, Enterprise = over 150 Users. | - | Opportunity Segment by User
+        Count |
+
+        | **Won** | The deal is won—contract executed, terms agreed; the
+        Opportunity is closed as Won. | Opportunity Close Date | StageName =
+        Closed Won |
+
+        | **Won/MQL** | % of MQLs that ultimately become Closed Won. | - | - |
+
+        | **Won/SQL** | % of SQLs that ultimately become Closed Won. | - | - |
       hideFrame: false
 filters:
   metrics: []
@@ -156,16 +544,16 @@ filters:
         completed: false
         unitOfTime: months
       tileTargets:
-        quarterly-breakdown:
-          fieldId: opportunity_view_CloseDate
-          tableName: opportunity_view
-        one-time-revenue:
-          fieldId: opportunity_view_CloseDate
-          tableName: opportunity_view
-        performance-by-period:
+        total-bookings-count:
           fieldId: opportunity_view_CloseDate
           tableName: opportunity_view
         closed-won-opportunities:
+          fieldId: opportunity_view_CloseDate
+          tableName: opportunity_view
+        new-logo-bookings-acv:
+          fieldId: opportunity_view_CloseDate
+          tableName: opportunity_view
+        migration-bookings-count:
           fieldId: opportunity_view_CloseDate
           tableName: opportunity_view
         product-mix:
@@ -174,7 +562,71 @@ filters:
         owner-performance:
           fieldId: opportunity_view_CloseDate
           tableName: opportunity_view
+        migration-bookings-acv:
+          fieldId: opportunity_view_CloseDate
+          tableName: opportunity_view
+        performance-by-period:
+          fieldId: opportunity_view_CloseDate
+          tableName: opportunity_view
+        total-annual-pacing: false
+        quarterly-breakdown:
+          fieldId: opportunity_view_CloseDate
+          tableName: opportunity_view
+        migration-annual-pacing: false
+        expansion-bookings-count:
+          fieldId: opportunity_view_CloseDate
+          tableName: opportunity_view
+        new-logo-annual-pacing: false
+        total-bookings-acv:
+          fieldId: opportunity_view_CloseDate
+          tableName: opportunity_view
+        expansion-bookings-acv:
+          fieldId: opportunity_view_CloseDate
+          tableName: opportunity_view
+        expansion-annual-pacing: false
+        new-logo-close-rate:
+          fieldId: opportunity_view_CloseDate
+          tableName: opportunity_view
+        expansion-close-rate:
+          fieldId: opportunity_view_CloseDate
+          tableName: opportunity_view
+        migration-close-rate:
+          fieldId: opportunity_view_CloseDate
+          tableName: opportunity_view
+        total-close-rate:
+          fieldId: opportunity_view_CloseDate
+          tableName: opportunity_view
+        new-logo-avg-age:
+          fieldId: opportunity_view_CloseDate
+          tableName: opportunity_view
+        expansion-avg-age:
+          fieldId: opportunity_view_CloseDate
+          tableName: opportunity_view
+        migration-avg-age:
+          fieldId: opportunity_view_CloseDate
+          tableName: opportunity_view
+        total-avg-age:
+          fieldId: opportunity_view_CloseDate
+          tableName: opportunity_view
+        new-logo-avg-booked-deal:
+          fieldId: opportunity_view_CloseDate
+          tableName: opportunity_view
+        expansion-avg-booked-deal:
+          fieldId: opportunity_view_CloseDate
+          tableName: opportunity_view
+        migration-avg-booked-deal:
+          fieldId: opportunity_view_CloseDate
+          tableName: opportunity_view
+        total-avg-booked-deal:
+          fieldId: opportunity_view_CloseDate
+          tableName: opportunity_view
+        one-time-revenue:
+          fieldId: opportunity_view_CloseDate
+          tableName: opportunity_view
         sqos-over-time: false
+        new-logo-bookings-count:
+          fieldId: opportunity_view_CloseDate
+          tableName: opportunity_view
     - label: Type
       target:
         fieldId: opportunity_view_Type
@@ -182,7 +634,31 @@ filters:
       values: []
       operator: equals
       tileTargets:
+        total-bookings-count: false
+        new-logo-bookings-acv: false
+        migration-bookings-count: false
+        migration-bookings-acv: false
+        total-annual-pacing: false
+        migration-annual-pacing: false
+        expansion-bookings-count: false
+        new-logo-annual-pacing: false
+        total-bookings-acv: false
+        expansion-bookings-acv: false
+        expansion-annual-pacing: false
+        new-logo-close-rate: false
+        expansion-close-rate: false
+        migration-close-rate: false
+        total-close-rate: false
+        new-logo-avg-age: false
+        expansion-avg-age: false
+        migration-avg-age: false
+        total-avg-age: false
+        new-logo-avg-booked-deal: false
+        expansion-avg-booked-deal: false
+        migration-avg-booked-deal: false
+        total-avg-booked-deal: false
         sqos-over-time: false
+        new-logo-bookings-count: false
     - label: Division
       target:
         fieldId: opportunity_view_Division
@@ -322,4 +798,4 @@ tabs:
 slug: sales-performance
 spaceSlug: point-of-rental-revops-analytics-demo/revenue
 version: 1
-downloadedAt: "2026-03-06T20:02:04.327Z"
+downloadedAt: "2026-03-09T15:49:08.219Z"

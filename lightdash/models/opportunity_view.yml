@@ -184,6 +184,12 @@ dimensions:
     label: 'Hard Imp Value USD'
     hidden: true
 
+  - name: IsClosed
+    type: boolean
+    sql: ${TABLE}.isclosed
+    label: 'Is Closed'
+    hidden: true
+
 metrics:
   users_sum:
     type: sum
@@ -202,9 +208,41 @@ metrics:
     sql: ${TABLE}.Id
     label: 'SQO Count'
 
+  bookings_count:
+    type: count_distinct
+    sql: ${TABLE}.Id
+    label: 'Bookings #'
+
   hard_imp_value_usd:
     type: sum
     sql: ${TABLE}.HardImpValueUSD
     label: 'HardImpValueUSD'
+    format: 'usd'
+    round: 0
+
+  annual_pacing_acv:
+    type: number
+    sql: "SUM(${TABLE}.ACV) * 365.0 / NULLIF(MAX(${TABLE}.CalendarDaysPassedSinceFirstDayofCloseDateFY), 0)"
+    label: 'Annual Pacing $'
+    format: 'usd'
+    round: 0
+
+  close_rate:
+    type: number
+    sql: "SUM(CASE WHEN ${TABLE}.Won = TRUE THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT(DISTINCT ${TABLE}.Id), 0)"
+    label: 'Close Rate'
+    format: 'percent'
+    round: 1
+
+  avg_age:
+    type: average
+    sql: ${TABLE}.Age__c
+    label: 'Avg Age'
+    round: 0
+
+  avg_acv:
+    type: number
+    sql: "SUM(${TABLE}.ACV) * 1.0 / NULLIF(COUNT(DISTINCT ${TABLE}.Id), 0)"
+    label: 'Avg Booked Deal'
     format: 'usd'
     round: 0

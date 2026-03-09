@@ -1,0 +1,59 @@
+name: "Expansion: Close Rate"
+description: null
+tableName: opportunity_view
+metricQuery:
+  exploreName: opportunity_view
+  dimensions: []
+  metrics:
+    - opportunity_view_close_rate
+  filters:
+    dimensions:
+      id: root
+      and:
+        - id: type_filter
+          target:
+            fieldId: opportunity_view_Type
+          values:
+            - Existing Business
+          operator: equals
+        - id: exclude_goals
+          target:
+            fieldId: opportunity_view_Id
+          operator: notNull
+        - id: is_closed
+          target:
+            fieldId: opportunity_view_IsClosed
+          values:
+            - true
+          operator: equals
+        - id: date_filter
+          target:
+            fieldId: opportunity_view_CloseDate
+          values:
+            - 12
+          operator: inThePast
+          settings:
+            completed: false
+            unitOfTime: months
+  sorts: []
+  limit: 1
+  metricOverrides: {}
+  dimensionOverrides: {}
+  tableCalculations: []
+  additionalMetrics: []
+  customDimensions: []
+chartConfig:
+  type: big_number
+  config:
+    label: Close Rate
+    selectedField: opportunity_view_close_rate
+    showComparison: true
+    comparisonLabel: vs. prev year
+    comparisonFormat: percentage
+    showBigNumberLabel: true
+slug: expansion-close-rate
+tableConfig:
+  columnOrder:
+    - opportunity_view_close_rate
+spaceSlug: shared
+version: 1
