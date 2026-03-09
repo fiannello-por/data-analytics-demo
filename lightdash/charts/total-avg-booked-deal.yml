@@ -1,12 +1,11 @@
-name: "Total: Bookings #"
+name: "Total: Avg Booked Deal"
 description: null
 tableName: opportunity_view
-updatedAt: "2026-03-09T13:45:15.255Z"
 metricQuery:
   exploreName: opportunity_view
   dimensions: []
   metrics:
-    - opportunity_view_bookings_count
+    - opportunity_view_avg_acv
   filters:
     dimensions:
       id: root
@@ -48,16 +47,16 @@ metricQuery:
 chartConfig:
   type: big_number
   config:
-    label: "Bookings #"
-    selectedField: opportunity_view_bookings_count
+    label: Avg Booked Deal
+    style: K
+    selectedField: opportunity_view_avg_acv
     showComparison: true
     comparisonLabel: vs. prev year
     comparisonFormat: percentage
     showBigNumberLabel: true
-slug: total-bookings-count
+slug: total-avg-booked-deal
 tableConfig:
   columnOrder:
-    - opportunity_view_bookings_count
+    - opportunity_view_avg_acv
 spaceSlug: shared
 version: 1
-downloadedAt: "2026-03-09T15:49:11.524Z"

@@ -1,33 +1,30 @@
-name: "Total: Bookings #"
+name: "Expansion: Close Rate"
 description: null
 tableName: opportunity_view
-updatedAt: "2026-03-09T13:45:15.255Z"
 metricQuery:
   exploreName: opportunity_view
   dimensions: []
   metrics:
-    - opportunity_view_bookings_count
+    - opportunity_view_close_rate
   filters:
     dimensions:
       id: root
       and:
-        - id: won_filter
+        - id: type_filter
           target:
-            fieldId: opportunity_view_Won
+            fieldId: opportunity_view_Type
+          values:
+            - Existing Business
+          operator: equals
+        - id: exclude_goals
+          target:
+            fieldId: opportunity_view_Id
+          operator: notNull
+        - id: is_closed
+          target:
+            fieldId: opportunity_view_IsClosed
           values:
             - true
-          operator: equals
-        - id: acv_positive
-          target:
-            fieldId: opportunity_view_ACV
-          values:
-            - 0
-          operator: greaterThan
-        - id: stage_filter
-          target:
-            fieldId: opportunity_view_StageName
-          values:
-            - Closed Won
           operator: equals
         - id: date_filter
           target:
@@ -48,16 +45,15 @@ metricQuery:
 chartConfig:
   type: big_number
   config:
-    label: "Bookings #"
-    selectedField: opportunity_view_bookings_count
+    label: Close Rate
+    selectedField: opportunity_view_close_rate
     showComparison: true
     comparisonLabel: vs. prev year
     comparisonFormat: percentage
     showBigNumberLabel: true
-slug: total-bookings-count
+slug: expansion-close-rate
 tableConfig:
   columnOrder:
-    - opportunity_view_bookings_count
+    - opportunity_view_close_rate
 spaceSlug: shared
 version: 1
-downloadedAt: "2026-03-09T15:49:11.524Z"

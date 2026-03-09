@@ -1,12 +1,12 @@
-name: "Total: Bookings #"
+name: "Total: Annual Pacing"
 description: null
 tableName: opportunity_view
-updatedAt: "2026-03-09T13:45:15.255Z"
+updatedAt: "2026-03-09T15:48:28.132Z"
 metricQuery:
   exploreName: opportunity_view
   dimensions: []
   metrics:
-    - opportunity_view_bookings_count
+    - opportunity_view_annual_pacing_acv
   filters:
     dimensions:
       id: root
@@ -29,15 +29,16 @@ metricQuery:
           values:
             - Closed Won
           operator: equals
+        - id: exclude_goals
+          target:
+            fieldId: opportunity_view_Id
+          operator: notNull
         - id: date_filter
           target:
             fieldId: opportunity_view_CloseDate
-          values:
-            - 12
-          operator: inThePast
+          operator: inTheCurrent
           settings:
-            completed: false
-            unitOfTime: months
+            unitOfTime: years
   sorts: []
   limit: 1
   metricOverrides: {}
@@ -48,16 +49,17 @@ metricQuery:
 chartConfig:
   type: big_number
   config:
-    label: "Bookings #"
-    selectedField: opportunity_view_bookings_count
+    label: Annual Pacing $
+    style: K
+    selectedField: opportunity_view_annual_pacing_acv
     showComparison: true
     comparisonLabel: vs. prev year
     comparisonFormat: percentage
     showBigNumberLabel: true
-slug: total-bookings-count
+slug: total-annual-pacing
 tableConfig:
   columnOrder:
-    - opportunity_view_bookings_count
+    - opportunity_view_annual_pacing_acv
 spaceSlug: shared
 version: 1
 downloadedAt: "2026-03-09T15:49:11.524Z"

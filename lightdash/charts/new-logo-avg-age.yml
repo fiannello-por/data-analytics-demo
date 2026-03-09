@@ -1,12 +1,11 @@
-name: "Total: Bookings #"
+name: "New Logo: Avg Age"
 description: null
 tableName: opportunity_view
-updatedAt: "2026-03-09T13:45:15.255Z"
 metricQuery:
   exploreName: opportunity_view
   dimensions: []
   metrics:
-    - opportunity_view_bookings_count
+    - opportunity_view_avg_age
   filters:
     dimensions:
       id: root
@@ -17,18 +16,18 @@ metricQuery:
           values:
             - true
           operator: equals
-        - id: acv_positive
+        - id: type_filter
           target:
-            fieldId: opportunity_view_ACV
+            fieldId: opportunity_view_Type
+          values:
+            - New Business
+          operator: equals
+        - id: exclude_zero_day
+          target:
+            fieldId: opportunity_view_Age__c
           values:
             - 0
           operator: greaterThan
-        - id: stage_filter
-          target:
-            fieldId: opportunity_view_StageName
-          values:
-            - Closed Won
-          operator: equals
         - id: date_filter
           target:
             fieldId: opportunity_view_CloseDate
@@ -48,16 +47,15 @@ metricQuery:
 chartConfig:
   type: big_number
   config:
-    label: "Bookings #"
-    selectedField: opportunity_view_bookings_count
+    label: Avg Age
+    selectedField: opportunity_view_avg_age
     showComparison: true
     comparisonLabel: vs. prev year
     comparisonFormat: percentage
     showBigNumberLabel: true
-slug: total-bookings-count
+slug: new-logo-avg-age
 tableConfig:
   columnOrder:
-    - opportunity_view_bookings_count
+    - opportunity_view_avg_age
 spaceSlug: shared
 version: 1
-downloadedAt: "2026-03-09T15:49:11.524Z"
