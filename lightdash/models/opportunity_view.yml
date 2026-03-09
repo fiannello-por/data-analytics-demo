@@ -202,6 +202,11 @@ metrics:
     sql: ${TABLE}.Id
     label: 'SQO Count'
 
+  bookings_count:
+    type: count_distinct
+    sql: ${TABLE}.Id
+    label: 'Bookings #'
+
   hard_imp_value_usd:
     type: sum
     sql: ${TABLE}.HardImpValueUSD

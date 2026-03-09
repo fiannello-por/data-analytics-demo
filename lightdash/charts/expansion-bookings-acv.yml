@@ -1,0 +1,70 @@
+name: "Expansion: Bookings $"
+description: null
+tableName: opportunity_view
+updatedAt: "2026-03-09T13:45:09.058Z"
+metricQuery:
+  exploreName: opportunity_view
+  dimensions: []
+  metrics:
+    - opportunity_view_acv_dollars
+  filters:
+    dimensions:
+      id: root
+      and:
+        - id: won_filter
+          target:
+            fieldId: opportunity_view_Won
+          values:
+            - true
+          operator: equals
+        - id: type_filter
+          target:
+            fieldId: opportunity_view_Type
+          values:
+            - Existing Business
+          operator: equals
+        - id: acv_positive
+          target:
+            fieldId: opportunity_view_ACV
+          values:
+            - 0
+          operator: greaterThan
+        - id: stage_filter
+          target:
+            fieldId: opportunity_view_StageName
+          values:
+            - Closed Won
+          operator: equals
+        - id: date_filter
+          target:
+            fieldId: opportunity_view_CloseDate
+          values:
+            - 12
+          operator: inThePast
+          settings:
+            completed: false
+            unitOfTime: months
+  sorts: []
+  limit: 1
+  metricOverrides: {}
+  dimensionOverrides: {}
+  tableCalculations: []
+  additionalMetrics: []
+  customDimensions: []
+chartConfig:
+  type: big_number
+  config:
+    label: Bookings $
+    style: K
+    selectedField: opportunity_view_acv_dollars
+    showComparison: true
+    comparisonLabel: vs. prev year
+    comparisonFormat: percentage
+    showBigNumberLabel: true
+slug: expansion-bookings-acv
+tableConfig:
+  columnOrder:
+    - opportunity_view_acv_dollars
+spaceSlug: shared
+version: 1
+downloadedAt: "2026-03-09T14:04:51.104Z"
