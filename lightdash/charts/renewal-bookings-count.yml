@@ -1,13 +1,13 @@
-name: 'Expansion: Bookings $'
+name: 'Renewal: Bookings #'
 description: null
 tableName: opportunity_view
-updatedAt: '2026-03-10T16:01:39.199Z'
+updatedAt: '2026-03-10T18:27:41.577Z'
 metricQuery:
   exploreName: opportunity_view
   dimensions:
     - opportunity_view_CloseDate_year
   metrics:
-    - opportunity_view_acv_dollars
+    - opportunity_view_bookings_count
   filters:
     dimensions:
       id: root
@@ -22,7 +22,7 @@ metricQuery:
           target:
             fieldId: opportunity_view_Type
           values:
-            - Existing Business
+            - Renewal
           operator: equals
         - id: acv_positive
           target:
@@ -54,18 +54,17 @@ metricQuery:
 chartConfig:
   type: big_number
   config:
-    label: Bookings $
-    style: K
-    selectedField: opportunity_view_acv_dollars
+    label: 'Bookings #'
+    selectedField: opportunity_view_bookings_count
     showComparison: true
     comparisonLabel: vs. prev year
     comparisonFormat: percentage
     showBigNumberLabel: true
-slug: expansion-bookings-acv
+slug: renewal-bookings-count
 tableConfig:
   columnOrder:
     - opportunity_view_CloseDate_year
-    - opportunity_view_acv_dollars
+    - opportunity_view_bookings_count
 spaceSlug: shared
 version: 1
 downloadedAt: '2026-03-10T23:37:27.525Z'

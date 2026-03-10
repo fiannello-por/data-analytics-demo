@@ -1,6 +1,7 @@
 name: 'New Logo: Close Rate'
-description: 'Share of closed new business opportunities marked won over the last 12 months.'
+description: null
 tableName: opportunity_view
+updatedAt: '2026-03-09T16:16:06.523Z'
 metricQuery:
   exploreName: opportunity_view
   dimensions: []
@@ -57,3 +58,4 @@ tableConfig:
     - opportunity_view_close_rate
 spaceSlug: shared
 version: 1
+downloadedAt: '2026-03-10T23:37:27.525Z'

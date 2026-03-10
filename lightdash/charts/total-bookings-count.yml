@@ -1,10 +1,11 @@
 name: 'Total: Bookings #'
-description: 'Distinct closed won opportunities booked over the last 12 months.'
+description: null
 tableName: opportunity_view
-updatedAt: '2026-03-09T13:45:15.255Z'
+updatedAt: '2026-03-10T16:01:48.704Z'
 metricQuery:
   exploreName: opportunity_view
-  dimensions: []
+  dimensions:
+    - opportunity_view_CloseDate_year
   metrics:
     - opportunity_view_bookings_count
   filters:
@@ -29,17 +30,16 @@ metricQuery:
           values:
             - Closed Won
           operator: equals
-        - id: date_filter
+        - id: ytd_window
           target:
-            fieldId: opportunity_view_CloseDate
+            fieldId: opportunity_view_IsWithinYTDWindow
           values:
-            - 12
-          operator: inThePast
-          settings:
-            completed: false
-            unitOfTime: months
-  sorts: []
-  limit: 1
+            - true
+          operator: equals
+  sorts:
+    - fieldId: opportunity_view_CloseDate_year
+      descending: true
+  limit: 2
   metricOverrides: {}
   dimensionOverrides: {}
   tableCalculations: []
@@ -57,7 +57,8 @@ chartConfig:
 slug: total-bookings-count
 tableConfig:
   columnOrder:
+    - opportunity_view_CloseDate_year
     - opportunity_view_bookings_count
 spaceSlug: shared
 version: 1
-downloadedAt: '2026-03-09T15:49:11.524Z'
+downloadedAt: '2026-03-10T23:37:27.525Z'

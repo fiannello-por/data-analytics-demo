@@ -15,7 +15,7 @@ This repo uses pure Lightdash YAML with [lightdash.config.yml](../lightdash.conf
 ## Deployment Workflow
 
 - Pull requests run repo validation and Codex review.
-- Lightdash deploy is manual-only for now so merges cannot change the live Sales Performance dashboard by accident.
+- Merges to `main` run Lightdash deploy and upload workflows once the repo matches the live dashboard baseline.
 - Merges with a public-facing changelog note trigger changelog generation for the Vercel site.
 
 ## Content Synchronization

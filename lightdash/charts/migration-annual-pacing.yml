@@ -1,5 +1,5 @@
 name: 'Migration: Annual Pacing'
-description: 'Annualized booked ACV pace for closed won migration opportunities in the current period.'
+description: null
 tableName: opportunity_view
 updatedAt: '2026-03-09T15:48:26.104Z'
 metricQuery:
@@ -68,4 +68,4 @@ tableConfig:
     - opportunity_view_annual_pacing_acv
 spaceSlug: shared
 version: 1
-downloadedAt: '2026-03-09T15:49:11.524Z'
+downloadedAt: '2026-03-10T23:37:27.525Z'
