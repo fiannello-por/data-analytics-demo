@@ -1,7 +1,7 @@
 name: One Time Revenue
 description: null
 tableName: opportunity_view
-updatedAt: "2026-03-06T19:47:48.701Z"
+updatedAt: '2026-03-10T15:21:23.200Z'
 metricQuery:
   exploreName: opportunity_view
   dimensions:
@@ -15,6 +15,7 @@ metricQuery:
     - opportunity_view_StageName
     - opportunity_view_OppRecordType
     - opportunity_view_BookingPlanOppType2025
+    - opportunity_view_AccountOwner
     - opportunity_view_Id
   metrics:
     - opportunity_view_hard_imp_value_usd
@@ -71,6 +72,8 @@ chartConfig:
       opportunity_view_AccountName:
         name: Account
         frozen: true
+      opportunity_view_AccountOwner:
+        name: Owner
       opportunity_view_OppRecordType:
         name: POR / R360
       opportunity_view_ProductFamily:
@@ -96,8 +99,9 @@ tableConfig:
     - opportunity_view_StageName
     - opportunity_view_OppRecordType
     - opportunity_view_BookingPlanOppType2025
+    - opportunity_view_AccountOwner
     - opportunity_view_Id
     - opportunity_view_hard_imp_value_usd
 spaceSlug: shared
 version: 1
-downloadedAt: "2026-03-09T15:49:11.524Z"
+downloadedAt: '2026-03-10T23:37:27.525Z'

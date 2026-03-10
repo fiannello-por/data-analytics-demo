@@ -1,0 +1,24 @@
+---
+title: Repository foundation for governed analytics delivery
+description: We set up Point of Rental Analytics as a production-grade Lightdash repo with CI validation, Codex review automation, and a public changelog surface.
+authors:
+  - analytics-team
+tags:
+  - lightdash
+  - automation
+  - quality
+---
+
+The Point of Rental Analytics repository now has a production-oriented shape instead of a loose collection of dashboard files.
+
+<!-- truncate -->
+
+This foundation introduces a few important capabilities:
+
+- a governed home for Lightdash models, charts, and dashboards as code,
+- contributor and agent guidance for semantic-layer quality,
+- CI validation for formatting, Markdown quality, TypeScript, Lightdash YAML, and site builds,
+- Codex-based pull request review focused on anti-patterns and documentation quality,
+- and a Docusaurus changelog site designed to publish merged changes in a cleaner, more product-facing format.
+
+This change does not alter business metrics by itself. It creates the operating system for shipping those changes with much better review discipline.

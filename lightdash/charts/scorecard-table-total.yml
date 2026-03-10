@@ -1,0 +1,74 @@
+name: 'Scorecard Secondary: Total'
+description: null
+tableName: scorecard_total
+updatedAt: '2026-03-10T22:46:09.801Z'
+metricQuery:
+  exploreName: scorecard_total
+  dimensions:
+    - scorecard_total_s
+    - scorecard_total_Metric
+    - scorecard_total_Value
+    - scorecard_total_Prev_YTD
+    - scorecard_total_Pct_Change
+  metrics: []
+  filters: {}
+  sorts:
+    - fieldId: scorecard_total_s
+      descending: false
+  limit: 500
+  metricOverrides: {}
+  dimensionOverrides: {}
+  tableCalculations: []
+  additionalMetrics: []
+  customDimensions: []
+chartConfig:
+  type: table
+  config:
+    columns:
+      scorecard_total_s:
+        visible: false
+      scorecard_total_Value:
+        name: YTD
+      scorecard_total_Metric:
+        name: Metric
+        frozen: true
+      scorecard_total_Prev_YTD:
+        name: Prev YTD
+      scorecard_total_Pct_Change:
+        name: '% Change'
+    hideRowNumbers: true
+    showColumnCalculation: false
+    conditionalFormattings:
+      - color: '#10B981'
+        rules:
+          - id: positive
+            values:
+              - +
+            operator: startsWith
+        target:
+          fieldId: scorecard_total_Pct_Change
+        applyTo: text
+      - color: '#EF4444'
+        rules:
+          - id: negative
+            values:
+              - '-'
+            operator: startsWith
+          - id: has_percent
+            values:
+              - '%'
+            operator: include
+        target:
+          fieldId: scorecard_total_Pct_Change
+        applyTo: text
+slug: scorecard-table-total
+tableConfig:
+  columnOrder:
+    - scorecard_total_s
+    - scorecard_total_Metric
+    - scorecard_total_Value
+    - scorecard_total_Prev_YTD
+    - scorecard_total_Pct_Change
+spaceSlug: shared
+version: 1
+downloadedAt: '2026-03-10T23:37:27.525Z'

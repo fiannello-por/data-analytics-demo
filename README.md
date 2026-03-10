@@ -1,32 +1,65 @@
-# Point of Rental — RevOps Analytics Demo
+# Point of Rental Analytics
 
-Lightdash dashboards powered by BigQuery, replicating the Sales Operations LookerStudio dashboard.
+This repository is the operational home for the Point of Rental analytics stack:
 
-## Stack
+- `lightdash/` contains the semantic layer, charts, and dashboards for a pure Lightdash YAML project.
+- `apps/changelog-site/` is a Docusaurus site published on Vercel for the public-facing analytics changelog.
+- `scripts/agents/` contains Codex-powered automation for pull request review and changelog generation.
 
-- **BI**: [Lightdash](https://lightdash-server-j1vx.onrender.com) (self-hosted on Render, standalone YAML mode)
-- **Data warehouse**: BigQuery (`data-analytics-306119.sfdc`)
-- **CI/CD**: GitHub Actions — auto-deploys on push to `main`
+The current architecture is intentionally dbt-free. Lightdash metadata lives in standalone YAML so the BI layer can move quickly without coupling business logic to dbt project structure. When dbt is introduced, the semantic layer standards in this repo are designed to migrate cleanly into dbt `meta:` blocks.
 
-## Workflow
+## Principles
 
-1. **Edit** semantic layer or charts in `lightdash/`
-2. **Test** locally with `lightdash run-chart -p <path> -o output.csv`
-3. **PR + merge** to `main` — CI runs `lightdash deploy` + `lightdash upload`
+- Treat the semantic layer as production software, not dashboard glue.
+- Optimize for both human self-serve analysis and agentic query generation.
+- Keep business definitions explicit, versioned, reviewed, and documented.
+- Automate review, deployment, and changelog hygiene in CI.
 
-To sync GUI changes back to the repo:
+## Repository Layout
 
+```text
+.
+├── AGENTS.md
+├── CONTRIBUTING.md
+├── apps/
+│   └── changelog-site/
+├── docs/
+├── lightdash/
+│   ├── charts/
+│   ├── dashboards/
+│   └── models/
+├── scripts/
+│   └── agents/
+└── lightdash.config.yml
 ```
-lightdash download
-git add lightdash/ && git commit -m "Sync from Lightdash GUI"
+
+## Local Development
+
+```bash
+pnpm install
+pnpm validate
+pnpm changelog:dev
 ```
 
-## Project structure
+Useful commands:
 
-```
-lightdash/
-  models/           # Semantic layer (dimensions, metrics)
-  charts/           # Chart definitions (YAML)
-  dashboards/       # Dashboard layouts and filters
-lightdash.config.yml  # Lightdash project config
-```
+- `pnpm lightdash:lint` validates Lightdash YAML.
+- `pnpm changelog:build` builds the Docusaurus changelog site.
+- `pnpm review:pr` runs the Codex review agent locally if the required env vars are set.
+
+## CI/CD
+
+- `ci.yml` enforces formatting, Markdown quality, TypeScript checks, and site build integrity.
+- `codex-review.yml` reviews PR diffs for semantic-layer mistakes, anti-patterns, and missing PR documentation.
+- `lightdash-deploy.yml` deploys Lightdash metadata and content on merge to `main`.
+- `codex-changelog.yml` generates a changelog entry from merged PR metadata and commits it back to `main`.
+
+## Read Before Contributing
+
+- [AGENTS.md](./AGENTS.md)
+- [CONTRIBUTING.md](./CONTRIBUTING.md)
+- [docs/semantic-layer-standards.md](./docs/semantic-layer-standards.md)
+- [docs/agentic-bi-principles.md](./docs/agentic-bi-principles.md)
+- [docs/lightdash-playbook.md](./docs/lightdash-playbook.md)
+- [docs/changelog-ops.md](./docs/changelog-ops.md)
+- [docs/setup-secrets.md](./docs/setup-secrets.md)

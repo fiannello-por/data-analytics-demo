@@ -1,7 +1,7 @@
 name: Closed Won Opportunities
 description: null
 tableName: opportunity_view
-updatedAt: "2026-03-06T19:23:34.606Z"
+updatedAt: '2026-03-10T14:56:06.403Z'
 metricQuery:
   exploreName: opportunity_view
   dimensions:
@@ -25,7 +25,7 @@ metricQuery:
     - opportunity_view_acv_dollars
   filters:
     metrics:
-      id: metrics_root
+      id: e49e11a4-cf34-4558-b31e-394cc707b57a
       and:
         - id: acv_not_negative
           target:
@@ -34,7 +34,7 @@ metricQuery:
             - 0
           operator: greaterThanOrEqual
     dimensions:
-      id: root
+      id: 8a08b0c3-8072-46fa-98c3-13322b89feda
       and:
         - id: won_filter
           target:
@@ -42,12 +42,24 @@ metricQuery:
           values:
             - true
           operator: equals
+          required: false
         - id: stage_filter
           target:
             fieldId: opportunity_view_StageName
           values:
             - Closed Won
           operator: equals
+          required: false
+        - id: 596b55c1-799e-4051-8ee9-64c9e7e4a799
+          target:
+            fieldId: opportunity_view_CloseDate
+          values:
+            - 1
+          operator: inTheCurrent
+          required: false
+          settings:
+            completed: false
+            unitOfTime: years
   sorts:
     - fieldId: opportunity_view_acv_dollars
       descending: true
@@ -86,7 +98,7 @@ chartConfig:
         name: Created Date
       opportunity_view_acv_dollars:
         name: ACV $
-        color: "#10B981"
+        color: '#10B981'
         displayStyle: bar
       opportunity_view_OppRecordType:
         name: POR / R360
@@ -98,8 +110,14 @@ chartConfig:
         name: Booking Plan Opp Type 2025
       opportunity_view_contract_start_date__c:
         name: Contract Start Date
+    metricsAsRows: false
+    showSubtotals: false
     hideRowNumbers: false
+    showTableNames: false
+    showResultsTotal: false
+    showRowCalculation: false
     showColumnCalculation: false
+    conditionalFormattings: []
 slug: closed-won-opportunities
 tableConfig:
   columnOrder:
@@ -122,4 +140,4 @@ tableConfig:
     - opportunity_view_acv_dollars
 spaceSlug: shared
 version: 1
-downloadedAt: "2026-03-09T15:49:11.524Z"
+downloadedAt: '2026-03-10T23:37:27.525Z'

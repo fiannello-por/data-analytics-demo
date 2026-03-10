@@ -1,0 +1,14 @@
+node_modules
+.DS_Store
+.claude
+.codex
+.env
+.env.*
+.turbo
+.vercel
+dist
+build
+coverage
+apps/changelog-site/.docusaurus
+apps/changelog-site/build
+*.tsbuildinfo

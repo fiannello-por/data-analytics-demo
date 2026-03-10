@@ -1,29 +1,71 @@
-name: Deploy to Lightdash
+name: Deploy Lightdash
 
 on:
   push:
-    branches: [main]
-    paths:
-      - "lightdash/**"
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lightdash-deploy-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      LIGHTDASH_API_KEY: ${{ secrets.LIGHTDASH_API_TOKEN }}
+      LIGHTDASH_URL: ${{ secrets.LIGHTDASH_URL }}
+      LIGHTDASH_PROJECT: ${{ secrets.LIGHTDASH_PROJECT_UUID }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - uses: actions/setup-node@v4
+      - name: Detect Lightdash-related changes
+        id: changes
+        if: github.event_name == 'push'
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
         with:
-          node-version: "20"
+          filters: |
+            lightdash:
+              - 'lightdash.config.yml'
+              - 'lightdash/**'
+              - '.github/workflows/lightdash-deploy.yml'
 
-      - name: Install Lightdash CLI
-        run: npm install -g @lightdash/cli
+      - name: Ensure Lightdash secrets are configured
+        if: github.event_name == 'workflow_dispatch' || steps.changes.outputs.lightdash == 'true'
+        run: |
+          test -n "$LIGHTDASH_API_KEY" || (echo "::error::Missing LIGHTDASH_API_KEY" && exit 1)
+          test -n "$LIGHTDASH_URL" || (echo "::error::Missing LIGHTDASH_URL" && exit 1)
+          test -n "$LIGHTDASH_PROJECT" || (echo "::error::Missing LIGHTDASH_PROJECT" && exit 1)
 
-      - name: Authenticate with Lightdash
-        run: lightdash login --token ${{ secrets.LIGHTDASH_API_TOKEN }} --url ${{ secrets.LIGHTDASH_URL }}
+      - name: Set up pnpm
+        if: github.event_name == 'workflow_dispatch' || steps.changes.outputs.lightdash == 'true'
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
+
+      - name: Set up Node.js
+        if: github.event_name == 'workflow_dispatch' || steps.changes.outputs.lightdash == 'true'
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        if: github.event_name == 'workflow_dispatch' || steps.changes.outputs.lightdash == 'true'
+        run: pnpm install --frozen-lockfile
 
       - name: Deploy semantic layer
-        run: lightdash deploy --project ${{ secrets.LIGHTDASH_PROJECT_UUID }}
+        if: github.event_name == 'workflow_dispatch' || steps.changes.outputs.lightdash == 'true'
+        run: pnpm lightdash:deploy
 
       - name: Upload charts and dashboards
-        run: lightdash upload
+        if: github.event_name == 'workflow_dispatch' || steps.changes.outputs.lightdash == 'true'
+        run: pnpm lightdash:upload
+
+      - name: Skip deploy when no Lightdash-relevant files changed
+        if: github.event_name == 'push' && steps.changes.outputs.lightdash != 'true'
+        run: echo "No Lightdash-related changes detected on this push."

@@ -1,6 +1,7 @@
-name: "Expansion: Avg Age"
+name: 'Expansion: Avg Age'
 description: null
 tableName: opportunity_view
+updatedAt: '2026-03-09T16:15:55.398Z'
 metricQuery:
   exploreName: opportunity_view
   dimensions: []
@@ -59,3 +60,4 @@ tableConfig:
     - opportunity_view_avg_age
 spaceSlug: shared
 version: 1
+downloadedAt: '2026-03-10T23:37:27.525Z'
