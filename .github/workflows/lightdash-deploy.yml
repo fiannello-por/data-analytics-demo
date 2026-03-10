@@ -19,28 +19,52 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Detect Lightdash-related changes
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            lightdash:
+              - 'lightdash.config.yml'
+              - 'lightdash/**'
+              - '.github/workflows/lightdash-deploy.yml'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - '.nvmrc'
+              - 'scripts/**'
+
       - name: Ensure Lightdash secrets are configured
+        if: steps.changes.outputs.lightdash == 'true'
         run: |
           test -n "$LIGHTDASH_API_KEY" || (echo "::error::Missing LIGHTDASH_API_KEY" && exit 1)
           test -n "$LIGHTDASH_URL" || (echo "::error::Missing LIGHTDASH_URL" && exit 1)
           test -n "$LIGHTDASH_PROJECT" || (echo "::error::Missing LIGHTDASH_PROJECT" && exit 1)
 
       - name: Set up pnpm
+        if: steps.changes.outputs.lightdash == 'true'
         uses: pnpm/action-setup@v4
         with:
           version: 10.23.0
 
       - name: Set up Node.js
+        if: steps.changes.outputs.lightdash == 'true'
         uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
           cache: pnpm
 
       - name: Install dependencies
+        if: steps.changes.outputs.lightdash == 'true'
         run: pnpm install --frozen-lockfile
 
       - name: Deploy semantic layer
+        if: steps.changes.outputs.lightdash == 'true'
         run: pnpm lightdash:deploy
 
       - name: Upload charts and dashboards
+        if: steps.changes.outputs.lightdash == 'true'
         run: pnpm lightdash:upload
+
+      - name: Skip deploy when no Lightdash-relevant files changed
+        if: steps.changes.outputs.lightdash != 'true'
+        run: echo "No Lightdash-related changes detected on this push."
