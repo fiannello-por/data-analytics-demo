@@ -13,6 +13,7 @@ import {
 import { missingRequiredSections } from '../lib/pr-template';
 
 const COMMENT_MARKER = '<!-- codex-pr-review -->';
+const LIGHTDASH_SKILL_ROOT = '.codex/skills/developing-in-lightdash';
 
 type ReviewFinding = {
   severity: 'high' | 'medium' | 'low';
@@ -38,9 +39,51 @@ function requireEnv(name: string): string {
   return value;
 }
 
-async function readGuidance(filePath: string): Promise<string> {
+async function readGuidance(
+  filePath: string,
+  maxChars = 20000,
+): Promise<string> {
   const absolutePath = path.join(process.cwd(), filePath);
-  return readFile(absolutePath, 'utf8');
+  const content = await readFile(absolutePath, 'utf8');
+  return content.slice(0, maxChars);
+}
+
+function selectLightdashGuidance(files: PullRequestFile[]): string[] {
+  const changedPaths = files.map((file) => file.filename);
+  const guidance = [`${LIGHTDASH_SKILL_ROOT}/SKILL.md`];
+
+  if (changedPaths.some((file) => file.startsWith('lightdash/models/'))) {
+    guidance.push(
+      `${LIGHTDASH_SKILL_ROOT}/resources/metrics-reference.md`,
+      `${LIGHTDASH_SKILL_ROOT}/resources/dimensions-reference.md`,
+    );
+  }
+
+  if (changedPaths.some((file) => file.startsWith('lightdash/charts/'))) {
+    guidance.push(`${LIGHTDASH_SKILL_ROOT}/resources/chart-types-reference.md`);
+  }
+
+  if (
+    changedPaths.some(
+      (file) =>
+        file.startsWith('lightdash/dashboards/') ||
+        file.startsWith('lightdash/charts/'),
+    )
+  ) {
+    guidance.push(`${LIGHTDASH_SKILL_ROOT}/resources/dashboard-reference.md`);
+  }
+
+  if (
+    changedPaths.some(
+      (file) =>
+        file.startsWith('lightdash/') ||
+        file === '.github/workflows/lightdash-deploy.yml',
+    )
+  ) {
+    guidance.push(`${LIGHTDASH_SKILL_ROOT}/resources/workflows-reference.md`);
+  }
+
+  return guidance;
 }
 
 function buildDiffSummary(files: PullRequestFile[]): string {
@@ -127,13 +170,23 @@ async function main(): Promise<void> {
   );
   const missingSections = missingRequiredSections(pr.body);
 
-  const [agentsGuide, contributingGuide, semanticLayerGuide, agenticGuide] =
-    await Promise.all([
-      readGuidance('AGENTS.md'),
-      readGuidance('CONTRIBUTING.md'),
-      readGuidance('docs/semantic-layer-standards.md'),
-      readGuidance('docs/agentic-bi-principles.md'),
-    ]);
+  const [
+    agentsGuide,
+    contributingGuide,
+    semanticLayerGuide,
+    agenticGuide,
+    lightdashSkillGuidance,
+  ] = await Promise.all([
+    readGuidance('AGENTS.md'),
+    readGuidance('CONTRIBUTING.md'),
+    readGuidance('docs/semantic-layer-standards.md'),
+    readGuidance('docs/agentic-bi-principles.md'),
+    Promise.all(
+      selectLightdashGuidance(files).map((filePath) =>
+        readGuidance(filePath, 16000),
+      ),
+    ),
+  ]);
 
   const client = new OpenAI({ apiKey: openAiApiKey });
   const response = await client.responses.create({
@@ -158,6 +211,9 @@ async function main(): Promise<void> {
               `\n\nContribution guide:\n${contributingGuide}`,
               `\n\nSemantic layer standards:\n${semanticLayerGuide}`,
               `\n\nHuman and agentic BI principles:\n${agenticGuide}`,
+              `\n\nLightdash skill guidance:\n${lightdashSkillGuidance.join(
+                '\n\n',
+              )}`,
               `\n\nPR title: ${pr.title}`,
               `\nPR body:\n${pr.body ?? '(empty)'}`,
               `\nChanged files:\n${buildDiffSummary(files)}`,
