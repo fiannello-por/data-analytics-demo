@@ -48,12 +48,15 @@ export function sanitizePlainText(value: string): string {
 }
 
 export function sanitizeMarkdown(value: string): string {
+  const safeHtmlTags = new Set(['details', 'summary', 'br']);
+
   return sanitizePlainText(value)
     .replace(/^\s*(import|export)\s+.*$/gim, '')
     .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gim, '')
     .replace(/<\/?(script|style|iframe|object|embed)\b[^>]*>/gim, '')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+    .replace(/<\/?([A-Za-z][A-Za-z0-9-]*)\b[^>]*>/g, (match, tagName) =>
+      safeHtmlTags.has(tagName.toLowerCase()) ? match : '',
+    );
 }
 
 export function yamlSingleQuoted(value: string): string {

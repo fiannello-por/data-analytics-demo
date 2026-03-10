@@ -1,10 +1,11 @@
-import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { mkdir, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import OpenAI from 'openai';
 
 import {
   buildDiffSummary,
+  readGuidanceIfExists,
   sanitizeMarkdown,
   sanitizePlainText,
   yamlSingleQuoted,
@@ -96,8 +97,8 @@ async function main(): Promise<void> {
   const sections = sanitizeSections(parseTemplateSections(pr.body));
 
   const [changelogOps, readme] = await Promise.all([
-    readFile(path.join(process.cwd(), 'docs/changelog-ops.md'), 'utf8'),
-    readFile(path.join(process.cwd(), 'README.md'), 'utf8'),
+    readGuidanceIfExists('docs/changelog-ops.md', 20000),
+    readGuidanceIfExists('README.md', 20000),
   ]);
 
   const client = new OpenAI({ apiKey: openAiApiKey });

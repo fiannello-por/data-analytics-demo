@@ -5,6 +5,10 @@ on:
     types:
       - closed
 
+permissions:
+  contents: write
+  pull-requests: write
+
 concurrency:
   group: codex-changelog-${{ github.event.pull_request.number }}
   cancel-in-progress: true
@@ -16,12 +20,9 @@ jobs:
       github.event.pull_request.base.ref == 'main'
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    permissions:
-      contents: write
-      pull-requests: write
     steps:
       - name: Check out repository
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: main
 
@@ -32,10 +33,10 @@ jobs:
           test -n "$OPENAI_API_KEY" || (echo "::error::Missing OPENAI_API_KEY" && exit 1)
 
       - name: Set up pnpm
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version-file: .nvmrc
           cache: pnpm
@@ -76,12 +77,10 @@ jobs:
         run: |
           branch="automation/changelog-pr-${{ github.event.pull_request.number }}"
           title="docs(changelog): update from PR #${{ github.event.pull_request.number }}"
-          body=$(cat <<'EOF'
-          Automated changelog follow-up for merged PR #${{ github.event.pull_request.number }}.
-
-          This PR contains sanitized changelog content generated from the merged PR metadata and diff.
-          EOF
-          )
+          body=$(printf '%s\n' \
+            "Automated changelog follow-up for merged PR #${{ github.event.pull_request.number }}." \
+            "" \
+            "This PR contains sanitized changelog content generated from the merged PR metadata and diff.")
 
           existing_pr="$(gh pr list --base main --head "$branch" --state open --json number --jq '.[0].number')"
 

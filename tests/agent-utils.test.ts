@@ -37,19 +37,24 @@ test('buildDiffSummary truncates file list and patch text', () => {
   assert.equal(summary.includes('aaaaaa'), false);
 });
 
-test('sanitizeMarkdown strips unsafe MDX and escapes angle brackets', () => {
+test('sanitizeMarkdown strips unsafe MDX while preserving safe HTML tags', () => {
   const output = sanitizeMarkdown(
     [
       "import Bad from './bad';",
       '<script>alert(1)</script>',
       '<Component />',
+      '<details><summary>More</summary>Safe text</details>',
       'Safe text',
     ].join('\n'),
   );
 
   assert.equal(output.includes('import Bad'), false);
   assert.equal(output.includes('<script>'), false);
-  assert.equal(output.includes('&lt;Component /&gt;'), true);
+  assert.equal(output.includes('<Component />'), false);
+  assert.equal(
+    output.includes('<details><summary>More</summary>Safe text</details>'),
+    true,
+  );
   assert.equal(output.includes('Safe text'), true);
 });
 

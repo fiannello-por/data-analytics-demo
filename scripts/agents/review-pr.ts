@@ -17,6 +17,12 @@ import { missingRequiredSections } from '../lib/pr-template';
 
 const COMMENT_MARKER = '<!-- codex-pr-review -->';
 const LIGHTDASH_SKILL_ROOT = '.codex/skills/developing-in-lightdash';
+const CHART_TYPE_REFERENCE_BY_TYPE: Record<string, string> = {
+  big_number: `${LIGHTDASH_SKILL_ROOT}/resources/big-number-chart-reference.md`,
+  cartesian: `${LIGHTDASH_SKILL_ROOT}/resources/cartesian-chart-reference.md`,
+  pie: `${LIGHTDASH_SKILL_ROOT}/resources/pie-chart-reference.md`,
+  table: `${LIGHTDASH_SKILL_ROOT}/resources/table-chart-reference.md`,
+};
 
 type ReviewFinding = {
   severity: 'high' | 'medium' | 'low';
@@ -42,19 +48,39 @@ function requireEnv(name: string): string {
   return value;
 }
 
-function selectLightdashGuidance(files: PullRequestFile[]): string[] {
+async function selectLightdashGuidance(
+  files: PullRequestFile[],
+): Promise<string[]> {
   const changedPaths = files.map((file) => file.filename);
-  const guidance = [`${LIGHTDASH_SKILL_ROOT}/SKILL.md`];
+  const guidance = new Set<string>([`${LIGHTDASH_SKILL_ROOT}/SKILL.md`]);
 
   if (changedPaths.some((file) => file.startsWith('lightdash/models/'))) {
-    guidance.push(
-      `${LIGHTDASH_SKILL_ROOT}/resources/metrics-reference.md`,
-      `${LIGHTDASH_SKILL_ROOT}/resources/dimensions-reference.md`,
-    );
+    guidance.add(`${LIGHTDASH_SKILL_ROOT}/resources/metrics-reference.md`);
+    guidance.add(`${LIGHTDASH_SKILL_ROOT}/resources/dimensions-reference.md`);
   }
 
-  if (changedPaths.some((file) => file.startsWith('lightdash/charts/'))) {
-    guidance.push(`${LIGHTDASH_SKILL_ROOT}/resources/chart-types-reference.md`);
+  const changedCharts = changedPaths.filter((file) =>
+    file.startsWith('lightdash/charts/'),
+  );
+
+  if (changedCharts.length > 0) {
+    guidance.add(`${LIGHTDASH_SKILL_ROOT}/resources/chart-types-reference.md`);
+
+    const chartContents = await Promise.all(
+      changedCharts.map((filePath) => readGuidanceIfExists(filePath, 4000)),
+    );
+
+    for (const content of chartContents) {
+      const chartType = content.match(
+        /\nchartConfig:\n\s+type:\s*([a-z_]+)/,
+      )?.[1];
+      const reference = chartType
+        ? CHART_TYPE_REFERENCE_BY_TYPE[chartType]
+        : undefined;
+      if (reference) {
+        guidance.add(reference);
+      }
+    }
   }
 
   if (
@@ -64,7 +90,10 @@ function selectLightdashGuidance(files: PullRequestFile[]): string[] {
         file.startsWith('lightdash/charts/'),
     )
   ) {
-    guidance.push(`${LIGHTDASH_SKILL_ROOT}/resources/dashboard-reference.md`);
+    guidance.add(`${LIGHTDASH_SKILL_ROOT}/resources/dashboard-reference.md`);
+    guidance.add(
+      `${LIGHTDASH_SKILL_ROOT}/resources/dashboard-best-practices.md`,
+    );
   }
 
   if (
@@ -74,10 +103,10 @@ function selectLightdashGuidance(files: PullRequestFile[]): string[] {
         file === '.github/workflows/lightdash-deploy.yml',
     )
   ) {
-    guidance.push(`${LIGHTDASH_SKILL_ROOT}/resources/workflows-reference.md`);
+    guidance.add(`${LIGHTDASH_SKILL_ROOT}/resources/workflows-reference.md`);
   }
 
-  return guidance;
+  return [...guidance];
 }
 
 function renderReviewComment(params: {
@@ -138,6 +167,7 @@ async function main(): Promise<void> {
     `/repos/${owner}/${repo}/pulls/${prNumber}/files`,
   );
   const missingSections = missingRequiredSections(pr.body);
+  const lightdashGuidancePaths = await selectLightdashGuidance(files);
 
   const [
     agentsGuide,
@@ -151,7 +181,7 @@ async function main(): Promise<void> {
     readGuidanceIfExists('docs/semantic-layer-standards.md'),
     readGuidanceIfExists('docs/agentic-bi-principles.md'),
     Promise.all(
-      selectLightdashGuidance(files).map((filePath) =>
+      lightdashGuidancePaths.map((filePath) =>
         readGuidanceIfExists(filePath, 16000),
       ),
     ),
