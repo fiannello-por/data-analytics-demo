@@ -7,7 +7,18 @@ export async function readGuidanceIfExists(
   filePath: string,
   maxChars = 20000,
 ): Promise<string> {
-  const absolutePath = path.join(process.cwd(), filePath);
+  const workspaceRoot = process.cwd();
+  const absolutePath = path.resolve(workspaceRoot, filePath);
+  const allowedPrefix = `${workspaceRoot}${path.sep}`;
+
+  if (
+    !absolutePath.startsWith(allowedPrefix) &&
+    absolutePath !== workspaceRoot
+  ) {
+    throw new Error(
+      `Refusing to read guidance outside the workspace: ${filePath}`,
+    );
+  }
 
   try {
     const content = await readFile(absolutePath, 'utf8');
