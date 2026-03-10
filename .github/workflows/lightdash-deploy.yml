@@ -4,12 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - lightdash.config.yml
-      - lightdash/**
-      - package.json
-      - pnpm-lock.yaml
-      - .github/workflows/lightdash-deploy.yml
   workflow_dispatch:
 
 jobs:

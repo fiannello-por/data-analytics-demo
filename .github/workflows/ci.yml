@@ -27,5 +27,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Validate repository
-        run: pnpm validate:ci
+      - name: Check formatting
+        run: pnpm format:check
+
+      - name: Lint Markdown
+        run: pnpm markdown:lint
+
+      - name: Typecheck scripts and site
+        run: pnpm typecheck
+
+      - name: Build changelog site
+        run: pnpm changelog:build
+
+      - name: Lint Lightdash YAML
+        run: pnpm lightdash:lint
