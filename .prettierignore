@@ -1,0 +1,7 @@
+node_modules
+.claude
+.codex
+apps/changelog-site/.docusaurus
+apps/changelog-site/build
+initial_context.md
+pnpm-lock.yaml

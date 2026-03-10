@@ -222,14 +222,14 @@ metrics:
 
   annual_pacing_acv:
     type: number
-    sql: "SUM(${TABLE}.ACV) * 365.0 / NULLIF(MAX(${TABLE}.CalendarDaysPassedSinceFirstDayofCloseDateFY), 0)"
+    sql: 'SUM(${TABLE}.ACV) * 365.0 / NULLIF(MAX(${TABLE}.CalendarDaysPassedSinceFirstDayofCloseDateFY), 0)'
     label: 'Annual Pacing $'
     format: 'usd'
     round: 0
 
   close_rate:
     type: number
-    sql: "SUM(CASE WHEN ${TABLE}.Won = TRUE THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT(DISTINCT ${TABLE}.Id), 0)"
+    sql: 'SUM(CASE WHEN ${TABLE}.Won = TRUE THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT(DISTINCT ${TABLE}.Id), 0)'
     label: 'Close Rate'
     format: 'percent'
     round: 1
@@ -242,7 +242,7 @@ metrics:
 
   avg_acv:
     type: number
-    sql: "SUM(${TABLE}.ACV) * 1.0 / NULLIF(COUNT(DISTINCT ${TABLE}.Id), 0)"
+    sql: 'SUM(${TABLE}.ACV) * 1.0 / NULLIF(COUNT(DISTINCT ${TABLE}.Id), 0)'
     label: 'Avg Booked Deal'
     format: 'usd'
     round: 0

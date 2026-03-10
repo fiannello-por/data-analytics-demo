@@ -1,7 +1,7 @@
-name: "Expansion: Bookings $"
+name: 'Expansion: Bookings $'
 description: null
 tableName: opportunity_view
-updatedAt: "2026-03-09T13:45:09.058Z"
+updatedAt: '2026-03-09T13:45:09.058Z'
 metricQuery:
   exploreName: opportunity_view
   dimensions: []
@@ -67,4 +67,4 @@ tableConfig:
     - opportunity_view_acv_dollars
 spaceSlug: shared
 version: 1
-downloadedAt: "2026-03-09T15:49:11.524Z"
+downloadedAt: '2026-03-09T15:49:11.524Z'

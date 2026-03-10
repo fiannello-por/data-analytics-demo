@@ -1,4 +1,4 @@
-name: "Migration: Close Rate"
+name: 'Migration: Close Rate'
 description: null
 tableName: opportunity_view
 metricQuery:

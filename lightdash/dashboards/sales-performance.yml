@@ -1,9 +1,9 @@
 name: Sales Performance
-description: ""
-updatedAt: "2026-03-09T15:48:36.813Z"
+description: ''
+updatedAt: '2026-03-09T15:48:36.813Z'
 tiles:
   - x: 0
-    "y": 0
+    'y': 0
     h: 1
     w: 8
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
@@ -11,415 +11,415 @@ tiles:
     properties:
       title: New Logo
       hideTitle: false
-      content: "# New Logo"
+      content: '# New Logo'
       hideFrame: true
   - x: 8
-    "y": 0
+    'y': 0
     h: 1
     w: 8
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: markdown
     properties:
-      title: ""
+      title: ''
       hideTitle: false
-      content: "# Expansion"
+      content: '# Expansion'
       hideFrame: true
   - x: 16
-    "y": 0
+    'y': 0
     h: 1
     w: 8
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: markdown
     properties:
-      title: ""
+      title: ''
       hideTitle: false
-      content: "# Migration"
+      content: '# Migration'
       hideFrame: true
   - x: 24
-    "y": 0
+    'y': 0
     h: 1
     w: 12
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: markdown
     properties:
-      title: ""
+      title: ''
       hideTitle: false
-      content: "# Total"
+      content: '# Total'
       hideFrame: true
   - x: 0
-    "y": 1
+    'y': 1
     h: 2
     w: 4
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
-      title: ""
+      title: ''
       hideTitle: true
       chartSlug: new-logo-bookings-acv
-      chartName: "New Logo: Bookings $"
+      chartName: 'New Logo: Bookings $'
     tileSlug: new-logo-bookings-acv
   - x: 4
-    "y": 1
+    'y': 1
     h: 2
     w: 4
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
-      title: ""
+      title: ''
       hideTitle: true
       chartSlug: new-logo-bookings-count
-      chartName: "New Logo: Bookings #"
+      chartName: 'New Logo: Bookings #'
     tileSlug: new-logo-bookings-count
   - x: 8
-    "y": 1
+    'y': 1
     h: 2
     w: 4
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
-      title: ""
+      title: ''
       hideTitle: true
       chartSlug: expansion-bookings-acv
-      chartName: "Expansion: Bookings $"
+      chartName: 'Expansion: Bookings $'
     tileSlug: expansion-bookings-acv
   - x: 12
-    "y": 1
+    'y': 1
     h: 2
     w: 4
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
-      title: ""
+      title: ''
       hideTitle: true
       chartSlug: expansion-bookings-count
-      chartName: "Expansion: Bookings #"
+      chartName: 'Expansion: Bookings #'
     tileSlug: expansion-bookings-count
   - x: 16
-    "y": 1
+    'y': 1
     h: 2
     w: 4
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
-      title: ""
+      title: ''
       hideTitle: true
       chartSlug: migration-bookings-acv
-      chartName: "Migration: Bookings $"
+      chartName: 'Migration: Bookings $'
     tileSlug: migration-bookings-acv
   - x: 20
-    "y": 1
+    'y': 1
     h: 2
     w: 4
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
-      title: ""
+      title: ''
       hideTitle: true
       chartSlug: migration-bookings-count
-      chartName: "Migration: Bookings #"
+      chartName: 'Migration: Bookings #'
     tileSlug: migration-bookings-count
   - x: 24
-    "y": 1
+    'y': 1
     h: 2
     w: 6
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
-      title: ""
+      title: ''
       hideTitle: true
       chartSlug: total-bookings-acv
-      chartName: "Total: Bookings $"
+      chartName: 'Total: Bookings $'
     tileSlug: total-bookings-acv
   - x: 30
-    "y": 1
+    'y': 1
     h: 2
     w: 6
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
-      title: ""
+      title: ''
       hideTitle: true
       chartSlug: total-bookings-count
-      chartName: "Total: Bookings #"
+      chartName: 'Total: Bookings #'
     tileSlug: total-bookings-count
   - x: 0
-    "y": 3
+    'y': 3
     h: 2
     w: 8
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
-      title: ""
+      title: ''
       hideTitle: true
       chartSlug: new-logo-annual-pacing
-      chartName: "New Logo: Annual Pacing"
+      chartName: 'New Logo: Annual Pacing'
     tileSlug: new-logo-annual-pacing
   - x: 8
-    "y": 3
+    'y': 3
     h: 2
     w: 8
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
-      title: ""
+      title: ''
       hideTitle: true
       chartSlug: expansion-annual-pacing
-      chartName: "Expansion: Annual Pacing"
+      chartName: 'Expansion: Annual Pacing'
     tileSlug: expansion-annual-pacing
   - x: 16
-    "y": 3
+    'y': 3
     h: 2
     w: 8
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
-      title: ""
+      title: ''
       hideTitle: true
       chartSlug: migration-annual-pacing
-      chartName: "Migration: Annual Pacing"
+      chartName: 'Migration: Annual Pacing'
     tileSlug: migration-annual-pacing
   - x: 24
-    "y": 3
+    'y': 3
     h: 2
     w: 12
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
-      title: ""
+      title: ''
       hideTitle: true
       chartSlug: total-annual-pacing
-      chartName: "Total: Annual Pacing"
+      chartName: 'Total: Annual Pacing'
     tileSlug: total-annual-pacing
   - x: 0
-    "y": 5
+    'y': 5
     h: 2
     w: 8
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
-      title: ""
+      title: ''
       hideTitle: true
       chartSlug: new-logo-close-rate
-      chartName: "New Logo: Close Rate"
+      chartName: 'New Logo: Close Rate'
     tileSlug: new-logo-close-rate
   - x: 8
-    "y": 5
+    'y': 5
     h: 2
     w: 8
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
-      title: ""
+      title: ''
       hideTitle: true
       chartSlug: expansion-close-rate
-      chartName: "Expansion: Close Rate"
+      chartName: 'Expansion: Close Rate'
     tileSlug: expansion-close-rate
   - x: 16
-    "y": 5
+    'y': 5
     h: 2
     w: 8
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
-      title: ""
+      title: ''
       hideTitle: true
       chartSlug: migration-close-rate
-      chartName: "Migration: Close Rate"
+      chartName: 'Migration: Close Rate'
     tileSlug: migration-close-rate
   - x: 24
-    "y": 5
+    'y': 5
     h: 2
     w: 12
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
-      title: ""
+      title: ''
       hideTitle: true
       chartSlug: total-close-rate
-      chartName: "Total: Close Rate"
+      chartName: 'Total: Close Rate'
     tileSlug: total-close-rate
   - x: 0
-    "y": 7
+    'y': 7
     h: 2
     w: 8
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
-      title: ""
+      title: ''
       hideTitle: true
       chartSlug: new-logo-avg-age
-      chartName: "New Logo: Avg Age"
+      chartName: 'New Logo: Avg Age'
     tileSlug: new-logo-avg-age
   - x: 8
-    "y": 7
+    'y': 7
     h: 2
     w: 8
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
-      title: ""
+      title: ''
       hideTitle: true
       chartSlug: expansion-avg-age
-      chartName: "Expansion: Avg Age"
+      chartName: 'Expansion: Avg Age'
     tileSlug: expansion-avg-age
   - x: 16
-    "y": 7
+    'y': 7
     h: 2
     w: 8
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
-      title: ""
+      title: ''
       hideTitle: true
       chartSlug: migration-avg-age
-      chartName: "Migration: Avg Age"
+      chartName: 'Migration: Avg Age'
     tileSlug: migration-avg-age
   - x: 24
-    "y": 7
+    'y': 7
     h: 2
     w: 12
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
-      title: ""
+      title: ''
       hideTitle: true
       chartSlug: total-avg-age
-      chartName: "Total: Avg Age"
+      chartName: 'Total: Avg Age'
     tileSlug: total-avg-age
   - x: 0
-    "y": 9
+    'y': 9
     h: 2
     w: 8
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
-      title: ""
+      title: ''
       hideTitle: true
       chartSlug: new-logo-avg-booked-deal
-      chartName: "New Logo: Avg Booked Deal"
+      chartName: 'New Logo: Avg Booked Deal'
     tileSlug: new-logo-avg-booked-deal
   - x: 8
-    "y": 9
+    'y': 9
     h: 2
     w: 8
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
-      title: ""
+      title: ''
       hideTitle: true
       chartSlug: expansion-avg-booked-deal
-      chartName: "Expansion: Avg Booked Deal"
+      chartName: 'Expansion: Avg Booked Deal'
     tileSlug: expansion-avg-booked-deal
   - x: 16
-    "y": 9
+    'y': 9
     h: 2
     w: 8
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
-      title: ""
+      title: ''
       hideTitle: true
       chartSlug: migration-avg-booked-deal
-      chartName: "Migration: Avg Booked Deal"
+      chartName: 'Migration: Avg Booked Deal'
     tileSlug: migration-avg-booked-deal
   - x: 24
-    "y": 9
+    'y': 9
     h: 2
     w: 12
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
-      title: ""
+      title: ''
       hideTitle: true
       chartSlug: total-avg-booked-deal
-      chartName: "Total: Avg Booked Deal"
+      chartName: 'Total: Avg Booked Deal'
     tileSlug: total-avg-booked-deal
   - x: 0
-    "y": 11
+    'y': 11
     h: 9
     w: 36
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
-      title: ""
+      title: ''
       hideTitle: false
       chartSlug: closed-won-opportunities
       chartName: Closed Won Opportunities
     tileSlug: closed-won-opportunities
   - x: 0
-    "y": 20
+    'y': 20
     h: 7
     w: 14
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
-      title: ""
+      title: ''
       hideTitle: false
       chartSlug: sqos-over-time
       chartName: SQOs Over Time
     tileSlug: sqos-over-time
   - x: 14
-    "y": 20
+    'y': 20
     h: 7
     w: 15
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
-      title: ""
+      title: ''
       hideTitle: false
       chartSlug: performance-by-period
       chartName: Performance by Period
     tileSlug: performance-by-period
   - x: 29
-    "y": 20
+    'y': 20
     h: 7
     w: 7
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
-      title: ""
+      title: ''
       hideTitle: false
       chartSlug: product-mix
       chartName: Product Mix
     tileSlug: product-mix
   - x: 0
-    "y": 27
+    'y': 27
     h: 11
     w: 26
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
-      title: ""
+      title: ''
       hideTitle: false
       chartSlug: quarterly-breakdown
       chartName: Quarterly Breakdown
     tileSlug: quarterly-breakdown
   - x: 26
-    "y": 27
+    'y': 27
     h: 11
     w: 10
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
-      title: ""
+      title: ''
       hideTitle: false
       chartSlug: owner-performance
       chartName: Owner Performance
     tileSlug: owner-performance
   - x: 0
-    "y": 38
+    'y': 38
     h: 11
     w: 36
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
-      title: ""
+      title: ''
       hideTitle: false
       chartSlug: one-time-revenue
       chartName: One Time Revenue
     tileSlug: one-time-revenue
   - x: 0
-    "y": 49
+    'y': 49
     h: 22
     w: 36
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
@@ -798,4 +798,4 @@ tabs:
 slug: sales-performance
 spaceSlug: point-of-rental-revops-analytics-demo/revenue
 version: 1
-downloadedAt: "2026-03-09T15:49:08.219Z"
+downloadedAt: '2026-03-09T15:49:08.219Z'

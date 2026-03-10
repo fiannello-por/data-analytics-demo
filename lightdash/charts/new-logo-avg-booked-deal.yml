@@ -1,4 +1,4 @@
-name: "New Logo: Avg Booked Deal"
+name: 'New Logo: Avg Booked Deal'
 description: null
 tableName: opportunity_view
 metricQuery:

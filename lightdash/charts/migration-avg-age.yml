@@ -1,4 +1,4 @@
-name: "Migration: Avg Age"
+name: 'Migration: Avg Age'
 description: null
 tableName: opportunity_view
 metricQuery:

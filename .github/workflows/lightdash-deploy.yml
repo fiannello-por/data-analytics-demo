@@ -1,29 +1,52 @@
-name: Deploy to Lightdash
+name: Deploy Lightdash
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
     paths:
-      - "lightdash/**"
+      - lightdash.config.yml
+      - lightdash/**
+      - package.json
+      - pnpm-lock.yaml
+      - .github/workflows/lightdash-deploy.yml
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      LIGHTDASH_API_KEY: ${{ secrets.LIGHTDASH_API_TOKEN }}
+      LIGHTDASH_URL: ${{ secrets.LIGHTDASH_URL }}
+      LIGHTDASH_PROJECT: ${{ secrets.LIGHTDASH_PROJECT_UUID }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Ensure Lightdash secrets are configured
+        run: |
+          test -n "$LIGHTDASH_API_KEY" || (echo "::error::Missing LIGHTDASH_API_KEY" && exit 1)
+          test -n "$LIGHTDASH_URL" || (echo "::error::Missing LIGHTDASH_URL" && exit 1)
+          test -n "$LIGHTDASH_PROJECT" || (echo "::error::Missing LIGHTDASH_PROJECT" && exit 1)
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
         with:
-          node-version: "20"
+          version: 10.23.0
 
-      - name: Install Lightdash CLI
-        run: npm install -g @lightdash/cli
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
 
-      - name: Authenticate with Lightdash
-        run: lightdash login --token ${{ secrets.LIGHTDASH_API_TOKEN }} --url ${{ secrets.LIGHTDASH_URL }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Deploy semantic layer
-        run: lightdash deploy --project ${{ secrets.LIGHTDASH_PROJECT_UUID }}
+        run: pnpm lightdash:deploy
 
       - name: Upload charts and dashboards
-        run: lightdash upload
+        run: pnpm lightdash:upload

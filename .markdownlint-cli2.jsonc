@@ -1,0 +1,20 @@
+{
+  "config": {
+    "default": true,
+    "MD013": false,
+    "MD033": false,
+    "MD041": false,
+  },
+  "globs": [
+    "**/*.md",
+    "**/*.mdx",
+    "!.claude",
+    "!.codex",
+    "!**/node_modules/**",
+    "!node_modules",
+    "!apps/changelog-site/.docusaurus",
+    "!apps/changelog-site/build",
+    "!.context",
+    "!initial_context.md",
+  ],
+}

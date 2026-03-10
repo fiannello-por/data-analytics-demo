@@ -1,4 +1,4 @@
-name: "Total: Avg Booked Deal"
+name: 'Total: Avg Booked Deal'
 description: null
 tableName: opportunity_view
 metricQuery:

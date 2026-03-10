@@ -1,4 +1,4 @@
-name: "New Logo: Close Rate"
+name: 'New Logo: Close Rate'
 description: null
 tableName: opportunity_view
 metricQuery:

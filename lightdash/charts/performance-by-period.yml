@@ -1,7 +1,7 @@
 name: Performance by Period
 description: null
 tableName: opportunity_view
-updatedAt: "2026-03-06T19:35:56.716Z"
+updatedAt: '2026-03-06T19:35:56.716Z'
 metricQuery:
   exploreName: opportunity_view
   dimensions:
@@ -40,7 +40,7 @@ chartConfig:
       showGridY: true
     eChartsConfig:
       xAxis:
-        - name: ""
+        - name: ''
       yAxis:
         - name: ACV $
       legend:
@@ -66,4 +66,4 @@ tableConfig:
     - opportunity_view_acv_dollars
 spaceSlug: shared
 version: 1
-downloadedAt: "2026-03-09T15:49:11.524Z"
+downloadedAt: '2026-03-09T15:49:11.524Z'

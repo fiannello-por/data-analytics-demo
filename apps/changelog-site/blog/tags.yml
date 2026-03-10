@@ -1,0 +1,14 @@
+automation:
+  label: Automation
+  permalink: /tag/automation
+  description: Updates to delivery automation and CI workflows.
+
+lightdash:
+  label: Lightdash
+  permalink: /tag/lightdash
+  description: Updates to the Lightdash semantic layer and content.
+
+quality:
+  label: Quality
+  permalink: /tag/quality
+  description: Improvements to validation, governance, and analytics trust.
