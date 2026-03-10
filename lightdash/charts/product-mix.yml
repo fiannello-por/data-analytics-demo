@@ -1,5 +1,5 @@
 name: Product Mix
-description: null
+description: 'Share of booked ACV by product family for won opportunities.'
 tableName: opportunity_view
 updatedAt: '2026-03-06T19:38:31.522Z'
 metricQuery:

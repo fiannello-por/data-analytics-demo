@@ -1,5 +1,5 @@
 name: 'Migration: Bookings #'
-description: null
+description: 'Distinct closed won migration opportunities booked over the last 12 months.'
 tableName: opportunity_view
 updatedAt: '2026-03-09T13:45:11.779Z'
 metricQuery:

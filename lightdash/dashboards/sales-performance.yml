@@ -1,5 +1,5 @@
 name: Sales Performance
-description: ''
+description: 'Revenue performance dashboard covering new business, expansion, migration, and total sales views.'
 updatedAt: '2026-03-09T15:48:36.813Z'
 tiles:
   - x: 0
@@ -633,6 +633,7 @@ filters:
         tableName: opportunity_view
       values: []
       operator: equals
+      disabled: true
       tileTargets:
         total-bookings-count: false
         new-logo-bookings-acv: false
@@ -665,6 +666,7 @@ filters:
         tableName: opportunity_view
       values: []
       operator: equals
+      disabled: true
       tileTargets:
         sqos-over-time: false
     - label: Owner
@@ -673,6 +675,7 @@ filters:
         tableName: opportunity_view
       values: []
       operator: equals
+      disabled: true
       tileTargets:
         sqos-over-time: false
     - label: Accepted
@@ -681,6 +684,7 @@ filters:
         tableName: opportunity_view
       values: []
       operator: equals
+      disabled: true
       tileTargets:
         sqos-over-time: false
     - label: Strategic Filter
@@ -689,6 +693,7 @@ filters:
         tableName: opportunity_view
       values: []
       operator: equals
+      disabled: true
       tileTargets:
         sqos-over-time: false
     - label: Segment
@@ -697,6 +702,7 @@ filters:
         tableName: opportunity_view
       values: []
       operator: equals
+      disabled: true
       tileTargets:
         sqos-over-time: false
     - label: Region
@@ -705,6 +711,7 @@ filters:
         tableName: opportunity_view
       values: []
       operator: equals
+      disabled: true
       tileTargets:
         sqos-over-time: false
     - label: SE
@@ -713,6 +720,7 @@ filters:
         tableName: opportunity_view
       values: []
       operator: equals
+      disabled: true
       tileTargets:
         sqos-over-time: false
     - label: Gate 1 Criteria Met
@@ -721,6 +729,7 @@ filters:
         tableName: opportunity_view
       values: []
       operator: equals
+      disabled: true
       tileTargets:
         sqos-over-time: false
     - label: Booking Plan Opp Type
@@ -729,6 +738,7 @@ filters:
         tableName: opportunity_view
       values: []
       operator: equals
+      disabled: true
       tileTargets:
         sqos-over-time: false
     - label: Product Family
@@ -737,6 +747,7 @@ filters:
         tableName: opportunity_view
       values: []
       operator: equals
+      disabled: true
       tileTargets:
         sqos-over-time: false
     - label: SDR Source
@@ -745,6 +756,7 @@ filters:
         tableName: opportunity_view
       values: []
       operator: equals
+      disabled: true
       tileTargets:
         sqos-over-time: false
     - label: SDR
@@ -753,6 +765,7 @@ filters:
         tableName: opportunity_view
       values: []
       operator: equals
+      disabled: true
       tileTargets:
         sqos-over-time: false
     - label: POR v R360
@@ -761,6 +774,7 @@ filters:
         tableName: opportunity_view
       values: []
       operator: equals
+      disabled: true
       tileTargets:
         sqos-over-time: false
     - label: Account Id
@@ -769,6 +783,7 @@ filters:
         tableName: opportunity_view
       values: []
       operator: equals
+      disabled: true
       tileTargets:
         sqos-over-time: false
     - label: Account Owner
@@ -777,6 +792,7 @@ filters:
         tableName: opportunity_view
       values: []
       operator: equals
+      disabled: true
       tileTargets:
         sqos-over-time: false
     - label: Owner Department
@@ -785,6 +801,7 @@ filters:
         tableName: opportunity_view
       values: []
       operator: equals
+      disabled: true
       tileTargets:
         sqos-over-time: false
   tableCalculations: []

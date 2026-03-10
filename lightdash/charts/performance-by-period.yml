@@ -1,5 +1,5 @@
 name: Performance by Period
-description: null
+description: 'Booked ACV by close quarter and SDR source for won opportunities.'
 tableName: opportunity_view
 updatedAt: '2026-03-06T19:35:56.716Z'
 metricQuery:

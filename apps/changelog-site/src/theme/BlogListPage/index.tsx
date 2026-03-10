@@ -2,6 +2,10 @@ import Link from '@docusaurus/Link';
 import Layout from '@theme/Layout';
 import BlogListPaginator from '@theme/BlogListPaginator';
 
+type BlogListPaginatorMetadata = Parameters<
+  typeof BlogListPaginator
+>[0]['metadata'];
+
 type BlogAuthor = {
   name?: string;
 };
@@ -28,7 +32,7 @@ type BlogListItem = {
 };
 
 type BlogListPageProps = {
-  metadata: {
+  metadata: BlogListPaginatorMetadata & {
     blogTitle?: string;
     blogDescription?: string;
   };
@@ -151,7 +155,7 @@ export default function BlogListPage({ metadata, items }: BlogListPageProps) {
             ))}
           </div>
 
-          <BlogListPaginator metadata={metadata as never} />
+          <BlogListPaginator metadata={metadata} />
         </section>
       </main>
     </Layout>

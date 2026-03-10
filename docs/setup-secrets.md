@@ -19,7 +19,7 @@ Runtime mapping in CI:
 
 Optional GitHub Actions variables:
 
-- `OPENAI_CODEX_MODEL` default recommendation: `gpt-5.3-codex`
+- `OPENAI_CODEX_MODEL` default recommendation: `gpt-5.2-codex`
 
 ## Vercel
 

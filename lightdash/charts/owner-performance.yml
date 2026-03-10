@@ -1,5 +1,5 @@
 name: Owner Performance
-description: null
+description: 'Booked ACV and won opportunity counts by owner.'
 tableName: opportunity_view
 updatedAt: '2026-03-06T19:44:22.296Z'
 metricQuery:

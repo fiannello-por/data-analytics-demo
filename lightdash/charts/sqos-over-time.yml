@@ -1,5 +1,5 @@
 name: SQOs Over Time
-description: null
+description: 'Daily SQO volume with prior-year comparison for accepted new business opportunities.'
 tableName: opportunity_view
 updatedAt: '2026-03-06T19:23:34.606Z'
 metricQuery:

@@ -1,5 +1,5 @@
 name: Quarterly Breakdown
-description: null
+description: 'Booked ACV breakdown by quarter, division, type, and product for won opportunities.'
 tableName: opportunity_view
 updatedAt: '2026-03-06T19:41:02.923Z'
 metricQuery:

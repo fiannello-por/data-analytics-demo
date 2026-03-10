@@ -6,18 +6,22 @@ on:
       - opened
       - synchronize
       - reopened
-      - edited
+
+concurrency:
+  group: codex-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   review:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
       issues: write
       pull-requests: write
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
       - name: Ensure OpenAI secret is configured
         env:
@@ -26,12 +30,10 @@ jobs:
           test -n "$OPENAI_API_KEY" || (echo "::error::Missing OPENAI_API_KEY" && exit 1)
 
       - name: Set up pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.23.0
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version-file: .nvmrc
           cache: pnpm
@@ -44,6 +46,6 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OPENAI_CODEX_MODEL: ${{ vars.OPENAI_CODEX_MODEL || 'gpt-5.3-codex' }}
+          OPENAI_CODEX_MODEL: ${{ vars.OPENAI_CODEX_MODEL || 'gpt-5.2-codex' }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: pnpm review:pr

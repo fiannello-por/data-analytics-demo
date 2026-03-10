@@ -1,5 +1,5 @@
 name: 'Expansion: Close Rate'
-description: null
+description: 'Share of closed expansion opportunities marked won over the last 12 months.'
 tableName: opportunity_view
 metricQuery:
   exploreName: opportunity_view

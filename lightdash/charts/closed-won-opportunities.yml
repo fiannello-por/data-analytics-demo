@@ -1,5 +1,5 @@
 name: Closed Won Opportunities
-description: null
+description: 'Detailed table of closed won opportunities with booked ACV and user counts for operational review.'
 tableName: opportunity_view
 updatedAt: '2026-03-06T19:23:34.606Z'
 metricQuery:

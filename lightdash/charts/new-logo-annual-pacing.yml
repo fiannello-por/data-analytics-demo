@@ -1,5 +1,5 @@
 name: 'New Logo: Annual Pacing'
-description: null
+description: 'Annualized booked ACV pace for closed won new business opportunities in the current period.'
 tableName: opportunity_view
 updatedAt: '2026-03-09T15:48:27.031Z'
 metricQuery:

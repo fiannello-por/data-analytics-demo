@@ -1,5 +1,5 @@
 name: 'Total: Annual Pacing'
-description: null
+description: 'Annualized booked ACV pace for all closed won opportunities in the current period.'
 tableName: opportunity_view
 updatedAt: '2026-03-09T15:48:28.132Z'
 metricQuery:

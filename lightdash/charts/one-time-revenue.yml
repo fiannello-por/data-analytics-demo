@@ -1,5 +1,5 @@
 name: One Time Revenue
-description: null
+description: 'Closed won opportunities with positive one-time implementation revenue.'
 tableName: opportunity_view
 updatedAt: '2026-03-06T19:47:48.701Z'
 metricQuery:

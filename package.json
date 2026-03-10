@@ -17,9 +17,11 @@
     "lightdash:upload": "lightdash upload --force",
     "markdown:lint": "markdownlint-cli2",
     "review:pr": "tsx scripts/agents/review-pr.ts",
+    "test": "node --import tsx --test tests/**/*.test.ts",
     "typecheck": "tsc --project tsconfig.scripts.json --noEmit && pnpm --filter @trenton/changelog-site typecheck",
-    "validate": "pnpm format:check && pnpm markdown:lint && pnpm typecheck && pnpm changelog:build",
-    "validate:ci": "pnpm validate && pnpm lightdash:lint"
+    "validate": "pnpm format:check && pnpm markdown:lint && pnpm yaml:lint && pnpm typecheck && pnpm test && pnpm changelog:build",
+    "yaml:lint": "yamllint .github/*.yml .github/workflows/*.yml lightdash/models/*.yml lightdash/charts/*.yml lightdash/dashboards/*.yml lightdash.config.yml",
+    "validate:ci": "pnpm validate"
   },
   "devDependencies": {
     "@lightdash/cli": "0.2602.1",
@@ -28,6 +30,7 @@
     "openai": "6.27.0",
     "prettier": "3.8.1",
     "tsx": "4.21.0",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "yaml-lint": "1.7.0"
   }
 }

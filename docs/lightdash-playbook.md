@@ -8,8 +8,9 @@ This repo uses pure Lightdash YAML with [lightdash.config.yml](../lightdash.conf
 
 1. Edit model, chart, or dashboard YAML.
 2. Run `pnpm lightdash:lint`.
-3. Build the changelog site if the change is public-facing: `pnpm changelog:build`.
-4. Open a PR and complete the documentation template.
+3. Run a representative chart query when semantic logic or chart filters changed: `pnpm exec lightdash run-chart -p lightdash/charts/<chart-file>.yml`.
+4. Build the changelog site if the change is public-facing: `pnpm changelog:build`.
+5. Open a PR and complete the documentation template.
 
 ## Deployment Workflow
 

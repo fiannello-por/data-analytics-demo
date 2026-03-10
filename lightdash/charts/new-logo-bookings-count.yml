@@ -1,5 +1,5 @@
 name: 'New Logo: Bookings #'
-description: null
+description: 'Distinct closed won new business opportunities booked over the last 12 months.'
 tableName: opportunity_view
 updatedAt: '2026-03-09T13:45:13.556Z'
 metricQuery:

@@ -1,5 +1,5 @@
 name: 'Total: Bookings $'
-description: null
+description: 'Booked ACV for all closed won opportunities over the last 12 months.'
 tableName: opportunity_view
 updatedAt: '2026-03-09T13:45:14.452Z'
 metricQuery:

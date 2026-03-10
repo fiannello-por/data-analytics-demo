@@ -1,5 +1,5 @@
 name: 'Expansion: Avg Booked Deal'
-description: null
+description: 'Average ACV per closed won expansion opportunity over the last 12 months.'
 tableName: opportunity_view
 metricQuery:
   exploreName: opportunity_view

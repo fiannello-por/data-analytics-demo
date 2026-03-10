@@ -1,5 +1,5 @@
 name: 'New Logo: Avg Age'
-description: null
+description: 'Average age in days for won new business opportunities over the last 12 months.'
 tableName: opportunity_view
 metricQuery:
   exploreName: opportunity_view
