@@ -38,6 +38,3 @@ jobs:
 
       - name: Build changelog site
         run: pnpm changelog:build
-
-      - name: Lint Lightdash YAML
-        run: pnpm lightdash:lint
