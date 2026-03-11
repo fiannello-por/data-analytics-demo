@@ -25,7 +25,7 @@
     "validate:ci": "pnpm validate"
   },
   "devDependencies": {
-    "@lightdash/cli": "0.2602.1",
+    "@lightdash/cli": "0.2604.2",
     "@types/node": "25.4.0",
     "markdownlint-cli2": "0.21.0",
     "openai": "6.27.0",
