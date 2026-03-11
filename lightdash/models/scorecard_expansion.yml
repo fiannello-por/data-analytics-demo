@@ -1,0 +1,101 @@
+type: model
+name: scorecard_expansion
+sql_from: |-
+  (
+    WITH t AS (
+      SELECT *,
+        CASE
+          WHEN CloseDate >= DATE_TRUNC(CURRENT_DATE(), YEAR) THEN 'curr'
+          ELSE 'prev'
+        END AS ytd_period
+      FROM `data-analytics-306119.sfdc.OpportunityViewTable`
+      WHERE Type = 'Existing Business'
+      AND (
+        CloseDate >= DATE_TRUNC(CURRENT_DATE(), YEAR)
+        OR (
+          CloseDate >= DATE_TRUNC(DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR), YEAR)
+          AND CloseDate < DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR)
+        )
+      )
+    )
+    SELECT s, Metric, Value, Prev_YTD,
+      CASE
+        WHEN raw_prev IS NULL OR raw_curr IS NULL THEN '-'
+        WHEN raw_prev = 0 AND raw_curr = 0 THEN '0.0%'
+        WHEN raw_prev = 0 THEN '-'
+        ELSE CONCAT(CASE WHEN raw_curr > raw_prev THEN '+' ELSE '' END, FORMAT('%.1f', (raw_curr - raw_prev) * 100.0 / ABS(raw_prev)), '%')
+      END AS Pct_Change
+    FROM (
+      SELECT 1 AS s, 'Annual Pacing' AS Metric,
+        CONCAT('$', FORMAT("%'.2f", SUM(CASE WHEN ytd_period='curr' AND Won AND ACV>=0 THEN ACV END) * 365.0 / NULLIF(EXTRACT(DAYOFYEAR FROM CURRENT_DATE()), 0) / 1000.0), 'K') AS Value,
+        CONCAT('$', FORMAT("%'.2f", SUM(CASE WHEN ytd_period='prev' AND Won AND ACV>=0 THEN ACV END) * 365.0 / NULLIF(EXTRACT(DAYOFYEAR FROM CURRENT_DATE()), 0) / 1000.0), 'K') AS Prev_YTD,
+        SUM(CASE WHEN ytd_period='curr' AND Won AND ACV>=0 THEN ACV END) AS raw_curr,
+        SUM(CASE WHEN ytd_period='prev' AND Won AND ACV>=0 THEN ACV END) AS raw_prev FROM t
+      UNION ALL
+      SELECT 2, 'Close Rate',
+        CONCAT(FORMAT('%.1f', SUM(CASE WHEN ytd_period='curr' AND isclosed AND ExpansionOpp AND Won THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(DISTINCT CASE WHEN ytd_period='curr' AND isclosed AND ExpansionOpp THEN Id END), 0)), '%'),
+        CONCAT(FORMAT('%.1f', SUM(CASE WHEN ytd_period='prev' AND isclosed AND ExpansionOpp AND Won THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(DISTINCT CASE WHEN ytd_period='prev' AND isclosed AND ExpansionOpp THEN Id END), 0)), '%'),
+        SUM(CASE WHEN ytd_period='curr' AND isclosed AND ExpansionOpp AND Won THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT(DISTINCT CASE WHEN ytd_period='curr' AND isclosed AND ExpansionOpp THEN Id END), 0),
+        SUM(CASE WHEN ytd_period='prev' AND isclosed AND ExpansionOpp AND Won THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT(DISTINCT CASE WHEN ytd_period='prev' AND isclosed AND ExpansionOpp THEN Id END), 0) FROM t
+      UNION ALL
+      SELECT 3, 'Avg Age',
+        CAST(ROUND(AVG(CASE WHEN ytd_period='curr' AND ExpansionOpp AND ExpansionQualified AND ACV>=0 THEN Age__c END)) AS STRING),
+        CAST(ROUND(AVG(CASE WHEN ytd_period='prev' AND ExpansionOpp AND ExpansionQualified AND ACV>=0 THEN Age__c END)) AS STRING),
+        AVG(CASE WHEN ytd_period='curr' AND ExpansionOpp AND ExpansionQualified AND ACV>=0 THEN Age__c END),
+        AVG(CASE WHEN ytd_period='prev' AND ExpansionOpp AND ExpansionQualified AND ACV>=0 THEN Age__c END) FROM t
+      UNION ALL
+      SELECT 4, 'Avg Booked Deal',
+        CONCAT('$', FORMAT("%'.2f", SUM(CASE WHEN ytd_period='curr' AND Won AND ACV>0 THEN ACV END) / NULLIF(COUNT(DISTINCT CASE WHEN ytd_period='curr' AND Won AND ACV>0 THEN Id END), 0) / 1000.0), 'K'),
+        CONCAT('$', FORMAT("%'.2f", SUM(CASE WHEN ytd_period='prev' AND Won AND ACV>0 THEN ACV END) / NULLIF(COUNT(DISTINCT CASE WHEN ytd_period='prev' AND Won AND ACV>0 THEN Id END), 0) / 1000.0), 'K'),
+        SUM(CASE WHEN ytd_period='curr' AND Won AND ACV>0 THEN ACV END) / NULLIF(COUNT(DISTINCT CASE WHEN ytd_period='curr' AND Won AND ACV>0 THEN Id END), 0),
+        SUM(CASE WHEN ytd_period='prev' AND Won AND ACV>0 THEN ACV END) / NULLIF(COUNT(DISTINCT CASE WHEN ytd_period='prev' AND Won AND ACV>0 THEN Id END), 0) FROM t
+      UNION ALL
+      SELECT 5, 'Pipeline Created',
+        CONCAT('$', FORMAT("%'.2f", SUM(CASE WHEN ytd_period='curr' AND ExpansionOpp AND ACV>0 THEN ACV END) / 1000.0), 'K'),
+        CONCAT('$', FORMAT("%'.2f", SUM(CASE WHEN ytd_period='prev' AND ExpansionOpp AND ACV>0 THEN ACV END) / 1000.0), 'K'),
+        SUM(CASE WHEN ytd_period='curr' AND ExpansionOpp AND ACV>0 THEN ACV END),
+        SUM(CASE WHEN ytd_period='prev' AND ExpansionOpp AND ACV>0 THEN ACV END) FROM t
+      UNION ALL
+      SELECT 6, 'SQL',
+        FORMAT("%'.0f", CAST(COUNT(DISTINCT CASE WHEN ytd_period='curr' AND ExpansionOpp THEN Id END) AS FLOAT64)),
+        FORMAT("%'.0f", CAST(COUNT(DISTINCT CASE WHEN ytd_period='prev' AND ExpansionOpp THEN Id END) AS FLOAT64)),
+        CAST(COUNT(DISTINCT CASE WHEN ytd_period='curr' AND ExpansionOpp THEN Id END) AS FLOAT64),
+        CAST(COUNT(DISTINCT CASE WHEN ytd_period='prev' AND ExpansionOpp THEN Id END) AS FLOAT64) FROM t
+      UNION ALL
+      SELECT 7, 'SQO',
+        FORMAT("%'.0f", CAST(COUNT(DISTINCT CASE WHEN ytd_period='curr' AND ExpansionOpp AND ExpansionQualified AND ACV>=0 AND OppRecordType='POR' THEN Id END) AS FLOAT64)),
+        FORMAT("%'.0f", CAST(COUNT(DISTINCT CASE WHEN ytd_period='prev' AND ExpansionOpp AND ExpansionQualified AND ACV>=0 AND OppRecordType='POR' THEN Id END) AS FLOAT64)),
+        CAST(COUNT(DISTINCT CASE WHEN ytd_period='curr' AND ExpansionOpp AND ExpansionQualified AND ACV>=0 AND OppRecordType='POR' THEN Id END) AS FLOAT64),
+        CAST(COUNT(DISTINCT CASE WHEN ytd_period='prev' AND ExpansionOpp AND ExpansionQualified AND ACV>=0 AND OppRecordType='POR' THEN Id END) AS FLOAT64) FROM t
+    ) sub
+    ORDER BY s
+  )
+label: 'Scorecard Expansion'
+group_label: 'Sales Operations'
+
+dimensions:
+  - name: s
+    type: number
+    sql: ${TABLE}.s
+    label: 'Sort Order'
+    hidden: true
+
+  - name: Metric
+    type: string
+    sql: ${TABLE}.Metric
+    label: 'Metric'
+
+  - name: Value
+    type: string
+    sql: ${TABLE}.Value
+    label: 'YTD'
+
+  - name: Prev_YTD
+    type: string
+    sql: ${TABLE}.Prev_YTD
+    label: 'Prev YTD'
+
+  - name: Pct_Change
+    type: string
+    sql: ${TABLE}.Pct_Change
+    label: '% Change'

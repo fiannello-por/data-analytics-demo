@@ -1,0 +1,69 @@
+type: model
+name: fct_sales_pipeline
+sql_from: 'data-analytics-306119.sfdc.OpportunityViewTable'
+label: 'Sales Pipeline'
+group_label: 'Sales Operations'
+
+dimensions:
+  - name: stage
+    type: string
+    sql: ${TABLE}.StageName
+    label: 'Stage'
+    description: 'Current Salesforce opportunity stage.'
+
+  - name: opportunity_owner
+    type: string
+    sql: ${TABLE}.Owner
+    label: 'Opportunity Owner'
+    description: 'Current opportunity owner.'
+
+  - name: industry
+    type: string
+    sql: ${TABLE}.Industry
+    label: 'Industry'
+    description: 'Account industry associated with the opportunity.'
+
+  - name: deal_size_bucket
+    type: string
+    sql: "CASE WHEN ${TABLE}.ACV < 10000 THEN 'Under $10K' WHEN ${TABLE}.ACV < 50000 THEN '$10K - $50K' WHEN ${TABLE}.ACV < 100000 THEN '$50K - $100K' ELSE '$100K+' END"
+    label: 'Deal Size Bucket'
+    description: 'ACV grouped into size buckets.'
+
+metrics:
+  total_pipeline_amount:
+    type: sum
+    sql: ${TABLE}.ACV
+    label: 'Total Pipeline'
+    format: 'usd'
+    round: 0
+    description: 'Total pipeline ACV across all opportunities.'
+
+  total_won_revenue:
+    type: number
+    sql: "SUM(CASE WHEN ${TABLE}.Won = TRUE THEN ${TABLE}.ACV ELSE 0 END)"
+    label: 'Won Revenue'
+    format: 'usd'
+    round: 0
+    description: 'Total ACV from won opportunities.'
+
+  total_open_pipeline:
+    type: number
+    sql: "SUM(CASE WHEN ${TABLE}.isclosed = FALSE THEN ${TABLE}.ACV ELSE 0 END)"
+    label: 'Open Pipeline'
+    format: 'usd'
+    round: 0
+    description: 'Total ACV from open (not closed) opportunities.'
+
+  avg_deal_size:
+    type: average
+    sql: ${TABLE}.ACV
+    label: 'Avg Deal Size'
+    format: 'usd'
+    round: 0
+    description: 'Average ACV across the filtered opportunity set.'
+
+  opportunity_count:
+    type: count_distinct
+    sql: ${TABLE}.Id
+    label: 'Opportunity Count'
+    description: 'Count of distinct opportunities.'

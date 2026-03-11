@@ -273,6 +273,12 @@ dimensions:
     description: 'Date the opportunity was sales-qualified.'
     time_intervals: [DAY, WEEK, MONTH, QUARTER, YEAR]
 
+  - name: GateMetOrAccepted
+    type: boolean
+    sql: "(${TABLE}.Gate1CriteriaMet OR ${TABLE}.Accepted)"
+    label: 'Gate Met or Accepted'
+    description: 'True when the opportunity has met Gate 1 criteria or been accepted by an AE.'
+
 metrics:
   users_sum:
     type: sum
