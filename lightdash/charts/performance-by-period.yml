@@ -1,7 +1,7 @@
 name: Performance by Period
 description: null
 tableName: opportunity_view
-updatedAt: '2026-03-10T22:53:08.952Z'
+updatedAt: '2026-03-11T01:06:11.874Z'
 metricQuery:
   exploreName: opportunity_view
   dimensions:
@@ -78,4 +78,4 @@ tableConfig:
     - opportunity_view_acv_dollars
 spaceSlug: shared
 version: 1
-downloadedAt: '2026-03-10T23:37:27.525Z'
+downloadedAt: '2026-03-11T02:13:31.749Z'

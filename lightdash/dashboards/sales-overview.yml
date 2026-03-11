@@ -1,0 +1,109 @@
+name: Sales Overview
+description: Executive view of pipeline, revenue, and rep performance
+updatedAt: '2026-03-11T01:06:10.457Z'
+tiles:
+  - x: 0
+    'y': 0
+    h: 3
+    w: 9
+    tabUuid: null
+    type: saved_chart
+    properties:
+      title: Total Pipeline
+      hideTitle: false
+      chartSlug: total-pipeline-kpi
+      chartName: Total Pipeline
+    tileSlug: total-pipeline-kpi
+  - x: 9
+    'y': 0
+    h: 3
+    w: 9
+    tabUuid: null
+    type: saved_chart
+    properties:
+      title: Won Revenue
+      hideTitle: false
+      chartSlug: won-revenue-kpi
+      chartName: Won Revenue
+    tileSlug: won-revenue-kpi
+  - x: 18
+    'y': 0
+    h: 3
+    w: 9
+    tabUuid: null
+    type: saved_chart
+    properties:
+      title: Open Pipeline
+      hideTitle: false
+      chartSlug: open-pipeline-kpi
+      chartName: Open Pipeline
+    tileSlug: open-pipeline-kpi
+  - x: 27
+    'y': 0
+    h: 3
+    w: 9
+    tabUuid: null
+    type: saved_chart
+    properties:
+      title: Avg Deal Size
+      hideTitle: false
+      chartSlug: avg-deal-size-kpi
+      chartName: Avg Deal Size
+    tileSlug: avg-deal-size-kpi
+  - x: 0
+    'y': 3
+    h: 8
+    w: 24
+    tabUuid: null
+    type: saved_chart
+    properties:
+      title: Pipeline by Stage
+      hideTitle: false
+      chartSlug: pipeline-by-stage
+      chartName: Pipeline by Stage
+    tileSlug: pipeline-by-stage
+  - x: 24
+    'y': 3
+    h: 8
+    w: 12
+    tabUuid: null
+    type: saved_chart
+    properties:
+      title: Deals by Size
+      hideTitle: false
+      chartSlug: deals-by-size-bucket
+      chartName: Deals by Size
+    tileSlug: deals-by-size-bucket
+  - x: 0
+    'y': 11
+    h: 8
+    w: 18
+    tabUuid: null
+    type: saved_chart
+    properties:
+      title: Pipeline by Owner
+      hideTitle: false
+      chartSlug: pipeline-by-owner
+      chartName: Pipeline by Owner
+    tileSlug: pipeline-by-owner
+  - x: 18
+    'y': 11
+    h: 8
+    w: 18
+    tabUuid: null
+    type: saved_chart
+    properties:
+      title: Revenue by Industry
+      hideTitle: false
+      chartSlug: revenue-by-industry
+      chartName: Revenue by Industry
+    tileSlug: revenue-by-industry
+filters:
+  metrics: []
+  dimensions: []
+  tableCalculations: []
+tabs: []
+slug: sales-overview
+spaceSlug: sales-dashboard
+version: 1
+downloadedAt: '2026-03-11T02:13:32.431Z'

@@ -1,0 +1,63 @@
+name: 'New Logo: SQO'
+description: null
+tableName: opportunity_view
+updatedAt: '2026-03-11T01:05:54.822Z'
+metricQuery:
+  exploreName: opportunity_view
+  dimensions: []
+  metrics:
+    - opportunity_view_bookings_count
+  filters:
+    dimensions:
+      id: root
+      and:
+        - id: type_filter
+          target:
+            fieldId: opportunity_view_Type
+          values:
+            - New Business
+          operator: equals
+        - id: accepted_filter
+          target:
+            fieldId: opportunity_view_Accepted
+          values:
+            - true
+          operator: equals
+        - id: por_record_type
+          target:
+            fieldId: opportunity_view_OppRecordType
+          values:
+            - POR
+          operator: equals
+        - id: date_filter
+          target:
+            fieldId: opportunity_view_CloseDate
+          values:
+            - 12
+          operator: inThePast
+          settings:
+            completed: false
+            unitOfTime: months
+  sorts: []
+  limit: 1
+  metricOverrides: {}
+  dimensionOverrides: {}
+  tableCalculations: []
+  additionalMetrics: []
+  customDimensions: []
+chartConfig:
+  type: big_number
+  config:
+    label: SQO
+    selectedField: opportunity_view_bookings_count
+    showComparison: true
+    comparisonLabel: vs. prev year
+    comparisonFormat: percentage
+    showBigNumberLabel: true
+slug: new-logo-sqo
+tableConfig:
+  columnOrder:
+    - opportunity_view_bookings_count
+spaceSlug: shared
+version: 1
+downloadedAt: '2026-03-11T02:13:31.749Z'

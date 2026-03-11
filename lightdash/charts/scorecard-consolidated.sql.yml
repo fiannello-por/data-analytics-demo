@@ -1,0 +1,177 @@
+name: 'Scorecard: Consolidated'
+description: All scorecard metrics in one table (Option A)
+slug: scorecard-consolidated
+sql: |-
+  WITH t AS (
+    SELECT * FROM `data-analytics-306119.sfdc.OpportunityViewTable`
+    WHERE CloseDate >= DATE_SUB(CURRENT_DATE(), INTERVAL 12 MONTH)
+  ),
+  fy AS (
+    SELECT * FROM `data-analytics-306119.sfdc.OpportunityViewTable`
+    WHERE EXTRACT(YEAR FROM CloseDate) = EXTRACT(YEAR FROM CURRENT_DATE())
+  )
+  SELECT Metric, New_Logo, Expansion, Migration, Total FROM (
+    SELECT 1 AS s, 'Bookings $' AS Metric,
+      CONCAT('$', FORMAT('%.0f', SUM(CASE WHEN Type='New Business' AND Won THEN ACV END))) AS New_Logo,
+      CONCAT('$', FORMAT('%.0f', SUM(CASE WHEN Type='Existing Business' AND Won AND ACV>=0 THEN ACV END))) AS Expansion,
+      CONCAT('$', FORMAT('%.0f', SUM(CASE WHEN Type='Migration' AND Won THEN ACV END))) AS Migration,
+      CONCAT('$', FORMAT('%.0f', SUM(CASE WHEN Won THEN ACV END))) AS Total
+    FROM t
+
+    UNION ALL
+    SELECT 2, 'Bookings #',
+      FORMAT('%.0f', CAST(COUNT(DISTINCT CASE WHEN Type='New Business' AND Won THEN Id END) AS FLOAT64)),
+      FORMAT('%.0f', CAST(COUNT(DISTINCT CASE WHEN Type='Existing Business' AND Won AND ACV>=0 THEN Id END) AS FLOAT64)),
+      FORMAT('%.0f', CAST(COUNT(DISTINCT CASE WHEN Type='Migration' AND Won THEN Id END) AS FLOAT64)),
+      FORMAT('%.0f', CAST(COUNT(DISTINCT CASE WHEN Won THEN Id END) AS FLOAT64))
+    FROM t
+
+    UNION ALL
+    SELECT 3, 'Annual Pacing',
+      CONCAT('$', FORMAT('%.0f', SUM(CASE WHEN Type='New Business' AND Won THEN ACV END) * 365.0 / NULLIF(MAX(CalendarDaysPassedSinceFirstDayofCloseDateFY), 0))),
+      CONCAT('$', FORMAT('%.0f', SUM(CASE WHEN Type='Existing Business' AND Won AND ACV>=0 THEN ACV END) * 365.0 / NULLIF(MAX(CalendarDaysPassedSinceFirstDayofCloseDateFY), 0))),
+      CONCAT('$', FORMAT('%.0f', SUM(CASE WHEN Type='Migration' AND Won THEN ACV END) * 365.0 / NULLIF(MAX(CalendarDaysPassedSinceFirstDayofCloseDateFY), 0))),
+      CONCAT('$', FORMAT('%.0f', SUM(CASE WHEN Won THEN ACV END) * 365.0 / NULLIF(MAX(CalendarDaysPassedSinceFirstDayofCloseDateFY), 0)))
+    FROM fy
+
+    UNION ALL
+    SELECT 4, 'Close Rate',
+      CONCAT(FORMAT('%.1f', SUM(CASE WHEN Type='New Business' AND isclosed AND Won THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(DISTINCT CASE WHEN Type='New Business' AND isclosed THEN Id END), 0)), '%'),
+      CONCAT(FORMAT('%.1f', SUM(CASE WHEN Type='Existing Business' AND isclosed AND ExpansionOpp AND Won THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(DISTINCT CASE WHEN Type='Existing Business' AND isclosed AND ExpansionOpp THEN Id END), 0)), '%'),
+      CONCAT(FORMAT('%.1f', SUM(CASE WHEN Type='Migration' AND isclosed AND Won THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(DISTINCT CASE WHEN Type='Migration' AND isclosed THEN Id END), 0)), '%'),
+      CONCAT(FORMAT('%.1f', SUM(CASE WHEN isclosed AND Won THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(DISTINCT CASE WHEN isclosed THEN Id END), 0)), '%')
+    FROM t
+
+    UNION ALL
+    SELECT 5, 'Avg Age',
+      CAST(ROUND(AVG(CASE WHEN Type='New Business' AND Accepted THEN Age__c END)) AS STRING),
+      CAST(ROUND(AVG(CASE WHEN Type='Existing Business' AND ExpansionOpp AND ExpansionQualified AND ACV>=0 THEN Age__c END)) AS STRING),
+      CAST(ROUND(AVG(CASE WHEN Type='Migration' AND MigrationOpp AND ExpansionQualified THEN Age__c END)) AS STRING),
+      CAST(ROUND(AVG(Age__c)) AS STRING)
+    FROM t
+
+    UNION ALL
+    SELECT 6, 'Avg Booked Deal',
+      CONCAT('$', FORMAT('%.0f', SUM(CASE WHEN Type='New Business' AND Won THEN ACV END) / NULLIF(COUNT(DISTINCT CASE WHEN Type='New Business' AND Won THEN Id END), 0))),
+      CONCAT('$', FORMAT('%.0f', SUM(CASE WHEN Type='Existing Business' AND Won AND ACV>0 THEN ACV END) / NULLIF(COUNT(DISTINCT CASE WHEN Type='Existing Business' AND Won AND ACV>0 THEN Id END), 0))),
+      CONCAT('$', FORMAT('%.0f', SUM(CASE WHEN Type='Migration' AND Won THEN ACV END) / NULLIF(COUNT(DISTINCT CASE WHEN Type='Migration' AND Won THEN Id END), 0))),
+      CONCAT('$', FORMAT('%.0f', SUM(CASE WHEN Won AND ACV>0 THEN ACV END) / NULLIF(COUNT(DISTINCT CASE WHEN Won AND ACV>0 THEN Id END), 0)))
+    FROM t
+
+    UNION ALL
+    SELECT 7, 'Pipeline Created',
+      CONCAT('$', FORMAT('%.0f', SUM(CASE WHEN Type='New Business' AND ACV>0 THEN ACV END))),
+      CONCAT('$', FORMAT('%.0f', SUM(CASE WHEN Type='Existing Business' AND ExpansionOpp AND ACV>0 THEN ACV END))),
+      CONCAT('$', FORMAT('%.0f', SUM(CASE WHEN Type='Migration' AND MigrationOpp AND ACV>0 THEN ACV END))),
+      CONCAT('$', FORMAT('%.0f', SUM(CASE WHEN ACV>0 THEN ACV END)))
+    FROM t
+
+    UNION ALL
+    SELECT 8, 'SQL',
+      FORMAT('%.0f', CAST(COUNT(DISTINCT CASE WHEN Type='New Business' THEN Id END) AS FLOAT64)),
+      FORMAT('%.0f', CAST(COUNT(DISTINCT CASE WHEN Type='Existing Business' AND ExpansionOpp THEN Id END) AS FLOAT64)),
+      FORMAT('%.0f', CAST(COUNT(DISTINCT CASE WHEN Type='Migration' AND MigrationOpp THEN Id END) AS FLOAT64)),
+      '-'
+    FROM t
+
+    UNION ALL
+    SELECT 9, 'SQO',
+      FORMAT('%.0f', CAST(COUNT(DISTINCT CASE WHEN Type='New Business' AND Accepted AND OppRecordType='POR' THEN Id END) AS FLOAT64)),
+      FORMAT('%.0f', CAST(COUNT(DISTINCT CASE WHEN Type='Existing Business' AND ExpansionOpp AND ExpansionQualified AND ACV>=0 AND OppRecordType='POR' THEN Id END) AS FLOAT64)),
+      FORMAT('%.0f', CAST(COUNT(DISTINCT CASE WHEN Type='Migration' AND MigrationOpp AND ExpansionQualified AND OppRecordType='POR' THEN Id END) AS FLOAT64)),
+      '-'
+    FROM t
+
+    UNION ALL
+    SELECT 10, 'Gate 1 Complete',
+      FORMAT('%.0f', CAST(COUNT(DISTINCT CASE WHEN Type='New Business' AND (Gate1CriteriaMet OR Accepted OR AE_Rejected) THEN Id END) AS FLOAT64)),
+      '-', '-', '-'
+    FROM t
+
+    UNION ALL
+    SELECT 11, 'SDR Points',
+      FORMAT('%.0f', SUM(CASE WHEN Type='New Business' AND (Gate1CriteriaMet OR Accepted OR AE_Rejected) THEN SDR_Points END)),
+      '-', '-', '-'
+    FROM t
+
+    UNION ALL
+    SELECT 12, 'SQO Users',
+      FORMAT('%.0f', SUM(CASE WHEN Type='New Business' AND Accepted AND sales_qualified_date__c IS NOT NULL THEN Users END)),
+      '-', '-', '-'
+    FROM t
+
+    UNION ALL
+    SELECT 13, 'Migration SAL',
+      '-', '-',
+      FORMAT('%.0f', CAST(COUNT(DISTINCT CASE WHEN Type='Migration' AND MigrationOpp AND ExpansionSubmitted AND OppRecordType='POR' THEN Id END) AS FLOAT64)),
+      '-'
+    FROM t
+
+    UNION ALL
+    SELECT 14, 'Avg Users',
+      '-', '-',
+      CAST(ROUND(AVG(CASE WHEN Type='Migration' AND Won THEN Users END)) AS STRING),
+      '-'
+    FROM t
+
+    UNION ALL
+    SELECT 15, 'Median Users',
+      '-', '-',
+      CAST(APPROX_QUANTILES(CASE WHEN Type='Migration' AND Won THEN Users END, 2)[OFFSET(1)] AS STRING),
+      '-'
+    FROM t
+
+    UNION ALL
+    SELECT 16, 'One-time Revenue',
+      '-', '-', '-',
+      CONCAT('$', FORMAT('%.0f', SUM(CASE WHEN Won AND HardImpValueUSD>0 THEN HardImpValueUSD END)))
+    FROM t
+
+    UNION ALL
+    SELECT 17, 'Renewals',
+      '-', '-', '-',
+      CONCAT('$', FORMAT('%.0f', SUM(CASE WHEN Won AND ACV>0 AND StageName='Closed Won' AND Type='Renewal' THEN ACV END)))
+    FROM t
+  ) sub
+  ORDER BY s
+limit: 500
+config:
+  type: table
+  columns:
+    Total:
+      label: Total
+      order: 4
+      frozen: false
+      visible: true
+      reference: Total
+    Metric:
+      label: Metric
+      order: 0
+      frozen: false
+      visible: true
+      reference: Metric
+    New_Logo:
+      label: New Logo
+      order: 1
+      frozen: false
+      visible: true
+      reference: New_Logo
+    Expansion:
+      label: Expansion
+      order: 2
+      frozen: false
+      visible: true
+      reference: Expansion
+    Migration:
+      label: Migration
+      order: 3
+      frozen: false
+      visible: true
+      reference: Migration
+  metadata:
+    version: 1
+chartKind: table
+updatedAt: '2026-03-11T01:05:59.872Z'
+spaceSlug: shared
+version: 1
+downloadedAt: '2026-03-11T02:13:32.093Z'

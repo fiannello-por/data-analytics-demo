@@ -1,7 +1,7 @@
 name: SQOs Over Time
 description: null
 tableName: sqo_daily_cumulative
-updatedAt: '2026-03-10T18:04:52.029Z'
+updatedAt: '2026-03-11T01:06:11.874Z'
 metricQuery:
   exploreName: sqo_daily_cumulative
   dimensions:
@@ -67,4 +67,4 @@ tableConfig:
     - sqo_daily_cumulative_sqo_prev_running_total
 spaceSlug: shared
 version: 1
-downloadedAt: '2026-03-10T23:37:27.525Z'
+downloadedAt: '2026-03-11T02:13:31.749Z'

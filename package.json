@@ -5,11 +5,6 @@
   "engines": {
     "node": ">=22.0.0"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "lz4"
-    ]
-  },
   "scripts": {
     "build": "pnpm changelog:build",
     "changelog:build": "pnpm --filter @trenton/changelog-site build",
@@ -20,16 +15,17 @@
     "lightdash:deploy": "lightdash deploy --no-warehouse-credentials",
     "lightdash:lint": "lightdash lint --path ./lightdash",
     "lightdash:upload": "lightdash upload --force",
+    "lightdash:validate-refs": "bash scripts/validate-lightdash-refs.sh",
     "markdown:lint": "markdownlint-cli2",
     "review:pr": "tsx scripts/agents/review-pr.ts",
     "test": "node --import tsx --test tests/**/*.test.ts",
     "typecheck": "tsc --project tsconfig.scripts.json --noEmit && pnpm --filter @trenton/changelog-site typecheck",
-    "validate": "pnpm format:check && pnpm markdown:lint && pnpm yaml:lint && pnpm typecheck && pnpm test && pnpm changelog:build",
+    "validate": "pnpm format:check && pnpm markdown:lint && pnpm yaml:lint && pnpm lightdash:validate-refs && pnpm typecheck && pnpm test && pnpm changelog:build",
     "yaml:lint": "yamllint .github/*.yml .github/workflows/*.yml lightdash/models/*.yml lightdash/charts/*.yml lightdash/dashboards/*.yml lightdash.config.yml",
-    "validate:ci": "pnpm validate && pnpm lightdash:lint"
+    "validate:ci": "pnpm validate"
   },
   "devDependencies": {
-    "@lightdash/cli": "0.2596.0",
+    "@lightdash/cli": "0.2602.1",
     "@types/node": "24.10.1",
     "markdownlint-cli2": "0.21.0",
     "openai": "6.27.0",

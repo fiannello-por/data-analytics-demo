@@ -224,6 +224,62 @@ dimensions:
     description: 'True when the opportunity is in any closed stage.'
     hidden: true
 
+  - name: AE_Rejected
+    type: boolean
+    sql: ${TABLE}.AE_Rejected
+    label: 'AE Rejected'
+    description: 'True when an AE has rejected the opportunity.'
+
+  - name: ExpansionOpp
+    type: boolean
+    sql: ${TABLE}.ExpansionOpp
+    label: 'Expansion Opp'
+    description: 'True for expansion (upsell/cross-sell) opportunities.'
+
+  - name: ExpansionQualified
+    type: boolean
+    sql: ${TABLE}.ExpansionQualified
+    label: 'Expansion Qualified'
+    description: 'True when an expansion opportunity has reached the qualified stage.'
+
+  - name: ExpansionSubmitted
+    type: boolean
+    sql: ${TABLE}.ExpansionSubmitted
+    label: 'Expansion Submitted'
+    description: 'True when an expansion opportunity has been submitted for review.'
+
+  - name: MigrationOpp
+    type: boolean
+    sql: ${TABLE}.MigrationOpp
+    label: 'Migration Opp'
+    description: 'True for migration opportunities moving from legacy to current platform.'
+
+  - name: IsCurrentOrPrevYear
+    type: boolean
+    sql: 'EXTRACT(YEAR FROM ${TABLE}.CloseDate) >= EXTRACT(YEAR FROM CURRENT_DATE()) - 1'
+    label: 'Current or Prev Year'
+    description: 'True when close date falls in the current or previous calendar year.'
+
+  - name: IsWithinYTDWindow
+    type: boolean
+    sql: 'EXTRACT(DAYOFYEAR FROM ${TABLE}.CloseDate) <= EXTRACT(DAYOFYEAR FROM CURRENT_DATE())'
+    label: 'Within YTD Window'
+    description: 'True when close date is on or before the current day of year, enabling apples-to-apples YTD comparisons across years.'
+    hidden: true
+
+  - name: sales_qualified_date__c
+    type: date
+    sql: ${TABLE}.sales_qualified_date__c
+    label: 'Sales Qualified Date'
+    description: 'Date the opportunity was sales-qualified.'
+    time_intervals: [DAY, WEEK, MONTH, QUARTER, YEAR]
+
+  - name: GateMetOrAccepted
+    type: boolean
+    sql: '(${TABLE}.Gate1CriteriaMet OR ${TABLE}.Accepted)'
+    label: 'Gate Met or Accepted'
+    description: 'True when the opportunity has met Gate 1 criteria or been accepted by an AE.'
+
 metrics:
   users_sum:
     type: sum
@@ -289,3 +345,24 @@ metrics:
     format: 'usd'
     round: 0
     description: 'Average ACV per distinct filtered opportunity.'
+
+  avg_users:
+    type: average
+    sql: ${TABLE}.Users
+    label: 'Avg Users'
+    round: 0
+    description: 'Average user/seat count across the filtered opportunity set.'
+
+  median_users:
+    type: median
+    sql: ${TABLE}.Users
+    label: 'Median Users'
+    round: 0
+    description: 'Median user/seat count across the filtered opportunity set.'
+
+  sdr_points_sum:
+    type: sum
+    sql: ${TABLE}.SDR_Points
+    label: 'SDR Points'
+    round: 0
+    description: 'Total SDR points credited across the filtered opportunity set.'

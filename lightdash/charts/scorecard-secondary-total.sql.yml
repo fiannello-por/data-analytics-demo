@@ -1,0 +1,128 @@
+name: 'Scorecard Secondary: Total'
+description: Total secondary metrics (Option C)
+slug: scorecard-secondary-total
+sql: |-
+  WITH t AS (
+    SELECT *,
+      CASE
+        WHEN CloseDate >= DATE_TRUNC(CURRENT_DATE(), YEAR) THEN 'curr'
+        ELSE 'prev'
+      END AS ytd_period
+    FROM `data-analytics-306119.sfdc.OpportunityViewTable`
+    WHERE (
+      CloseDate >= DATE_TRUNC(CURRENT_DATE(), YEAR)
+      OR (
+        CloseDate >= DATE_TRUNC(DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR), YEAR)
+        AND CloseDate < DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR)
+      )
+    )
+  )
+  SELECT Metric, Value, Prev_YTD,
+    CASE
+      WHEN raw_prev IS NULL OR raw_curr IS NULL THEN '-'
+      WHEN raw_prev = 0 AND raw_curr = 0 THEN '0.0%'
+      WHEN raw_prev = 0 THEN '-'
+      ELSE CONCAT(CASE WHEN raw_curr > raw_prev THEN '+' ELSE '' END, FORMAT('%.1f', (raw_curr - raw_prev) * 100.0 / ABS(raw_prev)), '%')
+    END AS Pct_Change
+  FROM (
+    SELECT 1 AS s, 'Annual Pacing' AS Metric,
+      CONCAT('$', FORMAT("%'.2f", SUM(CASE WHEN ytd_period='curr' AND Won THEN ACV END) * 365.0 / NULLIF(EXTRACT(DAYOFYEAR FROM CURRENT_DATE()), 0) / 1000.0), 'K') AS Value,
+      CONCAT('$', FORMAT("%'.2f", SUM(CASE WHEN ytd_period='prev' AND Won THEN ACV END) * 365.0 / NULLIF(EXTRACT(DAYOFYEAR FROM CURRENT_DATE()), 0) / 1000.0), 'K') AS Prev_YTD,
+      SUM(CASE WHEN ytd_period='curr' AND Won THEN ACV END) AS raw_curr,
+      SUM(CASE WHEN ytd_period='prev' AND Won THEN ACV END) AS raw_prev FROM t
+    UNION ALL
+    SELECT 2, 'Close Rate',
+      CONCAT(FORMAT('%.1f', SUM(CASE WHEN ytd_period='curr' AND isclosed AND Won THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(DISTINCT CASE WHEN ytd_period='curr' AND isclosed THEN Id END), 0)), '%'),
+      CONCAT(FORMAT('%.1f', SUM(CASE WHEN ytd_period='prev' AND isclosed AND Won THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(DISTINCT CASE WHEN ytd_period='prev' AND isclosed THEN Id END), 0)), '%'),
+      SUM(CASE WHEN ytd_period='curr' AND isclosed AND Won THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT(DISTINCT CASE WHEN ytd_period='curr' AND isclosed THEN Id END), 0),
+      SUM(CASE WHEN ytd_period='prev' AND isclosed AND Won THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT(DISTINCT CASE WHEN ytd_period='prev' AND isclosed THEN Id END), 0) FROM t
+    UNION ALL
+    SELECT 3, 'Avg Age',
+      CAST(ROUND(AVG(CASE WHEN ytd_period='curr' THEN Age__c END)) AS STRING),
+      CAST(ROUND(AVG(CASE WHEN ytd_period='prev' THEN Age__c END)) AS STRING),
+      AVG(CASE WHEN ytd_period='curr' THEN Age__c END),
+      AVG(CASE WHEN ytd_period='prev' THEN Age__c END) FROM t
+    UNION ALL
+    SELECT 4, 'Avg Booked Deal',
+      CONCAT('$', FORMAT("%'.2f", SUM(CASE WHEN ytd_period='curr' AND Won AND ACV>0 THEN ACV END) / NULLIF(COUNT(DISTINCT CASE WHEN ytd_period='curr' AND Won AND ACV>0 THEN Id END), 0) / 1000.0), 'K'),
+      CONCAT('$', FORMAT("%'.2f", SUM(CASE WHEN ytd_period='prev' AND Won AND ACV>0 THEN ACV END) / NULLIF(COUNT(DISTINCT CASE WHEN ytd_period='prev' AND Won AND ACV>0 THEN Id END), 0) / 1000.0), 'K'),
+      SUM(CASE WHEN ytd_period='curr' AND Won AND ACV>0 THEN ACV END) / NULLIF(COUNT(DISTINCT CASE WHEN ytd_period='curr' AND Won AND ACV>0 THEN Id END), 0),
+      SUM(CASE WHEN ytd_period='prev' AND Won AND ACV>0 THEN ACV END) / NULLIF(COUNT(DISTINCT CASE WHEN ytd_period='prev' AND Won AND ACV>0 THEN Id END), 0) FROM t
+    UNION ALL
+    SELECT 5, 'Pipeline Created',
+      CONCAT('$', FORMAT("%'.2f", SUM(CASE WHEN ytd_period='curr' AND ACV>0 THEN ACV END) / 1000.0), 'K'),
+      CONCAT('$', FORMAT("%'.2f", SUM(CASE WHEN ytd_period='prev' AND ACV>0 THEN ACV END) / 1000.0), 'K'),
+      SUM(CASE WHEN ytd_period='curr' AND ACV>0 THEN ACV END),
+      SUM(CASE WHEN ytd_period='prev' AND ACV>0 THEN ACV END) FROM t
+    UNION ALL
+    SELECT 6, 'One-time Revenue',
+      CONCAT('$', FORMAT("%'.2f", SUM(CASE WHEN ytd_period='curr' AND Won AND HardImpValueUSD>0 THEN HardImpValueUSD END) / 1000.0), 'K'),
+      CONCAT('$', FORMAT("%'.2f", SUM(CASE WHEN ytd_period='prev' AND Won AND HardImpValueUSD>0 THEN HardImpValueUSD END) / 1000.0), 'K'),
+      SUM(CASE WHEN ytd_period='curr' AND Won AND HardImpValueUSD>0 THEN HardImpValueUSD END),
+      SUM(CASE WHEN ytd_period='prev' AND Won AND HardImpValueUSD>0 THEN HardImpValueUSD END) FROM t
+    UNION ALL
+    SELECT 7, 'Renewals',
+      CONCAT('$', FORMAT("%'.2f", SUM(CASE WHEN ytd_period='curr' AND Won AND ACV>0 AND StageName='Closed Won' AND Type='Renewal' THEN ACV END) / 1000.0), 'K'),
+      CONCAT('$', FORMAT("%'.2f", SUM(CASE WHEN ytd_period='prev' AND Won AND ACV>0 AND StageName='Closed Won' AND Type='Renewal' THEN ACV END) / 1000.0), 'K'),
+      SUM(CASE WHEN ytd_period='curr' AND Won AND ACV>0 AND StageName='Closed Won' AND Type='Renewal' THEN ACV END),
+      SUM(CASE WHEN ytd_period='prev' AND Won AND ACV>0 AND StageName='Closed Won' AND Type='Renewal' THEN ACV END) FROM t
+  ) sub
+  ORDER BY s
+limit: 500
+config:
+  type: table
+  columns:
+    Value:
+      label: YTD
+      order: 1
+      frozen: false
+      visible: true
+      reference: Value
+    Metric:
+      label: Metric
+      order: 0
+      frozen: false
+      visible: true
+      reference: Metric
+    Prev_YTD:
+      label: Prev YTD
+      order: 2
+      frozen: false
+      visible: true
+      reference: Prev_YTD
+    Pct_Change:
+      label: '% Change'
+      order: 3
+      frozen: false
+      visible: true
+      reference: Pct_Change
+  metadata:
+    version: 1
+  conditionalFormattings:
+    - color: '#10B981'
+      rules:
+        - id: positive
+          values:
+            - +
+          operator: startsWith
+      target:
+        fieldId: Pct_Change
+      applyTo: cell
+    - color: '#EF4444'
+      rules:
+        - id: negative
+          values:
+            - '-'
+          operator: startsWith
+        - id: has_percent
+          values:
+            - '%'
+          operator: include
+      target:
+        fieldId: Pct_Change
+      applyTo: cell
+chartKind: table
+updatedAt: '2026-03-11T01:06:02.519Z'
+spaceSlug: shared
+version: 1
+downloadedAt: '2026-03-11T02:13:32.093Z'

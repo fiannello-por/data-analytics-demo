@@ -1,0 +1,187 @@
+name: Lightdash Preview
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+    paths:
+      - 'lightdash/**'
+      - 'lightdash.config.yml'
+
+permissions:
+  contents: read
+  pull-requests: write
+  deployments: write
+
+concurrency:
+  group: lightdash-preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      LIGHTDASH_API_KEY: ${{ secrets.LIGHTDASH_API_TOKEN }}
+      LIGHTDASH_URL: ${{ secrets.LIGHTDASH_URL }}
+      LIGHTDASH_PROJECT: ${{ secrets.LIGHTDASH_PROJECT_UUID }}
+      LIGHTDASH_PREVIEW_NAME: pr-${{ github.event.pull_request.number }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Ensure Lightdash secrets are configured
+        run: |
+          test -n "$LIGHTDASH_API_KEY" || (echo "::error::Missing LIGHTDASH_API_KEY" && exit 1)
+          test -n "$LIGHTDASH_URL" || (echo "::error::Missing LIGHTDASH_URL" && exit 1)
+          test -n "$LIGHTDASH_PROJECT" || (echo "::error::Missing LIGHTDASH_PROJECT" && exit 1)
+
+      # --- Fail-fast gate: catch broken references before expensive preview ---
+      - name: Validate Lightdash references (offline)
+        run: bash scripts/validate-lightdash-refs.sh
+
+      - name: Create GitHub deployment
+        id: deployment
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const deployment = await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.sha,
+              environment: `lightdash-preview-pr-${context.issue.number}`,
+              auto_merge: false,
+              required_contexts: [],
+              transient_environment: true,
+              production_environment: false,
+              description: `Lightdash preview for PR #${context.issue.number}`,
+            });
+            return deployment.data.id;
+
+      - name: Set deployment to in_progress
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: ${{ steps.deployment.outputs.result }},
+              state: 'in_progress',
+              log_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Install Lightdash CLI
+        run: npm install -g @lightdash/cli@0.2596.0
+
+      - name: Create or update preview project
+        run: |
+          lightdash start-preview --name "$LIGHTDASH_PREVIEW_NAME"
+          lightdash deploy --no-warehouse-credentials
+          lightdash upload --force
+
+      - name: Resolve preview project URL
+        id: preview_url
+        run: |
+          PROJECTS_JSON=$(curl -sf \
+            -H "Authorization: ApiKey $LIGHTDASH_API_KEY" \
+            "$LIGHTDASH_URL/api/v1/org/projects")
+          PREVIEW_UUID=$(echo "$PROJECTS_JSON" | \
+            node -e "
+              const data = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
+              const proj = (data.results || []).find(p => p.name.includes('$LIGHTDASH_PREVIEW_NAME'));
+              if (proj) console.log(proj.projectUuid);
+            ")
+          if [ -n "$PREVIEW_UUID" ]; then
+            echo "url=${LIGHTDASH_URL}/projects/${PREVIEW_UUID}/home" >> "$GITHUB_OUTPUT"
+            echo "uuid=${PREVIEW_UUID}" >> "$GITHUB_OUTPUT"
+          else
+            echo "url=${LIGHTDASH_URL}" >> "$GITHUB_OUTPUT"
+            echo "uuid=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Validate preview project (server-side)
+        if: steps.preview_url.outputs.uuid != ''
+        run: |
+          lightdash validate \
+            --project "$PREVIEW_UUID" \
+            --skip-dbt-compile \
+            --skip-warehouse-catalog
+        env:
+          PREVIEW_UUID: ${{ steps.preview_url.outputs.uuid }}
+
+      - name: Set deployment to success
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: ${{ steps.deployment.outputs.result }},
+              state: 'success',
+              environment_url: '${{ steps.preview_url.outputs.url }}',
+              log_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });
+
+      - name: Comment preview link on pull request
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const marker = '<!-- lightdash-preview -->';
+            const previewUrl = '${{ steps.preview_url.outputs.url }}';
+            const body = [
+              marker,
+              `### Lightdash Preview`,
+              `Preview project **\`${process.env.LIGHTDASH_PREVIEW_NAME}\`** has been deployed.`,
+              ``,
+              `[Open preview in Lightdash](${previewUrl})`,
+            ].join('\n');
+            const comments = await github.paginate(
+              github.rest.issues.listComments,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                per_page: 100,
+              }
+            );
+            const existing = comments.find((comment) => comment.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+        env:
+          LIGHTDASH_PREVIEW_NAME: ${{ env.LIGHTDASH_PREVIEW_NAME }}
+
+      # --- Failure handler: mark deployment failed if any step above fails ---
+      - name: Set deployment to failure
+        if: failure() && steps.deployment.outputs.result
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: ${{ steps.deployment.outputs.result }},
+              state: 'failure',
+              log_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });

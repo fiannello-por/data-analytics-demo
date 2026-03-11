@@ -1,0 +1,62 @@
+name: Pipeline by Owner
+description: null
+tableName: fct_sales_pipeline
+updatedAt: '2026-03-11T01:05:57.079Z'
+metricQuery:
+  exploreName: fct_sales_pipeline
+  dimensions:
+    - fct_sales_pipeline_opportunity_owner
+  metrics:
+    - fct_sales_pipeline_total_won_revenue
+    - fct_sales_pipeline_total_open_pipeline
+  filters: {}
+  sorts:
+    - fieldId: fct_sales_pipeline_total_won_revenue
+      descending: true
+  limit: 10
+  metricOverrides: {}
+  dimensionOverrides: {}
+  tableCalculations: []
+  additionalMetrics: []
+  customDimensions: []
+chartConfig:
+  type: cartesian
+  config:
+    layout:
+      xField: fct_sales_pipeline_opportunity_owner
+      yField:
+        - fct_sales_pipeline_total_won_revenue
+        - fct_sales_pipeline_total_open_pipeline
+    eChartsConfig:
+      legend:
+        show: true
+        type: plain
+        orient: horizontal
+      series:
+        - name: Won Revenue
+          type: bar
+          color: '#10b981'
+          encode:
+            xRef:
+              field: fct_sales_pipeline_opportunity_owner
+            yRef:
+              field: fct_sales_pipeline_total_won_revenue
+          yAxisIndex: 0
+        - name: Open Pipeline
+          type: bar
+          color: '#3b82f6'
+          encode:
+            xRef:
+              field: fct_sales_pipeline_opportunity_owner
+            yRef:
+              field: fct_sales_pipeline_total_open_pipeline
+          yAxisIndex: 0
+slug: pipeline-by-owner
+tableConfig:
+  columnOrder:
+    - fct_sales_pipeline_opportunity_owner
+    - fct_sales_pipeline_total_won_revenue
+    - fct_sales_pipeline_total_open_pipeline
+spaceSlug: sales-dashboard
+version: 1
+downloadedAt: '2026-03-11T02:13:31.749Z'

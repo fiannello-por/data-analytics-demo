@@ -1,0 +1,58 @@
+name: 'Total: One-time Revenue'
+description: null
+tableName: opportunity_view
+updatedAt: '2026-03-11T01:06:08.207Z'
+metricQuery:
+  exploreName: opportunity_view
+  dimensions: []
+  metrics:
+    - opportunity_view_hard_imp_value_usd
+  filters:
+    dimensions:
+      id: root
+      and:
+        - id: won_filter
+          target:
+            fieldId: opportunity_view_Won
+          values:
+            - true
+          operator: equals
+        - id: hardimp_positive
+          target:
+            fieldId: opportunity_view_HardImpValueUSD
+          values:
+            - 0
+          operator: greaterThan
+        - id: date_filter
+          target:
+            fieldId: opportunity_view_CloseDate
+          values:
+            - 12
+          operator: inThePast
+          settings:
+            completed: false
+            unitOfTime: months
+  sorts: []
+  limit: 1
+  metricOverrides: {}
+  dimensionOverrides: {}
+  tableCalculations: []
+  additionalMetrics: []
+  customDimensions: []
+chartConfig:
+  type: big_number
+  config:
+    label: One-time Revenue
+    style: K
+    selectedField: opportunity_view_hard_imp_value_usd
+    showComparison: true
+    comparisonLabel: vs. prev year
+    comparisonFormat: percentage
+    showBigNumberLabel: true
+slug: total-one-time-revenue
+tableConfig:
+  columnOrder:
+    - opportunity_view_hard_imp_value_usd
+spaceSlug: shared
+version: 1
+downloadedAt: '2026-03-11T02:13:31.749Z'

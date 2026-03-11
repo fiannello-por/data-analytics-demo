@@ -1,7 +1,7 @@
 name: Owner Performance
 description: null
 tableName: opportunity_view
-updatedAt: '2026-03-06T19:44:22.296Z'
+updatedAt: '2026-03-11T01:06:11.929Z'
 metricQuery:
   exploreName: opportunity_view
   dimensions:
@@ -49,4 +49,4 @@ tableConfig:
     - opportunity_view_sqo_count
 spaceSlug: shared
 version: 1
-downloadedAt: '2026-03-10T23:37:27.525Z'
+downloadedAt: '2026-03-11T02:13:31.749Z'

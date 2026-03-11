@@ -1,6 +1,6 @@
 name: Sales Performance
 description: ''
-updatedAt: '2026-03-10T19:02:21.799Z'
+updatedAt: '2026-03-11T01:06:12.243Z'
 tiles:
   - x: 0
     'y': 0
@@ -9,7 +9,10 @@ tiles:
     tabUuid: b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e
     type: markdown
     properties:
-      text: '# New Logo'
+      title: ''
+      hideTitle: false
+      content: '# New Logo'
+      hideFrame: true
   - x: 0
     'y': 0
     h: 1
@@ -17,7 +20,10 @@ tiles:
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: markdown
     properties:
-      text: '# New Logo'
+      title: New Logo
+      hideTitle: false
+      content: '# New Logo'
+      hideFrame: true
   - x: 7
     'y': 0
     h: 1
@@ -25,7 +31,10 @@ tiles:
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: markdown
     properties:
-      text: '# Expansion'
+      title: ''
+      hideTitle: false
+      content: '# Expansion'
+      hideFrame: true
   - x: 14
     'y': 0
     h: 1
@@ -33,7 +42,10 @@ tiles:
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: markdown
     properties:
-      text: '# Migration'
+      title: ''
+      hideTitle: false
+      content: '# Migration'
+      hideFrame: true
   - x: 21
     'y': 0
     h: 1
@@ -41,7 +53,10 @@ tiles:
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: markdown
     properties:
-      text: '# Renewals'
+      title: ''
+      hideTitle: false
+      content: '# Renewals'
+      hideFrame: true
   - x: 28
     'y': 0
     h: 1
@@ -49,12 +64,15 @@ tiles:
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: markdown
     properties:
-      text: '# Total'
+      title: ''
+      hideTitle: false
+      content: '# Total'
+      hideFrame: true
   - x: 0
     'y': 1
     h: 2
-    w: 18
-    tabUuid: b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e
+    w: 4
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: saved_chart
     properties:
       title: ''
@@ -65,8 +83,8 @@ tiles:
   - x: 0
     'y': 1
     h: 2
-    w: 4
-    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    w: 18
+    tabUuid: b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e
     type: saved_chart
     properties:
       title: ''
@@ -125,18 +143,6 @@ tiles:
   - x: 18
     'y': 1
     h: 2
-    w: 3
-    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
-    type: saved_chart
-    properties:
-      title: ''
-      hideTitle: true
-      chartSlug: migration-bookings-count
-      chartName: 'Migration: Bookings #'
-    tileSlug: migration-bookings-count-1
-  - x: 18
-    'y': 1
-    h: 2
     w: 18
     tabUuid: b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e
     type: saved_chart
@@ -146,6 +152,18 @@ tiles:
       chartSlug: new-logo-bookings-count
       chartName: 'New Logo: Bookings #'
     tileSlug: new-logo-bookings-count-2
+  - x: 18
+    'y': 1
+    h: 2
+    w: 3
+    tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
+    type: saved_chart
+    properties:
+      title: ''
+      hideTitle: true
+      chartSlug: migration-bookings-count
+      chartName: 'Migration: Bookings #'
+    tileSlug: migration-bookings-count-1
   - x: 21
     'y': 1
     h: 2
@@ -285,7 +303,10 @@ tiles:
     tabUuid: b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e
     type: markdown
     properties:
-      text: '# Expansion'
+      title: ''
+      hideTitle: false
+      content: '# Expansion'
+      hideFrame: true
   - x: 0
     'y': 12
     h: 2
@@ -365,7 +386,10 @@ tiles:
     tabUuid: b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e
     type: markdown
     properties:
-      text: '# Migration'
+      title: ''
+      hideTitle: false
+      content: '# Migration'
+      hideFrame: true
   - x: 0
     'y': 23
     h: 2
@@ -433,7 +457,10 @@ tiles:
     tabUuid: b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e
     type: markdown
     properties:
-      text: '# Renewals'
+      title: ''
+      hideTitle: false
+      content: '# Renewals'
+      hideFrame: true
   - x: 0
     'y': 34
     h: 2
@@ -489,7 +516,10 @@ tiles:
     tabUuid: b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e
     type: markdown
     properties:
-      text: '# Total'
+      title: ''
+      hideTitle: false
+      content: '# Total'
+      hideFrame: true
   - x: 0
     'y': 45
     h: 2
@@ -533,9 +563,9 @@ tiles:
     tabUuid: de612c11-3f0f-4fd6-8027-177dbfab0bb7
     type: markdown
     properties:
-      text: >
-        # Legend / Glossary
-
+      title: Legend / Glossary
+      hideTitle: false
+      content: >
         | Term | Definition | Date Dimension (if applicable) | Rules &amp; key
         notes |
 
@@ -635,6 +665,7 @@ tiles:
         | **Won/MQL** | % of MQLs that ultimately become Closed Won. | - | - |
 
         | **Won/SQL** | % of SQLs that ultimately become Closed Won. | - | - |
+      hideFrame: false
   - x: 0
     'y': 55
     h: 9
@@ -661,43 +692,43 @@ filters:
       settings:
         unitOfTime: years
       tileTargets:
-        product-mix:
-          fieldId: opportunity_view_InstallDate
-          tableName: opportunity_view
-        expansion-bookings-count-2: false
+        total-bookings-acv-1: false
         owner-performance:
           fieldId: opportunity_view_CloseDate
           tableName: opportunity_view
-        renewal-bookings-count-2: false
-        migration-bookings-acv-1: false
-        migration-bookings-count-2: false
-        new-logo-bookings-count-1: false
-        expansion-bookings-count-1: false
-        new-logo-bookings-count-2: false
-        new-logo-bookings-acv-1: false
-        expansion-bookings-acv-2: false
-        closed-won-opportunities-1:
-          fieldId: opportunity_view_CloseDate
-          tableName: opportunity_view
-        expansion-bookings-acv-1: false
+        migration-bookings-count-1: false
         total-bookings-count-1: false
-        performance-by-period: false
+        migration-bookings-count-2: false
+        renewal-bookings-acv-2: false
+        expansion-bookings-acv-2: false
+        sqos-over-time: false
         total-bookings-count-2: false
-        total-bookings-acv-2: false
-        migration-bookings-acv-2: false
-        new-logo-bookings-acv-2: false
+        expansion-bookings-acv-1: false
+        new-logo-bookings-count-2: false
         one-time-revenue:
           fieldId: opportunity_view_CloseDate
           tableName: opportunity_view
-        sqos-over-time: false
-        renewal-bookings-acv-2: false
-        renewal-bookings-acv-1: false
         quarterly-breakdown:
           fieldId: opportunity_view_CloseDate
           tableName: opportunity_view
-        total-bookings-acv-1: false
+        renewal-bookings-count-2: false
+        performance-by-period: false
+        migration-bookings-acv-1: false
+        renewal-bookings-acv-1: false
+        total-bookings-acv-2: false
         renewal-bookings-count-1: false
-        migration-bookings-count-1: false
+        new-logo-bookings-count-1: false
+        new-logo-bookings-acv-2: false
+        product-mix:
+          fieldId: opportunity_view_InstallDate
+          tableName: opportunity_view
+        expansion-bookings-count-1: false
+        closed-won-opportunities-1:
+          fieldId: opportunity_view_CloseDate
+          tableName: opportunity_view
+        expansion-bookings-count-2: false
+        migration-bookings-acv-2: false
+        new-logo-bookings-acv-1: false
     - label: Type
       target:
         fieldId: opportunity_view_Type
@@ -706,27 +737,27 @@ filters:
       disabled: true
       operator: equals
       tileTargets:
-        expansion-bookings-count-2: false
+        total-bookings-acv-1: false
+        migration-bookings-count-1: false
+        total-bookings-count-1: false
+        migration-bookings-count-2: false
+        renewal-bookings-acv-2: false
+        expansion-bookings-acv-2: false
+        sqos-over-time: false
+        total-bookings-count-2: false
+        expansion-bookings-acv-1: false
+        new-logo-bookings-count-2: false
         renewal-bookings-count-2: false
         migration-bookings-acv-1: false
-        migration-bookings-count-2: false
-        new-logo-bookings-count-1: false
-        expansion-bookings-count-1: false
-        new-logo-bookings-count-2: false
-        new-logo-bookings-acv-1: false
-        expansion-bookings-acv-2: false
-        expansion-bookings-acv-1: false
-        total-bookings-count-1: false
-        total-bookings-count-2: false
-        total-bookings-acv-2: false
-        migration-bookings-acv-2: false
-        new-logo-bookings-acv-2: false
-        sqos-over-time: false
-        renewal-bookings-acv-2: false
         renewal-bookings-acv-1: false
-        total-bookings-acv-1: false
+        total-bookings-acv-2: false
         renewal-bookings-count-1: false
-        migration-bookings-count-1: false
+        new-logo-bookings-count-1: false
+        new-logo-bookings-acv-2: false
+        expansion-bookings-count-1: false
+        expansion-bookings-count-2: false
+        migration-bookings-acv-2: false
+        new-logo-bookings-acv-1: false
     - label: Division
       target:
         fieldId: opportunity_view_Division
@@ -891,4 +922,4 @@ tabs:
 slug: sales-performance
 spaceSlug: point-of-rental-revops-analytics-demo/revenue
 version: 1
-downloadedAt: '2026-03-10T23:37:28.356Z'
+downloadedAt: '2026-03-11T02:13:32.433Z'
