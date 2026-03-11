@@ -1,6 +1,7 @@
-name: 'Total: Avg Booked Deal'
-description: 'Average ACV per closed won opportunity over the last 12 months.'
+name: "Total: Avg Booked Deal"
+description: null
 tableName: opportunity_view
+updatedAt: "2026-03-11T01:06:06.483Z"
 metricQuery:
   exploreName: opportunity_view
   dimensions: []
@@ -60,3 +61,4 @@ tableConfig:
     - opportunity_view_avg_acv
 spaceSlug: shared
 version: 1
+downloadedAt: "2026-03-11T02:13:31.749Z"

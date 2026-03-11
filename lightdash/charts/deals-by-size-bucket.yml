@@ -1,0 +1,40 @@
+name: Deals by Size
+description: null
+tableName: fct_sales_pipeline
+updatedAt: "2026-03-11T01:05:41.618Z"
+metricQuery:
+  exploreName: fct_sales_pipeline
+  dimensions:
+    - fct_sales_pipeline_deal_size_bucket
+  metrics:
+    - fct_sales_pipeline_opportunity_count
+  filters: {}
+  sorts:
+    - fieldId: fct_sales_pipeline_opportunity_count
+      descending: true
+  limit: 10
+  metricOverrides: {}
+  dimensionOverrides: {}
+  tableCalculations: []
+  additionalMetrics: []
+  customDimensions: []
+chartConfig:
+  type: pie
+  config:
+    isDonut: true
+    metricId: fct_sales_pipeline_opportunity_count
+    showValue: true
+    showLegend: true
+    valueLabel: inside
+    groupFieldIds:
+      - fct_sales_pipeline_deal_size_bucket
+    legendPosition: horizontal
+    showPercentage: true
+slug: deals-by-size-bucket
+tableConfig:
+  columnOrder:
+    - fct_sales_pipeline_deal_size_bucket
+    - fct_sales_pipeline_opportunity_count
+spaceSlug: sales-dashboard
+version: 1
+downloadedAt: "2026-03-11T02:13:31.749Z"

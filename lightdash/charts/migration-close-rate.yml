@@ -1,6 +1,7 @@
-name: 'Migration: Close Rate'
-description: 'Share of closed migration opportunities marked won over the last 12 months.'
+name: "Migration: Close Rate"
+description: null
 tableName: opportunity_view
+updatedAt: "2026-03-11T01:05:48.454Z"
 metricQuery:
   exploreName: opportunity_view
   dimensions: []
@@ -57,3 +58,4 @@ tableConfig:
     - opportunity_view_close_rate
 spaceSlug: shared
 version: 1
+downloadedAt: "2026-03-11T02:13:31.749Z"

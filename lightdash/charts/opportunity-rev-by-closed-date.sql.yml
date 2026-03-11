@@ -1,0 +1,35 @@
+name: Opportunity - Rev by Closed Date
+description: ""
+slug: opportunity-rev-by-closed-date
+sql: |-
+  SELECT Opportunity.closedate, sum(Opportunity.revenue_calculated__c) as rev
+  FROM `data-analytics-306119`.`sfdc`.`Opportunity` 
+  where Opportunity.revenue_calculated__c is not null
+  group by Opportunity.closedate
+limit: 500
+config:
+  type: line
+  display:
+    yAxis: []
+    series:
+      rev_sum:
+        whichYAxis: 0
+        valueLabelPosition: top
+  metadata:
+    version: 1
+  fieldConfig:
+    x:
+      type: time
+      reference: closedate
+    "y":
+      - reference: rev
+        aggregation: sum
+    sortBy:
+      - direction: ASC
+        reference: closedate
+    groupBy: []
+chartKind: line
+updatedAt: "2026-03-11T01:05:55.926Z"
+spaceSlug: point-of-rental-revops-analytics-demo/revenue
+version: 1
+downloadedAt: "2026-03-11T02:13:32.093Z"
