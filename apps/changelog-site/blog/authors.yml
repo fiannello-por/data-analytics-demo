@@ -1,7 +1,17 @@
 analytics-team:
   name: Analytics Team
   title: Semantic layer, dashboards, and analytics delivery
+  image_url: https://avatars.githubusercontent.com/u/0?v=4
+  url: https://github.com/fiannello-por/data-analytics-demo
 
 codex-bot:
   name: Codex Bot
   title: Automated changelog editor
+  image_url: https://avatars.githubusercontent.com/in/310395?v=4
+  url: https://github.com/apps/github-actions
+
+fiannello-por:
+  name: Facundo Iannello
+  title: Analytics Engineer
+  image_url: https://avatars.githubusercontent.com/fiannello-por
+  url: https://github.com/fiannello-por

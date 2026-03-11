@@ -21,9 +21,7 @@ const config: Config = {
       onBrokenMarkdownLinks: 'throw',
     },
   },
-  stylesheets: [
-    'https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,600;6..72,700&family=Space+Grotesk:wght@400;500;700&display=swap',
-  ],
+  stylesheets: [],
   presets: [
     [
       'classic',
@@ -37,14 +35,14 @@ const config: Config = {
           blogSidebarTitle: 'Recent updates',
           blogSidebarCount: 'ALL',
           showReadingTime: false,
-          postsPerPage: 12,
+          postsPerPage: 50,
           authorsMapPath: 'authors.yml',
           feedOptions: {
             type: ['rss', 'atom'],
             xslt: true,
           },
           onInlineTags: 'warn',
-          onInlineAuthors: 'warn',
+          onInlineAuthors: 'ignore',
           onUntruncatedBlogPosts: 'warn',
         },
         theme: {
@@ -56,7 +54,7 @@ const config: Config = {
   themeConfig: {
     image: 'img/docusaurus-social-card.jpg',
     colorMode: {
-      defaultMode: 'light',
+      defaultMode: 'dark',
       disableSwitch: true,
       respectPrefersColorScheme: false,
     },
@@ -66,21 +64,10 @@ const config: Config = {
         alt: 'Point of Rental Changelog',
         src: 'img/logo.svg',
       },
-      items: [
-        {
-          to: '/',
-          position: 'left',
-          label: 'Latest',
-        },
-        {
-          href: 'https://point-of-rental-analytics.vercel.app/rss.xml',
-          label: 'RSS',
-          position: 'right',
-        },
-      ],
+      items: [],
     },
     footer: {
-      style: 'light',
+      style: 'dark',
       links: [
         {
           title: 'Repository',
@@ -100,25 +87,12 @@ const config: Config = {
             },
           ],
         },
-        {
-          title: 'Feeds',
-          items: [
-            {
-              label: 'RSS',
-              href: 'https://point-of-rental-analytics.vercel.app/rss.xml',
-            },
-            {
-              label: 'Atom',
-              href: 'https://point-of-rental-analytics.vercel.app/atom.xml',
-            },
-          ],
-        },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} Point of Rental Analytics.`,
+      copyright: `© ${new Date().getFullYear()} Point of Rental Analytics`,
     },
     prism: {
-      theme: prismThemes.github,
-      darkTheme: prismThemes.github,
+      theme: prismThemes.dracula,
+      darkTheme: prismThemes.dracula,
     },
   } satisfies Preset.ThemeConfig,
 };

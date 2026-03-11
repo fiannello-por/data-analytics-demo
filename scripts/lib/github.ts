@@ -23,9 +23,18 @@ export type PullRequestDetails = {
   html_url: string;
   user: {
     login: string;
+    avatar_url: string;
+    html_url: string;
   };
   labels: PullRequestLabel[];
   merged: boolean;
+};
+
+export type GitHubUser = {
+  login: string;
+  name: string | null;
+  avatar_url: string;
+  html_url: string;
 };
 
 type IssueComment = {
@@ -99,6 +108,13 @@ export async function paginateGithub<T>(
   }
 
   return results;
+}
+
+export async function fetchGitHubUser(
+  token: string,
+  login: string,
+): Promise<GitHubUser> {
+  return githubRequest<GitHubUser>(token, `/users/${login}`);
 }
 
 export async function upsertIssueComment(params: {
