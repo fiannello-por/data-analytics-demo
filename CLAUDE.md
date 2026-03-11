@@ -15,6 +15,10 @@ Before declaring any Lightdash change complete:
 2. Run `lightdash lint` — catches YAML syntax errors (known false positive on markdown tiles is OK)
 3. If a preview project exists, run `lightdash validate --project <uuid> --skip-dbt-compile --skip-warehouse-catalog`
 
+## Pull Requests
+
+When creating a PR, read `.github/pull_request_template.md` and fill every section with substantive content in the `--body` flag. Do not leave placeholder text. Use `skip` for the Changelog note only when the change is fully internal.
+
 ## References
 
 - [AGENTS.md](AGENTS.md) — agent governance and review priorities
