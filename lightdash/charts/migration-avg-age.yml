@@ -1,7 +1,6 @@
 name: 'Migration: Avg Age'
-description: null
+description: 'Average age in days for won migration opportunities over the last 12 months.'
 tableName: opportunity_view
-updatedAt: '2026-03-09T16:15:58.802Z'
 metricQuery:
   exploreName: opportunity_view
   dimensions: []
@@ -54,4 +53,3 @@ tableConfig:
     - opportunity_view_avg_age
 spaceSlug: shared
 version: 1
-downloadedAt: '2026-03-10T23:37:27.525Z'

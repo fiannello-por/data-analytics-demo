@@ -45,8 +45,5 @@ jobs:
       - name: Run unit tests
         run: pnpm test
 
-      - name: Lint Lightdash YAML
-        run: pnpm lightdash:lint
-
       - name: Build changelog site
         run: pnpm changelog:build

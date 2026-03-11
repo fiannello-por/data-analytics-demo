@@ -1,11 +1,10 @@
 name: 'Total: Bookings $'
-description: null
+description: 'Booked ACV for all closed won opportunities over the last 12 months.'
 tableName: opportunity_view
-updatedAt: '2026-03-10T16:01:47.413Z'
+updatedAt: '2026-03-09T13:45:14.452Z'
 metricQuery:
   exploreName: opportunity_view
-  dimensions:
-    - opportunity_view_CloseDate_year
+  dimensions: []
   metrics:
     - opportunity_view_acv_dollars
   filters:
@@ -30,16 +29,17 @@ metricQuery:
           values:
             - Closed Won
           operator: equals
-        - id: ytd_window
+        - id: date_filter
           target:
-            fieldId: opportunity_view_IsWithinYTDWindow
+            fieldId: opportunity_view_CloseDate
           values:
-            - true
-          operator: equals
-  sorts:
-    - fieldId: opportunity_view_CloseDate_year
-      descending: true
-  limit: 2
+            - 12
+          operator: inThePast
+          settings:
+            completed: false
+            unitOfTime: months
+  sorts: []
+  limit: 1
   metricOverrides: {}
   dimensionOverrides: {}
   tableCalculations: []
@@ -58,8 +58,7 @@ chartConfig:
 slug: total-bookings-acv
 tableConfig:
   columnOrder:
-    - opportunity_view_CloseDate_year
     - opportunity_view_acv_dollars
 spaceSlug: shared
 version: 1
-downloadedAt: '2026-03-10T23:37:27.525Z'
+downloadedAt: '2026-03-09T15:49:11.524Z'

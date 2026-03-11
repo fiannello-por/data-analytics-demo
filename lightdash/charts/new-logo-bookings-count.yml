@@ -1,11 +1,10 @@
 name: 'New Logo: Bookings #'
-description: null
+description: 'Distinct closed won new business opportunities booked over the last 12 months.'
 tableName: opportunity_view
-updatedAt: '2026-03-10T16:01:46.209Z'
+updatedAt: '2026-03-09T13:45:13.556Z'
 metricQuery:
   exploreName: opportunity_view
-  dimensions:
-    - opportunity_view_CloseDate_year
+  dimensions: []
   metrics:
     - opportunity_view_bookings_count
   filters:
@@ -36,16 +35,17 @@ metricQuery:
           values:
             - Closed Won
           operator: equals
-        - id: ytd_window
+        - id: date_filter
           target:
-            fieldId: opportunity_view_IsWithinYTDWindow
+            fieldId: opportunity_view_CloseDate
           values:
-            - true
-          operator: equals
-  sorts:
-    - fieldId: opportunity_view_CloseDate_year
-      descending: true
-  limit: 2
+            - 12
+          operator: inThePast
+          settings:
+            completed: false
+            unitOfTime: months
+  sorts: []
+  limit: 1
   metricOverrides: {}
   dimensionOverrides: {}
   tableCalculations: []
@@ -63,8 +63,7 @@ chartConfig:
 slug: new-logo-bookings-count
 tableConfig:
   columnOrder:
-    - opportunity_view_CloseDate_year
     - opportunity_view_bookings_count
 spaceSlug: shared
 version: 1
-downloadedAt: '2026-03-10T23:37:27.525Z'
+downloadedAt: '2026-03-09T15:49:11.524Z'

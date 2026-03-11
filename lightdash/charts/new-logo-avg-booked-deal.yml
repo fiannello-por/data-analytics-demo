@@ -1,7 +1,6 @@
 name: 'New Logo: Avg Booked Deal'
-description: null
+description: 'Average ACV per closed won new business opportunity over the last 12 months.'
 tableName: opportunity_view
-updatedAt: '2026-03-09T16:16:02.839Z'
 metricQuery:
   exploreName: opportunity_view
   dimensions: []
@@ -67,4 +66,3 @@ tableConfig:
     - opportunity_view_avg_acv
 spaceSlug: shared
 version: 1
-downloadedAt: '2026-03-10T23:37:27.525Z'

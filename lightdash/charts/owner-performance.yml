@@ -1,5 +1,5 @@
 name: Owner Performance
-description: null
+description: 'Booked ACV and won opportunity counts by owner.'
 tableName: opportunity_view
 updatedAt: '2026-03-06T19:44:22.296Z'
 metricQuery:
@@ -8,7 +8,7 @@ metricQuery:
     - opportunity_view_Owner
   metrics:
     - opportunity_view_acv_dollars
-    - opportunity_view_sqo_count
+    - opportunity_view_bookings_count
   filters:
     dimensions:
       id: root
@@ -35,7 +35,7 @@ chartConfig:
       opportunity_view_Owner:
         name: Owner
         frozen: true
-      opportunity_view_sqo_count:
+      opportunity_view_bookings_count:
         name: '# of Deals'
       opportunity_view_acv_dollars:
         name: ACV
@@ -46,7 +46,7 @@ tableConfig:
   columnOrder:
     - opportunity_view_Owner
     - opportunity_view_acv_dollars
-    - opportunity_view_sqo_count
+    - opportunity_view_bookings_count
 spaceSlug: shared
 version: 1
-downloadedAt: '2026-03-10T23:37:27.525Z'
+downloadedAt: '2026-03-09T15:49:11.524Z'
