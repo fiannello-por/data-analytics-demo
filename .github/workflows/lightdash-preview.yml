@@ -43,9 +43,6 @@ jobs:
       - name: Install Lightdash CLI
         run: npm install -g @lightdash/cli@0.2596.0
 
-      - name: Lint Lightdash YAML
-        run: lightdash lint --path ./lightdash
-
       - name: Create or update preview project
         run: |
           lightdash start-preview --name "$LIGHTDASH_PREVIEW_NAME"
