@@ -1,7 +1,7 @@
 name: Avg Deal Size
 description: null
 tableName: fct_sales_pipeline
-updatedAt: "2026-03-11T01:05:40.825Z"
+updatedAt: '2026-03-11T01:05:40.825Z'
 metricQuery:
   exploreName: fct_sales_pipeline
   dimensions: []
@@ -28,4 +28,4 @@ tableConfig:
     - fct_sales_pipeline_avg_deal_size
 spaceSlug: sales-dashboard
 version: 1
-downloadedAt: "2026-03-11T02:13:31.749Z"
+downloadedAt: '2026-03-11T02:13:31.749Z'

@@ -1,7 +1,7 @@
-name: "Migration: SAL"
+name: 'Migration: SAL'
 description: null
 tableName: opportunity_view
-updatedAt: "2026-03-11T01:05:49.545Z"
+updatedAt: '2026-03-11T01:05:49.545Z'
 metricQuery:
   exploreName: opportunity_view
   dimensions: []
@@ -66,4 +66,4 @@ tableConfig:
     - opportunity_view_bookings_count
 spaceSlug: shared
 version: 1
-downloadedAt: "2026-03-11T02:13:31.749Z"
+downloadedAt: '2026-03-11T02:13:31.749Z'

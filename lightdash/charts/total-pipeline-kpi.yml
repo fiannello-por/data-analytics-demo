@@ -1,7 +1,7 @@
 name: Total Pipeline
 description: null
 tableName: fct_sales_pipeline
-updatedAt: "2026-03-11T01:06:08.940Z"
+updatedAt: '2026-03-11T01:06:08.940Z'
 metricQuery:
   exploreName: fct_sales_pipeline
   dimensions: []
@@ -28,4 +28,4 @@ tableConfig:
     - fct_sales_pipeline_total_pipeline_amount
 spaceSlug: sales-dashboard
 version: 1
-downloadedAt: "2026-03-11T02:13:31.749Z"
+downloadedAt: '2026-03-11T02:13:31.749Z'

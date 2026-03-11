@@ -1,7 +1,7 @@
-name: "Total: Close Rate"
+name: 'Total: Close Rate'
 description: null
 tableName: opportunity_view
-updatedAt: "2026-03-11T01:06:07.851Z"
+updatedAt: '2026-03-11T01:06:07.851Z'
 metricQuery:
   exploreName: opportunity_view
   dimensions: []
@@ -52,4 +52,4 @@ tableConfig:
     - opportunity_view_close_rate
 spaceSlug: shared
 version: 1
-downloadedAt: "2026-03-11T02:13:31.749Z"
+downloadedAt: '2026-03-11T02:13:31.749Z'

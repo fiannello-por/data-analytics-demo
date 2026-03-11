@@ -1,7 +1,7 @@
 name: Revenue by Industry
 description: null
 tableName: fct_sales_pipeline
-updatedAt: "2026-03-11T01:05:59.471Z"
+updatedAt: '2026-03-11T01:05:59.471Z'
 metricQuery:
   exploreName: fct_sales_pipeline
   dimensions:
@@ -29,7 +29,7 @@ chartConfig:
     eChartsConfig:
       series:
         - type: bar
-          color: "#f59e0b"
+          color: '#f59e0b'
           encode:
             xRef:
               field: fct_sales_pipeline_industry
@@ -43,4 +43,4 @@ tableConfig:
     - fct_sales_pipeline_total_won_revenue
 spaceSlug: sales-dashboard
 version: 1
-downloadedAt: "2026-03-11T02:13:31.749Z"
+downloadedAt: '2026-03-11T02:13:31.749Z'

@@ -1,7 +1,7 @@
 name: Owner Performance
 description: null
 tableName: opportunity_view
-updatedAt: "2026-03-11T01:06:11.929Z"
+updatedAt: '2026-03-11T01:06:11.929Z'
 metricQuery:
   exploreName: opportunity_view
   dimensions:
@@ -36,7 +36,7 @@ chartConfig:
         name: Owner
         frozen: true
       opportunity_view_sqo_count:
-        name: "# of Deals"
+        name: '# of Deals'
       opportunity_view_acv_dollars:
         name: ACV
     hideRowNumbers: true
@@ -49,4 +49,4 @@ tableConfig:
     - opportunity_view_sqo_count
 spaceSlug: shared
 version: 1
-downloadedAt: "2026-03-11T02:13:31.749Z"
+downloadedAt: '2026-03-11T02:13:31.749Z'

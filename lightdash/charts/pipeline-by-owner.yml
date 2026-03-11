@@ -1,7 +1,7 @@
 name: Pipeline by Owner
 description: null
 tableName: fct_sales_pipeline
-updatedAt: "2026-03-11T01:05:57.079Z"
+updatedAt: '2026-03-11T01:05:57.079Z'
 metricQuery:
   exploreName: fct_sales_pipeline
   dimensions:
@@ -35,7 +35,7 @@ chartConfig:
       series:
         - name: Won Revenue
           type: bar
-          color: "#10b981"
+          color: '#10b981'
           encode:
             xRef:
               field: fct_sales_pipeline_opportunity_owner
@@ -44,7 +44,7 @@ chartConfig:
           yAxisIndex: 0
         - name: Open Pipeline
           type: bar
-          color: "#3b82f6"
+          color: '#3b82f6'
           encode:
             xRef:
               field: fct_sales_pipeline_opportunity_owner
@@ -59,4 +59,4 @@ tableConfig:
     - fct_sales_pipeline_total_open_pipeline
 spaceSlug: sales-dashboard
 version: 1
-downloadedAt: "2026-03-11T02:13:31.749Z"
+downloadedAt: '2026-03-11T02:13:31.749Z'

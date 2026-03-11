@@ -1,7 +1,7 @@
-name: "Total: Renewals"
+name: 'Total: Renewals'
 description: null
 tableName: opportunity_view
-updatedAt: "2026-03-11T01:06:09.325Z"
+updatedAt: '2026-03-11T01:06:09.325Z'
 metricQuery:
   exploreName: opportunity_view
   dimensions: []
@@ -67,4 +67,4 @@ tableConfig:
     - opportunity_view_acv_dollars
 spaceSlug: shared
 version: 1
-downloadedAt: "2026-03-11T02:13:31.749Z"
+downloadedAt: '2026-03-11T02:13:31.749Z'

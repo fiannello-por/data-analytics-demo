@@ -1,7 +1,7 @@
 name: Pipeline by Stage
 description: null
 tableName: fct_sales_pipeline
-updatedAt: "2026-03-11T01:05:57.384Z"
+updatedAt: '2026-03-11T01:05:57.384Z'
 metricQuery:
   exploreName: fct_sales_pipeline
   dimensions:
@@ -34,7 +34,7 @@ chartConfig:
         show: false
       series:
         - type: bar
-          color: "#7262FF"
+          color: '#7262FF'
           encode:
             xRef:
               field: fct_sales_pipeline_stage
@@ -49,4 +49,4 @@ tableConfig:
     - fct_sales_pipeline_opportunity_count
 spaceSlug: sales-dashboard
 version: 1
-downloadedAt: "2026-03-11T02:13:31.749Z"
+downloadedAt: '2026-03-11T02:13:31.749Z'

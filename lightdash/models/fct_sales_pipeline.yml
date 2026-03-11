@@ -40,7 +40,7 @@ metrics:
 
   total_won_revenue:
     type: number
-    sql: "SUM(CASE WHEN ${TABLE}.Won = TRUE THEN ${TABLE}.ACV ELSE 0 END)"
+    sql: 'SUM(CASE WHEN ${TABLE}.Won = TRUE THEN ${TABLE}.ACV ELSE 0 END)'
     label: 'Won Revenue'
     format: 'usd'
     round: 0
@@ -48,7 +48,7 @@ metrics:
 
   total_open_pipeline:
     type: number
-    sql: "SUM(CASE WHEN ${TABLE}.isclosed = FALSE THEN ${TABLE}.ACV ELSE 0 END)"
+    sql: 'SUM(CASE WHEN ${TABLE}.isclosed = FALSE THEN ${TABLE}.ACV ELSE 0 END)'
     label: 'Open Pipeline'
     format: 'usd'
     round: 0

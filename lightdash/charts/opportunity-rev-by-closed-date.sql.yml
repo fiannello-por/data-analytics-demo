@@ -1,5 +1,5 @@
 name: Opportunity - Rev by Closed Date
-description: ""
+description: ''
 slug: opportunity-rev-by-closed-date
 sql: |-
   SELECT Opportunity.closedate, sum(Opportunity.revenue_calculated__c) as rev
@@ -21,7 +21,7 @@ config:
     x:
       type: time
       reference: closedate
-    "y":
+    'y':
       - reference: rev
         aggregation: sum
     sortBy:
@@ -29,7 +29,7 @@ config:
         reference: closedate
     groupBy: []
 chartKind: line
-updatedAt: "2026-03-11T01:05:55.926Z"
+updatedAt: '2026-03-11T01:05:55.926Z'
 spaceSlug: point-of-rental-revops-analytics-demo/revenue
 version: 1
-downloadedAt: "2026-03-11T02:13:32.093Z"
+downloadedAt: '2026-03-11T02:13:32.093Z'

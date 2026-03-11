@@ -1,7 +1,7 @@
-name: "Migration: Bookings #"
+name: 'Migration: Bookings #'
 description: null
 tableName: opportunity_view
-updatedAt: "2026-03-11T01:06:11.843Z"
+updatedAt: '2026-03-11T01:06:11.843Z'
 metricQuery:
   exploreName: opportunity_view
   dimensions:
@@ -54,7 +54,7 @@ metricQuery:
 chartConfig:
   type: big_number
   config:
-    label: "Bookings #"
+    label: 'Bookings #'
     selectedField: opportunity_view_bookings_count
     showComparison: true
     comparisonLabel: vs. prev year
@@ -67,4 +67,4 @@ tableConfig:
     - opportunity_view_bookings_count
 spaceSlug: shared
 version: 1
-downloadedAt: "2026-03-11T02:13:31.749Z"
+downloadedAt: '2026-03-11T02:13:31.749Z'

@@ -1,4 +1,4 @@
-name: "Scorecard: Consolidated"
+name: 'Scorecard: Consolidated'
 description: All scorecard metrics in one table (Option A)
 slug: scorecard-consolidated
 sql: |-
@@ -171,7 +171,7 @@ config:
   metadata:
     version: 1
 chartKind: table
-updatedAt: "2026-03-11T01:05:59.872Z"
+updatedAt: '2026-03-11T01:05:59.872Z'
 spaceSlug: shared
 version: 1
-downloadedAt: "2026-03-11T02:13:32.093Z"
+downloadedAt: '2026-03-11T02:13:32.093Z'

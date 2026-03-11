@@ -1,4 +1,4 @@
-name: "Scorecard: Migration"
+name: 'Scorecard: Migration'
 description: Migration metrics table (Option B)
 slug: scorecard-migration
 sql: |-
@@ -69,7 +69,7 @@ config:
   metadata:
     version: 1
 chartKind: table
-updatedAt: "2026-03-11T01:06:00.583Z"
+updatedAt: '2026-03-11T01:06:00.583Z'
 spaceSlug: shared
 version: 1
-downloadedAt: "2026-03-11T02:13:32.093Z"
+downloadedAt: '2026-03-11T02:13:32.093Z'

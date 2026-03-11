@@ -1,4 +1,4 @@
-name: "Scorecard: Total"
+name: 'Scorecard: Total'
 description: Total metrics table (Option B)
 slug: scorecard-total
 sql: |-
@@ -58,7 +58,7 @@ config:
   metadata:
     version: 1
 chartKind: table
-updatedAt: "2026-03-11T01:06:04.987Z"
+updatedAt: '2026-03-11T01:06:04.987Z'
 spaceSlug: shared
 version: 1
-downloadedAt: "2026-03-11T02:13:32.093Z"
+downloadedAt: '2026-03-11T02:13:32.093Z'

@@ -1,4 +1,4 @@
-name: "Scorecard Secondary: Expansion"
+name: 'Scorecard Secondary: Expansion'
 description: Expansion secondary metrics (Option C)
 slug: scorecard-secondary-expansion
 sql: |-
@@ -92,7 +92,7 @@ config:
       visible: true
       reference: Prev_YTD
     Pct_Change:
-      label: "% Change"
+      label: '% Change'
       order: 3
       frozen: false
       visible: true
@@ -100,7 +100,7 @@ config:
   metadata:
     version: 1
   conditionalFormattings:
-    - color: "#10B981"
+    - color: '#10B981'
       rules:
         - id: positive
           values:
@@ -109,21 +109,21 @@ config:
       target:
         fieldId: Pct_Change
       applyTo: cell
-    - color: "#EF4444"
+    - color: '#EF4444'
       rules:
         - id: negative
           values:
-            - "-"
+            - '-'
           operator: startsWith
         - id: has_percent
           values:
-            - "%"
+            - '%'
           operator: include
       target:
         fieldId: Pct_Change
       applyTo: cell
 chartKind: table
-updatedAt: "2026-03-11T01:06:01.341Z"
+updatedAt: '2026-03-11T01:06:01.341Z'
 spaceSlug: shared
 version: 1
-downloadedAt: "2026-03-11T02:13:32.093Z"
+downloadedAt: '2026-03-11T02:13:32.093Z'

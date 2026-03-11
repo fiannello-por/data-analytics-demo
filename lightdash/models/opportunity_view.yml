@@ -256,13 +256,13 @@ dimensions:
 
   - name: IsCurrentOrPrevYear
     type: boolean
-    sql: "EXTRACT(YEAR FROM ${TABLE}.CloseDate) >= EXTRACT(YEAR FROM CURRENT_DATE()) - 1"
+    sql: 'EXTRACT(YEAR FROM ${TABLE}.CloseDate) >= EXTRACT(YEAR FROM CURRENT_DATE()) - 1'
     label: 'Current or Prev Year'
     description: 'True when close date falls in the current or previous calendar year.'
 
   - name: IsWithinYTDWindow
     type: boolean
-    sql: "(${TABLE}.CloseDate >= DATE_TRUNC(CURRENT_DATE(), YEAR) OR (${TABLE}.CloseDate >= DATE_TRUNC(DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR), YEAR) AND ${TABLE}.CloseDate < DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR)))"
+    sql: '(${TABLE}.CloseDate >= DATE_TRUNC(CURRENT_DATE(), YEAR) OR (${TABLE}.CloseDate >= DATE_TRUNC(DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR), YEAR) AND ${TABLE}.CloseDate < DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR)))'
     label: 'Within YTD Window'
     description: 'True when close date is in the current YTD or the equivalent prior-year YTD window.'
 
@@ -275,7 +275,7 @@ dimensions:
 
   - name: GateMetOrAccepted
     type: boolean
-    sql: "(${TABLE}.Gate1CriteriaMet OR ${TABLE}.Accepted)"
+    sql: '(${TABLE}.Gate1CriteriaMet OR ${TABLE}.Accepted)'
     label: 'Gate Met or Accepted'
     description: 'True when the opportunity has met Gate 1 criteria or been accepted by an AE.'
 

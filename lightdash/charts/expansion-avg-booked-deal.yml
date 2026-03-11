@@ -1,7 +1,7 @@
-name: "Expansion: Avg Booked Deal"
+name: 'Expansion: Avg Booked Deal'
 description: null
 tableName: opportunity_view
-updatedAt: "2026-03-11T01:05:43.248Z"
+updatedAt: '2026-03-11T01:05:43.248Z'
 metricQuery:
   exploreName: opportunity_view
   dimensions: []
@@ -67,4 +67,4 @@ tableConfig:
     - opportunity_view_avg_acv
 spaceSlug: shared
 version: 1
-downloadedAt: "2026-03-11T02:13:31.749Z"
+downloadedAt: '2026-03-11T02:13:31.749Z'
