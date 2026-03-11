@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  deployments: write
 
 concurrency:
   group: lightdash-preview-cleanup-${{ github.event.pull_request.number }}
@@ -39,3 +40,23 @@ jobs:
 
       - name: Stop preview project
         run: lightdash stop-preview --name "$LIGHTDASH_PREVIEW_NAME"
+
+      - name: Mark deployment as inactive
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const environment = `lightdash-preview-pr-${context.issue.number}`;
+            const deployments = await github.rest.repos.listDeployments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              environment,
+              per_page: 1,
+            });
+            for (const deployment of deployments.data) {
+              await github.rest.repos.createDeploymentStatus({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                deployment_id: deployment.id,
+                state: 'inactive',
+              });
+            }

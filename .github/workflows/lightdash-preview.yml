@@ -10,6 +10,7 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  deployments: write
 
 concurrency:
   group: lightdash-preview-${{ github.event.pull_request.number }}
@@ -35,6 +36,36 @@ jobs:
           test -n "$LIGHTDASH_URL" || (echo "::error::Missing LIGHTDASH_URL" && exit 1)
           test -n "$LIGHTDASH_PROJECT" || (echo "::error::Missing LIGHTDASH_PROJECT" && exit 1)
 
+      - name: Create GitHub deployment
+        id: deployment
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const deployment = await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.sha,
+              environment: `lightdash-preview-pr-${context.issue.number}`,
+              auto_merge: false,
+              required_contexts: [],
+              transient_environment: true,
+              production_environment: false,
+              description: `Lightdash preview for PR #${context.issue.number}`,
+            });
+            return deployment.data.id;
+
+      - name: Set deployment to in_progress
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: ${{ steps.deployment.outputs.result }},
+              state: 'in_progress',
+              log_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });
+
       - name: Set up Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
@@ -49,14 +80,50 @@ jobs:
           lightdash deploy --no-warehouse-credentials
           lightdash upload --force
 
-      - name: Comment preview name on pull request
+      - name: Resolve preview project URL
+        id: preview_url
+        run: |
+          # List all org projects and find the preview by name
+          PROJECTS_JSON=$(curl -sf \
+            -H "Authorization: ApiKey $LIGHTDASH_API_KEY" \
+            "$LIGHTDASH_URL/api/v1/org/projects")
+          PREVIEW_UUID=$(echo "$PROJECTS_JSON" | \
+            node -e "
+              const data = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
+              const proj = (data.results || []).find(p => p.name.includes('$LIGHTDASH_PREVIEW_NAME'));
+              if (proj) console.log(proj.projectUuid);
+            ")
+          if [ -n "$PREVIEW_UUID" ]; then
+            echo "url=${LIGHTDASH_URL}/projects/${PREVIEW_UUID}/home" >> "$GITHUB_OUTPUT"
+          else
+            echo "url=${LIGHTDASH_URL}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set deployment to success
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: ${{ steps.deployment.outputs.result }},
+              state: 'success',
+              environment_url: '${{ steps.preview_url.outputs.url }}',
+              log_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });
+
+      - name: Comment preview link on pull request
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
             const marker = '<!-- lightdash-preview -->';
+            const previewUrl = '${{ steps.preview_url.outputs.url }}';
             const body = [
               marker,
-              `Lightdash preview updated: \`${process.env.LIGHTDASH_PREVIEW_NAME}\``,
+              `### Lightdash Preview`,
+              `Preview project **\`${process.env.LIGHTDASH_PREVIEW_NAME}\`** has been deployed.`,
+              ``,
+              `[Open preview in Lightdash](${previewUrl})`,
             ].join('\n');
             const comments = await github.paginate(
               github.rest.issues.listComments,
