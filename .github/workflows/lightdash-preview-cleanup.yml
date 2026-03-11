@@ -1,0 +1,41 @@
+name: Cleanup Lightdash Preview
+
+on:
+  pull_request:
+    types:
+      - closed
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lightdash-preview-cleanup-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  cleanup:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      LIGHTDASH_API_KEY: ${{ secrets.LIGHTDASH_API_TOKEN }}
+      LIGHTDASH_URL: ${{ secrets.LIGHTDASH_URL }}
+      LIGHTDASH_PROJECT: ${{ secrets.LIGHTDASH_PROJECT_UUID }}
+      LIGHTDASH_PREVIEW_NAME: pr-${{ github.event.pull_request.number }}
+    steps:
+      - name: Ensure Lightdash secrets are configured
+        run: |
+          test -n "$LIGHTDASH_API_KEY" || (echo "::error::Missing LIGHTDASH_API_KEY" && exit 1)
+          test -n "$LIGHTDASH_URL" || (echo "::error::Missing LIGHTDASH_URL" && exit 1)
+          test -n "$LIGHTDASH_PROJECT" || (echo "::error::Missing LIGHTDASH_PROJECT" && exit 1)
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Install Lightdash CLI
+        run: npm install -g @lightdash/cli@0.2596.0
+
+      - name: Stop preview project
+        run: lightdash stop-preview --name "$LIGHTDASH_PREVIEW_NAME"

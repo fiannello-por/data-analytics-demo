@@ -15,6 +15,8 @@ This repo uses pure Lightdash YAML with [lightdash.config.yml](../lightdash.conf
 ## Deployment Workflow
 
 - Pull requests run repo validation and Codex review.
+- Pull requests also create or update a Lightdash preview project named `pr-<pull-request-number>`.
+- Closing a pull request stops its matching preview project.
 - Lightdash deploy is manual-only for now so merges cannot change the live Sales Performance dashboard by accident.
 - Merges with a public-facing changelog note trigger changelog generation for the Vercel site.
 
