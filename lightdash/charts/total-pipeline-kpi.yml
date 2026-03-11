@@ -1,0 +1,31 @@
+name: Total Pipeline
+description: null
+tableName: fct_sales_pipeline
+updatedAt: "2026-03-04T19:12:35.763Z"
+metricQuery:
+  exploreName: fct_sales_pipeline
+  dimensions: []
+  metrics:
+    - fct_sales_pipeline_total_pipeline_amount
+  filters: {}
+  sorts: []
+  limit: 1
+  metricOverrides: {}
+  dimensionOverrides: {}
+  tableCalculations: []
+  additionalMetrics: []
+  customDimensions: []
+chartConfig:
+  type: big_number
+  config:
+    label: Total Pipeline
+    style: K
+    selectedField: fct_sales_pipeline_total_pipeline_amount
+    showBigNumberLabel: true
+slug: total-pipeline-kpi
+tableConfig:
+  columnOrder:
+    - fct_sales_pipeline_total_pipeline_amount
+spaceSlug: sales-dashboard
+version: 1
+downloadedAt: "2026-03-10T23:30:13.638Z"

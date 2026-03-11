@@ -1,0 +1,74 @@
+name: "Scorecard Secondary: New Logo"
+description: null
+tableName: scorecard_new_logo
+updatedAt: "2026-03-10T22:46:08.998Z"
+metricQuery:
+  exploreName: scorecard_new_logo
+  dimensions:
+    - scorecard_new_logo_s
+    - scorecard_new_logo_Metric
+    - scorecard_new_logo_Value
+    - scorecard_new_logo_Prev_YTD
+    - scorecard_new_logo_Pct_Change
+  metrics: []
+  filters: {}
+  sorts:
+    - fieldId: scorecard_new_logo_s
+      descending: false
+  limit: 500
+  metricOverrides: {}
+  dimensionOverrides: {}
+  tableCalculations: []
+  additionalMetrics: []
+  customDimensions: []
+chartConfig:
+  type: table
+  config:
+    columns:
+      scorecard_new_logo_s:
+        visible: false
+      scorecard_new_logo_Value:
+        name: YTD
+      scorecard_new_logo_Metric:
+        name: Metric
+        frozen: true
+      scorecard_new_logo_Prev_YTD:
+        name: Prev YTD
+      scorecard_new_logo_Pct_Change:
+        name: "% Change"
+    hideRowNumbers: true
+    showColumnCalculation: false
+    conditionalFormattings:
+      - color: "#10B981"
+        rules:
+          - id: positive
+            values:
+              - +
+            operator: startsWith
+        target:
+          fieldId: scorecard_new_logo_Pct_Change
+        applyTo: text
+      - color: "#EF4444"
+        rules:
+          - id: negative
+            values:
+              - "-"
+            operator: startsWith
+          - id: has_percent
+            values:
+              - "%"
+            operator: include
+        target:
+          fieldId: scorecard_new_logo_Pct_Change
+        applyTo: text
+slug: scorecard-table-new-logo
+tableConfig:
+  columnOrder:
+    - scorecard_new_logo_s
+    - scorecard_new_logo_Metric
+    - scorecard_new_logo_Value
+    - scorecard_new_logo_Prev_YTD
+    - scorecard_new_logo_Pct_Change
+spaceSlug: shared
+version: 1
+downloadedAt: "2026-03-10T23:30:13.638Z"

@@ -1,80 +1,33 @@
 name: SQOs Over Time
 description: null
-tableName: opportunity_view
-updatedAt: "2026-03-06T19:23:34.606Z"
+tableName: sqo_daily_cumulative
+updatedAt: "2026-03-10T18:04:52.029Z"
 metricQuery:
-  exploreName: opportunity_view
+  exploreName: sqo_daily_cumulative
   dimensions:
-    - opportunity_view_QualifiedDate_day
+    - sqo_daily_cumulative_day
   metrics:
-    - opportunity_view_sqo_count
-    - opportunity_view_sqo_count__pop__day_365__j9ryj6
-  filters:
-    dimensions:
-      id: root
-      and:
-        - id: accepted_filter
-          target:
-            fieldId: opportunity_view_Accepted
-          values:
-            - true
-          operator: equals
-        - id: new_business_filter
-          target:
-            fieldId: opportunity_view_Type
-          values:
-            - New Business
-          operator: equals
-        - id: current_year_filter
-          target:
-            fieldId: opportunity_view_QualifiedDate_year
-          values:
-            - "2026"
-          operator: equals
+    - sqo_daily_cumulative_sqo_running_total
+    - sqo_daily_cumulative_sqo_prev_running_total
+  filters: {}
   sorts:
-    - fieldId: opportunity_view_QualifiedDate_day
+    - fieldId: sqo_daily_cumulative_day
       descending: false
   limit: 500
   metricOverrides: {}
   dimensionOverrides: {}
-  tableCalculations:
-    - name: sqo_running_total
-      displayName: SQO Count
-      sql: >-
-        SUM(${opportunity_view.sqo_count}) OVER (ORDER BY
-        ${opportunity_view.QualifiedDate_day} ROWS BETWEEN UNBOUNDED PRECEDING
-        AND CURRENT ROW)
-      type: number
-    - name: sqo_prev_year_running_total
-      displayName: SQO Count (previous year)
-      sql: >-
-        SUM(${opportunity_view.sqo_count__pop__day_365__j9ryj6}) OVER (ORDER BY
-        ${opportunity_view.QualifiedDate_day} ROWS BETWEEN UNBOUNDED PRECEDING
-        AND CURRENT ROW)
-      type: number
-  additionalMetrics:
-    - name: sqo_count__pop__day_365__j9ryj6
-      label: SQO Count (365 days ago)
-      hidden: true
-      uuid: 57f53f60-11c1-4cc5-ada6-4a621e8db5f4
-      sql: ${TABLE}.Id
-      table: opportunity_view
-      type: count
-      generationType: periodOverPeriod
-      baseMetricId: opportunity_view_sqo_count
-      timeDimensionId: opportunity_view_QualifiedDate_day
-      granularity: DAY
-      periodOffset: 365
+  tableCalculations: []
+  additionalMetrics: []
   customDimensions: []
 chartConfig:
   type: cartesian
   config:
     layout:
       stack: none
-      xField: opportunity_view_QualifiedDate_day
+      xField: sqo_daily_cumulative_day
       yField:
-        - sqo_running_total
-        - sqo_prev_year_running_total
+        - sqo_daily_cumulative_sqo_running_total
+        - sqo_daily_cumulative_sqo_prev_running_total
       flipAxes: false
       showGridY: true
     eChartsConfig:
@@ -87,28 +40,31 @@ chartConfig:
           type: line
           encode:
             xRef:
-              field: opportunity_view_QualifiedDate_day
+              field: sqo_daily_cumulative_day
             yRef:
-              field: sqo_running_total
-          smooth: false
+              field: sqo_daily_cumulative_sqo_running_total
+          smooth: true
           yAxisIndex: 0
+          isFilteredOut: false
         - name: SQO Count (previous year)
           type: line
+          color: "#FF7A00"
           encode:
             xRef:
-              field: opportunity_view_QualifiedDate_day
+              field: sqo_daily_cumulative_day
             yRef:
-              field: sqo_prev_year_running_total
-          smooth: false
+              field: sqo_daily_cumulative_sqo_prev_running_total
+          smooth: true
+          showSymbol: false
           yAxisIndex: 0
+          isFilteredOut: false
+      showAxisTicks: false
 slug: sqos-over-time
 tableConfig:
   columnOrder:
-    - opportunity_view_QualifiedDate_day
-    - opportunity_view_sqo_count
-    - sqo_running_total
-    - opportunity_view_sqo_count__pop__day_365__j9ryj6
-    - sqo_prev_year_running_total
+    - sqo_daily_cumulative_day
+    - sqo_daily_cumulative_sqo_running_total
+    - sqo_daily_cumulative_sqo_prev_running_total
 spaceSlug: shared
 version: 1
-downloadedAt: "2026-03-09T15:49:11.524Z"
+downloadedAt: "2026-03-10T23:30:13.638Z"

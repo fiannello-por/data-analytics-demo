@@ -1,7 +1,7 @@
 name: Product Mix
 description: null
 tableName: opportunity_view
-updatedAt: "2026-03-06T19:38:31.522Z"
+updatedAt: "2026-03-10T18:06:18.787Z"
 metricQuery:
   exploreName: opportunity_view
   dimensions:
@@ -34,11 +34,18 @@ chartConfig:
     metricId: opportunity_view_acv_dollars
     showValue: false
     showLegend: true
-    valueLabel: outside
+    valueLabel: inside
     groupFieldIds:
       - opportunity_view_ProductFamily
     legendPosition: horizontal
     showPercentage: true
+    groupSortOverrides: []
+    groupColorOverrides:
+      Rental Elite: "#FF6A00"
+      Rental Essentials: "#a2b3b3"
+    groupLabelOverrides: {}
+    legendMaxItemLength: 30
+    groupValueOptionOverrides: {}
 slug: product-mix
 tableConfig:
   columnOrder:
@@ -46,4 +53,4 @@ tableConfig:
     - opportunity_view_acv_dollars
 spaceSlug: shared
 version: 1
-downloadedAt: "2026-03-09T15:49:11.524Z"
+downloadedAt: "2026-03-10T23:30:13.638Z"

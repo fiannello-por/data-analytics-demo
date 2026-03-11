@@ -1,0 +1,13 @@
+name: Dashboard 1
+description: for demos
+updatedAt: "2026-03-04T19:04:39.842Z"
+tiles: []
+filters:
+  metrics: []
+  dimensions: []
+  tableCalculations: []
+tabs: []
+slug: dashboard-1
+spaceSlug: shared/demo
+version: 1
+downloadedAt: "2026-03-09T19:22:06.422Z"

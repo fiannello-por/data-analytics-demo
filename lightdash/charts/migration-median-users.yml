@@ -1,0 +1,57 @@
+name: "Migration: Median Users"
+description: null
+tableName: opportunity_view
+updatedAt: "2026-03-09T19:45:21.904Z"
+metricQuery:
+  exploreName: opportunity_view
+  dimensions: []
+  metrics:
+    - opportunity_view_median_users
+  filters:
+    dimensions:
+      id: root
+      and:
+        - id: won_filter
+          target:
+            fieldId: opportunity_view_Won
+          values:
+            - true
+          operator: equals
+        - id: type_filter
+          target:
+            fieldId: opportunity_view_Type
+          values:
+            - Migration
+          operator: equals
+        - id: date_filter
+          target:
+            fieldId: opportunity_view_CloseDate
+          values:
+            - 12
+          operator: inThePast
+          settings:
+            completed: false
+            unitOfTime: months
+  sorts: []
+  limit: 1
+  metricOverrides: {}
+  dimensionOverrides: {}
+  tableCalculations: []
+  additionalMetrics: []
+  customDimensions: []
+chartConfig:
+  type: big_number
+  config:
+    label: Median Users
+    selectedField: opportunity_view_median_users
+    showComparison: true
+    comparisonLabel: vs. prev year
+    comparisonFormat: percentage
+    showBigNumberLabel: true
+slug: migration-median-users
+tableConfig:
+  columnOrder:
+    - opportunity_view_median_users
+spaceSlug: shared
+version: 1
+downloadedAt: "2026-03-10T23:30:13.638Z"

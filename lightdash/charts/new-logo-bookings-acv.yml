@@ -1,10 +1,11 @@
 name: "New Logo: Bookings $"
 description: null
 tableName: opportunity_view
-updatedAt: "2026-03-09T13:45:12.701Z"
+updatedAt: "2026-03-10T16:01:45.097Z"
 metricQuery:
   exploreName: opportunity_view
-  dimensions: []
+  dimensions:
+    - opportunity_view_CloseDate_year
   metrics:
     - opportunity_view_acv_dollars
   filters:
@@ -35,17 +36,16 @@ metricQuery:
           values:
             - Closed Won
           operator: equals
-        - id: date_filter
+        - id: ytd_window
           target:
-            fieldId: opportunity_view_CloseDate
+            fieldId: opportunity_view_IsWithinYTDWindow
           values:
-            - 12
-          operator: inThePast
-          settings:
-            completed: false
-            unitOfTime: months
-  sorts: []
-  limit: 1
+            - true
+          operator: equals
+  sorts:
+    - fieldId: opportunity_view_CloseDate_year
+      descending: true
+  limit: 2
   metricOverrides: {}
   dimensionOverrides: {}
   tableCalculations: []
@@ -64,7 +64,8 @@ chartConfig:
 slug: new-logo-bookings-acv
 tableConfig:
   columnOrder:
+    - opportunity_view_CloseDate_year
     - opportunity_view_acv_dollars
 spaceSlug: shared
 version: 1
-downloadedAt: "2026-03-09T15:49:11.524Z"
+downloadedAt: "2026-03-10T23:30:13.638Z"

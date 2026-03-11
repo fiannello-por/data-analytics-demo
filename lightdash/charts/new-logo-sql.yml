@@ -1,0 +1,51 @@
+name: "New Logo: SQL"
+description: null
+tableName: opportunity_view
+updatedAt: "2026-03-09T19:15:53.965Z"
+metricQuery:
+  exploreName: opportunity_view
+  dimensions: []
+  metrics:
+    - opportunity_view_bookings_count
+  filters:
+    dimensions:
+      id: root
+      and:
+        - id: type_filter
+          target:
+            fieldId: opportunity_view_Type
+          values:
+            - New Business
+          operator: equals
+        - id: date_filter
+          target:
+            fieldId: opportunity_view_CloseDate
+          values:
+            - 12
+          operator: inThePast
+          settings:
+            completed: false
+            unitOfTime: months
+  sorts: []
+  limit: 1
+  metricOverrides: {}
+  dimensionOverrides: {}
+  tableCalculations: []
+  additionalMetrics: []
+  customDimensions: []
+chartConfig:
+  type: big_number
+  config:
+    label: SQL
+    selectedField: opportunity_view_bookings_count
+    showComparison: true
+    comparisonLabel: vs. prev year
+    comparisonFormat: percentage
+    showBigNumberLabel: true
+slug: new-logo-sql
+tableConfig:
+  columnOrder:
+    - opportunity_view_bookings_count
+spaceSlug: shared
+version: 1
+downloadedAt: "2026-03-10T23:30:13.638Z"

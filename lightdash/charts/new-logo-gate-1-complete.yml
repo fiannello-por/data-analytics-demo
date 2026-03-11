@@ -1,0 +1,71 @@
+name: "New Logo: Gate 1 Complete"
+description: null
+tableName: opportunity_view
+updatedAt: "2026-03-09T19:45:25.551Z"
+metricQuery:
+  exploreName: opportunity_view
+  dimensions: []
+  metrics:
+    - opportunity_view_bookings_count
+  filters:
+    dimensions:
+      id: root
+      and:
+        - id: type_filter
+          target:
+            fieldId: opportunity_view_Type
+          values:
+            - New Business
+          operator: equals
+        - id: gate1_or_group
+          or:
+            - id: gate1_met
+              target:
+                fieldId: opportunity_view_Gate1CriteriaMet
+              values:
+                - true
+              operator: equals
+            - id: accepted
+              target:
+                fieldId: opportunity_view_Accepted
+              values:
+                - true
+              operator: equals
+            - id: ae_rejected
+              target:
+                fieldId: opportunity_view_AE_Rejected
+              values:
+                - true
+              operator: equals
+        - id: date_filter
+          target:
+            fieldId: opportunity_view_CloseDate
+          values:
+            - 12
+          operator: inThePast
+          settings:
+            completed: false
+            unitOfTime: months
+  sorts: []
+  limit: 1
+  metricOverrides: {}
+  dimensionOverrides: {}
+  tableCalculations: []
+  additionalMetrics: []
+  customDimensions: []
+chartConfig:
+  type: big_number
+  config:
+    label: Gate 1 Complete
+    selectedField: opportunity_view_bookings_count
+    showComparison: true
+    comparisonLabel: vs. prev year
+    comparisonFormat: percentage
+    showBigNumberLabel: true
+slug: new-logo-gate-1-complete
+tableConfig:
+  columnOrder:
+    - opportunity_view_bookings_count
+spaceSlug: shared
+version: 1
+downloadedAt: "2026-03-10T23:30:13.638Z"
