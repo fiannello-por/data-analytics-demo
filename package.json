@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "@lightdash/cli": "0.2602.1",
-    "@types/node": "24.10.1",
+    "@types/node": "25.4.0",
     "markdownlint-cli2": "0.21.0",
     "openai": "6.27.0",
     "prettier": "3.8.1",
