@@ -163,6 +163,7 @@ jobs:
     # Single required status check — succeeds when all jobs pass or are skipped
     if: always()
     needs:
+      - changes
       - lightdash-validate
       - lint-format
       - markdown-lint
