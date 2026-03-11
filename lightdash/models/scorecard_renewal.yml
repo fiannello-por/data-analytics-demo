@@ -26,11 +26,11 @@ sql_from: |-
         ELSE CONCAT(CASE WHEN raw_curr > raw_prev THEN '+' ELSE '' END, FORMAT('%.1f', (raw_curr - raw_prev) * 100.0 / ABS(raw_prev)), '%')
       END AS Pct_Change
     FROM (
-      SELECT 1 AS s, 'Annual Pacing' AS Metric,
-        CONCAT('$', FORMAT("%'.2f", SUM(CASE WHEN ytd_period='curr' AND Won THEN ACV END) * 365.0 / NULLIF(EXTRACT(DAYOFYEAR FROM CURRENT_DATE()), 0) / 1000.0), 'K') AS Value,
-        CONCAT('$', FORMAT("%'.2f", SUM(CASE WHEN ytd_period='prev' AND Won THEN ACV END) * 365.0 / NULLIF(EXTRACT(DAYOFYEAR FROM CURRENT_DATE()), 0) / 1000.0), 'K') AS Prev_YTD,
-        SUM(CASE WHEN ytd_period='curr' AND Won THEN ACV END) AS raw_curr,
-        SUM(CASE WHEN ytd_period='prev' AND Won THEN ACV END) AS raw_prev FROM t
+      SELECT 1 AS s, 'Annual Pacing (YTD)' AS Metric,
+        CONCAT('$', FORMAT("%'.2f", SUM(CASE WHEN ytd_period='curr' AND Won AND ACV>=0 THEN ACV END) * 365.0 / NULLIF(EXTRACT(DAYOFYEAR FROM CURRENT_DATE()), 0) / 1000.0), 'K') AS Value,
+        CONCAT('$', FORMAT("%'.2f", SUM(CASE WHEN ytd_period='prev' AND Won AND ACV>=0 THEN ACV END) * 365.0 / NULLIF(EXTRACT(DAYOFYEAR FROM CURRENT_DATE()), 0) / 1000.0), 'K') AS Prev_YTD,
+        SUM(CASE WHEN ytd_period='curr' AND Won AND ACV>=0 THEN ACV END) AS raw_curr,
+        SUM(CASE WHEN ytd_period='prev' AND Won AND ACV>=0 THEN ACV END) AS raw_prev FROM t
       UNION ALL
       SELECT 2, 'Close Rate',
         CONCAT(FORMAT('%.1f', SUM(CASE WHEN ytd_period='curr' AND isclosed AND Won THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(DISTINCT CASE WHEN ytd_period='curr' AND isclosed THEN Id END), 0)), '%'),
@@ -39,40 +39,38 @@ sql_from: |-
         SUM(CASE WHEN ytd_period='prev' AND isclosed AND Won THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT(DISTINCT CASE WHEN ytd_period='prev' AND isclosed THEN Id END), 0) FROM t
       UNION ALL
       SELECT 3, 'Avg Age',
-        CAST(ROUND(AVG(CASE WHEN ytd_period='curr' THEN Age__c END)) AS STRING),
-        CAST(ROUND(AVG(CASE WHEN ytd_period='prev' THEN Age__c END)) AS STRING),
-        AVG(CASE WHEN ytd_period='curr' THEN Age__c END),
-        AVG(CASE WHEN ytd_period='prev' THEN Age__c END) FROM t
+        CAST(ROUND(AVG(CASE WHEN ytd_period='curr' AND Won THEN Age__c END)) AS STRING),
+        CAST(ROUND(AVG(CASE WHEN ytd_period='prev' AND Won THEN Age__c END)) AS STRING),
+        AVG(CASE WHEN ytd_period='curr' AND Won THEN Age__c END),
+        AVG(CASE WHEN ytd_period='prev' AND Won THEN Age__c END) FROM t
       UNION ALL
       SELECT 4, 'Avg Booked Deal',
-        CONCAT('$', FORMAT("%'.2f", SUM(CASE WHEN ytd_period='curr' AND Won THEN ACV END) / NULLIF(COUNT(DISTINCT CASE WHEN ytd_period='curr' AND Won THEN Id END), 0) / 1000.0), 'K'),
-        CONCAT('$', FORMAT("%'.2f", SUM(CASE WHEN ytd_period='prev' AND Won THEN ACV END) / NULLIF(COUNT(DISTINCT CASE WHEN ytd_period='prev' AND Won THEN Id END), 0) / 1000.0), 'K'),
-        SUM(CASE WHEN ytd_period='curr' AND Won THEN ACV END) / NULLIF(COUNT(DISTINCT CASE WHEN ytd_period='curr' AND Won THEN Id END), 0),
-        SUM(CASE WHEN ytd_period='prev' AND Won THEN ACV END) / NULLIF(COUNT(DISTINCT CASE WHEN ytd_period='prev' AND Won THEN Id END), 0) FROM t
+        CONCAT('$', FORMAT("%'.2f", SUM(CASE WHEN ytd_period='curr' AND Won AND ACV>0 THEN ACV END) / NULLIF(COUNT(DISTINCT CASE WHEN ytd_period='curr' AND Won AND ACV>0 THEN Id END), 0) / 1000.0), 'K'),
+        CONCAT('$', FORMAT("%'.2f", SUM(CASE WHEN ytd_period='prev' AND Won AND ACV>0 THEN ACV END) / NULLIF(COUNT(DISTINCT CASE WHEN ytd_period='prev' AND Won AND ACV>0 THEN Id END), 0) / 1000.0), 'K'),
+        SUM(CASE WHEN ytd_period='curr' AND Won AND ACV>0 THEN ACV END) / NULLIF(COUNT(DISTINCT CASE WHEN ytd_period='curr' AND Won AND ACV>0 THEN Id END), 0),
+        SUM(CASE WHEN ytd_period='prev' AND Won AND ACV>0 THEN ACV END) / NULLIF(COUNT(DISTINCT CASE WHEN ytd_period='prev' AND Won AND ACV>0 THEN Id END), 0) FROM t
       UNION ALL
-      SELECT 5, 'Pipeline Created',
-        CONCAT('$', FORMAT("%'.2f", SUM(CASE WHEN ytd_period='curr' AND ACV>0 THEN ACV END) / 1000.0), 'K'),
-        CONCAT('$', FORMAT("%'.2f", SUM(CASE WHEN ytd_period='prev' AND ACV>0 THEN ACV END) / 1000.0), 'K'),
-        SUM(CASE WHEN ytd_period='curr' AND ACV>0 THEN ACV END),
-        SUM(CASE WHEN ytd_period='prev' AND ACV>0 THEN ACV END) FROM t
+      SELECT 5, 'Avg Quoted Deal',
+        CONCAT('$', FORMAT("%'.2f", SUM(CASE WHEN CreatedDate >= DATE_TRUNC(CURRENT_DATE(), YEAR) AND ACV > 0 AND Id IS NOT NULL THEN ACV END) / NULLIF(COUNT(DISTINCT CASE WHEN CreatedDate >= DATE_TRUNC(CURRENT_DATE(), YEAR) AND ACV > 0 AND Id IS NOT NULL THEN Id END), 0) / 1000.0), 'K'),
+        CONCAT('$', FORMAT("%'.2f", SUM(CASE WHEN CreatedDate >= DATE_TRUNC(DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR), YEAR) AND CreatedDate < DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR) AND ACV > 0 AND Id IS NOT NULL THEN ACV END) / NULLIF(COUNT(DISTINCT CASE WHEN CreatedDate >= DATE_TRUNC(DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR), YEAR) AND CreatedDate < DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR) AND ACV > 0 AND Id IS NOT NULL THEN Id END), 0) / 1000.0), 'K'),
+        SUM(CASE WHEN CreatedDate >= DATE_TRUNC(CURRENT_DATE(), YEAR) AND ACV > 0 AND Id IS NOT NULL THEN ACV END) / NULLIF(COUNT(DISTINCT CASE WHEN CreatedDate >= DATE_TRUNC(CURRENT_DATE(), YEAR) AND ACV > 0 AND Id IS NOT NULL THEN Id END), 0),
+        SUM(CASE WHEN CreatedDate >= DATE_TRUNC(DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR), YEAR) AND CreatedDate < DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR) AND ACV > 0 AND Id IS NOT NULL THEN ACV END) / NULLIF(COUNT(DISTINCT CASE WHEN CreatedDate >= DATE_TRUNC(DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR), YEAR) AND CreatedDate < DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR) AND ACV > 0 AND Id IS NOT NULL THEN Id END), 0)
+      FROM `data-analytics-306119.sfdc.OpportunityViewTable`
+      WHERE Type = 'Renewal' AND ACV > 0 AND Id IS NOT NULL
       UNION ALL
-      SELECT 6, 'Bookings #',
-        FORMAT("%'.0f", CAST(COUNT(DISTINCT CASE WHEN ytd_period='curr' AND Won THEN Id END) AS FLOAT64)),
-        FORMAT("%'.0f", CAST(COUNT(DISTINCT CASE WHEN ytd_period='prev' AND Won THEN Id END) AS FLOAT64)),
-        CAST(COUNT(DISTINCT CASE WHEN ytd_period='curr' AND Won THEN Id END) AS FLOAT64),
-        CAST(COUNT(DISTINCT CASE WHEN ytd_period='prev' AND Won THEN Id END) AS FLOAT64) FROM t
+      SELECT 6, 'Pipeline Created',
+        CONCAT('$', FORMAT("%'.2f", SUM(CASE WHEN PipelineStartDate >= DATE_TRUNC(CURRENT_DATE(), YEAR) AND ACV > 0 AND Id IS NOT NULL THEN ACV END) / 1000.0), 'K'),
+        CONCAT('$', FORMAT("%'.2f", SUM(CASE WHEN PipelineStartDate >= DATE_TRUNC(DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR), YEAR) AND PipelineStartDate < DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR) AND ACV > 0 AND Id IS NOT NULL THEN ACV END) / 1000.0), 'K'),
+        SUM(CASE WHEN PipelineStartDate >= DATE_TRUNC(CURRENT_DATE(), YEAR) AND ACV > 0 AND Id IS NOT NULL THEN ACV END),
+        SUM(CASE WHEN PipelineStartDate >= DATE_TRUNC(DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR), YEAR) AND PipelineStartDate < DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR) AND ACV > 0 AND Id IS NOT NULL THEN ACV END)
+      FROM `data-analytics-306119.sfdc.OpportunityViewTable`
+      WHERE Type = 'Renewal' AND ACV > 0 AND Id IS NOT NULL
       UNION ALL
-      SELECT 7, 'Avg Users',
-        FORMAT("%'.0f", ROUND(AVG(CASE WHEN ytd_period='curr' AND Won THEN Users END))),
-        FORMAT("%'.0f", ROUND(AVG(CASE WHEN ytd_period='prev' AND Won THEN Users END))),
-        AVG(CASE WHEN ytd_period='curr' AND Won THEN Users END),
-        AVG(CASE WHEN ytd_period='prev' AND Won THEN Users END) FROM t
-      UNION ALL
-      SELECT 8, 'Median Users',
-        FORMAT("%'.0f", CAST(APPROX_QUANTILES(CASE WHEN ytd_period='curr' AND Won THEN Users END, 2)[OFFSET(1)] AS FLOAT64)),
-        FORMAT("%'.0f", CAST(APPROX_QUANTILES(CASE WHEN ytd_period='prev' AND Won THEN Users END, 2)[OFFSET(1)] AS FLOAT64)),
-        CAST(APPROX_QUANTILES(CASE WHEN ytd_period='curr' AND Won THEN Users END, 2)[OFFSET(1)] AS FLOAT64),
-        CAST(APPROX_QUANTILES(CASE WHEN ytd_period='prev' AND Won THEN Users END, 2)[OFFSET(1)] AS FLOAT64) FROM t
+      SELECT 7, 'SQL',
+        FORMAT("%'.0f", CAST(COUNT(DISTINCT CASE WHEN ytd_period='curr' THEN Id END) AS FLOAT64)),
+        FORMAT("%'.0f", CAST(COUNT(DISTINCT CASE WHEN ytd_period='prev' THEN Id END) AS FLOAT64)),
+        CAST(COUNT(DISTINCT CASE WHEN ytd_period='curr' THEN Id END) AS FLOAT64),
+        CAST(COUNT(DISTINCT CASE WHEN ytd_period='prev' THEN Id END) AS FLOAT64) FROM t
     ) sub
     ORDER BY s
   )

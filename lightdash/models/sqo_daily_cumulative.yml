@@ -2,42 +2,47 @@ type: model
 name: sqo_daily_cumulative
 sql_from: |-
   (
-    WITH curr AS (
-      SELECT
-        EXTRACT(DAYOFYEAR FROM QualifiedDate) AS day_of_year,
-        COUNT(DISTINCT Id) AS daily_sqos
+    WITH date_spine AS (
+      SELECT d AS day
+      FROM UNNEST(GENERATE_DATE_ARRAY(DATE_TRUNC(CURRENT_DATE(), YEAR), CURRENT_DATE())) AS d
+    ),
+    curr AS (
+      SELECT DATE(QualifiedDate) AS day, COUNT(DISTINCT Id) AS cnt
       FROM `data-analytics-306119.sfdc.OpportunityViewTable`
-      WHERE Accepted = TRUE
-        AND Type = 'New Business'
-        AND EXTRACT(YEAR FROM QualifiedDate) = EXTRACT(YEAR FROM CURRENT_DATE())
+      WHERE Accepted = TRUE AND Type = 'New Business'
+      AND QualifiedDate >= DATE_TRUNC(CURRENT_DATE(), YEAR)
+      AND QualifiedDate <= CURRENT_DATE()
       GROUP BY 1
     ),
     prev AS (
-      SELECT
-        EXTRACT(DAYOFYEAR FROM QualifiedDate) AS day_of_year,
-        COUNT(DISTINCT Id) AS daily_sqos
+      SELECT DATE_ADD(DATE(QualifiedDate), INTERVAL 1 YEAR) AS day, COUNT(DISTINCT Id) AS cnt
       FROM `data-analytics-306119.sfdc.OpportunityViewTable`
-      WHERE Accepted = TRUE
-        AND Type = 'New Business'
-        AND EXTRACT(YEAR FROM QualifiedDate) = EXTRACT(YEAR FROM CURRENT_DATE()) - 1
+      WHERE Accepted = TRUE AND Type = 'New Business'
+      AND QualifiedDate >= DATE_TRUNC(DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR), YEAR)
+      AND QualifiedDate <= DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR)
       GROUP BY 1
     )
     SELECT
-      COALESCE(c.day_of_year, p.day_of_year) AS day,
-      SUM(COALESCE(c.daily_sqos, 0)) OVER (ORDER BY COALESCE(c.day_of_year, p.day_of_year)) AS sqo_running_total,
-      SUM(COALESCE(p.daily_sqos, 0)) OVER (ORDER BY COALESCE(c.day_of_year, p.day_of_year)) AS sqo_prev_running_total
-    FROM curr c
-    FULL OUTER JOIN prev p ON c.day_of_year = p.day_of_year
+      ds.day,
+      COALESCE(c.cnt, 0) AS sqo_curr,
+      COALESCE(p.cnt, 0) AS sqo_prev,
+      SUM(COALESCE(c.cnt, 0)) OVER (ORDER BY ds.day) AS sqo_running_total,
+      SUM(COALESCE(p.cnt, 0)) OVER (ORDER BY ds.day) AS sqo_prev_running_total
+    FROM date_spine ds
+    LEFT JOIN curr c ON ds.day = c.day
+    LEFT JOIN prev p ON ds.day = p.day
+    ORDER BY ds.day
   )
 label: 'SQO Daily Cumulative'
 group_label: 'Sales Operations'
 
 dimensions:
   - name: day
-    type: number
+    type: date
     sql: ${TABLE}.day
-    label: 'Day of Year'
-    description: 'Day of year (1-365) for year-over-year SQO trend comparison.'
+    label: 'Day'
+    description: 'Date for year-over-year SQO trend comparison.'
+    time_intervals: [DAY, WEEK, MONTH, QUARTER, YEAR]
 
 metrics:
   sqo_running_total:
