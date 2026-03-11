@@ -100,7 +100,13 @@ export default function BlogPostPage({ content: Content }: Props): ReactNode {
       </Head>
       <main className="post-page">
         <nav className="post-nav-top">
-          <Link to="/"><ArrowLeft size={14} style={{ marginRight: 6, verticalAlign: 'middle' }} />Back to changelog</Link>
+          <Link to="/">
+            <ArrowLeft
+              size={14}
+              style={{ marginRight: 6, verticalAlign: 'middle' }}
+            />
+            Back to changelog
+          </Link>
         </nav>
 
         <header className="post-header">
@@ -152,7 +158,9 @@ export default function BlogPostPage({ content: Content }: Props): ReactNode {
           <nav className="post-nav-bottom">
             {prevItem ? (
               <div className="post-nav-item">
-                <span className="post-nav-item__label"><ArrowLeft size={12} style={{ marginRight: 4 }} /> Previous</span>
+                <span className="post-nav-item__label">
+                  <ArrowLeft size={12} style={{ marginRight: 4 }} /> Previous
+                </span>
                 <div className="post-nav-item__title">
                   <Link to={prevItem.permalink}>{prevItem.title}</Link>
                 </div>
@@ -162,7 +170,9 @@ export default function BlogPostPage({ content: Content }: Props): ReactNode {
             )}
             {nextItem ? (
               <div className="post-nav-item">
-                <span className="post-nav-item__label">Next <ArrowRight size={12} style={{ marginLeft: 4 }} /></span>
+                <span className="post-nav-item__label">
+                  Next <ArrowRight size={12} style={{ marginLeft: 4 }} />
+                </span>
                 <div className="post-nav-item__title">
                   <Link to={nextItem.permalink}>{nextItem.title}</Link>
                 </div>

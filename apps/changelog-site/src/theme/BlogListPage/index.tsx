@@ -252,8 +252,7 @@ function AuthorAvatars({
           <img
             key={author.name ?? i}
             src={
-              author.imageURL ??
-              'https://avatars.githubusercontent.com/u/0?v=4'
+              author.imageURL ?? 'https://avatars.githubusercontent.com/u/0?v=4'
             }
             alt={author.name ?? ''}
             className="entry-authors__avatar"
@@ -350,9 +349,7 @@ function FilterDrawer({
           </span>
           <button
             className={`filter-toggle-track${matchMode === 'all' ? ' filter-toggle-track--all' : ''}`}
-            onClick={() =>
-              onSetMatchMode(matchMode === 'any' ? 'all' : 'any')
-            }
+            onClick={() => onSetMatchMode(matchMode === 'any' ? 'all' : 'any')}
             aria-label={`Match mode: ${matchMode}`}
           >
             <div className="filter-toggle-thumb" />
@@ -407,9 +404,7 @@ export default function BlogListPage({
 }: BlogListPageProps): ReactNode {
   const posts = useMemo(
     () =>
-      items
-        .map(normalizeItem)
-        .filter((p): p is NormalizedPost => p !== null),
+      items.map(normalizeItem).filter((p): p is NormalizedPost => p !== null),
     [items],
   );
 

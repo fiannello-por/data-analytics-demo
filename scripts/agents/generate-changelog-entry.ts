@@ -141,7 +141,14 @@ async function main(): Promise<void> {
         schema: {
           type: 'object',
           additionalProperties: false,
-          required: ['title', 'slug', 'description', 'tags', 'category', 'body'],
+          required: [
+            'title',
+            'slug',
+            'description',
+            'tags',
+            'category',
+            'body',
+          ],
           properties: {
             title: { type: 'string' },
             slug: { type: 'string' },
