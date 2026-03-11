@@ -14,9 +14,57 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  validate:
+  changes:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 5
+    outputs:
+      lightdash: ${{ steps.filter.outputs.lightdash }}
+      code: ${{ steps.filter.outputs.code }}
+      changelog-site: ${{ steps.filter.outputs.changelog-site }}
+      markdown: ${{ steps.filter.outputs.markdown }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Detect changed paths
+        id: filter
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        with:
+          filters: |
+            lightdash:
+              - 'lightdash/**'
+              - 'lightdash.config.yml'
+              - 'scripts/validate-lightdash-refs.sh'
+            code:
+              - 'scripts/**'
+              - 'tests/**'
+              - 'apps/**'
+              - 'tsconfig*.json'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+            changelog-site:
+              - 'apps/changelog-site/**'
+            markdown:
+              - '**/*.md'
+              - '**/*.mdx'
+              - '.markdownlint*'
+
+  lightdash-validate:
+    needs: changes
+    if: needs.changes.outputs.lightdash == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Validate Lightdash references
+        run: bash scripts/validate-lightdash-refs.sh
+
+  lint-format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Check out repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -33,14 +81,53 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Validate Lightdash references
-        run: bash scripts/validate-lightdash-refs.sh
-
       - name: Check formatting
         run: pnpm format:check
 
+  markdown-lint:
+    needs: changes
+    if: needs.changes.outputs.markdown == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
       - name: Lint Markdown
         run: pnpm markdown:lint
+
+  typecheck-test:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Typecheck scripts and site
         run: pnpm typecheck
@@ -48,5 +135,46 @@ jobs:
       - name: Run unit tests
         run: pnpm test
 
+  build-changelog:
+    needs: changes
+    if: needs.changes.outputs.changelog-site == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
       - name: Build changelog site
         run: pnpm changelog:build
+
+  ci-pass:
+    # Single required status check — succeeds when all jobs pass or are skipped
+    if: always()
+    needs:
+      - lightdash-validate
+      - lint-format
+      - markdown-lint
+      - typecheck-test
+      - build-changelog
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify all jobs passed
+        run: |
+          if [[ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" == "true" ]]; then
+            echo "::error::One or more CI jobs failed or were cancelled"
+            exit 1
+          fi
+          echo "All CI jobs passed or were skipped"

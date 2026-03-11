@@ -4,6 +4,9 @@ on:
   pull_request:
     types:
       - closed
+    paths:
+      - 'lightdash/**'
+      - 'lightdash.config.yml'
 
 permissions:
   contents: read
