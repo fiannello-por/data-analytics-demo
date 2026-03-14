@@ -1,0 +1,110 @@
+---
+title: Solution Architecture
+description: Technical architecture covering frontend, backend, and infrastructure layers.
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+## Overview
+
+The proposed architecture follows a **modern data stack** pattern with clear separation between ingestion, transformation, storage, and presentation layers.
+
+```text
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│   Sources    │────▶│  Transform   │────▶│   Serve      │
+│  (APIs, DBs) │     │  (dbt Core)  │     │ (Lightdash)  │
+└──────────────┘     └──────────────┘     └──────────────┘
+        │                    │                     │
+        ▼                    ▼                     ▼
+   Fivetran HVR        Snowflake DWH        Next.js App
+```
+
+## Layer Details
+
+<Tabs items={['Frontend', 'Backend', 'Infrastructure']}>
+<Tab value="Frontend">
+
+### Presentation Layer
+
+The frontend consists of two components:
+
+- **Lightdash** — Self-service BI for business users
+- **Next.js App** — Custom dashboards for exec-level reporting
+
+```typescript
+// Example: fetching metrics from the semantic layer
+const metrics = await lightdash.getMetrics({
+  explore: 'sales_performance',
+  dimensions: ['region', 'quarter'],
+  metrics: ['bookings_acv', 'close_rate'],
+});
+```
+
+Key frontend decisions:
+
+- Server-side rendering for initial page load performance
+- Real-time WebSocket updates for live dashboards
+- Role-based access control at the component level
+
+</Tab>
+<Tab value="Backend">
+
+### Data Pipeline
+
+The backend pipeline handles ingestion, transformation, and serving:
+
+```yaml
+# dbt model example
+models:
+  - name: fct_bookings
+    description: Fact table for all booking events
+    columns:
+      - name: booking_id
+        tests: [unique, not_null]
+      - name: booking_acv
+        description: Annual contract value
+        tests: [not_null]
+```
+
+Pipeline stages:
+
+1. **Ingestion** — Fivetran syncs 12 source systems every 15 minutes
+2. **Staging** — Raw data landed in `raw` schema
+3. **Transform** — dbt models produce `staging`, `intermediate`, and `marts` layers
+4. **Serve** — Lightdash reads from `marts` schema
+
+</Tab>
+<Tab value="Infrastructure">
+
+### Cloud Infrastructure
+
+All infrastructure is managed via Terraform and deployed to AWS:
+
+```hcl
+# Snowflake warehouse sizing
+resource "snowflake_warehouse" "analytics" {
+  name           = "ANALYTICS_WH"
+  warehouse_size = "medium"
+  auto_suspend   = 60
+  auto_resume    = true
+}
+```
+
+Infrastructure components:
+
+- **Snowflake** — Cloud data warehouse (Enterprise tier)
+- **AWS ECS** — Container orchestration for Lightdash
+- **CloudFront** — CDN for Next.js static assets
+- **GitHub Actions** — CI/CD for dbt and application deployments
+
+</Tab>
+</Tabs>
+
+## Data Flow
+
+| Stage     | Tool       | Frequency | SLA      |
+| --------- | ---------- | --------- | -------- |
+| Ingestion | Fivetran   | 15 min    | 99.9%    |
+| Transform | dbt Core   | Hourly    | < 30 min |
+| Serve     | Lightdash  | Real-time | 99.5%    |
+| Cache     | CloudFront | 5 min TTL | 99.99%   |
