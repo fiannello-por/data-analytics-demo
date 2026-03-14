@@ -8,6 +8,15 @@
 4. Fill out the PR template completely.
 5. Merge only after Codex review, CI, and human review all pass.
 
+## Prerequisites
+
+- **Node.js** — version in `.nvmrc`
+- **pnpm** — version in `package.json` `packageManager` field
+- **Python** — version in `.python-version`
+- **uv** — `curl -LsSf https://astral.sh/uv/install.sh | sh`
+
+Run `pnpm check:versions` to verify your local setup matches.
+
 ## What Belongs In This Repo
 
 - Lightdash models, charts, and dashboards as code.

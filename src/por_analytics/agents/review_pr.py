@@ -3,8 +3,6 @@
 Fetches PR details and changed files from GitHub, checks for missing PR
 template sections, selects Lightdash guidance documents, calls OpenAI for
 a structured review, and upserts a review comment on the PR.
-
-Currently disabled but ported for completeness.
 """
 
 from __future__ import annotations
@@ -15,7 +13,6 @@ import re
 import sys
 import traceback
 from dataclasses import dataclass
-from typing import Any
 
 from openai import OpenAI
 
@@ -28,6 +25,7 @@ from por_analytics.lib.github import (
     PullRequestFile,
     github_request,
     paginate_github,
+    parse_pr_file,
     parse_repository,
     upsert_issue_comment,
 )
@@ -144,19 +142,7 @@ def _render_review_comment(
     return "\n".join(lines)
 
 
-def _parse_pr_file(data: dict[str, Any]) -> PullRequestFile:
-    """Convert a raw GitHub API dict to a PullRequestFile dataclass."""
-    return PullRequestFile(
-        filename=str(data["filename"]),
-        status=str(data["status"]),
-        additions=int(data.get("additions", 0)),
-        deletions=int(data.get("deletions", 0)),
-        changes=int(data.get("changes", 0)),
-        patch=str(data["patch"]) if data.get("patch") is not None else None,
-    )
-
-
-def _run() -> None:
+def _run() -> int:
     """Execute the PR review workflow."""
     repository = _require_env("GITHUB_REPOSITORY")
     token = _require_env("GITHUB_TOKEN")
@@ -174,7 +160,7 @@ def _run() -> None:
     pr_html_url: str = pr_data["html_url"]
 
     files_data = paginate_github(token, f"/repos/{owner}/{repo}/pulls/{pr_number}/files")
-    files = [_parse_pr_file(f) for f in files_data]
+    files = [parse_pr_file(f) for f in files_data]
 
     missing_sections = missing_required_sections(pr_body)
     lightdash_guidance_paths = _select_lightdash_guidance(files)
@@ -317,12 +303,14 @@ def _run() -> None:
     )
 
     if should_fail:
-        sys.exit(1)
+        return 1
+    return 0
 
 
 def main() -> None:
     try:
-        _run()
+        code = _run()
     except Exception:
         traceback.print_exc()
-        sys.exit(1)
+        code = 1
+    sys.exit(code)

@@ -36,6 +36,11 @@ This repository is optimized for both human contributors and coding agents.
 
 PRs are expected to use the repository template and complete every section with substantive content. `skip` is only valid in the changelog section when the change is truly internal.
 
+## Automation Code
+
+Review and changelog agents live in `src/por_analytics/agents/`. Shared libraries
+are in `src/por_analytics/lib/` and validators in `src/por_analytics/validators/`.
+
 ## Changelog Rules
 
 - Public-facing changes must include a concise changelog note in the PR body.

@@ -37,7 +37,7 @@ class ChartInfo:
 
 def load_model(model_path: Path) -> ModelInfo | None:
     """Parse a model YAML file and extract name, dimensions, and metrics."""
-    with open(model_path) as f:
+    with open(model_path, encoding="utf-8") as f:
         data = yaml.safe_load(f)
 
     if not isinstance(data, dict):
@@ -62,7 +62,7 @@ def load_model(model_path: Path) -> ModelInfo | None:
 
 def load_chart(chart_path: Path) -> ChartInfo | None:
     """Parse a chart YAML file and extract explore name and field IDs."""
-    with open(chart_path) as f:
+    with open(chart_path, encoding="utf-8") as f:
         content = f.read()
 
     data = yaml.safe_load(content)

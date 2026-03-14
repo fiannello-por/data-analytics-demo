@@ -13,8 +13,8 @@ import re
 import sys
 import time
 import traceback
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
 
 from openai import OpenAI
 
@@ -26,10 +26,10 @@ from por_analytics.lib.agent_utils import (
     yaml_single_quoted,
 )
 from por_analytics.lib.github import (
-    PullRequestFile,
     fetch_github_user,
     github_request,
     paginate_github,
+    parse_pr_file,
     parse_repository,
 )
 from por_analytics.lib.pr_template import (
@@ -70,19 +70,7 @@ def next_available_path(date: str, slug: str) -> Path:
     return blog_dir / f"{date}-{slug}-{int(time.time() * 1000)}.mdx"
 
 
-def _parse_pr_file(data: dict[str, Any]) -> PullRequestFile:
-    """Convert a raw GitHub API dict to a PullRequestFile dataclass."""
-    return PullRequestFile(
-        filename=str(data["filename"]),
-        status=str(data["status"]),
-        additions=int(data.get("additions", 0)),
-        deletions=int(data.get("deletions", 0)),
-        changes=int(data.get("changes", 0)),
-        patch=str(data["patch"]) if data.get("patch") is not None else None,
-    )
-
-
-def _run() -> None:
+def _run() -> int:
     """Execute the changelog generation workflow."""
     repository = _require_env("GITHUB_REPOSITORY")
     token = _require_env("GITHUB_TOKEN")
@@ -101,10 +89,10 @@ def _run() -> None:
 
     if should_skip_changelog(pr_body):
         print("Changelog skipped by PR author.")
-        return
+        return 0
 
     files_data = paginate_github(token, f"/repos/{owner}/{repo}/pulls/{pr_number}/files")
-    files = [_parse_pr_file(f) for f in files_data]
+    files = [parse_pr_file(f) for f in files_data]
     sections = sanitize_sections(parse_template_sections(pr_body))
 
     changelog_ops = read_guidance_if_exists("docs/changelog-ops.md", max_chars=20000)
@@ -198,8 +186,6 @@ def _run() -> None:
     category: str = result["category"]
     body_text: str = result["body"]
 
-    from datetime import UTC, datetime
-
     date = datetime.now(tz=UTC).strftime("%Y-%m-%d")
     slug = sanitize_slug(raw_slug)
     output_path = next_available_path(date, slug)
@@ -234,11 +220,13 @@ def _run() -> None:
 
     relative = output_path.relative_to(Path.cwd())
     print(f"Generated changelog entry: {relative}")
+    return 0
 
 
 def main() -> None:
     try:
-        _run()
+        code = _run()
     except Exception:
         traceback.print_exc()
-        sys.exit(1)
+        code = 1
+    sys.exit(code)

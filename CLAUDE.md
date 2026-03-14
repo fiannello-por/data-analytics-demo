@@ -12,8 +12,9 @@ When modifying any file under `lightdash/` (models, charts, dashboards):
 Before declaring any Lightdash change complete:
 
 1. Run `pnpm lightdash:validate-refs` — verifies every chart exploreName and field ID matches a model definition
-2. Run `lightdash lint` — catches YAML syntax errors (known false positive on markdown tiles is OK)
-3. If a preview project exists, run `lightdash validate --project <uuid> --skip-dbt-compile --skip-warehouse-catalog`
+2. Run `pnpm lightdash:validate-shared` — enforces shared folder structure rules
+3. Run `lightdash lint` — catches YAML syntax errors (known false positive on markdown tiles is OK)
+4. If a preview project exists, run `lightdash validate --project <uuid> --skip-dbt-compile --skip-warehouse-catalog`
 
 ## Pull Requests
 

@@ -39,9 +39,13 @@ fi
 if [ -f .python-version ]; then
   expected_python=$(cat .python-version)
   if command -v python3 &>/dev/null; then
-    actual_python=$(python3 --version | awk '{print $2}')
+    full_python=$(python3 --version | awk '{print $2}')
+    # Compare only as many version segments as .python-version specifies
+    num_dots=$(echo "$expected_python" | tr -cd '.' | wc -c | tr -d ' ')
+    num_fields=$((num_dots + 1))
+    actual_python=$(echo "$full_python" | cut -d. -f1-"$num_fields")
     if [ "$actual_python" != "$expected_python" ]; then
-      echo "✗ Python: expected ${expected_python}, got ${actual_python}"
+      echo "✗ Python: expected ${expected_python}, got ${full_python}"
       errors=$((errors + 1))
     else
       echo "✓ Python: ${actual_python}"
@@ -52,6 +56,15 @@ if [ -f .python-version ]; then
   fi
 else
   echo "- Python: no .python-version file (skipped)"
+fi
+
+# --- uv ---
+if command -v uv &>/dev/null; then
+  actual_uv=$(uv --version | awk '{print $2}')
+  echo "✓ uv: ${actual_uv}"
+else
+  echo "✗ uv: not installed (required for Python dependency management)"
+  errors=$((errors + 1))
 fi
 
 # --- Lightdash CLI ---

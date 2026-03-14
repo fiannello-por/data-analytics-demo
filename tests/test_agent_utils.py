@@ -2,8 +2,17 @@
 
 from __future__ import annotations
 
+from por_analytics.agents.generate_changelog import sanitize_sections, sanitize_slug
+from por_analytics.agents.review_pr import (
+    COMMENT_MARKER,
+    ReviewFinding,
+    ReviewResult,
+    _render_review_comment,
+    _select_lightdash_guidance,
+)
 from por_analytics.lib.agent_utils import (
     build_diff_summary,
+    read_guidance_if_exists,
     sanitize_markdown,
     sanitize_plain_text,
     yaml_single_quoted,
@@ -64,3 +73,135 @@ def test_yaml_single_quoted_escapes_single_quotes() -> None:
 
 def test_sanitize_plain_text_removes_null_bytes_and_trims() -> None:
     assert sanitize_plain_text("  hello \0 world  ") == "hello  world"
+
+
+# ---------------------------------------------------------------------------
+# read_guidance_if_exists
+# ---------------------------------------------------------------------------
+
+
+def test_read_guidance_if_exists_reads_file(tmp_path: object) -> None:
+    from pathlib import Path
+
+    root = Path(str(tmp_path))
+    guide = root / "GUIDE.md"
+    guide.write_text("hello world", encoding="utf-8")
+
+    result = read_guidance_if_exists("GUIDE.md", workspace_root=root)
+    assert result == "hello world"
+
+
+def test_read_guidance_if_exists_missing_file_returns_empty(tmp_path: object) -> None:
+    from pathlib import Path
+
+    root = Path(str(tmp_path))
+
+    result = read_guidance_if_exists("nonexistent.md", workspace_root=root)
+    assert result == ""
+
+
+def test_read_guidance_if_exists_path_traversal_raises(tmp_path: object) -> None:
+    from pathlib import Path
+
+    import pytest
+
+    root = Path(str(tmp_path))
+
+    with pytest.raises(ValueError, match="Refusing to read guidance outside"):
+        read_guidance_if_exists("../../etc/passwd", workspace_root=root)
+
+
+def test_read_guidance_if_exists_truncates_to_max_chars(tmp_path: object) -> None:
+    from pathlib import Path
+
+    root = Path(str(tmp_path))
+    guide = root / "big.md"
+    guide.write_text("A" * 500, encoding="utf-8")
+
+    result = read_guidance_if_exists("big.md", max_chars=10, workspace_root=root)
+    assert result == "A" * 10
+    assert len(result) == 10
+
+
+# ---------------------------------------------------------------------------
+# sanitize_slug / sanitize_sections (generate_changelog)
+# ---------------------------------------------------------------------------
+
+
+def test_sanitize_slug_converts_to_url_safe() -> None:
+    assert sanitize_slug("Hello World!") == "hello-world"
+    assert sanitize_slug("feat: add New Feature #123") == "feat-add-new-feature-123"
+
+
+def test_sanitize_slug_truncates_to_60_chars() -> None:
+    long_title = "a" * 100
+    assert len(sanitize_slug(long_title)) == 60
+
+
+def test_sanitize_sections_cleans_keys_and_values() -> None:
+    result = sanitize_sections({"  Key \0": "  Value \0 "})
+    assert result == {"Key": "Value"}
+
+
+# ---------------------------------------------------------------------------
+# _render_review_comment / _select_lightdash_guidance (review_pr)
+# ---------------------------------------------------------------------------
+
+
+def test_render_review_comment_includes_marker_and_findings() -> None:
+    review = ReviewResult(
+        summary="Looks good overall.",
+        documentation_status="pass",
+        required_changes=False,
+        findings=[
+            ReviewFinding(
+                severity="medium",
+                title="Missing label",
+                rationale="Field has no label",
+                file="lightdash/models/foo.yml",
+                recommendation="Add a label",
+            )
+        ],
+    )
+    body = _render_review_comment(review=review, missing_sections=[], pr_url="https://example.com")
+    assert COMMENT_MARKER in body
+    assert "[MEDIUM]" in body
+    assert "Missing label" in body
+    assert "https://example.com" in body
+
+
+def test_render_review_comment_no_findings() -> None:
+    review = ReviewResult(
+        summary="All clear.",
+        documentation_status="pass",
+        required_changes=False,
+        findings=[],
+    )
+    body = _render_review_comment(review=review, missing_sections=[], pr_url="https://example.com")
+    assert "No concrete findings" in body
+
+
+def test_select_lightdash_guidance_includes_skill_md() -> None:
+    files = [
+        PullRequestFile(
+            filename="README.md", status="modified", additions=1, deletions=0, changes=1
+        )
+    ]
+    guidance = _select_lightdash_guidance(files)
+    # SKILL.md is always included
+    assert any("SKILL.md" in g for g in guidance)
+
+
+def test_select_lightdash_guidance_adds_model_docs() -> None:
+    files = [
+        PullRequestFile(
+            filename="lightdash/models/foo.yml",
+            status="modified",
+            additions=1,
+            deletions=0,
+            changes=1,
+        )
+    ]
+    guidance = _select_lightdash_guidance(files)
+    assert any("metrics-reference" in g for g in guidance)
+    assert any("dimensions-reference" in g for g in guidance)

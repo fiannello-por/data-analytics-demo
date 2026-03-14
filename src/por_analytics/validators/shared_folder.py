@@ -21,12 +21,6 @@ _ALLOWED_SUBFOLDERS: dict[str, str] = {
     "dashboards": "dashboards",
 }
 
-SHARED_CONFIG: dict[str, str | dict[str, str]] = {
-    "project_slug": _PROJECT_SLUG,
-    "shared_folder_slug": _SHARED_FOLDER_SLUG,
-    "allowed_subfolders": _ALLOWED_SUBFOLDERS,
-}
-
 LEGACY_SPACE_SLUGS = frozenset(
     {
         "sales-dashboard",
@@ -97,7 +91,7 @@ def load_charts(charts_dir: Path) -> list[ChartFile]:
     """Parse all chart YAML files and extract slug and spaceSlug."""
     charts: list[ChartFile] = []
     for chart_path in sorted(charts_dir.glob("*.yml")):
-        with open(chart_path) as f:
+        with open(chart_path, encoding="utf-8") as f:
             data = yaml.safe_load(f)
         if not isinstance(data, dict):
             continue
@@ -117,7 +111,7 @@ def load_dashboards(dashboards_dir: Path) -> list[DashboardFile]:
     """Parse all dashboard YAML files and extract slug, spaceSlug, and chart refs."""
     dashboards: list[DashboardFile] = []
     for dash_path in sorted(dashboards_dir.glob("*.yml")):
-        with open(dash_path) as f:
+        with open(dash_path, encoding="utf-8") as f:
             data = yaml.safe_load(f)
         if not isinstance(data, dict):
             continue

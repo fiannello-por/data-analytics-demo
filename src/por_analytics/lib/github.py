@@ -2,17 +2,12 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any
+from dataclasses import dataclass
+from typing import Any, cast
 
 import httpx
 
 GITHUB_API_URL = "https://api.github.com"
-
-
-@dataclass
-class PullRequestLabel:
-    name: str
 
 
 @dataclass
@@ -23,24 +18,6 @@ class PullRequestFile:
     deletions: int
     changes: int
     patch: str | None = None
-
-
-@dataclass
-class PullRequestUser:
-    login: str
-    avatar_url: str
-    html_url: str
-
-
-@dataclass
-class PullRequestDetails:
-    number: int
-    title: str
-    body: str | None
-    html_url: str
-    user: PullRequestUser
-    labels: list[PullRequestLabel] = field(default_factory=list)
-    merged: bool = False
 
 
 @dataclass
@@ -71,7 +48,7 @@ def github_request(
     *,
     method: str = "GET",
     body: dict[str, Any] | None = None,
-) -> Any:
+) -> dict[str, Any] | list[Any]:
     """Make an authenticated request to the GitHub API.
 
     Returns the parsed JSON response (dict or list).
@@ -100,7 +77,8 @@ def github_request(
             f"{response.text}"
         )
 
-    return response.json()
+    result: dict[str, Any] | list[Any] = response.json()
+    return result
 
 
 def paginate_github(token: str, endpoint: str) -> list[dict[str, Any]]:
@@ -109,10 +87,11 @@ def paginate_github(token: str, endpoint: str) -> list[dict[str, Any]]:
 
     for page in range(1, 11):
         separator = "&" if "?" in endpoint else "?"
-        page_results: list[dict[str, Any]] = github_request(
+        raw = github_request(
             token,
             f"{endpoint}{separator}per_page=100&page={page}",
         )
+        page_results = cast("list[dict[str, Any]]", raw)
 
         results.extend(page_results)
 
@@ -124,7 +103,8 @@ def paginate_github(token: str, endpoint: str) -> list[dict[str, Any]]:
 
 def fetch_github_user(token: str, login: str) -> GitHubUser:
     """Fetch a GitHub user profile by login."""
-    data: dict[str, Any] = github_request(token, f"/users/{login}")
+    raw = github_request(token, f"/users/{login}")
+    data = cast("dict[str, Any]", raw)
     return GitHubUser(
         login=data["login"],
         name=data.get("name"),
@@ -172,4 +152,16 @@ def upsert_issue_comment(
         f"/repos/{owner}/{repo}/issues/{issue_number}/comments",
         method="POST",
         body={"body": body},
+    )
+
+
+def parse_pr_file(data: dict[str, Any]) -> PullRequestFile:
+    """Convert a raw GitHub API dict to a PullRequestFile dataclass."""
+    return PullRequestFile(
+        filename=str(data["filename"]),
+        status=str(data["status"]),
+        additions=int(data.get("additions", 0)),
+        deletions=int(data.get("deletions", 0)),
+        changes=int(data.get("changes", 0)),
+        patch=str(data["patch"]) if data.get("patch") is not None else None,
     )
