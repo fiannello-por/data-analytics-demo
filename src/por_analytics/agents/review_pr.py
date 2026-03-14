@@ -32,7 +32,7 @@ from por_analytics.lib.github import (
 from por_analytics.lib.pr_template import missing_required_sections
 
 COMMENT_MARKER = "<!-- codex-pr-review -->"
-LIGHTDASH_SKILL_ROOT = ".codex/skills/developing-in-lightdash"
+LIGHTDASH_SKILL_ROOT = ".claude/skills/developing-in-lightdash"
 CHART_TYPE_REFERENCE_BY_TYPE: dict[str, str] = {
     "big_number": f"{LIGHTDASH_SKILL_ROOT}/resources/big-number-chart-reference.md",
     "cartesian": f"{LIGHTDASH_SKILL_ROOT}/resources/cartesian-chart-reference.md",

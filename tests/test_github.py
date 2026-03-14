@@ -130,6 +130,16 @@ class TestPaginateGithub:
         assert mock_req.call_count == 2
 
     @patch("por_analytics.lib.github.github_request")
+    def test_stops_at_10_pages_max(self, mock_req: MagicMock) -> None:
+        full_page = [{"id": i} for i in range(100)]
+        mock_req.return_value = full_page
+
+        results = paginate_github("tok", "/repos/o/r/issues")
+
+        assert mock_req.call_count == 10
+        assert len(results) == 1000
+
+    @patch("por_analytics.lib.github.github_request")
     def test_uses_ampersand_when_query_string_present(self, mock_req: MagicMock) -> None:
         mock_req.return_value = []
 

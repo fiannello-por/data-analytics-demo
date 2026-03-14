@@ -2,7 +2,12 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from por_analytics.agents.generate_changelog import sanitize_sections, sanitize_slug
+
+if TYPE_CHECKING:
+    from pathlib import Path
 from por_analytics.agents.review_pr import (
     COMMENT_MARKER,
     ReviewFinding,
@@ -80,45 +85,31 @@ def test_sanitize_plain_text_removes_null_bytes_and_trims() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_read_guidance_if_exists_reads_file(tmp_path: object) -> None:
-    from pathlib import Path
-
-    root = Path(str(tmp_path))
-    guide = root / "GUIDE.md"
+def test_read_guidance_if_exists_reads_file(tmp_path: Path) -> None:
+    guide = tmp_path / "GUIDE.md"
     guide.write_text("hello world", encoding="utf-8")
 
-    result = read_guidance_if_exists("GUIDE.md", workspace_root=root)
+    result = read_guidance_if_exists("GUIDE.md", workspace_root=tmp_path)
     assert result == "hello world"
 
 
-def test_read_guidance_if_exists_missing_file_returns_empty(tmp_path: object) -> None:
-    from pathlib import Path
-
-    root = Path(str(tmp_path))
-
-    result = read_guidance_if_exists("nonexistent.md", workspace_root=root)
+def test_read_guidance_if_exists_missing_file_returns_empty(tmp_path: Path) -> None:
+    result = read_guidance_if_exists("nonexistent.md", workspace_root=tmp_path)
     assert result == ""
 
 
-def test_read_guidance_if_exists_path_traversal_raises(tmp_path: object) -> None:
-    from pathlib import Path
-
+def test_read_guidance_if_exists_path_traversal_raises(tmp_path: Path) -> None:
     import pytest
 
-    root = Path(str(tmp_path))
-
     with pytest.raises(ValueError, match="Refusing to read guidance outside"):
-        read_guidance_if_exists("../../etc/passwd", workspace_root=root)
+        read_guidance_if_exists("../../etc/passwd", workspace_root=tmp_path)
 
 
-def test_read_guidance_if_exists_truncates_to_max_chars(tmp_path: object) -> None:
-    from pathlib import Path
-
-    root = Path(str(tmp_path))
-    guide = root / "big.md"
+def test_read_guidance_if_exists_truncates_to_max_chars(tmp_path: Path) -> None:
+    guide = tmp_path / "big.md"
     guide.write_text("A" * 500, encoding="utf-8")
 
-    result = read_guidance_if_exists("big.md", max_chars=10, workspace_root=root)
+    result = read_guidance_if_exists("big.md", max_chars=10, workspace_root=tmp_path)
     assert result == "A" * 10
     assert len(result) == 10
 
@@ -168,6 +159,23 @@ def test_render_review_comment_includes_marker_and_findings() -> None:
     assert "[MEDIUM]" in body
     assert "Missing label" in body
     assert "https://example.com" in body
+
+
+def test_render_review_comment_with_missing_sections() -> None:
+    review = ReviewResult(
+        summary="Needs work.",
+        documentation_status="needs-work",
+        required_changes=True,
+        findings=[],
+    )
+    body = _render_review_comment(
+        review=review,
+        missing_sections=["Risks", "Validation"],
+        pr_url="https://example.com",
+    )
+    assert "Missing PR template sections:" in body
+    assert "- Risks" in body
+    assert "- Validation" in body
 
 
 def test_render_review_comment_no_findings() -> None:
