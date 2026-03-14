@@ -27,14 +27,16 @@ SHARED_CONFIG: dict[str, str | dict[str, str]] = {
     "allowed_subfolders": _ALLOWED_SUBFOLDERS,
 }
 
-LEGACY_SPACE_SLUGS = frozenset({
-    "sales-dashboard",
-    "shared/demo",
-    # Items placed directly at the shared root before subfolders were created.
-    # Remove once opportunity-rev-by-closed-date.sql.yml and sales-performance.yml
-    # are moved into the correct subfolders.
-    f"{_PROJECT_SLUG}/{_SHARED_FOLDER_SLUG}",
-})
+LEGACY_SPACE_SLUGS = frozenset(
+    {
+        "sales-dashboard",
+        "shared/demo",
+        # Items placed directly at the shared root before subfolders were created.
+        # Remove once opportunity-rev-by-closed-date.sql.yml and sales-performance.yml
+        # are moved into the correct subfolders.
+        f"{_PROJECT_SLUG}/{_SHARED_FOLDER_SLUG}",
+    }
+)
 
 # Derived paths
 SHARED_ROOT = f"{_PROJECT_SLUG}/{_SHARED_FOLDER_SLUG}"
