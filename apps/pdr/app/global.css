@@ -1,0 +1,36 @@
+@import 'tailwindcss';
+@import 'fumadocs-ui/style.css';
+@import 'fumadocs-ui/css/preset.css';
+@import 'fumadocs-ui/css/black.css';
+
+:root {
+  --color-fd-primary: hsl(90, 50%, 40%) !important;
+  --color-fd-primary-foreground: hsl(0, 0%, 100%) !important;
+}
+
+.dark {
+  --color-fd-primary: hsl(90, 50%, 55%) !important;
+  --color-fd-primary-foreground: hsl(0, 0%, 2%) !important;
+}
+
+/* Extra space between logo and sidebar content */
+#nd-sidebar [data-radix-scroll-area-viewport] > div {
+  padding-top: 3rem;
+}
+
+/* zod.dev-style heading borders */
+.prose h1 {
+  border-bottom: 1px solid var(--fd-border);
+  padding-bottom: 0.75rem;
+}
+
+.prose h2 {
+  border-bottom: 1px solid var(--fd-border);
+  padding-bottom: 0.5rem;
+  margin-top: 3rem;
+}
+
+/* zod.dev-style inline code */
+.prose :not(pre) > code {
+  font-weight: 300;
+}
