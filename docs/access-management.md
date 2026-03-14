@@ -11,7 +11,7 @@ All analytics content lives under the **RevOps Analytics** top-level space.
 Within it, two types of folders exist: **personal folders** and the
 **shared folder**.
 
-```
+```text
 RevOps Analytics/
 ├── Shared/                  ← Production (CI-managed)
 │   ├── Dashboards/          ← Only dashboards
@@ -91,7 +91,7 @@ Changes to the Shared folder follow the code-managed deployment process:
 This process ensures that every change to production analytics is reviewed,
 validated, and traceable through version control.
 
-```
+```text
 ┌─────────────┐     ┌──────────┐     ┌───────────┐     ┌───────────────┐
 │ Local edit   │────▶│ Open PR  │────▶│ CI checks │────▶│ Review &      │
 │ (YAML files) │     │ on GitHub│     │ + preview │     │ approval      │
