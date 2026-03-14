@@ -8,16 +8,25 @@ errors=0
 
 # --- Node.js ---
 expected_node=$(cat .nvmrc)
-actual_node=$(node --version 2>/dev/null | sed 's/^v//' | cut -d. -f1)
-if [ "$actual_node" != "$expected_node" ]; then
-  echo "✗ Node.js: expected major ${expected_node}, got ${actual_node}"
-  errors=$((errors + 1))
+if command -v node &>/dev/null; then
+  actual_node=$(node --version | sed 's/^v//' | cut -d. -f1)
+  if [ "$actual_node" != "$expected_node" ]; then
+    echo "✗ Node.js: expected major ${expected_node}, got ${actual_node}"
+    errors=$((errors + 1))
+  else
+    echo "✓ Node.js: major ${actual_node}"
+  fi
 else
-  echo "✓ Node.js: major ${actual_node}"
+  echo "✗ Node.js: not installed (expected major ${expected_node})"
+  errors=$((errors + 1))
 fi
 
 # --- pnpm ---
-expected_pnpm=$(node -e "console.log(require('./package.json').packageManager.split('@')[1])")
+if command -v node &>/dev/null; then
+  expected_pnpm=$(node -e "console.log(require('./package.json').packageManager.split('@')[1])")
+else
+  expected_pnpm=$(sed -n 's/.*"packageManager".*"pnpm@\([^"]*\)".*/\1/p' package.json)
+fi
 actual_pnpm=$(pnpm --version 2>/dev/null || echo "not installed")
 if [ "$actual_pnpm" != "$expected_pnpm" ]; then
   echo "✗ pnpm: expected ${expected_pnpm}, got ${actual_pnpm}"
