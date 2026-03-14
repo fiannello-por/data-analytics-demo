@@ -1,0 +1,36 @@
+name: 'Test: Guardrail Dashboard'
+description: Temporary dashboard for guardrail validation testing
+updatedAt: '2026-03-14T12:00:00.000Z'
+tiles:
+  - x: 0
+    'y': 0
+    h: 2
+    w: 18
+    tabUuid: null
+    type: markdown
+    properties:
+      title: Test Section
+      hideTitle: false
+      content: '# Guardrail Test'
+      hideFrame: false
+  - x: 0
+    'y': 2
+    h: 6
+    w: 36
+    tabUuid: null
+    type: saved_chart
+    properties:
+      title: Opportunities by Type
+      hideTitle: false
+      chartSlug: test-guardrail-chart
+      chartName: 'Test: Guardrail Chart'
+    tileSlug: test-guardrail-chart-1
+filters:
+  metrics: []
+  dimensions: []
+  tableCalculations: []
+tabs: []
+slug: test-guardrail-dashboard
+spaceSlug: point-of-rental-revops-analytics-demo/revenue/dashboards
+version: 1
+downloadedAt: '2026-03-14T12:00:00.000Z'

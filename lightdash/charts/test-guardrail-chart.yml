@@ -1,0 +1,34 @@
+name: 'Test: Guardrail Chart'
+description: Temporary chart for guardrail validation testing
+tableName: opportunity_view
+updatedAt: '2026-03-14T12:00:00.000Z'
+metricQuery:
+  exploreName: opportunity_view
+  dimensions:
+    - opportunity_view_Type
+  metrics:
+    - opportunity_view_bookings_count
+  filters:
+    dimensions:
+      and: []
+  sorts:
+    - fieldId: opportunity_view_bookings_count
+      descending: true
+  limit: 10
+  tableCalculations: []
+  additionalMetrics: []
+  customDimensions: []
+chartConfig:
+  type: table
+  config:
+    columnOrder:
+      - opportunity_view_Type
+      - opportunity_view_bookings_count
+tableConfig:
+  columnOrder:
+    - opportunity_view_Type
+    - opportunity_view_bookings_count
+slug: test-guardrail-chart
+spaceSlug: point-of-rental-revops-analytics-demo/revenue/charts-prod
+version: 1
+downloadedAt: '2026-03-14T12:00:00.000Z'
