@@ -3,7 +3,9 @@ import Image from 'next/image';
 
 export const baseOptions: BaseLayoutProps = {
   nav: {
-    title: <Image src="/logo.png" alt="Point of Rental" width={40} height={40} />,
+    title: (
+      <Image src="/logo.png" alt="Point of Rental" width={40} height={40} />
+    ),
     transparentMode: 'top',
     enableSearch: false,
   },

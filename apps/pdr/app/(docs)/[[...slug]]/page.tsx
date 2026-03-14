@@ -26,9 +26,7 @@ export default async function Page(props: {
       full={page.data.full}
     >
       {!isIndex && <DocsTitle>{page.data.title}</DocsTitle>}
-      {!isIndex && (
-        <DocsDescription>{page.data.description}</DocsDescription>
-      )}
+      {!isIndex && <DocsDescription>{page.data.description}</DocsDescription>}
       <DocsBody>
         <MDX
           components={{
