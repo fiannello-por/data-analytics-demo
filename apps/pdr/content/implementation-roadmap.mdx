@@ -1,0 +1,91 @@
+---
+title: Implementation Roadmap
+description: Four-phase delivery plan with milestones, dependencies, and resource allocation.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Phased Delivery
+
+<Steps>
+  <Step>
+    ### Phase 1: Foundation (Q1 FY26)
+
+    Stand up core infrastructure and migrate the first 3 data sources.
+
+    - Provision Snowflake warehouse and configure networking
+    - Deploy Lightdash on ECS with SSO integration
+    - Migrate CRM, billing, and product usage data via Fivetran
+    - Build 5 foundational dbt models (staging + marts)
+    - Deliver MVP dashboard for Sales leadership
+
+    **Exit criteria**: Sales team using self-service for weekly pipeline review
+  </Step>
+  <Step>
+    ### Phase 2: Expand (Q2 FY26)
+
+    Migrate remaining data sources and onboard additional teams.
+
+    - Migrate remaining 9 data sources
+    - Build 15 additional dbt models
+    - Deploy scheduled reports for Finance and Marketing
+    - Launch self-service training program
+    - Implement RBAC for all departments
+
+    **Exit criteria**: 50+ active users across 4 departments
+  </Step>
+  <Step>
+    ### Phase 3: Optimize (Q3 FY26)
+
+    Performance tuning, advanced features, and legacy sunset.
+
+    - Convert all models to incremental refresh
+    - Deploy real-time dashboard layer (WebSocket)
+    - Build custom executive dashboard (Next.js)
+    - Begin legacy tool deprecation
+    - Conduct first cost optimization review
+
+    **Exit criteria**: p95 load time < 3s, legacy tools deprecated
+  </Step>
+  <Step>
+    ### Phase 4: Scale (Q4 FY26)
+
+    Full rollout, documentation, and handoff.
+
+    - Complete legacy tool sunset
+    - Deploy to all 200+ business users
+    - Finalize runbooks and operational documentation
+    - Conduct post-implementation review
+    - Transfer to BAU support team
+
+    **Exit criteria**: Full platform handoff to operations
+  </Step>
+</Steps>
+
+## Milestone Timeline
+
+| Milestone | Target Date | Phase | Dependencies |
+|-----------|-------------|-------|--------------|
+| Snowflake provisioned | Apr 1 | P1 | Procurement approval |
+| Lightdash deployed | Apr 15 | P1 | Snowflake ready |
+| MVP dashboard live | Jun 30 | P1 | 3 sources migrated |
+| 50 active users | Sep 30 | P2 | Training complete |
+| Real-time dashboards | Nov 15 | P3 | WebSocket infra |
+| Legacy tools sunset | Jan 15 | P4 | 100% migration |
+| Full handoff | Mar 31 | P4 | Runbooks complete |
+
+<Callout type="info">
+**Buffer**: Each phase includes 2 weeks of buffer time. The total timeline is 12 months but could compress to 10 months if Phase 1 procurement completes early.
+</Callout>
+
+## Resource Allocation
+
+| Role | Phase 1 | Phase 2 | Phase 3 | Phase 4 |
+|------|---------|---------|---------|---------|
+| Data Engineers | 4 | 4 | 3 | 2 |
+| Frontend Engineers | 1 | 2 | 3 | 1 |
+| Platform Engineers | 2 | 1 | 1 | 1 |
+| Designers | 1 | 1 | 2 | 0 |
+| PM | 1 | 1 | 1 | 1 |
+| **Total** | **9** | **9** | **10** | **5** |

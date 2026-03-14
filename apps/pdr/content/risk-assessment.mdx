@@ -1,0 +1,97 @@
+---
+title: Risk Assessment
+description: Identified risks, probability/impact analysis, and mitigation strategies.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Risk Matrix
+
+| ID | Risk | Probability | Impact | Score | Status |
+|----|------|-------------|--------|-------|--------|
+| R1 | Snowflake costs exceed budget | Medium | High | 🟠 | Mitigating |
+| R2 | Team lacks Lightdash expertise | High | Medium | 🟠 | Mitigating |
+| R3 | Data migration causes downtime | Low | Critical | 🟡 | Monitoring |
+| R4 | Stakeholder adoption is low | Medium | High | 🟠 | Mitigating |
+| R5 | EOL tools fail before migration | Low | Critical | 🟡 | Monitoring |
+
+<Callout type="warn">
+**R1 and R4 are the highest-priority risks.** Both have active mitigation plans in progress. See details below.
+</Callout>
+
+## Mitigation Plans
+
+### R1: Snowflake Cost Overrun
+
+<Steps>
+  <Step>
+    ### Set Up Cost Monitoring
+
+    Deploy Snowflake resource monitors with automatic suspension at 80% of monthly budget threshold.
+  </Step>
+  <Step>
+    ### Implement Query Governance
+
+    Require all production queries to use tagged warehouses with per-team cost allocation.
+  </Step>
+  <Step>
+    ### Optimize Incrementally
+
+    Convert full-refresh dbt models to incremental models, targeting 60% compute reduction.
+  </Step>
+  <Step>
+    ### Monthly Review Cadence
+
+    Finance and Data Eng review actual vs. projected spend monthly, with escalation path to VP.
+  </Step>
+</Steps>
+
+### R2: Team Capability Gap
+
+<Steps>
+  <Step>
+    ### Training Program
+
+    Two-week intensive Lightdash + dbt training for all 8 engineers before Phase 1 begins.
+  </Step>
+  <Step>
+    ### Embed Expert
+
+    Contract a Lightdash implementation specialist for the first 3 months.
+  </Step>
+  <Step>
+    ### Knowledge Base
+
+    Build internal runbooks and FAQs during Phase 1, reviewed by the embedded expert.
+  </Step>
+</Steps>
+
+### R4: Low Stakeholder Adoption
+
+<Steps>
+  <Step>
+    ### Early Champions Program
+
+    Identify 5 power users from Sales and Marketing to beta-test during Phase 1.
+  </Step>
+  <Step>
+    ### Training Workshops
+
+    Run bi-weekly hands-on workshops for business users during Phase 2 rollout.
+  </Step>
+  <Step>
+    ### Feedback Loop
+
+    Weekly office hours + dedicated Slack channel for questions and feature requests.
+  </Step>
+  <Step>
+    ### Deprecation Timeline
+
+    Announce clear sunset dates for legacy tools to drive migration urgency.
+  </Step>
+</Steps>
+
+<Callout type="warn">
+**Contingency**: If adoption remains below 40% after 90 days, we will conduct a formal retrospective and may pivot the UX approach for Phase 3.
+</Callout>

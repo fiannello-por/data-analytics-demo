@@ -30,6 +30,11 @@
     "check:versions": "bash scripts/check-tool-versions.sh",
     "validate:ci": "pnpm validate"
   },
+  "pnpm": {
+    "overrides": {
+      "lucide-react": "0.577.0"
+    }
+  },
   "devDependencies": {
     "markdownlint-cli2": "0.21.0",
     "prettier": "3.8.1",

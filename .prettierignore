@@ -9,3 +9,5 @@ pnpm-lock.yaml
 *.py
 uv.lock
 .venv
+apps/pdr/.next
+apps/pdr/.source

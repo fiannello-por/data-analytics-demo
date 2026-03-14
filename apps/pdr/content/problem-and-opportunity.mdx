@@ -1,0 +1,49 @@
+---
+title: Problem & Opportunity
+description: Current pain points, market opportunity, and the cost of inaction.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Current State
+
+The existing analytics stack was built incrementally over 5 years. It now consists of 6 disconnected tools with overlapping capabilities, no shared data model, and significant maintenance burden.
+
+<Callout type="warn">
+**Maintenance cost is growing 20% YoY** while the number of supported dashboards has plateaued. We are paying more for diminishing returns.
+</Callout>
+
+## Pain Points
+
+| Pain Point | Impact | Affected Teams |
+|------------|--------|----------------|
+| No single source of truth | Conflicting metrics in exec reviews | Leadership, Finance |
+| 3-day average query latency | Decisions delayed by data lag | Sales, Marketing |
+| Manual ETL pipelines | 15 hrs/week of engineering time | Data Engineering |
+| No self-service capability | All requests routed through DE team | All departments |
+
+<Callout type="error">
+**Critical risk**: Two of the six tools reach end-of-life in Q3 FY26. Without action, we lose access to 40% of our current dashboards.
+</Callout>
+
+## Opportunity
+
+A modernized, consolidated platform would:
+
+- **Reduce time-to-insight** from 3 days to under 15 minutes
+- **Free up 15 hours/week** of engineering capacity
+- **Enable self-service** for 200+ business users
+- **Eliminate $340K/year** in redundant tool licensing
+
+<Callout type="info">
+Competitors who have completed similar migrations report **2.3x improvement** in data-driven decision velocity (Gartner, 2025).
+</Callout>
+
+## Cost of Inaction
+
+If we do nothing:
+
+1. Two tools go EOL in Q3, forcing emergency migration anyway
+2. Maintenance burden continues growing at 20% YoY
+3. Self-service analytics remains impossible
+4. Engineering team stays bottlenecked on ad-hoc reporting

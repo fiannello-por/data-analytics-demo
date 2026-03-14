@@ -1,0 +1,49 @@
+---
+title: Decision Requested
+description: Specific approvals and decisions needed from stakeholders to proceed.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## What We Need
+
+This PDR requests approval to proceed from Preliminary Design to Detailed Design and Phase 1 implementation. Specifically, we need the following decisions from the review board.
+
+<Callout type="info">
+**Timeline**: We request decisions by **April 15, 2026** to maintain the Q1 start date for Phase 1 implementation.
+</Callout>
+
+## Action Items
+
+| # | Decision | Owner | Deadline | Impact if Delayed |
+|---|----------|-------|----------|-------------------|
+| 1 | Approve $1.2M budget allocation | VP Finance | Apr 15 | Delays all phases by 1:1 |
+| 2 | Approve Snowflake Enterprise contract | VP Engineering | Apr 15 | Blocks Phase 1 start |
+| 3 | Confirm team allocation (8 engineers) | Engineering Directors | Apr 8 | May reduce Phase 1 scope |
+| 4 | Approve legacy tool sunset timeline | CTO | Apr 22 | Extends parallel run costs |
+| 5 | Sign off on SOC2 compliance approach | CISO | Apr 22 | Blocks RBAC implementation |
+
+## What Happens Next
+
+Upon approval:
+
+1. **Week 1–2**: Procurement initiates Snowflake contract and Fivetran expansion
+2. **Week 2–3**: Platform team begins infrastructure provisioning
+3. **Week 3–4**: Data engineering begins first source migration
+4. **Week 4**: First sprint review with stakeholders
+
+## Open Questions
+
+We have identified the following open questions that do not block approval but should be resolved during Phase 1:
+
+| Question | Context | Proposed Resolution |
+|----------|---------|-------------------|
+| Should Marketing get real-time or batch? | Real-time adds $15K/year in Snowflake compute | Default to batch; revisit in Phase 3 |
+| Which SSO provider for external partners? | Current Okta license covers internal only | Evaluate Auth0 during Phase 1 |
+| Retain 2 years or 5 years of history? | Storage cost difference is ~$8K/year | Start with 2 years; backfill on request |
+
+## Thank You
+
+Thank you for reviewing this Preliminary Design Review. We believe this initiative is critical to the company's data strategy and look forward to your feedback.
+
+> For questions or clarifications, please reach out to the project lead or join the **#analytics-modernization** Slack channel.
