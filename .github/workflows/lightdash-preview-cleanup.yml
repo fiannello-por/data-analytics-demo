@@ -16,6 +16,9 @@ concurrency:
   group: lightdash-preview-cleanup-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
+env:
+  LIGHTDASH_CLI_VERSION: '0.2604.2'
+
 jobs:
   cleanup:
     if: github.event.pull_request.head.repo.full_name == github.repository
@@ -39,7 +42,7 @@ jobs:
           node-version: '22'
 
       - name: Install Lightdash CLI
-        run: npm install -g @lightdash/cli@0.2596.0
+        run: npm install -g @lightdash/cli@${{ env.LIGHTDASH_CLI_VERSION }}
 
       - name: Stop preview project
         run: lightdash stop-preview --name "$LIGHTDASH_PREVIEW_NAME"
