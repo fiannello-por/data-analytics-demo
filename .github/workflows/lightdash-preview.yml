@@ -40,8 +40,20 @@ jobs:
           test -n "$LIGHTDASH_PROJECT" || (echo "::error::Missing LIGHTDASH_PROJECT" && exit 1)
 
       # --- Fail-fast gate: catch broken references before expensive preview ---
+      - name: Set up uv
+        uses: astral-sh/setup-uv@f0ec1fc3b38f5e7cd731bb6ce540c5af426746bb # v5
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Install Python dependencies
+        run: uv sync
+
       - name: Validate Lightdash references (offline)
-        run: bash scripts/validate-lightdash-refs.sh
+        run: uv run validate-refs
+
+      - name: Validate shared folder rules (offline)
+        run: uv run validate-shared
 
       - name: Create GitHub deployment
         id: deployment
