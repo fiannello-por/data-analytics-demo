@@ -43,6 +43,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Install Lightdash CLI
+        run: npm install -g "@lightdash/cli@$(cat .lightdash-version)"
+
       - name: Deploy semantic layer
         run: pnpm lightdash:deploy
 

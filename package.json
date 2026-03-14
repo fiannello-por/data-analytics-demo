@@ -3,12 +3,15 @@
   "private": true,
   "packageManager": "pnpm@10.23.0",
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=22.0.0",
+    "pnpm": ">=10.0.0"
   },
   "scripts": {
     "build": "pnpm changelog:build",
     "changelog:build": "pnpm --filter @point-of-rental/changelog-site build",
     "changelog:dev": "pnpm --filter @point-of-rental/changelog-site start",
+    "pdr:build": "pnpm --filter @point-of-rental/pdr build",
+    "pdr:dev": "pnpm --filter @point-of-rental/pdr dev",
     "changelog:generate": "tsx scripts/agents/generate-changelog-entry.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -22,10 +25,10 @@
     "typecheck": "tsc --project tsconfig.scripts.json --noEmit && pnpm --filter @point-of-rental/changelog-site typecheck",
     "validate": "pnpm format:check && pnpm markdown:lint && pnpm yaml:lint && pnpm lightdash:validate-refs && pnpm typecheck && pnpm test && pnpm changelog:build",
     "yaml:lint": "yamllint .github/*.yml .github/workflows/*.yml lightdash/models/*.yml lightdash/charts/*.yml lightdash/dashboards/*.yml lightdash.config.yml",
+    "check:versions": "bash scripts/check-tool-versions.sh",
     "validate:ci": "pnpm validate"
   },
   "devDependencies": {
-    "@lightdash/cli": "0.2604.2",
     "@types/node": "25.4.0",
     "markdownlint-cli2": "0.21.0",
     "openai": "6.27.0",
