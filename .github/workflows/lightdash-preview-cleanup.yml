@@ -33,13 +33,21 @@ jobs:
           test -n "$LIGHTDASH_URL" || (echo "::error::Missing LIGHTDASH_URL" && exit 1)
           test -n "$LIGHTDASH_PROJECT" || (echo "::error::Missing LIGHTDASH_PROJECT" && exit 1)
 
+      - name: Check out version files
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          sparse-checkout: |
+            .nvmrc
+            .lightdash-version
+          sparse-checkout-cone-mode: false
+
       - name: Set up Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
-          node-version: '22'
+          node-version-file: .nvmrc
 
       - name: Install Lightdash CLI
-        run: npm install -g @lightdash/cli@0.2596.0
+        run: npm install -g "@lightdash/cli@$(cat .lightdash-version)"
 
       - name: Stop preview project
         run: lightdash stop-preview --name "$LIGHTDASH_PREVIEW_NAME"
