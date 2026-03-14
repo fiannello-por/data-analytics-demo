@@ -34,12 +34,13 @@ jobs:
             lightdash:
               - 'lightdash/**'
               - 'lightdash.config.yml'
-              - 'scripts/validate-lightdash-refs.sh'
+              - 'src/por_analytics/validators/**'
             code:
-              - 'scripts/**'
+              - 'src/**'
               - 'tests/**'
               - 'apps/**'
-              - 'tsconfig*.json'
+              - 'pyproject.toml'
+              - 'uv.lock'
               - 'package.json'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
@@ -59,8 +60,20 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@f0ec1fc3b38f5e7cd731bb6ce540c5af426746bb # v5
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Install Python dependencies
+        run: uv sync
+
       - name: Validate Lightdash references
-        run: bash scripts/validate-lightdash-refs.sh
+        run: uv run validate-refs
+
+      - name: Validate shared folder rules
+        run: uv run validate-shared
 
   lint-format:
     runs-on: ubuntu-latest
@@ -117,6 +130,15 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@f0ec1fc3b38f5e7cd731bb6ce540c5af426746bb # v5
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Install Python dependencies
+        run: uv sync
+
       - name: Set up pnpm
         uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
 
@@ -126,14 +148,20 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
 
-      - name: Install dependencies
+      - name: Install Node.js dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Typecheck scripts and site
-        run: pnpm typecheck
+      - name: Lint Python
+        run: uv run ruff check src tests
 
-      - name: Run unit tests
-        run: pnpm test
+      - name: Type check Python
+        run: uv run mypy src tests
+
+      - name: Run Python tests
+        run: uv run pytest -v
+
+      - name: Typecheck changelog site
+        run: pnpm --filter @point-of-rental/changelog-site typecheck
 
   build-changelog:
     needs: changes

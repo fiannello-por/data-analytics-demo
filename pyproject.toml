@@ -1,0 +1,50 @@
+[project]
+name = "por-analytics"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "httpx>=0.28",
+    "openai>=1.60",
+    "pyyaml>=6.0",
+]
+
+[project.scripts]
+validate-refs = "por_analytics.validators.lightdash_refs:main"
+validate-shared = "por_analytics.validators.shared_folder:main"
+review-pr = "por_analytics.agents.review_pr:main"
+generate-changelog = "por_analytics.agents.generate_changelog:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/por_analytics"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+packages = ["por_analytics", "tests"]
+mypy_path = "src"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 99
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "A", "SIM", "TCH"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.19.1",
+    "pytest>=9.0.2",
+    "ruff>=0.15.6",
+    "types-pyyaml>=6.0.12.20250915",
+]
