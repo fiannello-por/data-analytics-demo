@@ -32,17 +32,16 @@ jobs:
         run: |
           test -n "$OPENAI_API_KEY" || (echo "::error::Missing OPENAI_API_KEY" && exit 1)
 
-      - name: Set up pnpm
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+      - name: Set up uv
+        uses: astral-sh/setup-uv@f0ec1fc3b38f5e7cd731bb6ce540c5af426746bb # v5
         with:
-          node-version-file: .nvmrc
-          cache: pnpm
+          enable-cache: true
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Set up Python
+        run: uv python install
+
+      - name: Install Python dependencies
+        run: uv sync
 
       - name: Generate changelog entry
         env:
@@ -51,7 +50,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_CODEX_MODEL: ${{ vars.OPENAI_CODEX_MODEL || 'gpt-5.2-codex' }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: pnpm changelog:generate
+        run: uv run generate-changelog
 
       - name: Commit generated changelog
         id: commit_changelog

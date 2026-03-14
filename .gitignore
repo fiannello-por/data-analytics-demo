@@ -12,3 +12,16 @@ coverage
 apps/changelog-site/.docusaurus
 apps/changelog-site/build
 *.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+dist/
+
+# Test evidence
+evidence/

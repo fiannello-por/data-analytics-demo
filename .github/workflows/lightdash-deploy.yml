@@ -31,23 +31,16 @@ jobs:
           test -n "$LIGHTDASH_URL" || (echo "::error::Missing LIGHTDASH_URL" && exit 1)
           test -n "$LIGHTDASH_PROJECT" || (echo "::error::Missing LIGHTDASH_PROJECT" && exit 1)
 
-      - name: Set up pnpm
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
-
       - name: Set up Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version-file: .nvmrc
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
 
       - name: Install Lightdash CLI
         run: npm install -g "@lightdash/cli@$(cat .lightdash-version)"
 
       - name: Deploy semantic layer
-        run: pnpm lightdash:deploy
+        run: lightdash deploy --no-warehouse-credentials
 
       - name: Upload charts and dashboards
-        run: pnpm lightdash:upload
+        run: lightdash upload --force

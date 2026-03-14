@@ -4,7 +4,7 @@ This repository is the operational home for the Point of Rental analytics stack:
 
 - `lightdash/` contains the semantic layer, charts, and dashboards for a pure Lightdash YAML project.
 - `apps/changelog-site/` is a Docusaurus site published on Vercel for the public-facing analytics changelog.
-- `scripts/agents/` contains Codex-powered automation for pull request review and changelog generation.
+- `src/por_analytics/agents/` contains Codex-powered automation for pull request review and changelog generation.
 
 The current architecture is intentionally dbt-free. Lightdash metadata lives in standalone YAML so the BI layer can move quickly without coupling business logic to dbt project structure. When dbt is introduced, the semantic layer standards in this repo are designed to migrate cleanly into dbt `meta:` blocks.
 
@@ -28,14 +28,19 @@ The current architecture is intentionally dbt-free. Lightdash metadata lives in 
 │   ├── charts/
 │   ├── dashboards/
 │   └── models/
-├── scripts/
-│   └── agents/
+├── src/
+│   └── por_analytics/
+│       ├── agents/
+│       ├── lib/
+│       └── validators/
+├── pyproject.toml
 └── lightdash.config.yml
 ```
 
 ## Local Development
 
 ```bash
+uv sync
 pnpm install
 pnpm validate
 pnpm changelog:dev
@@ -49,7 +54,7 @@ Useful commands:
 
 ## CI/CD
 
-- `ci.yml` enforces formatting, Markdown quality, TypeScript checks, and site build integrity.
+- `ci.yml` enforces formatting, Markdown quality, Python type checking, linting, and tests, and site build integrity.
 - `codex-review.yml` reviews PR diffs for semantic-layer mistakes, anti-patterns, and missing PR documentation.
 - `lightdash-deploy.yml` deploys Lightdash metadata and content on merge to `main`.
 - `codex-changelog.yml` generates a changelog entry from merged PR metadata and commits it back to `main`.
