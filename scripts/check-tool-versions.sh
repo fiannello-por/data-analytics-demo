@@ -38,12 +38,17 @@ fi
 # --- Python ---
 if [ -f .python-version ]; then
   expected_python=$(cat .python-version)
-  actual_python=$(python3 --version 2>/dev/null | awk '{print $2}')
-  if [ "$actual_python" != "$expected_python" ]; then
-    echo "✗ Python: expected ${expected_python}, got ${actual_python}"
-    errors=$((errors + 1))
+  if command -v python3 &>/dev/null; then
+    actual_python=$(python3 --version | awk '{print $2}')
+    if [ "$actual_python" != "$expected_python" ]; then
+      echo "✗ Python: expected ${expected_python}, got ${actual_python}"
+      errors=$((errors + 1))
+    else
+      echo "✓ Python: ${actual_python}"
+    fi
   else
-    echo "✓ Python: ${actual_python}"
+    echo "✗ Python: not installed (expected ${expected_python})"
+    errors=$((errors + 1))
   fi
 else
   echo "- Python: no .python-version file (skipped)"
