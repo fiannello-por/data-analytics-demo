@@ -10,26 +10,17 @@ import { Callout } from 'fumadocs-ui/components/callout';
 Every change — whether it's a new chart, a metric update, or a dashboard restructure — follows the same workflow:
 
 ```text
-┌──────────┐     ┌──────────┐     ┌───────────────┐     ┌───────────────┐     ┌──────────┐
-│ Create    │────▶│ Make     │────▶│ Push to       │────▶│ Automated     │────▶│ Human    │
-│ branch    │     │ changes  │     │ GitHub        │     │ checks run    │     │ review   │
-│ from main │     │ (YAML)   │     │ (open PR)     │     │ (must pass)   │     │          │
-└──────────┘     └──────────┘     └───────────────┘     └───────────────┘     └────┬─────┘
-                                                                                    │
-                                                                                    ▼
-                                                                             ┌────────────┐
-                                                                             │ Merge to   │
-                                                                             │ main       │
-                                                                             └─────┬──────┘
-                                                                                   │
-                                                               ┌───────────────────┼───────────────────┐
-                                                               ▼                   ▼                   ▼
-                                                        ┌────────────┐     ┌────────────┐     ┌────────────┐
-                                                        │ Production │     │ Changelog  │     │ Slack      │
-                                                        │ auto-      │     │ entry      │     │ notifies   │
-                                                        │ deployed   │     │ auto-      │     │ subscribers│
-                                                        │            │     │ generated  │     │            │
-                                                        └────────────┘     └────────────┘     └────────────┘
+Create       Make        Push to       Automated       Human
+branch  ---> changes --> GitHub   ---> checks     ---> review
+from main    (YAML)      (open PR)     (must pass)     |
+                                                       v
+                                                  Merge to main
+                                                       |
+                                       +---------------+---------------+
+                                       v               v               v
+                                  Production      Changelog        Slack
+                                  auto-deployed   auto-generated   notifies
+                                                                   subscribers
 ```
 
 **Rules:**
@@ -58,16 +49,14 @@ If any automated check fails, the PR is blocked. Human reviewers only look at ch
 ## 4.3 Environments (Dev → Preview → Production)
 
 ```text
-┌─────────────────┐     ┌─────────────────────┐     ┌─────────────────┐
-│   Local dev     │────▶│   Preview (per PR)   │────▶│   Production    │
-│                 │     │                      │     │                 │
-│ Author's        │     │ Temporary Lightdash  │     │ Stable, live    │
-│ machine         │     │ project, auto-created│     │ dashboards      │
-│                 │     │ auto-destroyed       │     │                 │
-│ Edit YAML,      │     │ Reviewers see the    │     │ Updated only    │
-│ run validators  │     │ real dashboard       │     │ on merge to     │
-│ locally         │     │ before approving     │     │ main            │
-└─────────────────┘     └─────────────────────┘     └─────────────────┘
++-------------------+     +---------------------+     +-----------------+
+|    Local dev      |---->|  Preview (per PR)   |---->|   Production    |
+|                   |     |                     |     |                 |
+| Author's machine  |     | Temporary Lightdash |     | Stable, live    |
+| Edit YAML, run    |     | project, auto-      |     | dashboards      |
+| validators locally|     | created, auto-      |     | Updated only on |
+|                   |     | destroyed           |     | merge to main   |
++-------------------+     +---------------------+     +-----------------+
 ```
 
 - **Local dev:** Author edits YAML files and runs validators locally before pushing

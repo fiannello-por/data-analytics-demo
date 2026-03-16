@@ -6,21 +6,37 @@ description: Phased delivery plan from proof of concept to full platform.
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Cards, Card } from 'fumadocs-ui/components/card';
 
-## 6.1 Phase 0: Proof of Concept (Current State)
+## 6.1 Phase 0: Proof of Concept (Current WIP State)
 
-A testing repository exists today at [github.com/fiannello-por/data-analytics-demo](https://github.com/fiannello-por/data-analytics-demo). It demonstrates the core concepts:
+A working repository exists today at [github.com/fiannello-por/data-analytics-demo](https://github.com/fiannello-por/data-analytics-demo). It demonstrates the core concepts:
 
-- Lightdash charts and dashboards defined as YAML in Git
+- Sales Performance Dashboard defined as YAML in Git and deployed to Lightdash
+
+![Sales Performance Dashboard in Lightdash](/poc_dashboard.png)
+
 - CI/CD pipeline with automated validation on every push
-- AI-powered PR review generating structured feedback _(optional — uses OpenAI API)_
-- Automated changelog generation from merged pull requests _(optional — uses OpenAI API)_
+
+![GitHub Actions CI pipeline](/poc_ci.png)
+
+- AI-powered PR review generating structured feedback _(optional — uses LLM API)_
+
+![AI-powered PR review](/poc_ai_review.png)
+
+- Automated changelog generation from merged pull requests _(optional — uses LLM API)_ — [live changelog site](https://data-analytics-demo-orcin.vercel.app/)
+
+[![Automated changelog site](/changelog_screenshot.png)](https://data-analytics-demo-orcin.vercel.app/)
+
 - Semantic layer with metric definitions
 
+![Semantic layer in Lightdash Explore view](/poc_semantic_layer.png)
+
 <Callout type="warn">
-  **This is a POC — not a production system.** It's available for the team to
-  explore, test, and evaluate. It is subject to modifications at any time and
-  should be treated as a sandbox for proving out the architecture.
+  **This is a work in progress — not a production system.** It's available for
+  the team to explore, test, and evaluate. It is subject to modifications at any
+  time and should be treated as a sandbox for proving out the architecture.
 </Callout>
+
+Phase 0 will be considered complete once the POC is demoed, shared with the team, reviewed, and approved. Currently, demos are being prepared and accesses need to be shared.
 
 ## 6.2 Phase 1: Core Platform
 
@@ -85,14 +101,14 @@ Replace BigQuery scheduled queries with version-controlled dbt models. This phas
 At every phase, the existing Looker Studio dashboards remain live and untouched. There is no "switch-over day."
 
 ```text
-Phase 0          Phase 1                    Phase 2
-─────────────────────────────────────────────────────────▶
+              Phase 0          Phase 1               Phase 2
+Timeline  ----+----------------+---------------------+------------>
 
-Looker Studio ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━▶  (stays live)
+Looker Studio =================================================> (stays live)
 
-                  Lightdash ━━━━━━━━━━━━━━━━━━━━━━━━━━━━▶  (grows alongside)
+              Lightdash        ===============================> (grows alongside)
 
-                                             dbt ━━━━━━━▶  (plugs in when ready)
+                                             dbt     =========> (plugs in when ready)
 ```
 
 - Looker Studio stays live until the team is confident in the replacement

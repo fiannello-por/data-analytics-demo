@@ -1,14 +1,14 @@
 {
   "pages": [
-    "---Part I — Where We Are---",
+    "---Part I: Where We Are Today---",
     "index",
     "current-state",
-    "---Part II — What We're Proposing---",
+    "---Part II: What We're Proposing---",
     "target-architecture",
-    "---Part III — How We Build It---",
+    "---Part III: How We Build It---",
     "development-workflow",
     "governance",
-    "---Part IV — Making It Real---",
+    "---Part IV: Making It Real---",
     "implementation-roadmap",
     "budget"
   ]

@@ -9,11 +9,11 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 ## 3.1 Architecture Overview
 
 ```text
-┌────────────┐     ┌─────────┐     ┌────────────┐     ┌────────────┐     ┌──────────┐
-│ Salesforce  │────▶│  Stitch  │────▶│  BigQuery   │────▶│ Lightdash  │◀───▶│  GitHub   │
-│  (source)   │     │ (ingest) │     │ (warehouse) │     │   (BI)     │     │ (CI/CD)  │
-└────────────┘     └─────────┘     └────────────┘     └────────────┘     └──────────┘
-   Existing           Existing         Existing              New              New
++------------+     +---------+     +------------+     +------------+     +----------+
+| Salesforce |---->|  Stitch  |---->|  BigQuery  |---->| Lightdash  |<--->|  GitHub   |
+|  (source)  |     | (ingest) |     |(warehouse) |     |    (BI)    |     |  (CI/CD)  |
++------------+     +---------+     +------------+     +------------+     +----------+
+   Existing          Existing         Existing              New               New
 ```
 
 | Component                                    | Role                                           | Status                 |
@@ -30,7 +30,30 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
   BigQuery: how it's modeled, visualized, governed, and deployed.
 </Callout>
 
-## 3.2 Design Principles
+## 3.2 Why Lightdash
+
+We evaluated the major open-source BI platforms against our core requirements: **code-first dashboards**, **semantic layer**, **Git-native workflows**, **AI-readiness**, **self-hostable**, and **BigQuery compatibility**.
+
+| Requirement | [Lightdash](https://www.lightdash.com/) | [Metabase](https://www.metabase.com/) | [Apache Superset](https://superset.apache.org/) | [Evidence](https://evidence.dev/) |
+|---|---|---|---|---|
+| **Dashboards as code (YAML in Git)** | ✅ Native | ❌ GUI-only | ❌ GUI-only | ✅ Markdown-based |
+| **Semantic layer** | ✅ Built-in | ❌ None | ❌ None | ❌ None |
+| **Git-native CI/CD** | ✅ CLI + GitHub Actions | ❌ No CLI | ❌ No CLI | ✅ Git-native |
+| **dbt integration** | ✅ Designed for dbt | ❌ Limited | ❌ Limited | ⚠️ Partial |
+| **AI-ready (LLM skills)** | ✅ [Official skills](https://docs.lightdash.com/guides/ai-overview) | ❌ None | ❌ None | ❌ None |
+| **Self-serve exploration** | ✅ [Explore view](https://docs.lightdash.com/guides/exploring-your-content/) | ✅ Question builder | ✅ SQL Lab | ❌ Read-only reports |
+| **Self-hostable** | ✅ Docker / Render | ✅ Docker | ✅ Docker | ✅ Vercel / Node |
+| **BigQuery support** | ✅ | ✅ | ✅ | ✅ |
+
+**Why Lightdash wins for us:**
+
+- **Only platform that combines dashboards-as-code with a semantic layer.** Metabase and Superset are powerful GUI tools, but dashboards live inside the application — not in Git. You can't version control them, review them in PRs, or generate them with AI.
+- **Purpose-built for dbt.** While other tools can connect to a warehouse, Lightdash reads dbt model metadata natively. When we add dbt in Phase 2, the integration is seamless — no adapter layer, no workarounds.
+- **Official AI/LLM support.** Lightdash provides agent skills that teach AI tools like Claude Code how to build correct charts and metrics. No other open-source BI tool offers this today.
+- **Evidence is close but different.** Evidence produces beautiful static reports from Markdown + SQL, but it lacks a semantic layer, live exploration, and interactive dashboards. It's a reporting tool, not a BI platform.
+- **Metabase and Superset are great tools for different needs.** Metabase excels at self-serve for non-technical users. Superset excels at scale and advanced visualizations. Neither supports the code-first, AI-ready workflow we need.
+
+## 3.3 Design Principles
 
 - **Open-source first** — Lightdash, dbt, GitHub Actions. No proprietary platforms, no license fees for core tooling.
 - **Modular** — Each component does one job. Any piece can be swapped without rebuilding the rest.
@@ -38,25 +61,17 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 - **AI-ready** — Because everything is code, AI tools can read, write, and reason about our analytics stack. This isn't a future aspiration — it's a property of the architecture from day one.
 - **Budget-conscious** — Built on open-source tools with low hosting costs. Infrastructure can be scaled up as usage grows, increasing both capacity and capability incrementally.
 
-## 3.3 CI/CD
+## 3.4 CI/CD
 
 Every change to a dashboard, chart, or metric definition goes through an automated pipeline:
 
 ```text
-  ┌──────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────┐     ┌──────────┐
-  │  Author   │────▶│  Push to     │────▶│  CI runs     │────▶│  Preview │────▶│  Team    │
-  │  edits    │     │  branch      │     │  validation  │     │  env     │     │  reviews │
-  │  YAML     │     │  on GitHub   │     │  checks      │     │  spins   │     │  the PR  │
-  └──────────┘     └──────────────┘     └──────────────┘     │  up      │     └────┬─────┘
-                                                              └──────────┘          │
-                                                                                    ▼
-                                                                             ┌────────────┐
-                                                                             │   Merge    │
-                                                                             │   to main  │
-                                                                             │   ────▶    │
-                                                                             │ Production │
-                                                                             │  updates   │
-                                                                             └────────────┘
+Author       Push to      CI runs       Preview      Team        Merge to
+edits   ---> branch  ---> validation -> env     ---> reviews --> main
+YAML         on GitHub    checks        spins up     the PR      |
+                                                                 v
+                                                            Production
+                                                            updates
 ```
 
 **What CI checks on every change:**
@@ -66,9 +81,11 @@ Every change to a dashboard, chart, or metric definition goes through an automat
 - ✅ Dashboard renders without errors in a [preview project](https://docs.lightdash.com/guides/cli/how-to-use-lightdash-preview/)
 - ✅ Formatting and linting rules pass
 
+![CI/CD pipeline checks](/poc_ci.png)
+
 > _Today: every change goes directly to production with no validation. With this architecture: every change is validated automatically before anyone sees it._
 
-## 3.4 Dev Environment vs. Prod Environment
+## 3.5 Dev Environment vs. Prod Environment
 
 |                 | Dev (Preview)                          | Production                 |
 | --------------- | -------------------------------------- | -------------------------- |
@@ -79,7 +96,7 @@ Every change to a dashboard, chart, or metric definition goes through an automat
 
 Today, every change goes directly to production. With this architecture, developers iterate freely in [preview environments](https://docs.lightdash.com/guides/cli/how-to-use-lightdash-preview/) while production remains untouched until changes are explicitly approved.
 
-## 3.5 Dashboards-as-Code
+## 3.6 Dashboards-as-Code
 
 Instead of building dashboards through a point-and-click GUI, every dashboard is defined in a **code-first** YAML file:
 
@@ -105,7 +122,7 @@ tiles:
 
 > _Today: modifying a chart means clicking through a GUI, testing manually, hoping nothing broke. With dashboards-as-code: every change is a reviewable pull request with automated validation._
 
-## 3.6 Agentic Analytics
+## 3.7 Agentic Analytics
 
 When dashboards are **code-first** and metrics have formal definitions, the entire stack becomes **AI-ready**.
 
@@ -129,20 +146,16 @@ Lightdash provides an [official set of LLM skills](https://docs.lightdash.com/gu
 </Tabs>
 
 ```text
-  ┌────────────────────────────────┐     ┌──────────────┐     ┌──────────┐     ┌──────────┐
-  │  "Add a close rate chart       │────▶│ Claude Code  │────▶│ Pull     │────▶│ CI       │
-  │   to the expansion scorecard"  │     │ generates    │     │ Request  │     │ validates│
-  │                                │     │ YAML         │     │ opened   │     │ auto     │
-  └────────────────────────────────┘     └──────────────┘     └──────────┘     └────┬─────┘
-                                                                                     │
-                                                                                     ▼
-                                                                              ┌──────────┐
-                                                                              │ Review & │
-                                                                              │ merge    │
-                                                                              └──────────┘
+"Add a close rate chart        Claude Code      Pull         CI
+ to the expansion      ------> generates  ----> Request ---> validates
+ scorecard"                     YAML            opened       auto
+                                                              |
+                                                              v
+                                                         Review &
+                                                         merge
 ```
 
-## 3.7 The Semantic Layer
+## 3.8 The Semantic Layer
 
 **The problem: same metric, different numbers.**
 
@@ -165,6 +178,8 @@ Every dashboard, every ad-hoc query, and every AI agent reads from this single d
 
 Because metrics are **code-first**, they are automatically **AI-ready** — an AI agent querying your data reads the same definitions your dashboards use.
 
+![Semantic layer in Lightdash Explore view](/poc_semantic_layer.png)
+
 | Capability                                                                              | Without semantic layer                | With semantic layer                           |
 | --------------------------------------------------------------------------------------- | ------------------------------------- | --------------------------------------------- |
 | **Agentic BI**                                                                          | AI guesses at SQL, unreliable         | AI queries defined metrics, trustworthy       |
@@ -173,7 +188,7 @@ Because metrics are **code-first**, they are automatically **AI-ready** — an A
 | **Cross-dashboard consistency**                                                         | Each dashboard defines its own logic  | All dashboards read from one source           |
 | **Onboarding**                                                                          | New analysts reverse-engineer SQL     | New analysts browse a metric catalog          |
 
-## 3.8 The dbt Opportunity
+## 3.9 The dbt Opportunity
 
 **What dbt is, in business terms:**
 
@@ -185,6 +200,8 @@ Because metrics are **code-first**, they are automatically **AI-ready** — an A
 - **Built-in [testing](https://docs.getdbt.com/docs/build/data-tests)** — define expectations ("revenue should never be negative") and catch violations automatically
 - **Automatic [documentation](https://docs.getdbt.com/docs/collaborate/documentation)** — dbt generates a browsable catalog of every table, column, and transformation
 - **[Lineage tracking](https://docs.getdbt.com/terms/data-lineage)** — see at a glance which dashboards are affected when an upstream table changes
+
+![dbt lineage and documentation](/dbt.png)
 
 <Callout type="info">
   **The architecture is dbt-ready today.** [Lightdash was designed to work with
