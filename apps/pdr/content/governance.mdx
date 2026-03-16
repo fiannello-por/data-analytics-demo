@@ -35,7 +35,55 @@ Lightdash/
 - **Personal folders** are for prototyping, experimentation, and ad-hoc analysis. Move fast, break nothing in production.
 - **Shared folder** is production. Changes go through pull requests, automated validation, and human review. No manual edits.
 
-## 5.2 Change Management & Stakeholder Communication
+## 5.2 Security Considerations
+
+**Authentication & SSO**
+
+- Lightdash supports [SSO via Google, Azure AD, Okta, and OneLogin](https://docs.lightdash.com/self-host/customize-deployment/use-sso-login-for-self-hosted-lightdash) — multiple providers can be active simultaneously
+- Password-based login can be disabled to enforce SSO-only access
+- GitHub access is managed through organization membership with [two-factor authentication](https://docs.github.com/en/authentication/securing-your-account-with-two-factor-authentication-2fa) enforced
+
+**Role-Based Access Control**
+
+Lightdash provides [granular roles and permissions](https://docs.lightdash.com/references/roles) at multiple levels:
+
+| Level | Controls |
+|---|---|
+| **Organization** | Admin, member, viewer roles across the entire instance |
+| **Project** | Per-project access for different teams or use cases |
+| **[Space](https://docs.lightdash.com/guides/spaces/)** | Restricted or full-access spaces with nested permissions — control who can view, edit, or manage each folder |
+| **[User groups](https://changelog.lightdash.com/manage-user-group-access-to-a-space-293637)** | Manage access at scale by assigning groups to spaces instead of individual users |
+
+**Row-Level Security**
+
+Lightdash supports [row-level security](https://changelog.lightdash.com/row-level-security-based-on-a-user's-email-or-name-290489) based on user attributes (email, name, department, region). This means the same dashboard can show different data to different users — a sales rep sees only their region, a director sees all regions — without building separate dashboards.
+
+```yaml
+# Example: filter opportunities by the logged-in user's email
+sql_filter: ${TABLE}.owner_email = '${lightdash.user.email}'
+```
+
+**Change Control & Audit Trail**
+
+- All changes to production dashboards go through [GitHub pull requests](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches) with required reviews — no direct modifications
+- [Branch protection rules](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/managing-a-branch-protection-rule) enforce that all CI checks pass before merge
+- Every change is logged with who made it, when, why, and what was reviewed — full audit trail in Git history
+- Force pushes and branch deletions are blocked on `main`
+
+**Data Security**
+
+- Lightdash [does not cache or store query results](https://www.lightdash.com/lightdash-security) — data stays in BigQuery
+- All connections to BigQuery use encrypted channels
+- Self-hosted deployment means data never leaves our controlled infrastructure
+- Lightdash maintains [SOC 2 Type II and HIPAA compliance](https://security.lightdash.com/) for their cloud offering — the same security practices apply to the open-source codebase
+
+**AI Agent Security**
+
+- AI agents (PR review, changelog) operate through the same PR workflow — they cannot modify production directly
+- [AI agents in Lightdash](https://docs.lightdash.com/guides/ai-agents/data-access) respect the same role-based permissions as human users — an agent can only access data the authenticated user is allowed to see
+- LLM API keys are stored as [GitHub encrypted secrets](https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions), never committed to code
+
+## 5.3 Change Management & Stakeholder Communication
 
 Every change to production analytics is communicated automatically — no manual effort required.
 
@@ -62,7 +110,7 @@ For example: if User A subscribes to the Sales Performance Dashboard, and a PR m
 - **Slack channel** (e.g., `#analytics-changelog` — placeholder, can be any channel the team prefers): All change notifications flow here. Subscribers are @-mentioned for changes to their dashboards.
 - **Changelog site:** A browsable, searchable history of every analytics change. Each dashboard can link directly to its filtered changelog page.
 
-## 5.3 Documentation Strategy
+## 5.4 Documentation Strategy
 
 Documentation is not a separate task — it's a byproduct of the architecture:
 
