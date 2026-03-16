@@ -1,0 +1,89 @@
+---
+title: Development Workflow
+description: How changes are made, tested, reviewed, and deployed.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 4.1 The Pull Request Lifecycle
+
+Every change — whether it's a new chart, a metric update, or a dashboard restructure — follows the same workflow:
+
+```text
+┌──────────┐     ┌──────────┐     ┌───────────────┐     ┌───────────────┐     ┌──────────┐
+│ Create    │────▶│ Make     │────▶│ Push to       │────▶│ Automated     │────▶│ Human    │
+│ branch    │     │ changes  │     │ GitHub        │     │ checks run    │     │ review   │
+│ from main │     │ (YAML)   │     │ (open PR)     │     │ (must pass)   │     │          │
+└──────────┘     └──────────┘     └───────────────┘     └───────────────┘     └────┬─────┘
+                                                                                    │
+                                                                                    ▼
+                                                                             ┌────────────┐
+                                                                             │ Merge to   │
+                                                                             │ main       │
+                                                                             └─────┬──────┘
+                                                                                   │
+                                                               ┌───────────────────┼───────────────────┐
+                                                               ▼                   ▼                   ▼
+                                                        ┌────────────┐     ┌────────────┐     ┌────────────┐
+                                                        │ Production │     │ Changelog  │     │ Slack      │
+                                                        │ auto-      │     │ entry      │     │ notifies   │
+                                                        │ deployed   │     │ auto-      │     │ subscribers│
+                                                        │            │     │ generated  │     │            │
+                                                        └────────────┘     └────────────┘     └────────────┘
+```
+
+**Rules:**
+
+- All automated checks must pass before a human review can begin
+- At least one team member must approve the pull request
+- The author cannot approve their own changes
+- Merging to `main` triggers three things automatically: production deployment, changelog generation, and stakeholder notification
+
+## 4.2 CI/CD Pipeline
+
+The CI pipeline runs automatically on every push. It acts as the first reviewer — catching mechanical errors before a human needs to look at the change.
+
+| Check                                                                                          | What it catches                                                                                       |
+| ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| **Reference validation**                                                                       | Charts pointing to fields that don't exist in the model                                               |
+| **Shared folder validation**                                                                   | Production content in the wrong folder, cross-reference violations                                    |
+| **YAML linting**                                                                               | Syntax errors, formatting inconsistencies                                                             |
+| **Formatting**                                                                                 | Code style enforcement across YAML, Markdown, and config files                                        |
+| **Python linting & type checking**                                                             | Errors in automation scripts and validators                                                           |
+| **AI-powered PR review**                                                                       | Semantic-layer anti-patterns, naming violations, missing documentation _(optional — uses OpenAI API)_ |
+| **[Preview environment](https://docs.lightdash.com/guides/cli/how-to-use-lightdash-preview/)** | Visual verification — reviewers see the actual dashboard, not just code                               |
+
+If any automated check fails, the PR is blocked. Human reviewers only look at changes that have already passed every automated gate.
+
+## 4.3 Environments (Dev → Preview → Production)
+
+```text
+┌─────────────────┐     ┌─────────────────────┐     ┌─────────────────┐
+│   Local dev     │────▶│   Preview (per PR)   │────▶│   Production    │
+│                 │     │                      │     │                 │
+│ Author's        │     │ Temporary Lightdash  │     │ Stable, live    │
+│ machine         │     │ project, auto-created│     │ dashboards      │
+│                 │     │ auto-destroyed       │     │                 │
+│ Edit YAML,      │     │ Reviewers see the    │     │ Updated only    │
+│ run validators  │     │ real dashboard       │     │ on merge to     │
+│ locally         │     │ before approving     │     │ main            │
+└─────────────────┘     └─────────────────────┘     └─────────────────┘
+```
+
+- **Local dev:** Author edits YAML files and runs validators locally before pushing
+- **Preview:** A temporary [Lightdash project](https://docs.lightdash.com/guides/cli/how-to-use-lightdash-preview/) is created automatically for each pull request. Reviewers can click through the actual dashboard. The preview is destroyed when the PR is closed.
+- **Production:** Updated only when a PR is merged to `main`. Leadership and all consumers see a stable, validated environment at all times.
+
+## 4.4 Branching Strategy
+
+We use **trunk-based development** — the simplest strategy that works for a small team:
+
+```text
+main ─────────●─────────●─────────●─────────▶
+               \       /   \     /
+                feat-1       feat-2
+```
+
+- **`main`** is the single source of truth. It's always deployable.
+- **Feature branches** are short-lived (hours to days, not weeks). One branch per change.
+- **No long-lived branches.** No `develop`, no `staging`, no `release`. Complexity is added only if the team outgrows this model.

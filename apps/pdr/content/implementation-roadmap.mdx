@@ -1,97 +1,100 @@
 ---
 title: Implementation Roadmap
-description: Four-phase delivery plan with milestones, dependencies, and resource allocation.
+description: Phased delivery plan from proof of concept to full platform.
 ---
 
-import { Step, Steps } from 'fumadocs-ui/components/steps';
 import { Callout } from 'fumadocs-ui/components/callout';
+import { Cards, Card } from 'fumadocs-ui/components/card';
 
-## Phased Delivery
+## 6.1 Phase 0: Proof of Concept (Current State)
 
-<Steps>
-  <Step>
-    ### Phase 1: Foundation (Q1 FY26)
+A testing repository exists today at [github.com/fiannello-por/data-analytics-demo](https://github.com/fiannello-por/data-analytics-demo). It demonstrates the core concepts:
 
-    Stand up core infrastructure and migrate the first 3 data sources.
+- Lightdash charts and dashboards defined as YAML in Git
+- CI/CD pipeline with automated validation on every push
+- AI-powered PR review generating structured feedback _(optional — uses OpenAI API)_
+- Automated changelog generation from merged pull requests _(optional — uses OpenAI API)_
+- Semantic layer with metric definitions
 
-    - Provision Snowflake warehouse and configure networking
-    - Deploy Lightdash on ECS with SSO integration
-    - Migrate CRM, billing, and product usage data via Fivetran
-    - Build 5 foundational dbt models (staging + marts)
-    - Deliver MVP dashboard for Sales leadership
-
-    **Exit criteria**: Sales team using self-service for weekly pipeline review
-
-  </Step>
-  <Step>
-    ### Phase 2: Expand (Q2 FY26)
-
-    Migrate remaining data sources and onboard additional teams.
-
-    - Migrate remaining 9 data sources
-    - Build 15 additional dbt models
-    - Deploy scheduled reports for Finance and Marketing
-    - Launch self-service training program
-    - Implement RBAC for all departments
-
-    **Exit criteria**: 50+ active users across 4 departments
-
-  </Step>
-  <Step>
-    ### Phase 3: Optimize (Q3 FY26)
-
-    Performance tuning, advanced features, and legacy sunset.
-
-    - Convert all models to incremental refresh
-    - Deploy real-time dashboard layer (WebSocket)
-    - Build custom executive dashboard (Next.js)
-    - Begin legacy tool deprecation
-    - Conduct first cost optimization review
-
-    **Exit criteria**: p95 load time < 3s, legacy tools deprecated
-
-  </Step>
-  <Step>
-    ### Phase 4: Scale (Q4 FY26)
-
-    Full rollout, documentation, and handoff.
-
-    - Complete legacy tool sunset
-    - Deploy to all 200+ business users
-    - Finalize runbooks and operational documentation
-    - Conduct post-implementation review
-    - Transfer to BAU support team
-
-    **Exit criteria**: Full platform handoff to operations
-
-  </Step>
-</Steps>
-
-## Milestone Timeline
-
-| Milestone             | Target Date | Phase | Dependencies         |
-| --------------------- | ----------- | ----- | -------------------- |
-| Snowflake provisioned | Apr 1       | P1    | Procurement approval |
-| Lightdash deployed    | Apr 15      | P1    | Snowflake ready      |
-| MVP dashboard live    | Jun 30      | P1    | 3 sources migrated   |
-| 50 active users       | Sep 30      | P2    | Training complete    |
-| Real-time dashboards  | Nov 15      | P3    | WebSocket infra      |
-| Legacy tools sunset   | Jan 15      | P4    | 100% migration       |
-| Full handoff          | Mar 31      | P4    | Runbooks complete    |
-
-<Callout type="info">
-  **Buffer**: Each phase includes 2 weeks of buffer time. The total timeline is
-  12 months but could compress to 10 months if Phase 1 procurement completes
-  early.
+<Callout type="warn">
+  **This is a POC — not a production system.** It's available for the team to
+  explore, test, and evaluate. It is subject to modifications at any time and
+  should be treated as a sandbox for proving out the architecture.
 </Callout>
 
-## Resource Allocation
+## 6.2 Phase 1: Core Platform
 
-| Role               | Phase 1 | Phase 2 | Phase 3 | Phase 4 |
-| ------------------ | ------- | ------- | ------- | ------- |
-| Data Engineers     | 4       | 4       | 3       | 2       |
-| Frontend Engineers | 1       | 2       | 3       | 1       |
-| Platform Engineers | 2       | 1       | 1       | 1       |
-| Designers          | 1       | 1       | 2       | 0       |
-| PM                 | 1       | 1       | 1       | 1       |
-| **Total**          | **9**   | **9**   | **10**  | **5**   |
+Transition from POC to production. Rebuild the **Sales Performance Dashboard** as the MVP, with the full development workflow operational.
+
+<Cards>
+  <Card
+    title="Production Lightdash"
+    description="Lightdash instance connected to BigQuery, serving real dashboards."
+  />
+  <Card
+    title="Sales Performance Dashboard"
+    description="The first dashboard rebuilt as dashboards-as-code."
+  />
+  <Card
+    title="Semantic Layer"
+    description="Core metric definitions — bookings, pipeline, close rate, and more."
+  />
+  <Card
+    title="CI/CD Pipeline"
+    description="Automated validation, preview environments, and one-merge deployment."
+  />
+  <Card
+    title="Agentic Workflow"
+    description="Team members can create and modify dashboards using Claude Code."
+  />
+  <Card
+    title="Access Control"
+    description="Personal folders for experimentation, shared folder for production."
+  />
+</Cards>
+
+**Optional enhancements (require OpenAI API key):**
+
+- AI-powered PR review on every change
+- Automated changelog generation with Slack notifications
+
+**Success criteria:**
+
+- Sales Performance Dashboard matches or exceeds current Looker Studio version
+- Any team member can submit a dashboard change using AI tooling
+- Every change is validated, reviewed, and documented automatically
+
+## 6.3 Phase 2: dbt Integration
+
+Replace BigQuery scheduled queries with version-controlled dbt models. This phase is independent of Phase 1 — the dashboards and semantic layer built in Phase 1 carry forward without rework.
+
+**Deliverables:**
+
+- dbt project initialized on top of existing BigQuery tables
+- Scheduled queries migrated to dbt models (prioritized by business domain)
+- Built-in data tests and documentation
+- Lineage tracking (which dashboards are affected by upstream changes)
+
+**Prerequisites:**
+
+- Phase 1 stable and in production use
+- Team comfortable with the PR-based workflow
+
+## 6.4 Parallel Run Guarantee
+
+At every phase, the existing Looker Studio dashboards remain live and untouched. There is no "switch-over day."
+
+```text
+Phase 0          Phase 1                    Phase 2
+─────────────────────────────────────────────────────────▶
+
+Looker Studio ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━▶  (stays live)
+
+                  Lightdash ━━━━━━━━━━━━━━━━━━━━━━━━━━━━▶  (grows alongside)
+
+                                             dbt ━━━━━━━▶  (plugs in when ready)
+```
+
+- Looker Studio stays live until the team is confident in the replacement
+- Each phase delivers standalone value — if the project pauses at any point, what's been built remains useful
+- The team decides when (and whether) to deprecate Looker Studio dashboards

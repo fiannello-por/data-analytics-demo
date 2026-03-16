@@ -1,0 +1,194 @@
+---
+title: Target Architecture
+description: What we're proposing — architecture, principles, and capabilities.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+## 3.1 Architecture Overview
+
+```text
+┌────────────┐     ┌─────────┐     ┌────────────┐     ┌────────────┐     ┌──────────┐
+│ Salesforce  │────▶│  Stitch  │────▶│  BigQuery   │────▶│ Lightdash  │◀───▶│  GitHub   │
+│  (source)   │     │ (ingest) │     │ (warehouse) │     │   (BI)     │     │ (CI/CD)  │
+└────────────┘     └─────────┘     └────────────┘     └────────────┘     └──────────┘
+   Existing           Existing         Existing              New              New
+```
+
+| Component                                    | Role                                           | Status                 |
+| -------------------------------------------- | ---------------------------------------------- | ---------------------- |
+| **Salesforce**                               | Source of truth for sales data                 | Existing — no changes  |
+| **Stitch**                                   | Data ingestion (Salesforce → BigQuery)         | Existing — no changes  |
+| **BigQuery**                                 | Data warehouse & transformation layer          | Existing — no changes  |
+| **[Lightdash](https://docs.lightdash.com/)** | Dashboards, semantic layer, data exploration   | New — hosted on Render |
+| **GitHub**                                   | Version control, CI/CD, code review, changelog | New — $4/user/month    |
+
+<Callout type="info">
+  **What stays:** Salesforce, Stitch, BigQuery — the entire data pipeline is
+  untouched. This proposal only changes what happens *after* data lands in
+  BigQuery: how it's modeled, visualized, governed, and deployed.
+</Callout>
+
+## 3.2 Design Principles
+
+- **Open-source first** — Lightdash, dbt, GitHub Actions. No proprietary platforms, no license fees for core tooling.
+- **Modular** — Each component does one job. Any piece can be swapped without rebuilding the rest.
+- **Code-first** — Dashboards are YAML files, metrics are SQL definitions, everything lives in Git. Because it's code, it's portable, diffable, reviewable, and reproducible.
+- **AI-ready** — Because everything is code, AI tools can read, write, and reason about our analytics stack. This isn't a future aspiration — it's a property of the architecture from day one.
+- **Budget-conscious** — Built on open-source tools with low hosting costs. Infrastructure can be scaled up as usage grows, increasing both capacity and capability incrementally.
+
+## 3.3 CI/CD
+
+Every change to a dashboard, chart, or metric definition goes through an automated pipeline:
+
+```text
+  ┌──────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────┐     ┌──────────┐
+  │  Author   │────▶│  Push to     │────▶│  CI runs     │────▶│  Preview │────▶│  Team    │
+  │  edits    │     │  branch      │     │  validation  │     │  env     │     │  reviews │
+  │  YAML     │     │  on GitHub   │     │  checks      │     │  spins   │     │  the PR  │
+  └──────────┘     └──────────────┘     └──────────────┘     │  up      │     └────┬─────┘
+                                                              └──────────┘          │
+                                                                                    ▼
+                                                                             ┌────────────┐
+                                                                             │   Merge    │
+                                                                             │   to main  │
+                                                                             │   ────▶    │
+                                                                             │ Production │
+                                                                             │  updates   │
+                                                                             └────────────┘
+```
+
+**What CI checks on every change:**
+
+- ✅ All chart field references point to real model definitions
+- ✅ YAML parses correctly
+- ✅ Dashboard renders without errors in a [preview project](https://docs.lightdash.com/guides/cli/how-to-use-lightdash-preview/)
+- ✅ Formatting and linting rules pass
+
+> _Today: every change goes directly to production with no validation. With this architecture: every change is validated automatically before anyone sees it._
+
+## 3.4 Dev Environment vs. Prod Environment
+
+|                 | Dev (Preview)                          | Production                 |
+| --------------- | -------------------------------------- | -------------------------- |
+| **When**        | Created automatically per pull request | Updated on merge to `main` |
+| **Who sees it** | The author + reviewers                 | Leadership + all consumers |
+| **Purpose**     | Test and review changes safely         | Trusted, stable dashboards |
+| **Lifecycle**   | Destroyed when PR is closed            | Always live                |
+
+Today, every change goes directly to production. With this architecture, developers iterate freely in [preview environments](https://docs.lightdash.com/guides/cli/how-to-use-lightdash-preview/) while production remains untouched until changes are explicitly approved.
+
+## 3.5 Dashboards-as-Code
+
+Instead of building dashboards through a point-and-click GUI, every dashboard is defined in a **code-first** YAML file:
+
+```yaml
+name: Sales Performance
+spaceSlug: revenue/dashboards
+tiles:
+  - type: saved_chart
+    properties:
+      chartSlug: bookings-acv
+  - type: saved_chart
+    properties:
+      chartSlug: pipeline-created
+```
+
+| Capability              | Web-only GUI (Looker Studio)    | Code-first (Lightdash + Git)                                                                                       |
+| ----------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| See what changed        | ❌ No history                   | ✅ Line-by-line diff in every PR                                                                                   |
+| Test before deploy      | ❌ Changes are live immediately | ✅ Preview environment + CI validation                                                                             |
+| Rebuild from scratch    | ❌ Manual recreation            | ✅ `git clone` and deploy                                                                                          |
+| AI-assisted development | ❌ Impossible — no code to read | ✅ Claude Code reads, writes, and modifies YAML                                                                    |
+| Reuse across dashboards | ❌ Copy-paste                   | ✅ Shared [chart slugs](https://docs.lightdash.com/guides/cli/how-to-use-lightdash-upload/) and metric definitions |
+
+> _Today: modifying a chart means clicking through a GUI, testing manually, hoping nothing broke. With dashboards-as-code: every change is a reviewable pull request with automated validation._
+
+## 3.6 Agentic Analytics
+
+When dashboards are **code-first** and metrics have formal definitions, the entire stack becomes **AI-ready**.
+
+<Tabs items={['What Works Today', 'What Comes Next']}>
+<Tab value="What Works Today">
+
+- Describe a new chart in natural language → Claude Code generates the YAML → submit as PR → CI validates → team reviews → merge
+- Modify an existing dashboard without opening Lightdash's GUI
+- AI-powered PR review catches semantic errors, naming violations, and broken references automatically
+
+Lightdash provides an [official set of LLM skills](https://docs.lightdash.com/guides/ai-overview) designed to make AI agents effective at building and modifying analytics content — making the platform natively **AI-ready**.
+
+</Tab>
+<Tab value="What Comes Next">
+
+- Natural language querying against the [semantic layer](https://docs.lightdash.com/guides/how-to-create-metrics/)
+- Automated report generation and [scheduled deliveries](https://docs.lightdash.com/guides/sharing-in-slack/)
+- [Alerts](https://docs.lightdash.com/guides/how-to-create-alerts/) and proactive notifications when metrics move unexpectedly
+
+</Tab>
+</Tabs>
+
+```text
+  ┌────────────────────────────────┐     ┌──────────────┐     ┌──────────┐     ┌──────────┐
+  │  "Add a close rate chart       │────▶│ Claude Code  │────▶│ Pull     │────▶│ CI       │
+  │   to the expansion scorecard"  │     │ generates    │     │ Request  │     │ validates│
+  │                                │     │ YAML         │     │ opened   │     │ auto     │
+  └────────────────────────────────┘     └──────────────┘     └──────────┘     └────┬─────┘
+                                                                                     │
+                                                                                     ▼
+                                                                              ┌──────────┐
+                                                                              │ Review & │
+                                                                              │ merge    │
+                                                                              └──────────┘
+```
+
+## 3.7 The Semantic Layer
+
+**The problem: same metric, different numbers.**
+
+When metric definitions live inside individual dashboards, inconsistencies are inevitable. "Revenue" in one dashboard might include renewals. In another, it might not. Both show "Revenue" — but the numbers don't match. This isn't a data quality problem — it's a definition problem.
+
+**The solution: one definition, used everywhere.**
+
+A [semantic layer](https://docs.lightdash.com/guides/how-to-create-metrics/) defines every metric once, in code:
+
+```yaml
+metrics:
+  bookings_acv:
+    type: sum
+    sql: ${TABLE}.acv
+    label: 'Bookings (ACV)'
+    description: 'Total Annual Contract Value of closed-won opportunities'
+```
+
+Every dashboard, every ad-hoc query, and every AI agent reads from this single definition. Change it once, it updates everywhere. Review the change in a pull request. See the full history of how a metric evolved over time.
+
+Because metrics are **code-first**, they are automatically **AI-ready** — an AI agent querying your data reads the same definitions your dashboards use.
+
+| Capability                                                                              | Without semantic layer                | With semantic layer                           |
+| --------------------------------------------------------------------------------------- | ------------------------------------- | --------------------------------------------- |
+| **Agentic BI**                                                                          | AI guesses at SQL, unreliable         | AI queries defined metrics, trustworthy       |
+| **Self-serve [exploration](https://docs.lightdash.com/guides/exploring-your-content/)** | Users need raw table/column names     | Users browse labeled, documented metrics      |
+| **Automated QA**                                                                        | No way to validate metric correctness | CI checks every chart against defined metrics |
+| **Cross-dashboard consistency**                                                         | Each dashboard defines its own logic  | All dashboards read from one source           |
+| **Onboarding**                                                                          | New analysts reverse-engineer SQL     | New analysts browse a metric catalog          |
+
+## 3.8 The dbt Opportunity
+
+**What dbt is, in business terms:**
+
+[dbt (data build tool)](https://docs.getdbt.com/docs/introduction) is an open-source framework that lets you write SQL transformations as version-controlled, tested, documented code — instead of scheduled queries managed through a web console. Think of it as applying the same **code-first** practices we're proposing for dashboards to the data transformation layer underneath.
+
+**What it unlocks:**
+
+- **Version-controlled transformations** — every SQL change is a pull request, reviewable and reversible
+- **Built-in [testing](https://docs.getdbt.com/docs/build/data-tests)** — define expectations ("revenue should never be negative") and catch violations automatically
+- **Automatic [documentation](https://docs.getdbt.com/docs/collaborate/documentation)** — dbt generates a browsable catalog of every table, column, and transformation
+- **[Lineage tracking](https://docs.getdbt.com/terms/data-lineage)** — see at a glance which dashboards are affected when an upstream table changes
+
+<Callout type="info">
+  **The architecture is dbt-ready today.** [Lightdash was designed to work with
+  dbt models natively](https://docs.lightdash.com/guides/dbt/overview/). Phase 1
+  proceeds without dbt, using Lightdash's standalone YAML models. When the team
+  is ready, dbt plugs in — no rework required.
+</Callout>

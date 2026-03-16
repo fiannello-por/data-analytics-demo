@@ -1,6 +1,6 @@
 ---
 title: Executive Summary
-description: High-level overview of the proposed initiative, key metrics, and strategic alignment.
+description: Overview of the proposed analytics platform modernization.
 ---
 
 import { Cards, Card } from 'fumadocs-ui/components/card';
@@ -8,50 +8,58 @@ import { Cards, Card } from 'fumadocs-ui/components/card';
 <div className="flex flex-col items-center text-center mb-16 pt-8">
   <img src="/logo.png" alt="Point of Rental" className="w-32 h-32 mb-6" />
   <h1 className="text-4xl font-bold tracking-tight mb-2 !border-0 !pb-0">
-    RevOps Data Analytics
+    Analytics Platform Modernization
   </h1>
-  <p className="text-lg text-fd-muted-foreground">
-    The Looker Exodus Architecture Proposal
-  </p>
+  <p className="text-lg text-fd-muted-foreground">Preliminary Design Review</p>
   <hr className="w-full mt-10" />
 </div>
 
 ## Executive Summary
 
-_High-level overview of the proposed initiative, key metrics, and strategic alignment._
+The analytics team has been asked to evaluate replacing Looker Studio with a platform that delivers full flexibility, role-level security, version control, and AI-iterability — while eliminating platform lock-in.
 
-This document presents the Preliminary Design Review (PDR) for the proposed **Analytics Platform Modernization** initiative. It is intended for stakeholder review and approval before detailed design begins.
-
-## Key Metrics
+This document proposes an architecture built entirely on **open-source tools** managed through GitHub. Instead of building a custom web application from scratch, we leverage **[Lightdash](https://docs.lightdash.com/)** — an open-source BI platform purpose-built for code-defined dashboards, semantic layers, and team collaboration — on top of our existing BigQuery warehouse.
 
 <Cards>
   <Card
-    title="Timeline"
-    description="12-month phased rollout across 4 quarters"
+    title="Code-First"
+    description="Every chart and metric lives in version-controlled YAML, reviewable and deployable through Git."
   />
-  <Card title="Team Size" description="8 engineers, 2 designers, 1 PM" />
-  <Card title="Cost Estimate" description="$1.2M total investment over FY26" />
-  <Card title="Expected ROI" description="35% reduction in time-to-insight" />
+  <Card
+    title="AI-Ready"
+    description="Any team member can modify dashboards using AI tooling against a well-defined semantic layer."
+  />
+  <Card
+    title="Automated"
+    description="CI/CD validates every change. Changelog and notifications are generated automatically."
+  />
+  <Card
+    title="Budget-Conscious"
+    description="Open-source stack with low hosting costs. Infrastructure scales incrementally as usage grows."
+  />
 </Cards>
 
-## Strategic Alignment
+## What This Delivers
 
-This initiative directly supports three pillars of the company's FY26 strategy:
+| Requirement                         | How it's addressed                                                                 |
+| ----------------------------------- | ---------------------------------------------------------------------------------- |
+| **Code-defined dashboards**         | Every chart and metric is a YAML file in Git — reviewable, testable, deployable    |
+| **Version control with changelogs** | Full Git history on every change, with automated changelog generation              |
+| **Role-level security**             | Folder-based access control with personal and shared production spaces             |
+| **AI-iterability**                  | Claude Code reads, writes, and modifies dashboards because they're just text files |
+| **No platform lock-in**             | Open-source stack, everything exportable, no proprietary formats                   |
 
-1. **Data-Driven Decision Making** — Empower all teams with self-service analytics
-2. **Platform Consolidation** — Reduce tool sprawl from 6 systems to 2
-3. **Developer Productivity** — Improve internal tooling velocity by 40%
+## MVP Target
 
-## Scope
+The **Sales Performance Dashboard** is the first dashboard to be rebuilt. The architecture is designed to scale from this single dashboard to the full reporting suite, with a clear path to add a dbt transformation layer over time.
 
-The PDR covers the full lifecycle of the proposed system, from problem definition through implementation planning. Each section of this document maps to a standard PDR gate review criterion.
+## Document Structure
 
-| Section                   | Purpose                    |
-| ------------------------- | -------------------------- |
-| Problem & Opportunity     | Why we need this           |
-| Solution Architecture     | What we're building        |
-| Key Design Decisions      | How we chose this approach |
-| Requirements Traceability | What must be true          |
-| Risk Assessment           | What could go wrong        |
-| Implementation Roadmap    | When and how we deliver    |
-| Decision Requested        | What we need from you      |
+| Section                                           | Purpose                                          |
+| ------------------------------------------------- | ------------------------------------------------ |
+| [Current State](/current-state)                   | Where we are today and what's working            |
+| [Target Architecture](/target-architecture)       | What we're proposing and why                     |
+| [Development Workflow](/development-workflow)     | How changes are made, tested, and deployed       |
+| [Governance & Quality](/governance)               | Access control, communication, and documentation |
+| [Implementation Roadmap](/implementation-roadmap) | Phased delivery plan                             |
+| [Budget & Resources](/budget)                     | Paid services and investment model               |
