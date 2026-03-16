@@ -1,0 +1,287 @@
+type: model
+name: scorecard_daily
+sql_from: '`data-analytics-306119.scorecard_test.scorecard_daily`'
+label: 'Daily Scorecard'
+group_label: 'Sales Operations'
+
+dimensions:
+  - name: report_date
+    type: date
+    sql: ${TABLE}.report_date
+    label: 'Report Date'
+    time_intervals: [DAY, WEEK, MONTH, QUARTER, YEAR]
+
+  - name: original_day_of_year
+    type: number
+    sql: ${TABLE}.original_day_of_year
+    hidden: true
+
+  - name: sort_order
+    type: number
+    sql: ${TABLE}.sort_order
+    hidden: true
+
+  - name: metric_name
+    type: string
+    sql: ${TABLE}.metric_name
+    label: 'Metric'
+
+  - name: agg_type
+    type: string
+    sql: ${TABLE}.agg_type
+    hidden: true
+
+  - name: period
+    type: string
+    sql: ${TABLE}.period
+    hidden: true
+
+  - name: category
+    type: string
+    sql: ${TABLE}.category
+    label: 'Category'
+
+  # ---- Filter dimensions ----
+  - name: Division
+    type: string
+    sql: ${TABLE}.Division
+
+  - name: Owner
+    type: string
+    sql: ${TABLE}.Owner
+
+  - name: OpportunitySegment
+    type: string
+    sql: ${TABLE}.OpportunitySegment
+    label: 'Segment'
+
+  - name: Queue_Region__c
+    type: string
+    sql: ${TABLE}.Queue_Region__c
+    label: 'Region'
+
+  - name: SE
+    type: string
+    sql: ${TABLE}.SE
+
+  - name: BookingPlanOppType2025
+    type: string
+    sql: ${TABLE}.BookingPlanOppType2025
+    label: 'Booking Plan Opp Type'
+
+  - name: ProductFamily
+    type: string
+    sql: ${TABLE}.ProductFamily
+    label: 'Product Family'
+
+  - name: SDRSource
+    type: string
+    sql: ${TABLE}.SDRSource
+    label: 'SDR Source'
+
+  - name: SDR
+    type: string
+    sql: ${TABLE}.SDR
+
+  - name: OppRecordType
+    type: string
+    sql: ${TABLE}.OppRecordType
+    label: 'POR v R360'
+
+  - name: AccountId
+    type: string
+    sql: ${TABLE}.AccountId
+    hidden: true
+
+  - name: AccountOwner
+    type: string
+    sql: ${TABLE}.AccountOwner
+    label: 'Account Owner'
+
+  - name: OwnerDepartment
+    type: string
+    sql: ${TABLE}.OwnerDepartment
+    label: 'Owner Department'
+
+  - name: StrategicFilter
+    type: boolean
+    sql: ${TABLE}.StrategicFilter
+    label: 'Strategic Filter'
+
+  - name: Accepted
+    type: boolean
+    sql: ${TABLE}.Accepted
+
+  - name: Gate1CriteriaMet
+    type: boolean
+    sql: ${TABLE}.Gate1CriteriaMet
+    label: 'Gate 1 Criteria Met'
+
+  - name: GateMetOrAccepted
+    type: boolean
+    sql: ${TABLE}.GateMetOrAccepted
+    label: 'Gate Met or Accepted'
+
+metrics:
+  current_period:
+    type: string
+    label: 'Current Period'
+    sql: |
+      CASE MAX(${TABLE}.agg_type)
+        WHEN 'pacing' THEN CONCAT('$', FORMAT("%'.2f",
+          SUM(CASE WHEN ${TABLE}.period = 'current' THEN ${TABLE}.numerator END)
+          * 365.0 / NULLIF(EXTRACT(DAYOFYEAR FROM CURRENT_DATE()), 0) / 1000.0), 'K')
+        WHEN 'ratio_pct' THEN CONCAT(FORMAT('%.1f', SAFE_DIVIDE(
+          SUM(CASE WHEN ${TABLE}.period = 'current' THEN ${TABLE}.numerator END),
+          SUM(CASE WHEN ${TABLE}.period = 'current' THEN ${TABLE}.denominator END)) * 100), '%')
+        WHEN 'ratio_days' THEN CAST(ROUND(SAFE_DIVIDE(
+          SUM(CASE WHEN ${TABLE}.period = 'current' THEN ${TABLE}.numerator END),
+          SUM(CASE WHEN ${TABLE}.period = 'current' THEN ${TABLE}.denominator END))) AS STRING)
+        WHEN 'ratio_usd' THEN CONCAT('$', FORMAT("%'.2f", SAFE_DIVIDE(
+          SUM(CASE WHEN ${TABLE}.period = 'current' THEN ${TABLE}.numerator END),
+          SUM(CASE WHEN ${TABLE}.period = 'current' THEN ${TABLE}.denominator END)) / 1000.0), 'K')
+        WHEN 'usd' THEN CONCAT('$', FORMAT("%'.2f",
+          SUM(CASE WHEN ${TABLE}.period = 'current' THEN ${TABLE}.numerator END) / 1000.0), 'K')
+        ELSE FORMAT("%'.0f",
+          SUM(CASE WHEN ${TABLE}.period = 'current' THEN ${TABLE}.numerator END))
+      END
+
+  previous_period:
+    type: string
+    label: 'Previous Period'
+    sql: |
+      CASE MAX(${TABLE}.agg_type)
+        WHEN 'pacing' THEN CONCAT('$', FORMAT("%'.2f",
+          SUM(CASE WHEN ${TABLE}.period = 'previous'
+            AND ${TABLE}.original_day_of_year <= EXTRACT(DAYOFYEAR FROM CURRENT_DATE())
+            THEN ${TABLE}.numerator END)
+          * 365.0 / NULLIF(EXTRACT(DAYOFYEAR FROM CURRENT_DATE()), 0) / 1000.0), 'K')
+        WHEN 'ratio_pct' THEN CONCAT(FORMAT('%.1f', SAFE_DIVIDE(
+          SUM(CASE WHEN ${TABLE}.period = 'previous'
+            AND ${TABLE}.original_day_of_year <= EXTRACT(DAYOFYEAR FROM CURRENT_DATE())
+            THEN ${TABLE}.numerator END),
+          SUM(CASE WHEN ${TABLE}.period = 'previous'
+            AND ${TABLE}.original_day_of_year <= EXTRACT(DAYOFYEAR FROM CURRENT_DATE())
+            THEN ${TABLE}.denominator END)) * 100), '%')
+        WHEN 'ratio_days' THEN CAST(ROUND(SAFE_DIVIDE(
+          SUM(CASE WHEN ${TABLE}.period = 'previous'
+            AND ${TABLE}.original_day_of_year <= EXTRACT(DAYOFYEAR FROM CURRENT_DATE())
+            THEN ${TABLE}.numerator END),
+          SUM(CASE WHEN ${TABLE}.period = 'previous'
+            AND ${TABLE}.original_day_of_year <= EXTRACT(DAYOFYEAR FROM CURRENT_DATE())
+            THEN ${TABLE}.denominator END))) AS STRING)
+        WHEN 'ratio_usd' THEN CONCAT('$', FORMAT("%'.2f", SAFE_DIVIDE(
+          SUM(CASE WHEN ${TABLE}.period = 'previous'
+            AND ${TABLE}.original_day_of_year <= EXTRACT(DAYOFYEAR FROM CURRENT_DATE())
+            THEN ${TABLE}.numerator END),
+          SUM(CASE WHEN ${TABLE}.period = 'previous'
+            AND ${TABLE}.original_day_of_year <= EXTRACT(DAYOFYEAR FROM CURRENT_DATE())
+            THEN ${TABLE}.denominator END)) / 1000.0), 'K')
+        WHEN 'usd' THEN CONCAT('$', FORMAT("%'.2f",
+          SUM(CASE WHEN ${TABLE}.period = 'previous'
+            AND ${TABLE}.original_day_of_year <= EXTRACT(DAYOFYEAR FROM CURRENT_DATE())
+            THEN ${TABLE}.numerator END) / 1000.0), 'K')
+        ELSE FORMAT("%'.0f",
+          SUM(CASE WHEN ${TABLE}.period = 'previous'
+            AND ${TABLE}.original_day_of_year <= EXTRACT(DAYOFYEAR FROM CURRENT_DATE())
+            THEN ${TABLE}.numerator END))
+      END
+
+  pct_change:
+    type: string
+    label: '% Change'
+    sql: |
+      CASE
+        WHEN
+          CASE WHEN MAX(${TABLE}.agg_type) IN ('ratio_pct', 'ratio_days', 'ratio_usd')
+            THEN SAFE_DIVIDE(
+              SUM(CASE WHEN ${TABLE}.period = 'previous'
+                AND ${TABLE}.original_day_of_year <= EXTRACT(DAYOFYEAR FROM CURRENT_DATE())
+                THEN ${TABLE}.numerator END),
+              SUM(CASE WHEN ${TABLE}.period = 'previous'
+                AND ${TABLE}.original_day_of_year <= EXTRACT(DAYOFYEAR FROM CURRENT_DATE())
+                THEN ${TABLE}.denominator END))
+            ELSE SUM(CASE WHEN ${TABLE}.period = 'previous'
+              AND ${TABLE}.original_day_of_year <= EXTRACT(DAYOFYEAR FROM CURRENT_DATE())
+              THEN ${TABLE}.numerator END)
+          END IS NULL
+          OR
+          CASE WHEN MAX(${TABLE}.agg_type) IN ('ratio_pct', 'ratio_days', 'ratio_usd')
+            THEN SAFE_DIVIDE(
+              SUM(CASE WHEN ${TABLE}.period = 'current' THEN ${TABLE}.numerator END),
+              SUM(CASE WHEN ${TABLE}.period = 'current' THEN ${TABLE}.denominator END))
+            ELSE SUM(CASE WHEN ${TABLE}.period = 'current' THEN ${TABLE}.numerator END)
+          END IS NULL
+        THEN '-'
+        WHEN
+          CASE WHEN MAX(${TABLE}.agg_type) IN ('ratio_pct', 'ratio_days', 'ratio_usd')
+            THEN SAFE_DIVIDE(
+              SUM(CASE WHEN ${TABLE}.period = 'previous'
+                AND ${TABLE}.original_day_of_year <= EXTRACT(DAYOFYEAR FROM CURRENT_DATE())
+                THEN ${TABLE}.numerator END),
+              SUM(CASE WHEN ${TABLE}.period = 'previous'
+                AND ${TABLE}.original_day_of_year <= EXTRACT(DAYOFYEAR FROM CURRENT_DATE())
+                THEN ${TABLE}.denominator END))
+            ELSE SUM(CASE WHEN ${TABLE}.period = 'previous'
+              AND ${TABLE}.original_day_of_year <= EXTRACT(DAYOFYEAR FROM CURRENT_DATE())
+              THEN ${TABLE}.numerator END)
+          END = 0
+        THEN '-'
+        ELSE CONCAT(
+          CASE WHEN
+            CASE WHEN MAX(${TABLE}.agg_type) IN ('ratio_pct', 'ratio_days', 'ratio_usd')
+              THEN SAFE_DIVIDE(
+                SUM(CASE WHEN ${TABLE}.period = 'current' THEN ${TABLE}.numerator END),
+                SUM(CASE WHEN ${TABLE}.period = 'current' THEN ${TABLE}.denominator END))
+              ELSE SUM(CASE WHEN ${TABLE}.period = 'current' THEN ${TABLE}.numerator END)
+            END
+            >
+            CASE WHEN MAX(${TABLE}.agg_type) IN ('ratio_pct', 'ratio_days', 'ratio_usd')
+              THEN SAFE_DIVIDE(
+                SUM(CASE WHEN ${TABLE}.period = 'previous'
+                  AND ${TABLE}.original_day_of_year <= EXTRACT(DAYOFYEAR FROM CURRENT_DATE())
+                  THEN ${TABLE}.numerator END),
+                SUM(CASE WHEN ${TABLE}.period = 'previous'
+                  AND ${TABLE}.original_day_of_year <= EXTRACT(DAYOFYEAR FROM CURRENT_DATE())
+                  THEN ${TABLE}.denominator END))
+              ELSE SUM(CASE WHEN ${TABLE}.period = 'previous'
+                AND ${TABLE}.original_day_of_year <= EXTRACT(DAYOFYEAR FROM CURRENT_DATE())
+                THEN ${TABLE}.numerator END)
+            END
+          THEN '+' ELSE '' END,
+          FORMAT('%.1f', (
+            CASE WHEN MAX(${TABLE}.agg_type) IN ('ratio_pct', 'ratio_days', 'ratio_usd')
+              THEN SAFE_DIVIDE(
+                SUM(CASE WHEN ${TABLE}.period = 'current' THEN ${TABLE}.numerator END),
+                SUM(CASE WHEN ${TABLE}.period = 'current' THEN ${TABLE}.denominator END))
+              ELSE SUM(CASE WHEN ${TABLE}.period = 'current' THEN ${TABLE}.numerator END)
+            END
+            -
+            CASE WHEN MAX(${TABLE}.agg_type) IN ('ratio_pct', 'ratio_days', 'ratio_usd')
+              THEN SAFE_DIVIDE(
+                SUM(CASE WHEN ${TABLE}.period = 'previous'
+                  AND ${TABLE}.original_day_of_year <= EXTRACT(DAYOFYEAR FROM CURRENT_DATE())
+                  THEN ${TABLE}.numerator END),
+                SUM(CASE WHEN ${TABLE}.period = 'previous'
+                  AND ${TABLE}.original_day_of_year <= EXTRACT(DAYOFYEAR FROM CURRENT_DATE())
+                  THEN ${TABLE}.denominator END))
+              ELSE SUM(CASE WHEN ${TABLE}.period = 'previous'
+                AND ${TABLE}.original_day_of_year <= EXTRACT(DAYOFYEAR FROM CURRENT_DATE())
+                THEN ${TABLE}.numerator END)
+            END
+          ) * 100.0 / NULLIF(ABS(
+            CASE WHEN MAX(${TABLE}.agg_type) IN ('ratio_pct', 'ratio_days', 'ratio_usd')
+              THEN SAFE_DIVIDE(
+                SUM(CASE WHEN ${TABLE}.period = 'previous'
+                  AND ${TABLE}.original_day_of_year <= EXTRACT(DAYOFYEAR FROM CURRENT_DATE())
+                  THEN ${TABLE}.numerator END),
+                SUM(CASE WHEN ${TABLE}.period = 'previous'
+                  AND ${TABLE}.original_day_of_year <= EXTRACT(DAYOFYEAR FROM CURRENT_DATE())
+                  THEN ${TABLE}.denominator END))
+              ELSE SUM(CASE WHEN ${TABLE}.period = 'previous'
+                AND ${TABLE}.original_day_of_year <= EXTRACT(DAYOFYEAR FROM CURRENT_DATE())
+                THEN ${TABLE}.numerator END)
+            END
+          ), 0)),
+          '%')
+      END

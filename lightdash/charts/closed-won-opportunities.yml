@@ -1,7 +1,7 @@
 name: Closed Won Opportunities
 description: null
 tableName: opportunity_view
-updatedAt: '2026-03-11T01:06:11.873Z'
+updatedAt: "2026-03-13T19:12:15.770Z"
 metricQuery:
   exploreName: opportunity_view
   dimensions:
@@ -98,7 +98,7 @@ chartConfig:
         name: Created Date
       opportunity_view_acv_dollars:
         name: ACV $
-        color: '#10B981'
+        color: "#10B981"
         displayStyle: bar
       opportunity_view_OppRecordType:
         name: POR / R360
@@ -138,6 +138,6 @@ tableConfig:
     - opportunity_view_contract_start_date__c
     - opportunity_view_users_sum
     - opportunity_view_acv_dollars
-spaceSlug: shared
+spaceSlug: point-of-rental-revops-analytics-demo/revenue/charts-prod
 version: 1
-downloadedAt: '2026-03-11T02:13:31.749Z'
+downloadedAt: "2026-03-16T12:16:07.364Z"

@@ -1,7 +1,7 @@
-name: 'Migration: Bookings $'
+name: "Migration: Bookings $"
 description: null
 tableName: opportunity_view
-updatedAt: '2026-03-11T01:06:11.843Z'
+updatedAt: "2026-03-13T19:32:05.040Z"
 metricQuery:
   exploreName: opportunity_view
   dimensions:
@@ -10,38 +10,29 @@ metricQuery:
     - opportunity_view_acv_dollars
   filters:
     dimensions:
-      id: root
+      id: b5e82681-8d02-4b6c-a642-59454406142f
       and:
         - id: won_filter
           target:
             fieldId: opportunity_view_Won
           values:
-            - true
+            - false
           operator: equals
+          required: false
         - id: type_filter
           target:
             fieldId: opportunity_view_Type
           values:
             - Migration
           operator: equals
-        - id: acv_positive
-          target:
-            fieldId: opportunity_view_ACV
-          values:
-            - 0
-          operator: greaterThan
+          required: false
         - id: stage_filter
           target:
             fieldId: opportunity_view_StageName
           values:
             - Closed Won
           operator: equals
-        - id: ytd_window
-          target:
-            fieldId: opportunity_view_IsWithinYTDWindow
-          values:
-            - true
-          operator: equals
+          required: false
   sorts:
     - fieldId: opportunity_view_CloseDate_year
       descending: true
@@ -56,16 +47,19 @@ chartConfig:
   config:
     label: Bookings $
     style: K
+    flipColors: false
     selectedField: opportunity_view_acv_dollars
     showComparison: true
     comparisonLabel: vs. prev year
     comparisonFormat: percentage
     showBigNumberLabel: true
+    showTableNamesInLabel: true
+    conditionalFormattings: []
 slug: migration-bookings-acv
 tableConfig:
   columnOrder:
     - opportunity_view_CloseDate_year
     - opportunity_view_acv_dollars
-spaceSlug: shared
+spaceSlug: point-of-rental-revops-analytics-demo/revenue/charts-prod
 version: 1
-downloadedAt: '2026-03-11T02:13:31.749Z'
+downloadedAt: "2026-03-16T12:16:07.364Z"
