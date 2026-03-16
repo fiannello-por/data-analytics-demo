@@ -1,16 +1,15 @@
 {
   "pages": [
-    "---Overview---",
+    "---Part I — Where We Are---",
     "index",
-    "---Analysis---",
-    "problem-and-opportunity",
-    "solution-architecture",
-    "key-design-decisions",
-    "---Requirements---",
-    "requirements-traceability",
-    "risk-assessment",
-    "---Delivery---",
+    "current-state",
+    "---Part II — What We're Proposing---",
+    "target-architecture",
+    "---Part III — How We Build It---",
+    "development-workflow",
+    "governance",
+    "---Part IV — Making It Real---",
     "implementation-roadmap",
-    "decision-requested"
+    "budget"
   ]
 }

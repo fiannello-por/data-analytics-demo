@@ -1,0 +1,31 @@
+---
+title: Budget & Resources
+description: Paid services and investment model.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 7.1 Paid Services
+
+This architecture is built on open-source tools. The paid services required:
+
+| Service                                                                                                                       | What it covers                                                          | Cost                                                                           |
+| ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| **[Render](https://render.com/pricing)**                                                                                      | Hosting the Lightdash instance                                          | ~$44/month (current POC plan; can be scaled up as usage grows)                 |
+| **[GitHub Team](https://github.com/pricing)**                                                                                 | Repository, pull requests, code review, project management              | $4/user/month                                                                  |
+| **[GitHub Actions](https://docs.github.com/en/billing/managing-billing-for-github-actions/about-billing-for-github-actions)** | CI/CD pipeline execution (validation, preview environments, deployment) | 3,000 minutes/month included with Team plan; additional minutes billed per use |
+
+## 7.2 Optional Services
+
+| Service                                      | What it covers                                          | Cost                       |
+| -------------------------------------------- | ------------------------------------------------------- | -------------------------- |
+| **[OpenAI API](https://openai.com/pricing)** | AI-powered PR review and automated changelog generation | Pay-per-use (per API call) |
+
+## 7.3 Investment Model
+
+The core platform — Lightdash, dbt, the validation framework, and the development workflow — is entirely open-source. The primary investment is **team time**: building the semantic layer, migrating dashboards, and establishing the workflow.
+
+<Callout type="info">
+  Once this proposal is approved, a detailed work plan with tasks and timelines
+  will be developed separately.
+</Callout>

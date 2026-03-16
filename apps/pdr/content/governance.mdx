@@ -1,0 +1,81 @@
+---
+title: Governance & Quality
+description: Access control, change management, and documentation strategy.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="info">
+  The governance structure described below is currently configured for
+  demonstration purposes. Every aspect — folder structure, access roles,
+  validation rules, notification channels — can be adapted to match the team's
+  actual needs.
+</Callout>
+
+## 5.1 Access Control
+
+Access control follows a personal/shared folder model:
+
+```text
+Lightdash/
+├── Shared/                  ← Production (CI-managed)
+│   ├── Dashboards/          ← Only dashboards
+│   └── Charts/              ← Only charts
+├── <User A>/                ← Personal folder
+├── <User B>/                ← Personal folder
+└── ...
+```
+
+| Folder                  | View           | Edit       | Governed by       |
+| ----------------------- | -------------- | ---------- | ----------------- |
+| **Personal (own)**      | Everyone       | Owner only | Lightdash roles   |
+| **Personal (others)**   | Everyone       | Nobody     | Lightdash roles   |
+| **Shared (production)** | Selected users | CI/CD only | GitHub PR process |
+
+- **Personal folders** are for prototyping, experimentation, and ad-hoc analysis. Move fast, break nothing in production.
+- **Shared folder** is production. Changes go through pull requests, automated validation, and human review. No manual edits.
+
+## 5.2 Change Management & Stakeholder Communication
+
+Every change to production analytics is communicated automatically — no manual effort required.
+
+```text
+PR merged to main
+       │
+       ├──▶ Production auto-deployed
+       │
+       ├──▶ Changelog entry auto-generated
+       │         │
+       │         └──▶ Published to changelog site
+       │
+       └──▶ Subscribers notified via Slack
+```
+
+**Subscription model:**
+
+Users can subscribe to the dashboards they care about. When a change affects a subscribed dashboard, the subscriber is mentioned directly in Slack — no noise from changes to dashboards they don't follow.
+
+For example: if User A subscribes to the Sales Performance Dashboard, and a PR modifies the pipeline chart in that dashboard, User A gets a Slack mention with a summary of what changed and a link to the changelog entry.
+
+**Channels:**
+
+- **Slack channel** (e.g., `#analytics-changelog` — placeholder, can be any channel the team prefers): All change notifications flow here. Subscribers are @-mentioned for changes to their dashboards.
+- **Changelog site:** A browsable, searchable history of every analytics change. Each dashboard can link directly to its filtered changelog page.
+
+## 5.3 Documentation Strategy
+
+Documentation is not a separate task — it's a byproduct of the architecture:
+
+| Documentation type           | How it's generated                                                                                  | Where it lives               |
+| ---------------------------- | --------------------------------------------------------------------------------------------------- | ---------------------------- |
+| **Metric definitions**       | Written once in the [semantic layer](https://docs.lightdash.com/guides/how-to-create-metrics/) YAML | Lightdash Explore view + Git |
+| **Change history**           | Auto-generated from every merged PR                                                                 | Changelog site               |
+| **Review decisions**         | Captured in PR comments and review threads                                                          | GitHub PR history            |
+| **Access policies**          | Maintained as Markdown in Git                                                                       | `docs/` directory            |
+| **Architecture & standards** | Maintained as Markdown in Git                                                                       | `docs/` directory            |
+
+**Proposed: a dedicated data glossary & documentation portal.**
+
+Beyond auto-generated documentation, we can build a dedicated site that consolidates all analytics knowledge — metric definitions, business terms, architecture docs, and runbooks — into a single, searchable reference.
+
+This documentation can be connected to an AI assistant (such as [NotebookLM](https://notebooklm.google/) or a similar tool) so that anyone on the team can ask questions in natural language — "What's the definition of pipeline created?" or "How do I add a new chart?" — and get answers grounded in our actual documentation and metric definitions.

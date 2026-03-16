@@ -1,0 +1,72 @@
+---
+title: Current State
+description: How analytics work today, what works well, and where we're hitting limits.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 2.1 How Analytics Work Today
+
+```text
+Salesforce → Stitch → BigQuery → Scheduled Queries (214) → Looker Studio
+```
+
+- **Salesforce** is the primary data source, integrated to BigQuery via Stitch
+- **214 scheduled queries** in BigQuery handle all data transformation — maintained by a 3-person team
+- **Looker Studio** is the presentation layer, with a significant number of dashboards consumed primarily by leadership
+- The integration between BigQuery and Looker Studio is seamless — data flows reliably from source to dashboard
+
+## 2.2 What Works Well
+
+<Callout type="info">These are strengths to preserve, not replace.</Callout>
+
+- **The Sales Performance Dashboard** is widely used by leadership and relied upon for weekly pipeline reviews and forecasting decisions
+- **Looker Studio dashboards are accurate** — they display the right numbers, and stakeholders trust the data
+- **BigQuery is the right warehouse** — it handles the analytical workload well and is already paid for
+- **Stitch → BigQuery ingestion works** — Salesforce data lands reliably without manual intervention
+
+## 2.3 Limitations We Are Facing & Operational Risks
+
+While the dashboards deliver correct data, the tooling around them creates significant friction:
+
+| Area                          | Impact                                                                                                                         |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| **No version control**        | Dashboard changes can't be tracked, reviewed, or rolled back. When something breaks, debugging is archaeology.                 |
+| **No dev environment**        | Every change goes directly to production. There's no way to test before stakeholders see it.                                   |
+| **No CI/CD**                  | Deployment is manual. There's no automated validation, no preview, no approval workflow.                                       |
+| **No automation possible**    | Looker Studio provides no API, no code export, no scripting capability. Everything is manual, click-by-click.                  |
+| **No QA guardrails**          | No automated tests, no reference validation, no linting. Errors are caught by humans — or not at all.                          |
+| **No semantic layer**         | Metric definitions live inside individual dashboards. The same metric can be defined differently in different places.          |
+| **No data exploration**       | Users can only view pre-built dashboards. There's no self-serve way to explore data outside of what's already been built.      |
+| **No monitoring or alerting** | No scheduled deliveries, no anomaly detection, no proactive notifications when metrics move unexpectedly.                      |
+| **No changelog**              | Stakeholders have no visibility into what changed, when, or why.                                                               |
+| **No reusability**            | Charts, filters, and metric definitions can't be shared or inherited across dashboards. Every dashboard is built from scratch. |
+
+<Callout type="warn">
+  The transformation layer (214 scheduled queries in BigQuery) has its own
+  challenges — no version control, no testing, no lineage tracking. A dbt
+  integration would address these, but that's a Phase 2 concern. This proposal
+  focuses on the presentation and governance layer first.
+</Callout>
+
+## 2.4 Untapped Potential of Available Technology
+
+The limitations above aren't unique to this team — they're inherent to any web-only BI tool. The industry has moved toward a fundamentally different approach, and the building blocks are available today:
+
+- **Dashboards-as-code** — Define dashboards in YAML files, store them in Git, deploy them through CI/CD. Every change is reviewable, testable, and reversible. Tools like [Lightdash](https://docs.lightdash.com/) make this production-ready today.
+
+- **Semantic layers** — Define a metric once ("revenue = sum of closed-won ACV") and reuse it everywhere — dashboards, ad-hoc queries, API endpoints, AI agents. No more conflicting definitions across dashboards.
+
+- **GitHub as the operating system** — Pull requests, code review, automated testing, changelog generation, branch-based preview environments. The same workflow that software engineering uses for production code, applied to analytics.
+
+- **CI/CD for analytics** — Automated validation on every change: "Does this chart reference a real field? Does this metric definition parse correctly? Does the dashboard render without errors?" Catch problems before they reach production.
+
+- **AI-powered development** — When dashboards are defined in code, any team member can iterate using AI tooling. Describe what you want in natural language, get a pull request with the changes, review and merge. This is impossible when dashboards are locked inside a proprietary GUI.
+
+- **[dbt (data build tool)](https://docs.getdbt.com/docs/introduction)** — Version-controlled SQL transformations with built-in testing, documentation, and lineage tracking. Replaces scheduled queries with a governed, reviewable pipeline. The architecture proposed here is dbt-ready from day one.
+
+<Callout type="info">
+  None of this is experimental. These are mature, widely-adopted tools with
+  active open-source communities. The question isn't whether this technology
+  works — it's whether we invest the time to adopt it.
+</Callout>
