@@ -1,9 +1,9 @@
-name: "Scorecard: Migration (Filterable)"
+name: 'Scorecard: Migration (Filterable)'
 description: >-
   Migration scorecard with dynamic date filtering and support for all dashboard
   filters.
 tableName: scorecard_daily
-updatedAt: "2026-03-15T22:35:34.189Z"
+updatedAt: '2026-03-15T22:35:34.189Z'
 metricQuery:
   exploreName: scorecard_daily
   dimensions:
@@ -45,7 +45,7 @@ chartConfig:
   config:
     columns:
       scorecard_daily_pct_change:
-        name: "% Change"
+        name: '% Change'
       scorecard_daily_sort_order:
         visible: false
       scorecard_daily_metric_name:
@@ -63,7 +63,7 @@ chartConfig:
     showRowCalculation: false
     showColumnCalculation: false
     conditionalFormattings:
-      - color: "#10B981"
+      - color: '#10B981'
         rules:
           - id: positive
             values:
@@ -72,15 +72,15 @@ chartConfig:
         target:
           fieldId: scorecard_daily_pct_change
         applyTo: text
-      - color: "#EF4444"
+      - color: '#EF4444'
         rules:
           - id: negative
             values:
-              - "-"
+              - '-'
             operator: startsWith
           - id: has_percent
             values:
-              - "%"
+              - '%'
             operator: include
         target:
           fieldId: scorecard_daily_pct_change
@@ -95,4 +95,4 @@ tableConfig:
     - scorecard_daily_pct_change
 spaceSlug: point-of-rental-revops-analytics-demo/revenue/charts-prod
 version: 1
-downloadedAt: "2026-03-16T12:16:07.364Z"
+downloadedAt: '2026-03-16T12:16:07.364Z'

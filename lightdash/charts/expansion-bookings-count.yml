@@ -1,7 +1,7 @@
-name: "Expansion: Bookings #"
+name: 'Expansion: Bookings #'
 description: null
 tableName: opportunity_view
-updatedAt: "2026-03-13T19:12:15.742Z"
+updatedAt: '2026-03-13T19:12:15.742Z'
 metricQuery:
   exploreName: opportunity_view
   dimensions:
@@ -54,7 +54,7 @@ metricQuery:
 chartConfig:
   type: big_number
   config:
-    label: "Bookings #"
+    label: 'Bookings #'
     selectedField: opportunity_view_bookings_count
     showComparison: true
     comparisonLabel: vs. prev year
@@ -67,4 +67,4 @@ tableConfig:
     - opportunity_view_bookings_count
 spaceSlug: point-of-rental-revops-analytics-demo/revenue/charts-prod
 version: 1
-downloadedAt: "2026-03-16T12:16:07.364Z"
+downloadedAt: '2026-03-16T12:16:07.364Z'

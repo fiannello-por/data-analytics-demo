@@ -1,7 +1,7 @@
-name: "Scorecard Secondary: Migration"
+name: 'Scorecard Secondary: Migration'
 description: null
 tableName: scorecard_migration
-updatedAt: "2026-03-13T19:12:15.769Z"
+updatedAt: '2026-03-13T19:12:15.769Z'
 metricQuery:
   exploreName: scorecard_migration
   dimensions:
@@ -35,11 +35,11 @@ chartConfig:
       scorecard_migration_Prev_YTD:
         name: Prev YTD
       scorecard_migration_Pct_Change:
-        name: "% Change"
+        name: '% Change'
     hideRowNumbers: true
     showColumnCalculation: false
     conditionalFormattings:
-      - color: "#10B981"
+      - color: '#10B981'
         rules:
           - id: positive
             values:
@@ -48,15 +48,15 @@ chartConfig:
         target:
           fieldId: scorecard_migration_Pct_Change
         applyTo: text
-      - color: "#EF4444"
+      - color: '#EF4444'
         rules:
           - id: negative
             values:
-              - "-"
+              - '-'
             operator: startsWith
           - id: has_percent
             values:
-              - "%"
+              - '%'
             operator: include
         target:
           fieldId: scorecard_migration_Pct_Change
@@ -71,4 +71,4 @@ tableConfig:
     - scorecard_migration_Pct_Change
 spaceSlug: point-of-rental-revops-analytics-demo/revenue/charts-prod
 version: 1
-downloadedAt: "2026-03-16T12:16:07.364Z"
+downloadedAt: '2026-03-16T12:16:07.364Z'

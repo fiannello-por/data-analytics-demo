@@ -24,10 +24,10 @@ CI runs `validate-refs` and `validate-shared` on every PR touching `lightdash/`.
 
 All shared content lives under `point-of-rental-revops-analytics-demo/revenue/`. Charts and dashboards go in **separate subfolders**:
 
-| Content type | Correct `spaceSlug` |
-|---|---|
-| Charts | `point-of-rental-revops-analytics-demo/revenue/charts-prod` |
-| Dashboards | `point-of-rental-revops-analytics-demo/revenue/dashboards` |
+| Content type | Correct `spaceSlug`                                         |
+| ------------ | ----------------------------------------------------------- |
+| Charts       | `point-of-rental-revops-analytics-demo/revenue/charts-prod` |
+| Dashboards   | `point-of-rental-revops-analytics-demo/revenue/dashboards`  |
 
 **Enforced rules:**
 

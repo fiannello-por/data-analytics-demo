@@ -1,7 +1,7 @@
 name: Product Mix
 description: null
 tableName: opportunity_view
-updatedAt: "2026-03-13T19:12:15.820Z"
+updatedAt: '2026-03-13T19:12:15.820Z'
 metricQuery:
   exploreName: opportunity_view
   dimensions:
@@ -41,8 +41,8 @@ chartConfig:
     showPercentage: true
     groupSortOverrides: []
     groupColorOverrides:
-      Rental Elite: "#FF6A00"
-      Rental Essentials: "#a2b3b3"
+      Rental Elite: '#FF6A00'
+      Rental Essentials: '#a2b3b3'
     groupLabelOverrides: {}
     legendMaxItemLength: 30
     groupValueOptionOverrides: {}
@@ -53,4 +53,4 @@ tableConfig:
     - opportunity_view_acv_dollars
 spaceSlug: point-of-rental-revops-analytics-demo/revenue/charts-prod
 version: 1
-downloadedAt: "2026-03-16T12:16:07.364Z"
+downloadedAt: '2026-03-16T12:16:07.364Z'

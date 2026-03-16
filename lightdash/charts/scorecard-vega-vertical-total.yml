@@ -1,9 +1,9 @@
-name: "Scorecard: Total (Vertical)"
+name: 'Scorecard: Total (Vertical)'
 description: >-
   Total scorecard as a responsive 2-column grid of KPI cards with colored %
   Change.
 tableName: scorecard_daily
-updatedAt: "2026-03-16T11:47:25.395Z"
+updatedAt: '2026-03-16T11:47:25.395Z'
 metricQuery:
   exploreName: scorecard_daily
   dimensions:
@@ -55,7 +55,7 @@ chartConfig:
               scale:
                 paddingInner: 0.06
                 paddingOuter: 0.01
-            "y":
+            'y':
               axis: null
               type: ordinal
               field: row_idx
@@ -76,7 +76,7 @@ chartConfig:
               type: ordinal
               field: col_idx
               bandPosition: 0.035
-            "y":
+            'y':
               type: ordinal
               field: row_idx
               bandPosition: 0.1
@@ -97,7 +97,7 @@ chartConfig:
             font: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif
             type: text
             align: left
-            color: "#9CA3AF"
+            color: '#9CA3AF'
             baseline: top
             fontSize: 11
             fontWeight: 500
@@ -106,7 +106,7 @@ chartConfig:
               type: ordinal
               field: col_idx
               bandPosition: 0
-            "y":
+            'y':
               type: ordinal
               field: row_idx
               bandPosition: 0.18
@@ -127,7 +127,7 @@ chartConfig:
               type: ordinal
               field: col_idx
               bandPosition: 0
-            "y":
+            'y':
               type: ordinal
               field: row_idx
               bandPosition: 0.43
@@ -147,7 +147,7 @@ chartConfig:
               type: ordinal
               field: col_idx
               bandPosition: 0
-            "y":
+            'y':
               type: ordinal
               field: row_idx
               bandPosition: 0.72
@@ -187,4 +187,4 @@ tableConfig:
     - scorecard_daily_pct_change
 spaceSlug: point-of-rental-revops-analytics-demo/revenue/charts-prod
 version: 1
-downloadedAt: "2026-03-16T12:16:07.364Z"
+downloadedAt: '2026-03-16T12:16:07.364Z'
