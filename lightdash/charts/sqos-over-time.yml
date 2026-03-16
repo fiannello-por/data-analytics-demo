@@ -1,7 +1,7 @@
 name: SQOs Over Time
 description: null
 tableName: sqo_daily_cumulative
-updatedAt: '2026-03-11T01:06:11.874Z'
+updatedAt: '2026-03-13T19:12:15.770Z'
 metricQuery:
   exploreName: sqo_daily_cumulative
   dimensions:
@@ -65,6 +65,6 @@ tableConfig:
     - sqo_daily_cumulative_day
     - sqo_daily_cumulative_sqo_running_total
     - sqo_daily_cumulative_sqo_prev_running_total
-spaceSlug: shared
+spaceSlug: point-of-rental-revops-analytics-demo/revenue/charts-prod
 version: 1
-downloadedAt: '2026-03-11T02:13:31.749Z'
+downloadedAt: '2026-03-16T12:16:07.364Z'

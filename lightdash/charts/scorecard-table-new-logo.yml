@@ -1,7 +1,7 @@
 name: 'Scorecard Secondary: New Logo'
 description: null
 tableName: scorecard_new_logo
-updatedAt: '2026-03-11T01:06:11.870Z'
+updatedAt: '2026-03-13T19:12:15.767Z'
 metricQuery:
   exploreName: scorecard_new_logo
   dimensions:
@@ -69,6 +69,6 @@ tableConfig:
     - scorecard_new_logo_Value
     - scorecard_new_logo_Prev_YTD
     - scorecard_new_logo_Pct_Change
-spaceSlug: shared
+spaceSlug: point-of-rental-revops-analytics-demo/revenue/charts-prod
 version: 1
-downloadedAt: '2026-03-11T02:13:31.749Z'
+downloadedAt: '2026-03-16T12:16:07.364Z'

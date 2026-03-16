@@ -1,7 +1,7 @@
 name: 'Scorecard Secondary: Expansion'
 description: null
 tableName: scorecard_expansion
-updatedAt: '2026-03-11T01:06:11.872Z'
+updatedAt: '2026-03-13T19:12:15.769Z'
 metricQuery:
   exploreName: scorecard_expansion
   dimensions:
@@ -69,6 +69,6 @@ tableConfig:
     - scorecard_expansion_Value
     - scorecard_expansion_Prev_YTD
     - scorecard_expansion_Pct_Change
-spaceSlug: shared
+spaceSlug: point-of-rental-revops-analytics-demo/revenue/charts-prod
 version: 1
-downloadedAt: '2026-03-11T02:13:31.749Z'
+downloadedAt: '2026-03-16T12:16:07.364Z'

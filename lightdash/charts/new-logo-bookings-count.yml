@@ -1,7 +1,7 @@
 name: 'New Logo: Bookings #'
 description: null
 tableName: opportunity_view
-updatedAt: '2026-03-11T01:06:11.843Z'
+updatedAt: '2026-03-13T19:12:15.742Z'
 metricQuery:
   exploreName: opportunity_view
   dimensions:
@@ -65,6 +65,6 @@ tableConfig:
   columnOrder:
     - opportunity_view_CloseDate_year
     - opportunity_view_bookings_count
-spaceSlug: shared
+spaceSlug: point-of-rental-revops-analytics-demo/revenue/charts-prod
 version: 1
-downloadedAt: '2026-03-11T02:13:31.749Z'
+downloadedAt: '2026-03-16T12:16:07.364Z'

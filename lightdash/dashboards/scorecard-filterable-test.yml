@@ -1,0 +1,397 @@
+name: Sales Performance Variants
+description: ''
+updatedAt: '2026-03-16T12:01:26.785Z'
+tiles:
+  - x: 0
+    'y': 0
+    h: 1
+    w: 12
+    tabUuid: a0000001-0000-0000-0000-000000000001
+    type: heading
+    properties:
+      text: New Logo
+      showDivider: false
+  - x: 0
+    'y': 0
+    h: 1
+    w: 12
+    tabUuid: a0000001-0000-0000-0000-000000000003
+    type: heading
+    properties:
+      text: New Logo
+      showDivider: false
+  - x: 12
+    'y': 0
+    h: 1
+    w: 12
+    tabUuid: a0000001-0000-0000-0000-000000000003
+    type: heading
+    properties:
+      text: Expansion
+      showDivider: false
+  - x: 12
+    'y': 0
+    h: 1
+    w: 12
+    tabUuid: a0000001-0000-0000-0000-000000000001
+    type: heading
+    properties:
+      text: Migration
+      showDivider: false
+  - x: 24
+    'y': 0
+    h: 1
+    w: 12
+    tabUuid: a0000001-0000-0000-0000-000000000003
+    type: heading
+    properties:
+      text: Migration
+      showDivider: false
+  - x: 24
+    'y': 0
+    h: 1
+    w: 12
+    tabUuid: a0000001-0000-0000-0000-000000000001
+    type: heading
+    properties:
+      text: Total
+      showDivider: false
+  - x: 0
+    'y': 1
+    h: 9
+    w: 12
+    tabUuid: a0000001-0000-0000-0000-000000000003
+    type: saved_chart
+    properties:
+      title: ''
+      hideTitle: true
+      chartSlug: scorecard-vega-vertical-new-logo
+      chartName: 'Scorecard: New Logo (Vertical)'
+    tileSlug: scorecard-vega-vertical-new-logo
+  - x: 0
+    'y': 1
+    h: 8
+    w: 12
+    tabUuid: a0000001-0000-0000-0000-000000000001
+    type: saved_chart
+    properties:
+      title: ''
+      hideTitle: true
+      chartSlug: scorecard-filterable-new-logo
+      chartName: 'Scorecard: New Logo (Filterable)'
+    tileSlug: scorecard-filterable-new-logo
+  - x: 12
+    'y': 1
+    h: 9
+    w: 12
+    tabUuid: a0000001-0000-0000-0000-000000000003
+    type: saved_chart
+    properties:
+      title: ''
+      hideTitle: true
+      chartSlug: scorecard-vega-vertical-expansion
+      chartName: 'Scorecard: Expansion (Vertical)'
+    tileSlug: scorecard-vega-vertical-expansion
+  - x: 12
+    'y': 1
+    h: 8
+    w: 12
+    tabUuid: a0000001-0000-0000-0000-000000000001
+    type: saved_chart
+    properties:
+      title: ''
+      hideTitle: true
+      chartSlug: scorecard-filterable-migration
+      chartName: 'Scorecard: Migration (Filterable)'
+    tileSlug: scorecard-filterable-migration
+  - x: 24
+    'y': 1
+    h: 9
+    w: 12
+    tabUuid: a0000001-0000-0000-0000-000000000003
+    type: saved_chart
+    properties:
+      title: ''
+      hideTitle: true
+      chartSlug: scorecard-vega-vertical-migration
+      chartName: 'Scorecard: Migration (Vertical)'
+    tileSlug: scorecard-vega-vertical-migration
+  - x: 24
+    'y': 1
+    h: 8
+    w: 12
+    tabUuid: a0000001-0000-0000-0000-000000000001
+    type: saved_chart
+    properties:
+      title: ''
+      hideTitle: true
+      chartSlug: scorecard-filterable-total
+      chartName: 'Scorecard: Total (Filterable)'
+    tileSlug: scorecard-filterable-total
+  - x: 0
+    'y': 9
+    h: 1
+    w: 12
+    tabUuid: a0000001-0000-0000-0000-000000000001
+    type: heading
+    properties:
+      text: Expansion
+      showDivider: false
+  - x: 12
+    'y': 9
+    h: 1
+    w: 12
+    tabUuid: a0000001-0000-0000-0000-000000000001
+    type: heading
+    properties:
+      text: Renewal
+      showDivider: false
+  - x: 0
+    'y': 10
+    h: 1
+    w: 12
+    tabUuid: a0000001-0000-0000-0000-000000000003
+    type: heading
+    properties:
+      text: Renewal
+      showDivider: false
+  - x: 0
+    'y': 10
+    h: 6
+    w: 12
+    tabUuid: a0000001-0000-0000-0000-000000000001
+    type: saved_chart
+    properties:
+      title: ''
+      hideTitle: true
+      chartSlug: scorecard-filterable-expansion
+      chartName: 'Scorecard: Expansion (Filterable)'
+    tileSlug: scorecard-filterable-expansion
+  - x: 12
+    'y': 10
+    h: 6
+    w: 12
+    tabUuid: a0000001-0000-0000-0000-000000000001
+    type: saved_chart
+    properties:
+      title: ''
+      hideTitle: true
+      chartSlug: scorecard-filterable-renewal
+      chartName: 'Scorecard: Renewal (Filterable)'
+    tileSlug: scorecard-filterable-renewal
+  - x: 12
+    'y': 10
+    h: 1
+    w: 12
+    tabUuid: a0000001-0000-0000-0000-000000000003
+    type: heading
+    properties:
+      text: Total
+      showDivider: false
+  - x: 0
+    'y': 11
+    h: 7
+    w: 12
+    tabUuid: a0000001-0000-0000-0000-000000000003
+    type: saved_chart
+    properties:
+      title: ''
+      hideTitle: true
+      chartSlug: scorecard-vega-vertical-renewal
+      chartName: 'Scorecard: Renewal (Vertical)'
+    tileSlug: scorecard-vega-vertical-renewal
+  - x: 12
+    'y': 11
+    h: 5
+    w: 12
+    tabUuid: a0000001-0000-0000-0000-000000000003
+    type: saved_chart
+    properties:
+      title: ''
+      hideTitle: true
+      chartSlug: scorecard-vega-vertical-total
+      chartName: 'Scorecard: Total (Vertical)'
+    tileSlug: scorecard-vega-vertical-total
+  - x: 0
+    'y': 16
+    h: 10
+    w: 36
+    tabUuid: a0000001-0000-0000-0000-000000000001
+    type: saved_chart
+    properties:
+      title: ''
+      hideTitle: false
+      chartSlug: closed-won-opportunities
+      chartName: Closed Won Opportunities
+    tileSlug: closed-won-opportunities
+filters:
+  metrics: []
+  dimensions:
+    - label: Date Range
+      target:
+        fieldId: scorecard_daily_report_date
+        tableName: scorecard_daily
+      values:
+        - 1
+      disabled: false
+      operator: inTheCurrent
+      required: false
+      settings:
+        unitOfTime: years
+      tileTargets: {}
+    - label: Division
+      target:
+        fieldId: scorecard_daily_Division
+        tableName: scorecard_daily
+      values: []
+      disabled: true
+      operator: equals
+      required: false
+      tileTargets: {}
+    - label: Owner
+      target:
+        fieldId: scorecard_daily_Owner
+        tableName: scorecard_daily
+      values: []
+      disabled: true
+      operator: equals
+      required: false
+      tileTargets: {}
+    - label: Segment
+      target:
+        fieldId: scorecard_daily_OpportunitySegment
+        tableName: scorecard_daily
+      values: []
+      disabled: true
+      operator: equals
+      required: false
+      tileTargets: {}
+    - label: Region
+      target:
+        fieldId: scorecard_daily_Queue_Region__c
+        tableName: scorecard_daily
+      values: []
+      disabled: true
+      operator: equals
+      required: false
+      tileTargets: {}
+    - label: SE
+      target:
+        fieldId: scorecard_daily_SE
+        tableName: scorecard_daily
+      values: []
+      disabled: true
+      operator: equals
+      required: false
+      tileTargets: {}
+    - label: Booking Plan Opp Type
+      target:
+        fieldId: scorecard_daily_BookingPlanOppType2025
+        tableName: scorecard_daily
+      values: []
+      disabled: true
+      operator: equals
+      required: false
+      tileTargets: {}
+    - label: Product Family
+      target:
+        fieldId: scorecard_daily_ProductFamily
+        tableName: scorecard_daily
+      values: []
+      disabled: true
+      operator: equals
+      required: false
+      tileTargets: {}
+    - label: SDR Source
+      target:
+        fieldId: scorecard_daily_SDRSource
+        tableName: scorecard_daily
+      values: []
+      disabled: true
+      operator: equals
+      required: false
+      tileTargets: {}
+    - label: SDR
+      target:
+        fieldId: scorecard_daily_SDR
+        tableName: scorecard_daily
+      values: []
+      disabled: true
+      operator: equals
+      required: false
+      tileTargets: {}
+    - label: POR v R360
+      target:
+        fieldId: scorecard_daily_OppRecordType
+        tableName: scorecard_daily
+      values: []
+      disabled: true
+      operator: equals
+      required: false
+      tileTargets: {}
+    - label: Account Owner
+      target:
+        fieldId: scorecard_daily_AccountOwner
+        tableName: scorecard_daily
+      values: []
+      disabled: true
+      operator: equals
+      required: false
+      tileTargets: {}
+    - label: Owner Department
+      target:
+        fieldId: scorecard_daily_OwnerDepartment
+        tableName: scorecard_daily
+      values: []
+      disabled: true
+      operator: equals
+      required: false
+      tileTargets: {}
+    - label: Strategic Filter
+      target:
+        fieldId: scorecard_daily_StrategicFilter
+        tableName: scorecard_daily
+      values: []
+      disabled: true
+      operator: equals
+      required: false
+      tileTargets: {}
+    - label: Accepted
+      target:
+        fieldId: scorecard_daily_Accepted
+        tableName: scorecard_daily
+      values: []
+      disabled: true
+      operator: equals
+      required: false
+      tileTargets: {}
+    - label: Gate 1 Criteria Met
+      target:
+        fieldId: scorecard_daily_Gate1CriteriaMet
+        tableName: scorecard_daily
+      values: []
+      disabled: true
+      operator: equals
+      required: false
+      tileTargets: {}
+    - label: Gate Met or Accepted
+      target:
+        fieldId: scorecard_daily_GateMetOrAccepted
+        tableName: scorecard_daily
+      values: []
+      disabled: true
+      operator: equals
+      required: false
+      tileTargets: {}
+  tableCalculations: []
+tabs:
+  - name: Tables
+    uuid: a0000001-0000-0000-0000-000000000001
+    order: 0
+  - name: Vertical Cards
+    uuid: a0000001-0000-0000-0000-000000000003
+    order: 2
+slug: scorecard-filterable-test
+spaceSlug: point-of-rental-revops-analytics-demo/revenue/dashboards
+version: 1
+downloadedAt: '2026-03-16T12:16:06.354Z'
