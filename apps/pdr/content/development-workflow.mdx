@@ -9,19 +9,20 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 Every change — whether it's a new chart, a metric update, or a dashboard restructure — follows the same workflow:
 
-```text
-Create       Make        Push to       Automated       Human
-branch  ---> changes --> GitHub   ---> checks     ---> review
-from main    (YAML)      (open PR)     (must pass)     |
-                                                       v
-                                                  Merge to main
-                                                       |
-                                       +---------------+---------------+
-                                       v               v               v
-                                  Production      Changelog        Slack
-                                  auto-deployed   auto-generated   notifies
-                                                                   subscribers
-```
+<FlowDiagram steps={[
+  { label: "Create branch", sublabel: "from main" },
+  { label: "Make changes", sublabel: "YAML files" },
+  { label: "Push to GitHub", sublabel: "open PR" },
+  { label: "Automated checks", sublabel: "must pass" },
+  { label: "Human review" },
+  { label: "Merge to main", tag: "New" },
+]} />
+
+<BranchFlow branches={[
+  { label: "Production", sublabel: "auto-deployed" },
+  { label: "Changelog", sublabel: "auto-generated" },
+  { label: "Slack", sublabel: "notifies subscribers" },
+]} />
 
 **Rules:**
 
@@ -48,16 +49,11 @@ If any automated check fails, the PR is blocked. Human reviewers only look at ch
 
 ## 4.3 Environments (Dev → Preview → Production)
 
-```text
-+-------------------+     +---------------------+     +-----------------+
-|    Local dev      |---->|  Preview (per PR)   |---->|   Production    |
-|                   |     |                     |     |                 |
-| Author's machine  |     | Temporary Lightdash |     | Stable, live    |
-| Edit YAML, run    |     | project, auto-      |     | dashboards      |
-| validators locally|     | created, auto-      |     | Updated only on |
-|                   |     | destroyed           |     | merge to main   |
-+-------------------+     +---------------------+     +-----------------+
-```
+<FlowDiagram steps={[
+  { label: "Local dev", details: ["Author's machine", "Edit YAML, run validators locally"] },
+  { label: "Preview (per PR)", details: ["Temporary Lightdash project", "Auto-created, auto-destroyed"] },
+  { label: "Production", details: ["Stable, live dashboards", "Updated only on merge to main"], tag: "Live" },
+]} />
 
 - **Local dev:** Author edits YAML files and runs validators locally before pushing
 - **Preview:** A temporary [Lightdash project](https://docs.lightdash.com/guides/cli/how-to-use-lightdash-preview/) is created automatically for each pull request. Reviewers can click through the actual dashboard. The preview is destroyed when the PR is closed.
