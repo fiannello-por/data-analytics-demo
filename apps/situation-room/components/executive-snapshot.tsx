@@ -14,7 +14,7 @@ export function ExecutiveSnapshot({ data }: ExecutiveSnapshotProps) {
 
   return (
     <section className="py-8 border-b border-border-subtle">
-      <h2 className="text-xs font-medium uppercase tracking-[0.15em] text-text-tertiary mb-5">
+      <h2 className="heading-overline mb-5">
         Executive Snapshot
       </h2>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
