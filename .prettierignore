@@ -1,4 +1,5 @@
 node_modules
+.agents
 .claude
 .codex
 .context
@@ -11,3 +12,4 @@ uv.lock
 .venv
 apps/pdr/.next
 apps/pdr/.source
+apps/situation-room/app/generated-theme.css

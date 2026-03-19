@@ -37,24 +37,24 @@ Lightdash/
 
 ## 5.2 Security Considerations
 
-**Authentication & SSO**
+### Authentication & SSO
 
 - Lightdash supports [SSO via Google, Azure AD, Okta, and OneLogin](https://docs.lightdash.com/self-host/customize-deployment/use-sso-login-for-self-hosted-lightdash) — multiple providers can be active simultaneously
 - Password-based login can be disabled to enforce SSO-only access
 - GitHub access is managed through organization membership with [two-factor authentication](https://docs.github.com/en/authentication/securing-your-account-with-two-factor-authentication-2fa) enforced
 
-**Role-Based Access Control**
+### Role-Based Access Control
 
 Lightdash provides [granular roles and permissions](https://docs.lightdash.com/references/roles) at multiple levels:
 
-| Level | Controls |
-|---|---|
-| **Organization** | Admin, member, viewer roles across the entire instance |
-| **Project** | Per-project access for different teams or use cases |
-| **[Space](https://docs.lightdash.com/guides/spaces/)** | Restricted or full-access spaces with nested permissions — control who can view, edit, or manage each folder |
-| **[User groups](https://changelog.lightdash.com/manage-user-group-access-to-a-space-293637)** | Manage access at scale by assigning groups to spaces instead of individual users |
+| Level                                                                                         | Controls                                                                                                     |
+| --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| **Organization**                                                                              | Admin, member, viewer roles across the entire instance                                                       |
+| **Project**                                                                                   | Per-project access for different teams or use cases                                                          |
+| **[Space](https://docs.lightdash.com/guides/spaces/)**                                        | Restricted or full-access spaces with nested permissions — control who can view, edit, or manage each folder |
+| **[User groups](https://changelog.lightdash.com/manage-user-group-access-to-a-space-293637)** | Manage access at scale by assigning groups to spaces instead of individual users                             |
 
-**Row-Level Security**
+### Row-Level Security
 
 Lightdash supports [row-level security](https://changelog.lightdash.com/row-level-security-based-on-a-user's-email-or-name-290489) based on user attributes (email, name, department, region). This means the same dashboard can show different data to different users — a sales rep sees only their region, a director sees all regions — without building separate dashboards.
 
@@ -63,21 +63,21 @@ Lightdash supports [row-level security](https://changelog.lightdash.com/row-leve
 sql_filter: ${TABLE}.owner_email = '${lightdash.user.email}'
 ```
 
-**Change Control & Audit Trail**
+### Change Control & Audit Trail
 
 - All changes to production dashboards go through [GitHub pull requests](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches) with required reviews — no direct modifications
 - [Branch protection rules](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/managing-a-branch-protection-rule) enforce that all CI checks pass before merge
 - Every change is logged with who made it, when, why, and what was reviewed — full audit trail in Git history
 - Force pushes and branch deletions are blocked on `main`
 
-**Data Security**
+### Data Security
 
 - Lightdash [does not cache or store query results](https://www.lightdash.com/lightdash-security) — data stays in BigQuery
 - All connections to BigQuery use encrypted channels
 - Self-hosted deployment means data never leaves our controlled infrastructure
 - Lightdash maintains [SOC 2 Type II and HIPAA compliance](https://security.lightdash.com/) for their cloud offering — the same security practices apply to the open-source codebase
 
-**AI Agent Security**
+### AI Agent Security
 
 - AI agents (PR review, changelog) operate through the same PR workflow — they cannot modify production directly
 - [AI agents in Lightdash](https://docs.lightdash.com/guides/ai-agents/data-access) respect the same role-based permissions as human users — an agent can only access data the authenticated user is allowed to see

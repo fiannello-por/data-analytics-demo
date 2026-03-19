@@ -71,9 +71,7 @@ def sync_skillsets_from_checkouts(
 
         source_root = checkout_root / spec.source_subdir
         if not source_root.is_dir():
-            raise FileNotFoundError(
-                f"Expected source directory for {spec.name}: {source_root}"
-            )
+            raise FileNotFoundError(f"Expected source directory for {spec.name}: {source_root}")
 
         for skill_dir in sorted(path for path in source_root.iterdir() if path.is_dir()):
             for target_root in TARGET_SKILL_ROOTS:

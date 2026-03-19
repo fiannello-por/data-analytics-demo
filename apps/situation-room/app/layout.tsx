@@ -1,0 +1,31 @@
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import { NuqsAdapter } from 'nuqs/adapters/next/app';
+import { ThemeProvider } from '@/components/theme-provider';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import './global.css';
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
+
+export const metadata: Metadata = {
+  title: 'Situation Room — Sales Performance Report',
+  description: 'Board-facing sales performance scorecard report',
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
+      <body>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+          <TooltipProvider>
+            <NuqsAdapter>{children}</NuqsAdapter>
+          </TooltipProvider>
+        </ThemeProvider>
+      </body>
+    </html>
+  );
+}
