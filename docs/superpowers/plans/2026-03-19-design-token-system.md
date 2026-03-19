@@ -1002,6 +1002,9 @@ describe('generateCssFromTheme', () => {
       },
       components: {
         card: { radius: 'md', shadow: 'sm' },
+        filter: { radius: 'sm', height: '2rem' },
+        tab: { railRadius: 'md', pillRadius: 'sm' },
+        pill: { radius: 'sm' },
       },
       dashboard: {
         filterBar: { bg: 'gray.0', border: 'border.default' },
@@ -1035,7 +1038,7 @@ describe('generateCssFromTheme', () => {
 
     // Check radius
     expect(css).toContain('--radius: 0.5rem');
-    // Note: --card-radius NOT emitted in Phase 1 (component geometry is Task 7b)
+    // Note: --card-radius NOT emitted in Phase 1 (component geometry is Task 7a)
 
     // Check chart derivation from viz
     expect(css).toContain('--chart-1: #ccc');
@@ -1135,7 +1138,7 @@ export function generateCssFromTheme(theme: Theme): string {
   });
 
   // NOTE: Component geometry (--card-radius, --filter-height, etc.) and --viz-N aliases
-  // are NOT emitted here. They don't exist in the current CSS and will be added in Task 7b
+  // are NOT emitted here. They don't exist in the current CSS and will be added in Task 7a
   // after parity verification passes in Task 6. --font-* vars are also not emitted in :root
   // because the current CSS only defines them in @theme inline.
 
@@ -1264,7 +1267,7 @@ export function generateThemeInlineBlock(
 }
 ```
 
-**Note:** In Phase 1 (parity), `allVarNames` comes from the union of both theme `:root` and `.dark` blocks. Since Phase 1 does not emit `--viz-N`, `--card-radius`, `--font-*` etc. in `:root`/`.dark`, they won't appear in `allVarNames` and won't get `@theme inline` entries — matching the current CSS's `@theme inline` exactly. When Phase 2 (Task 7b) adds new vars to the theme blocks, they automatically get picked up by the prefix matching.
+**Note:** In Phase 1 (parity), `allVarNames` comes from the union of both theme `:root` and `.dark` blocks. Since Phase 1 does not emit `--viz-N`, `--card-radius`, `--font-*` etc. in `:root`/`.dark`, they won't appear in `allVarNames` and won't get `@theme inline` entries — matching the current CSS's `@theme inline` exactly. When Phase 2 (Task 7a) adds new vars to the theme blocks, they automatically get picked up by the prefix matching.
 
 - [ ] **Step 26: Run tests to verify they pass**
 
@@ -1679,7 +1682,151 @@ git commit -m "fix(tokens): correct theme values to match current CSS exactly"
 
 ---
 
-## Task 7: Replace global.css with Generated Import + Component Classes
+## Task 7a: Extend Generator with Phase 2 Variables
+
+**Files:**
+- Modify: `apps/situation-room/themes/generate-theme.ts`
+- Modify: `apps/situation-room/__tests__/generate-theme.test.ts`
+
+Now that Task 6 has confirmed byte-level parity with the current CSS, extend `generateCssFromTheme` to emit additional variables that don't exist in the current CSS but are needed by the switchover (Task 7b) and component migrations (Tasks 8-18). These vars are NEW — they extend beyond what the current CSS has, but the current CSS is still serving the app until Task 7b replaces it.
+
+- [ ] **Step 1: Add component geometry vars to generateCssFromTheme**
+
+After the chart tokens section (section 5), add a new section 6 that emits component-resolved geometry:
+
+```typescript
+  // 6. Component-resolved geometry (NEW — not in original CSS)
+  // Handles both simple keys (radius, shadow, height) and compound keys (railRadius, pillRadius).
+  // Simple: card.radius → --card-radius
+  // Compound: tab.railRadius → --tab-rail-radius, tab.pillRadius → --tab-pill-radius
+  if (theme.components) {
+    for (const [comp, config] of Object.entries(theme.components)) {
+      for (const [key, value] of Object.entries(config)) {
+        if (key === 'radius') {
+          const resolvedRadius = `calc(${radiusBase} * ${radiusScale[value as string]})`;
+          lines.push(`  --${kebabCase(comp)}-radius: ${resolvedRadius};`);
+        } else if (key.endsWith('Radius')) {
+          // e.g. railRadius → rail-radius
+          const stem = kebabCase(key); // "railRadius" → "rail-radius"
+          const resolvedRadius = `calc(${radiusBase} * ${radiusScale[value as string]})`;
+          lines.push(`  --${kebabCase(comp)}-${stem}: ${resolvedRadius};`);
+        } else if (key === 'shadow') {
+          lines.push(`  --${kebabCase(comp)}-shadow: ${shadow[value as string]};`);
+        } else if (key === 'height') {
+          lines.push(`  --${kebabCase(comp)}-height: ${value};`);
+        }
+        // Other keys (like headerWeight) are informational, not emitted as CSS vars
+      }
+    }
+  }
+```
+
+This produces:
+- `card: { radius: "md", shadow: "sm" }` → `--card-radius: calc(...)`, `--card-shadow: 0 1px 2px ...`
+- `filter: { radius: "sm", height: "2rem" }` → `--filter-radius: calc(...)`, `--filter-height: 2rem`
+- `tab: { railRadius: "lg", pillRadius: "md" }` → `--tab-rail-radius: calc(...)`, `--tab-pill-radius: calc(...)`
+- `pill: { radius: "sm" }` → `--pill-radius: calc(...)`
+
+- [ ] **Step 2: Add --viz-N aliases**
+
+After the component geometry section, add `--viz-N` aliases that mirror `--chart-N`:
+
+```typescript
+  // 7. --viz-N aliases for chart colors (NEW — convenience aliases)
+  resolvedCategorical.forEach((hex, i) => {
+    lines.push(`  --viz-${i + 1}: ${hex};`);
+  });
+```
+
+- [ ] **Step 3: Update @theme inline to include new vars**
+
+The `generateThemeInlineBlock` already picks up new vars from the merged var set. Since the new vars (`--viz-*`, `--card-radius`, `--tab-rail-radius`, `--filter-height`) will now appear in `:root`/`.dark`, they'll be included in `allVarNames` and get `@theme inline` entries automatically via prefix matching. Verify this works by checking the generated output includes entries like:
+- `--color-viz-1: var(--viz-1);` (matched by `'--viz'` prefix — add `'--viz'` to `colorVarPrefixes`)
+- `--radius-card: var(--card-radius);` → enables `rounded-card`
+- `--radius-tab-rail: var(--tab-rail-radius);` → enables `rounded-tab-rail`
+- `--radius-tab-pill: var(--tab-pill-radius);` → enables `rounded-tab-pill`
+- `--radius-filter: var(--filter-radius);` → enables `rounded-filter`
+- `--radius-pill: var(--pill-radius);` → enables `rounded-pill`
+- `--shadow-card: var(--card-shadow);` → enables `shadow-card`
+
+Add to `colorVarPrefixes`: `'--viz'`
+
+Add component geometry mapping after the font entries in `generateThemeInlineBlock`:
+
+```typescript
+  // Component-resolved geometry → Tailwind utilities
+  // Regex uses [\w-]+ to match hyphenated stems like --tab-rail-radius, --tab-pill-radius
+  for (const varName of allVarNames) {
+    if (varName.match(/^--[\w-]+-radius$/)) {
+      const name = varName.replace(/^--/, '').replace(/-radius$/, '');
+      lines.push(`  --radius-${name}: var(${varName});`);
+    }
+    if (varName.match(/^--[\w-]+-shadow$/)) {
+      const name = varName.replace(/^--/, '').replace(/-shadow$/, '');
+      lines.push(`  --shadow-${name}: var(${varName});`);
+    }
+  }
+```
+
+- [ ] **Step 4: Add tests for new vars**
+
+```typescript
+describe('Phase 2 vars', () => {
+  it('emits --viz-N aliases', () => {
+    const css = generateCssFromTheme(minimalTheme);
+    expect(css).toContain('--viz-1: #ccc');
+    expect(css).toContain('--viz-2: #ddd');
+  });
+
+  it('emits component geometry vars including hyphenated stems', () => {
+    const css = generateCssFromTheme(minimalTheme);
+    expect(css).toContain('--card-radius:');
+    expect(css).toContain('--card-shadow:');
+  });
+
+  it('emits --filter-height from components.filter.height', () => {
+    const css = generateCssFromTheme(minimalTheme);
+    expect(css).toContain('--filter-height: 2rem');
+  });
+
+  it('emits hyphenated geometry for tab sub-components', () => {
+    // tab: { railRadius: "lg", pillRadius: "md" }
+    const css = generateCssFromTheme(minimalTheme);
+    expect(css).toContain('--tab-rail-radius:');
+    expect(css).toContain('--tab-pill-radius:');
+  });
+});
+
+describe('Phase 2 @theme inline', () => {
+  it('maps component radius vars to Tailwind --radius-* aliases', () => {
+    const varNames = ['--card-radius', '--tab-rail-radius', '--tab-pill-radius', '--filter-radius', '--pill-radius'];
+    const block = generateThemeInlineBlock(varNames, baseOpts);
+    expect(block).toContain('--radius-card: var(--card-radius)');
+    expect(block).toContain('--radius-tab-rail: var(--tab-rail-radius)');
+    expect(block).toContain('--radius-tab-pill: var(--tab-pill-radius)');
+    expect(block).toContain('--radius-filter: var(--filter-radius)');
+    expect(block).toContain('--radius-pill: var(--pill-radius)');
+  });
+
+  it('maps component shadow vars to Tailwind --shadow-* aliases', () => {
+    const varNames = ['--card-shadow'];
+    const block = generateThemeInlineBlock(varNames, baseOpts);
+    expect(block).toContain('--shadow-card: var(--card-shadow)');
+  });
+});
+```
+
+- [ ] **Step 5: Run tests and commit**
+
+```bash
+cd apps/situation-room && pnpm test -- __tests__/generate-theme.test.ts
+git add apps/situation-room/themes/generate-theme.ts apps/situation-room/__tests__/generate-theme.test.ts
+git commit -m "feat(tokens): add Phase 2 vars — component geometry, --viz-N, --filter-height"
+```
+
+---
+
+## Task 7b: Replace global.css with Generated Import + Component Classes
 
 **Files:**
 - Modify: `apps/situation-room/app/global.css`
@@ -1792,111 +1939,6 @@ Expected: All tests pass.
 ```bash
 git add apps/situation-room/app/global.css
 git commit -m "feat(tokens): replace hand-written CSS vars with generated import + component classes"
-```
-
----
-
-## Task 7b: Extend Generator with Phase 2 Variables
-
-**Files:**
-- Modify: `apps/situation-room/themes/generate-theme.ts`
-- Modify: `apps/situation-room/__tests__/generate-theme.test.ts`
-
-Now that Task 6 has confirmed byte-level parity with the current CSS, extend `generateCssFromTheme` to emit additional variables that don't exist in the current CSS but are needed by component migrations (Tasks 8-18). These vars are NEW — they won't break parity because `global.css` has already been switched to use the generated import.
-
-- [ ] **Step 1: Add component geometry vars to generateCssFromTheme**
-
-After the chart tokens section (section 5), add a new section 6 that emits component-resolved geometry:
-
-```typescript
-  // 6. Component-resolved geometry (NEW — not in original CSS)
-  if (theme.components) {
-    for (const [comp, config] of Object.entries(theme.components)) {
-      if (config.radius) {
-        const resolvedRadius = `calc(${radiusBase} * ${radiusScale[config.radius]})`;
-        lines.push(`  --${kebabCase(comp)}-radius: ${resolvedRadius};`);
-      }
-      if (config.shadow) {
-        lines.push(`  --${kebabCase(comp)}-shadow: ${shadow[config.shadow]};`);
-      }
-    }
-  }
-```
-
-- [ ] **Step 2: Add --viz-N aliases**
-
-After the component geometry section, add `--viz-N` aliases that mirror `--chart-N`:
-
-```typescript
-  // 7. --viz-N aliases for chart colors (NEW — convenience aliases)
-  resolvedCategorical.forEach((hex, i) => {
-    lines.push(`  --viz-${i + 1}: ${hex};`);
-  });
-```
-
-- [ ] **Step 3: Add --filter-height**
-
-Emit `--filter-height` from component config (or hardcode `2rem` if not in JSON):
-
-```typescript
-  // 8. Additional component tokens
-  lines.push(`  --filter-height: 2rem;`);
-```
-
-- [ ] **Step 4: Update @theme inline to include new vars**
-
-The `generateThemeInlineBlock` already picks up new vars from the merged var set. Since the new vars (`--viz-*`, `--card-radius`, `--filter-height`) will now appear in `:root`/`.dark`, they'll be included in `allVarNames` and get `@theme inline` entries automatically via prefix matching. Verify this works by checking the generated output includes entries like:
-- `--color-viz-1: var(--viz-1);` (matched by `'--viz'` prefix — add `'--viz'` to `colorVarPrefixes`)
-- `--radius-card: var(--card-radius);` (needs special handling or a new prefix)
-- `--shadow-card: var(--card-shadow);` (needs special handling or a new prefix)
-
-Add to `colorVarPrefixes`: `'--viz'`
-
-Add component geometry mapping after the font entries in `generateThemeInlineBlock`:
-
-```typescript
-  // Component-resolved geometry → Tailwind utilities
-  for (const varName of allVarNames) {
-    if (varName.match(/^--\w+-radius$/)) {
-      const name = varName.replace('--', '').replace('-radius', '');
-      lines.push(`  --radius-${name}: var(${varName});`);
-    }
-    if (varName.match(/^--\w+-shadow$/)) {
-      const name = varName.replace('--', '').replace('-shadow', '');
-      lines.push(`  --shadow-${name}: var(${varName});`);
-    }
-  }
-```
-
-- [ ] **Step 5: Add tests for new vars**
-
-```typescript
-describe('Phase 2 vars', () => {
-  it('emits --viz-N aliases', () => {
-    const css = generateCssFromTheme(minimalTheme);
-    expect(css).toContain('--viz-1: #ccc');
-    expect(css).toContain('--viz-2: #ddd');
-  });
-
-  it('emits component geometry vars', () => {
-    const css = generateCssFromTheme(minimalTheme);
-    expect(css).toContain('--card-radius:');
-    expect(css).toContain('--card-shadow:');
-  });
-
-  it('emits --filter-height', () => {
-    const css = generateCssFromTheme(minimalTheme);
-    expect(css).toContain('--filter-height: 2rem');
-  });
-});
-```
-
-- [ ] **Step 6: Run tests and commit**
-
-```bash
-cd apps/situation-room && pnpm test -- __tests__/generate-theme.test.ts
-git add apps/situation-room/themes/generate-theme.ts apps/situation-room/__tests__/generate-theme.test.ts
-git commit -m "feat(tokens): add Phase 2 vars — component geometry, --viz-N, --filter-height"
 ```
 
 ---
@@ -2174,7 +2216,7 @@ git commit -m "refactor(tokens): migrate report-header to semantic heading class
 
 The `useCssVar` hook (line 29) calls `getComputedStyle` synchronously and returns `''` during SSR. Chart.js config runs during render, so removing fallbacks would produce invisible charts on first paint before hydration. **Keep all `|| '#...'` fallbacks** — they are a safety net, not dead code.
 
-Only change the var names to use the new `--viz-*` tokens (available since Task 7b):
+Only change the var names to use the new `--viz-*` tokens (available since Task 7a):
 
 ```typescript
 // Before:
@@ -2280,6 +2322,7 @@ git commit -m "chore(tokens): finalize design token system migration"
 | Task 4 (dark) | `themes/dark.json` | — |
 | Task 5 (script) | `themes/generate-theme.ts`, `__tests__/generate-theme.test.ts` | — |
 | Task 6 (validate) | — | `themes/light.json`, `themes/dark.json` |
-| Task 7 (switchover) | — | `app/global.css` |
+| Task 7a (Phase 2 vars) | — | `themes/generate-theme.ts`, `__tests__/generate-theme.test.ts` |
+| Task 7b (switchover) | — | `app/global.css` |
 | Tasks 8-18 (migrate) | — | 10 component files |
 | Task 19 (validate) | — | — |
