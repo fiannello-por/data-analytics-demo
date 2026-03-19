@@ -3,6 +3,10 @@
 @import 'fumadocs-ui/css/preset.css';
 @import 'fumadocs-ui/css/black.css';
 
+/* ───────────────────────────────────────────
+   Design tokens — green primary
+   ─────────────────────────────────────────── */
+
 :root {
   --color-fd-primary: hsl(90, 50%, 40%) !important;
   --color-fd-primary-foreground: hsl(0, 0%, 100%) !important;
@@ -11,26 +15,245 @@
 .dark {
   --color-fd-primary: hsl(90, 50%, 55%) !important;
   --color-fd-primary-foreground: hsl(0, 0%, 2%) !important;
+
+  /* Softer dark background — warm charcoal instead of pitch black */
+  --color-fd-background: hsl(220, 10%, 8%) !important;
+  --color-fd-card: hsl(220, 10%, 10%) !important;
+  --color-fd-muted: hsl(220, 10%, 13%) !important;
+  --color-fd-border: hsl(220, 10%, 20%) !important;
+  --color-fd-accent: hsl(220, 10%, 16%) !important;
 }
 
-/* Extra space between logo and sidebar content */
+.dark #nd-sidebar {
+  --color-fd-muted: hsl(220, 10%, 15%) !important;
+  --color-fd-secondary: hsl(220, 10%, 17%) !important;
+}
+
+/* ───────────────────────────────────────────
+   Sidebar chrome
+   ─────────────────────────────────────────── */
+
+/* Space between logo and chapter list */
 #nd-sidebar [data-radix-scroll-area-viewport] > div {
-  padding-top: 3rem;
+  padding-top: 2rem;
+  counter-reset: chapter;
 }
 
-/* zod.dev-style heading borders */
+/* Remove the right border on sidebar */
+#nd-sidebar > div {
+  border-inline-end: none !important;
+}
+
+/* ───────────────────────────────────────────
+   Chapter navigation — replaces pills
+   ─────────────────────────────────────────── */
+
+.chapter-separator {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-fd-muted-foreground);
+  padding: 0 0 0.25rem;
+  margin-top: 2rem;
+  opacity: 0.5;
+}
+
+.chapter-separator:first-child {
+  margin-top: 0;
+}
+
+.chapter-item {
+  counter-increment: chapter;
+  display: flex;
+  align-items: baseline;
+  gap: 0.625rem;
+  padding: 0.4rem 0.75rem;
+  color: var(--color-fd-muted-foreground);
+  text-decoration: none;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  transition: color 0.15s ease;
+  position: relative;
+}
+
+.chapter-item:hover {
+  color: var(--color-fd-foreground);
+}
+
+.chapter-number::before {
+  content: counter(chapter, decimal-leading-zero);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.4;
+  font-weight: 500;
+}
+
+.chapter-active {
+  color: var(--color-fd-primary) !important;
+  font-weight: 500;
+}
+
+.chapter-active .chapter-number::before {
+  opacity: 0.8;
+  color: var(--color-fd-primary);
+}
+
+.chapter-active::after {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  border-radius: 1px;
+  background-color: var(--color-fd-primary);
+}
+
+/* ───────────────────────────────────────────
+   Content typography
+   ─────────────────────────────────────────── */
+
 .prose h1 {
-  border-bottom: 1px solid var(--fd-border);
+  border-bottom: 1px solid var(--color-fd-border);
   padding-bottom: 0.75rem;
 }
 
 .prose h2 {
-  border-bottom: 1px solid var(--fd-border);
+  border-bottom: 1px solid var(--color-fd-border);
   padding-bottom: 0.5rem;
   margin-top: 3rem;
 }
 
-/* zod.dev-style inline code */
 .prose :not(pre) > code {
   font-weight: 300;
+}
+
+/* ───────────────────────────────────────────
+   Callouts — editorial annotations
+   Subtle tinted background for contrast
+   ─────────────────────────────────────────── */
+
+.prose .shadow-md.border-s-2 {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-inline-start: 2px solid var(--color-fd-primary) !important;
+  background-color: var(--color-fd-muted) !important;
+  padding: 0.75rem 1rem !important;
+}
+
+/* Hide callout icons */
+.prose .shadow-md.border-s-2 > svg {
+  display: none !important;
+}
+
+/* Warn callouts — orange accent */
+.prose .shadow-md.border-s-2[class*="orange"] {
+  border-inline-start-color: hsl(30, 80%, 55%) !important;
+}
+
+/* Error callouts — red accent */
+.prose .shadow-md.border-s-2[class*="red"] {
+  border-inline-start-color: hsl(0, 70%, 55%) !important;
+}
+
+/* ───────────────────────────────────────────
+   Tables — visible header and row striping
+   ─────────────────────────────────────────── */
+
+.prose table {
+  border: 1px solid var(--color-fd-border);
+}
+
+.prose thead {
+  background-color: var(--color-fd-muted);
+}
+
+.prose thead th {
+  border-bottom: 2px solid var(--color-fd-border);
+}
+
+.prose tbody tr {
+  border-bottom: 1px solid var(--color-fd-border);
+}
+
+.prose tbody tr:nth-child(even) {
+  background-color: var(--color-fd-muted);
+}
+
+/* ───────────────────────────────────────────
+   Cards — subtle background for contrast
+   ─────────────────────────────────────────── */
+
+[data-card] {
+  border-radius: 0.25rem !important;
+  box-shadow: none !important;
+  background-color: var(--color-fd-muted) !important;
+}
+
+/* ───────────────────────────────────────────
+   Tabs — clean container with background
+   ─────────────────────────────────────────── */
+
+.prose .rounded-xl.border.bg-fd-card {
+  border-radius: 0.25rem !important;
+  box-shadow: none !important;
+}
+
+/* ───────────────────────────────────────────
+   Code blocks — ensure contrast
+   ─────────────────────────────────────────── */
+
+.prose pre {
+  border: 1px solid var(--color-fd-border);
+}
+
+/* ───────────────────────────────────────────
+   Page navigation — prev/next
+   ─────────────────────────────────────────── */
+
+.page-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--color-fd-border);
+}
+
+.page-nav a {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.page-nav a:hover {
+  color: var(--color-fd-primary);
+}
+
+.page-nav-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-fd-muted-foreground);
+}
+
+.page-nav-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-fd-foreground);
+}
+
+.page-nav a:hover .page-nav-title {
+  color: var(--color-fd-primary);
+}
+
+.page-nav-next {
+  text-align: end;
+  margin-inline-start: auto;
 }

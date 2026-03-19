@@ -7,9 +7,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 ## 2.1 How Analytics Work Today
 
-```text
-Salesforce → Stitch → BigQuery → Scheduled Queries (214) → Looker Studio
-```
+<Pipeline steps={["Salesforce", "Stitch", "BigQuery", "Scheduled Queries (214)", "Looker Studio"]} />
 
 - **Salesforce** is the primary data source, integrated to BigQuery via Stitch
 - **214 scheduled queries** in BigQuery handle all data transformation — maintained by a 3-person team
