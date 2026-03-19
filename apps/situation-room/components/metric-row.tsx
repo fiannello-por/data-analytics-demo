@@ -14,13 +14,13 @@ export function MetricRow({ row, isAlt = false }: MetricRowProps) {
         isAlt ? 'bg-table-row-alt-bg' : 'bg-table-row-bg'
       }`}
     >
-      <TableCell className="pl-4 font-medium text-table-cell-text">
+      <TableCell className="pl-4 table-data-cell">
         {row.metricName}
       </TableCell>
-      <TableCell className="tabular-nums text-table-cell-text font-semibold text-right">
+      <TableCell className="table-data-cell-numeric text-right">
         {row.currentPeriod}
       </TableCell>
-      <TableCell className="hidden sm:table-cell tabular-nums text-table-cell-secondary text-right">
+      <TableCell className="hidden sm:table-cell table-data-cell-secondary text-right">
         {row.previousPeriod}
       </TableCell>
       <TableCell className="pr-4 text-right">

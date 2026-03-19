@@ -26,7 +26,7 @@ export function ExecutiveSnapshot({ data }: ExecutiveSnapshotProps) {
 
   return (
     <section>
-      <h2 className="text-xs font-medium uppercase tracking-[0.15em] text-heading-overline mb-5">
+      <h2 className="heading-overline mb-5">
         Executive Snapshot
       </h2>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -37,7 +37,7 @@ export function ExecutiveSnapshot({ data }: ExecutiveSnapshotProps) {
             className="bg-surface-elevated shadow-sm hover:shadow-md transition-shadow duration-200"
           >
             <CardHeader>
-              <CardDescription className="text-xs font-medium text-heading-overline uppercase tracking-wider">
+              <CardDescription className="heading-overline">
                 {category}
               </CardDescription>
               <CardTitle className="text-xs text-text-secondary font-normal">
@@ -45,7 +45,7 @@ export function ExecutiveSnapshot({ data }: ExecutiveSnapshotProps) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold tabular-nums text-heading-primary tracking-tight">
+              <p className="kpi-value">
                 {metric.currentPeriod}
               </p>
               <div className="mt-2 flex items-center gap-2">

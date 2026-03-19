@@ -10,6 +10,47 @@
   .heading-overline { @apply text-xs font-medium uppercase tracking-[0.15em] text-heading-overline; }
   .heading-section { @apply text-heading-section leading-relaxed; }
   .heading-primary { @apply text-lg font-semibold tracking-tight text-heading-primary; }
+
+  /* ── KPI ── */
+  .kpi-value { @apply text-2xl font-bold tabular-nums text-heading-primary tracking-tight; }
+
+  /* ── Table ── */
+  .table-header-cell { @apply text-xs font-medium uppercase tracking-wider text-table-header-text; }
+  .table-data-cell { @apply font-medium text-table-cell-text; }
+  .table-data-cell-numeric { @apply tabular-nums text-table-cell-text font-semibold; }
+  .table-data-cell-secondary { @apply tabular-nums text-table-cell-secondary; }
+
+  /* ── Pills (change indicator) ── */
+  .pill-status {
+    @apply inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md text-xs font-medium tabular-nums border;
+    &[data-direction="positive"] { @apply text-positive bg-positive-bg border-positive-border; }
+    &[data-direction="negative"] { @apply text-negative bg-negative-bg border-negative-border; }
+    &[data-direction="neutral"] { @apply text-neutral-change bg-neutral-change-bg border-border-subtle; }
+  }
+
+  /* ── Filter trigger ── */
+  .filter-trigger {
+    @apply flex h-8 items-center gap-1.5 rounded-md border px-2.5 text-xs transition-all select-none cursor-pointer
+      border-filter-trigger-border bg-filter-trigger-bg text-filter-trigger-text
+      hover:bg-filter-trigger-hover-bg hover:border-filter-trigger-hover-border;
+  }
+  .filter-trigger-active {
+    @apply flex h-8 items-center gap-1.5 rounded-md border px-2.5 text-xs transition-all select-none cursor-pointer
+      border-filter-active-border bg-filter-active-bg text-filter-active-text font-medium;
+  }
+
+  /* ── Error banner ── */
+  .error-banner { @apply rounded-xl bg-negative-bg border border-negative-border px-5 py-4; }
+
+  /* ── Tabs ── */
+  .tab-rail { @apply bg-tab-rail; }
+  .tab-pill {
+    [data-variant="default"] & {
+      @apply font-medium text-tab-text;
+      &:hover { @apply text-tab-hover-text; }
+      &[data-active] { @apply bg-tab-active-bg text-tab-active-text shadow-sm font-semibold; }
+    }
+  }
 }
 
 @layer base {

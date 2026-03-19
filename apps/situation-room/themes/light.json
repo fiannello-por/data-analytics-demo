@@ -2,19 +2,78 @@
   "name": "Light",
 
   "palette": {
-    "transparent": "transparent"
+    "transparent": "transparent",
+    "white":  "#ffffff",
+    "black":  "#000000",
+
+    "gray": [
+      "#f7f8fa",
+      "#f0f2f5",
+      "#eef1f5",
+      "#e8ecf2",
+      "#e4e8ee",
+      "#e2e6ed",
+      "#dce0e8",
+      "#dbe9f8",
+      "#c5cad4",
+      "#b0b6c4",
+      "#8690a2",
+      "#636a7e",
+      "#4a5068",
+      "#1e2028"
+    ],
+
+    "blue": [
+      "#edf4fc",
+      "#c4daf0",
+      "#b0cfe8",
+      "#8db8e4",
+      "#3574c4",
+      "#2a5ea0",
+      "#234e88"
+    ],
+
+    "green": [
+      "#eaf7ef",
+      "#b8e0c8",
+      "#3a9a5e",
+      "#1a7f42",
+      "#5c8a3e"
+    ],
+
+    "red": [
+      "#fdf0f0",
+      "#f0c0c3",
+      "#c9363f"
+    ],
+
+    "amber": [
+      "#fef9eb",
+      "#f0dfa0",
+      "#c7872e",
+      "#b07d1a"
+    ],
+
+    "cyan": [
+      "#2e95a3"
+    ],
+
+    "purple": [
+      "#9556cf",
+      "#7c6eb5"
+    ]
   },
 
   "colors": {
-    "surface":     { "base": "#f7f8fa", "elevated": "#ffffff", "sunken": "#eef1f5", "overlay": "#ffffff" },
-    "border":      { "subtle": "#e4e8ee", "strong": "#c5cad4" },
-    "text":        { "primary": "#1e2028", "secondary": "#4a5068", "tertiary": "#8690a2", "inverse": "#ffffff", "link": "#3574c4", "linkHover": "#2a5ea0" },
-    "positive":    { "default": "#1a7f42", "bg": "#eaf7ef", "border": "#b8e0c8" },
-    "negative":    { "default": "#c9363f", "bg": "#fdf0f0", "border": "#f0c0c3" },
-    "neutral":     { "change": "#636a7e", "changeBg": "#eef1f5" },
-    "warning":     { "default": "#b07d1a", "bg": "#fef9eb", "border": "#f0dfa0" },
-    "info":        { "default": "#3574c4", "bg": "#edf4fc", "border": "#b0cfe8" },
-    "accentBrand": { "default": "#3574c4", "subtle": "#edf4fc", "hover": "#2a5ea0", "muted": "#c4daf0" }
+    "surface":     { "base": "gray.0", "elevated": "white", "sunken": "gray.2", "overlay": "white" },
+    "border":      { "subtle": "gray.4", "strong": "gray.8" },
+    "text":        { "primary": "gray.13", "secondary": "gray.12", "tertiary": "gray.10", "inverse": "white", "link": "blue.4", "linkHover": "blue.5" },
+    "positive":    { "default": "green.3", "bg": "green.0", "border": "green.1" },
+    "negative":    { "default": "red.2", "bg": "red.0", "border": "red.1" },
+    "neutral":     { "change": "gray.11", "changeBg": "gray.2" },
+    "warning":     { "default": "amber.3", "bg": "amber.0", "border": "amber.1" },
+    "info":        { "default": "blue.4", "bg": "blue.0", "border": "blue.2" },
+    "accentBrand": { "default": "blue.4", "subtle": "blue.0", "hover": "blue.5", "muted": "blue.1" }
   },
 
   "shadcn": {
@@ -68,19 +127,19 @@
     "pill": { "radius": "sm" }
   },
   "dashboard": {
-    "filterBar": { "bg": "#f0f2f5", "border": "#dce0e8" },
-    "filterTrigger": { "bg": "#ffffff", "border": "#dce0e8", "text": "#4a5068", "hoverBg": "#eef1f5", "hoverBorder": "#c5cad4" },
-    "filterActive": { "bg": "#edf4fc", "border": "#8db8e4", "text": "#2a5ea0" },
-    "filterBadge": { "bg": "#3574c4", "text": "#ffffff" },
-    "table": { "headerBg": "#eef1f5", "headerText": "#4a5068", "headerBorder": "#dce0e8", "rowBg": "transparent", "rowAltBg": "#f7f8fa", "rowHoverBg": "#edf4fc", "rowSelectedBg": "#dbe9f8", "rowBorder": "#e4e8ee", "cellText": "#1e2028", "cellSecondary": "#4a5068" },
-    "tab": { "rail": "#e2e6ed", "text": "#8690a2", "hoverText": "#4a5068", "activeBg": "#ffffff", "activeText": "#1e2028" },
-    "heading": { "primary": "#1e2028", "section": "#4a5068", "overline": "#8690a2" },
-    "interactive": { "bg": "#3574c4", "bgHover": "#2a5ea0", "bgActive": "#234e88", "text": "#ffffff", "ghostHover": "#eef1f5", "ghostActive": "#e4e8ee", "outlineBorder": "#dce0e8", "outlineHover": "#c5cad4", "focusRing": "#3574c4", "disabledBg": "#eef1f5", "disabledText": "#b0b6c4" }
+    "filterBar": { "bg": "gray.1", "border": "gray.6" },
+    "filterTrigger": { "bg": "white", "border": "gray.6", "text": "gray.12", "hoverBg": "gray.2", "hoverBorder": "gray.8" },
+    "filterActive": { "bg": "blue.0", "border": "blue.3", "text": "blue.5" },
+    "filterBadge": { "bg": "blue.4", "text": "white" },
+    "table": { "headerBg": "gray.2", "headerText": "gray.12", "headerBorder": "gray.6", "rowBg": "transparent", "rowAltBg": "gray.0", "rowHoverBg": "blue.0", "rowSelectedBg": "gray.7", "rowBorder": "gray.4", "cellText": "gray.13", "cellSecondary": "gray.12" },
+    "tab": { "rail": "gray.5", "text": "gray.10", "hoverText": "gray.12", "activeBg": "white", "activeText": "gray.13" },
+    "heading": { "primary": "gray.13", "section": "gray.12", "overline": "gray.10" },
+    "interactive": { "bg": "blue.4", "bgHover": "blue.5", "bgActive": "blue.6", "text": "white", "ghostHover": "gray.2", "ghostActive": "gray.4", "outlineBorder": "gray.6", "outlineHover": "gray.8", "focusRing": "blue.4", "disabledBg": "gray.2", "disabledText": "gray.9" }
   },
 
   "viz": {
-    "categorical": ["#3574c4", "#9556cf", "#3a9a5e", "#c7872e", "#2e95a3", "#c9363f", "#7c6eb5", "#5c8a3e"],
-    "sequential":  ["#3574c4", "#9556cf", "#3a9a5e"],
-    "diverging":   ["#c9363f", "#3574c4", "#3a9a5e"]
+    "categorical": ["blue.4", "purple.0", "green.2", "amber.2", "cyan.0", "red.2", "purple.1", "green.4"],
+    "sequential":  ["blue.4", "purple.0", "green.2"],
+    "diverging":   ["red.2", "blue.4", "green.2"]
   }
 }

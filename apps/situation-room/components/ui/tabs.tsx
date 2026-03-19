@@ -29,7 +29,7 @@ const tabsListVariants = cva(
     variants: {
       variant: {
         default:
-          "rounded-lg bg-tab-rail p-1 gap-0.5 group-data-horizontal/tabs:h-11",
+          "rounded-lg tab-rail p-1 gap-0.5 group-data-horizontal/tabs:h-11",
         line: "gap-1 bg-transparent rounded-none group-data-horizontal/tabs:h-8 p-[3px]",
       },
     },
@@ -59,7 +59,8 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
     <TabsPrimitive.Tab
       data-slot="tabs-trigger"
       className={cn(
-        // Base layout
+        // Base layout + semantic tab styling (colors/states via .tab-pill in global.css)
+        "tab-pill",
         "relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap",
         "group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start",
         "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
@@ -68,24 +69,16 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
         "aria-disabled:pointer-events-none aria-disabled:opacity-50",
         // Focus
         "focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2",
-        // --- Default (pill) variant ---
+        // --- Default (pill) variant: structural only ---
         "group-data-[variant=default]/tabs-list:rounded-lg",
         "group-data-[variant=default]/tabs-list:px-4 group-data-[variant=default]/tabs-list:py-1.5",
-        "group-data-[variant=default]/tabs-list:text-sm group-data-[variant=default]/tabs-list:font-medium",
-        "group-data-[variant=default]/tabs-list:text-tab-text",
+        "group-data-[variant=default]/tabs-list:text-sm",
         "group-data-[variant=default]/tabs-list:select-none group-data-[variant=default]/tabs-list:cursor-pointer",
         // Pill transition — background, shadow, color animate smoothly
         "group-data-[variant=default]/tabs-list:transition-[background-color,box-shadow,color,transform]",
         "group-data-[variant=default]/tabs-list:duration-200 group-data-[variant=default]/tabs-list:ease-out",
-        // Hover (inactive)
-        "group-data-[variant=default]/tabs-list:hover:text-tab-hover-text",
         // Active press micro-interaction
         "group-data-[variant=default]/tabs-list:active:scale-[0.97]",
-        // Active (selected) pill
-        "group-data-[variant=default]/tabs-list:data-active:bg-tab-active-bg",
-        "group-data-[variant=default]/tabs-list:data-active:text-tab-active-text",
-        "group-data-[variant=default]/tabs-list:data-active:shadow-sm",
-        "group-data-[variant=default]/tabs-list:data-active:font-semibold",
         // --- Line variant (unchanged) ---
         "group-data-[variant=line]/tabs-list:h-[calc(100%-1px)] group-data-[variant=line]/tabs-list:flex-1",
         "group-data-[variant=line]/tabs-list:rounded-md group-data-[variant=line]/tabs-list:border group-data-[variant=line]/tabs-list:border-transparent",

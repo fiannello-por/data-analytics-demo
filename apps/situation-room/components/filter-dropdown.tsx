@@ -88,11 +88,7 @@ export function FilterDropdown({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
-        className={`flex h-8 items-center gap-1.5 rounded-md border px-2.5 text-xs transition-all select-none cursor-pointer ${
-          hasValues
-            ? 'border-filter-active-border bg-filter-active-bg text-filter-active-text font-medium'
-            : 'border-filter-trigger-border bg-filter-trigger-bg text-filter-trigger-text hover:bg-filter-trigger-hover-bg hover:border-filter-trigger-hover-border'
-        }`}
+        className={hasValues ? 'filter-trigger-active' : 'filter-trigger'}
       >
         <span className="max-w-[140px] truncate">
           {hasValues

@@ -37,7 +37,7 @@ export function ReportContent() {
 
       <div className="w-full px-6 md:px-10 py-8">
         {error && (
-          <div className="rounded-xl bg-negative-bg border border-negative-border px-5 py-4 mb-8">
+          <div className="error-banner mb-8">
             <p className="text-sm text-negative">{error}</p>
           </div>
         )}
@@ -60,7 +60,7 @@ export function ReportContent() {
 
             <Card className="mt-8 bg-surface-elevated">
               <CardHeader>
-                <CardTitle className="text-xs font-medium uppercase tracking-[0.15em] text-heading-overline">
+                <CardTitle className="heading-overline">
                   Category Comparison
                 </CardTitle>
               </CardHeader>

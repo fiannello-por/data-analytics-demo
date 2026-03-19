@@ -30,10 +30,10 @@ export function CategorySection({ data }: CategorySectionProps) {
   return (
     <Card className="bg-surface-elevated overflow-hidden">
       <CardHeader>
-        <CardTitle className="text-lg font-semibold tracking-tight text-heading-primary">
+        <CardTitle className="heading-primary">
           {data.category}
         </CardTitle>
-        <CardDescription className="text-heading-section leading-relaxed">
+        <CardDescription className="heading-section">
           {description}
         </CardDescription>
       </CardHeader>
@@ -41,16 +41,16 @@ export function CategorySection({ data }: CategorySectionProps) {
         <Table>
           <TableHeader>
             <TableRow className="bg-table-header-bg border-table-header-border hover:bg-table-header-bg">
-              <TableHead className="pl-4 text-xs font-medium uppercase tracking-wider text-table-header-text">
+              <TableHead className="pl-4 table-header-cell">
                 Metric
               </TableHead>
-              <TableHead className="text-xs font-medium uppercase tracking-wider text-table-header-text text-right">
+              <TableHead className="table-header-cell text-right">
                 Current
               </TableHead>
-              <TableHead className="hidden sm:table-cell text-xs font-medium uppercase tracking-wider text-table-header-text text-right">
+              <TableHead className="hidden sm:table-cell table-header-cell text-right">
                 Prior YTD
               </TableHead>
-              <TableHead className="pr-4 text-xs font-medium uppercase tracking-wider text-table-header-text text-right">
+              <TableHead className="pr-4 table-header-cell text-right">
                 Change
               </TableHead>
             </TableRow>

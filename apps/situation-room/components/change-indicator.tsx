@@ -27,12 +27,6 @@ export function parseChange(raw: string): ParsedChange {
   return { direction: 'neutral', display: raw };
 }
 
-const directionStyles: Record<ChangeDirection, string> = {
-  positive: 'text-positive bg-positive-bg border border-positive-border',
-  negative: 'text-negative bg-negative-bg border border-negative-border',
-  neutral: 'text-neutral-change bg-neutral-change-bg border border-border-subtle',
-};
-
 const directionArrows: Record<ChangeDirection, string> = {
   positive: '↑',
   negative: '↓',
@@ -48,9 +42,7 @@ export function ChangeIndicator({ value }: ChangeIndicatorProps) {
   const arrow = directionArrows[direction];
 
   return (
-    <span
-      className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md text-xs font-medium tabular-nums ${directionStyles[direction]}`}
-    >
+    <span className="pill-status" data-direction={direction}>
       {arrow && <span>{arrow}</span>}
       {display}
     </span>
