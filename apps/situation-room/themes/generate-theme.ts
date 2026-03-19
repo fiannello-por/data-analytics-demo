@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import Ajv from 'ajv';
 
 // ─── Types ───
 
@@ -272,4 +273,96 @@ export function generateThemeInlineBlock(
 
   lines.push('}');
   return lines.join('\n');
+}
+
+// ─── Validation ───
+
+let _ajvValidate: ReturnType<Ajv['compile']> | null = null;
+
+function getSchemaValidator(): ReturnType<Ajv['compile']> {
+  if (!_ajvValidate) {
+    const schemaPath = join(import.meta.dirname, 'theme.schema.json');
+    const schema = JSON.parse(readFileSync(schemaPath, 'utf-8'));
+    const ajv = new Ajv({ allErrors: true, strict: false });
+    _ajvValidate = ajv.compile(schema);
+  }
+  return _ajvValidate;
+}
+
+export function validateTheme(theme: unknown): string[] {
+  const errors: string[] = [];
+
+  const validate = getSchemaValidator();
+  if (!validate(theme)) {
+    for (const err of validate.errors ?? []) {
+      const path = err.instancePath || '(root)';
+      errors.push(`schema: ${path} ${err.message}`);
+    }
+    return errors;
+  }
+
+  // Layer 2: Semantic validation — refs resolve correctly
+  const t = theme as Theme;
+
+  if (t.colors && t.palette) {
+    for (const [section, entries] of Object.entries(t.colors)) {
+      for (const [key, ref] of Object.entries(
+        entries as Record<string, string>,
+      )) {
+        try {
+          resolvePaletteRef(ref, t.palette);
+        } catch {
+          errors.push(
+            `colors.${section}.${key}: unresolvable palette ref "${ref}"`,
+          );
+        }
+      }
+    }
+  }
+
+  if (t.shadcn && t.colors && t.palette) {
+    for (const [key, ref] of Object.entries(
+      t.shadcn as Record<string, string>,
+    )) {
+      try {
+        resolveColorRef(ref, t.colors, t.palette);
+      } catch {
+        errors.push(`shadcn.${key}: unresolvable color ref "${ref}"`);
+      }
+    }
+  }
+
+  if (t.dashboard && t.colors && t.palette) {
+    for (const [section, entries] of Object.entries(t.dashboard)) {
+      for (const [key, ref] of Object.entries(
+        entries as Record<string, string>,
+      )) {
+        try {
+          resolveColorRef(ref, t.colors, t.palette);
+        } catch {
+          errors.push(
+            `dashboard.${section}.${key}: unresolvable color ref "${ref}"`,
+          );
+        }
+      }
+    }
+  }
+
+  if (t.viz && t.palette) {
+    for (const vizKey of ['categorical', 'sequential', 'diverging'] as const) {
+      if (t.viz[vizKey]) {
+        t.viz[vizKey].forEach((ref: string, i: number) => {
+          try {
+            resolvePaletteRef(ref, t.palette);
+          } catch {
+            errors.push(
+              `viz.${vizKey}[${i}]: unresolvable palette ref "${ref}"`,
+            );
+          }
+        });
+      }
+    }
+  }
+
+  return errors;
 }

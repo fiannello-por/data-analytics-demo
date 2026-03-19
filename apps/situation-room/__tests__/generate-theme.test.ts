@@ -6,6 +6,7 @@ import {
   resolveVizPalette,
   generateCssFromTheme,
   generateThemeInlineBlock,
+  validateTheme,
   type Theme,
 } from '../themes/generate-theme';
 
@@ -298,5 +299,144 @@ describe('generateThemeInlineBlock', () => {
     expect(block).toContain(
       "--font-mono: 'JetBrains Mono', ui-monospace, monospace",
     );
+  });
+});
+
+describe('validateTheme', () => {
+  function validTheme(): Theme {
+    return {
+      name: 'Light',
+      palette: {
+        gray: ['#aaaaaa'],
+        blue: ['#bbbbbb'],
+        green: ['#cccccc'],
+        red: ['#dddddd'],
+        amber: ['#eeeeee'],
+        cyan: ['#ffffff'],
+        white: '#ffffff',
+        black: '#000000',
+        transparent: 'transparent',
+      },
+      colors: {
+        surface: { base: 'gray.0' },
+        text: { primary: 'gray.0' },
+        border: { default: 'gray.0' },
+        accentBrand: { default: 'blue.0' },
+        positive: { default: 'green.0', bg: 'green.0', border: 'green.0' },
+        negative: { default: 'red.0', bg: 'red.0', border: 'red.0' },
+        neutral: { change: 'gray.0', changeBg: 'gray.0' },
+        interactive: { bg: 'blue.0', text: 'white', focusRing: 'blue.0' },
+      },
+      shadcn: {
+        background: 'surface.base',
+        foreground: 'text.primary',
+        card: 'surface.base',
+        cardForeground: 'text.primary',
+        popover: 'surface.base',
+        popoverForeground: 'text.primary',
+        primary: 'accentBrand.default',
+        primaryForeground: 'text.primary',
+        secondary: 'surface.base',
+        secondaryForeground: 'text.primary',
+        muted: 'surface.base',
+        mutedForeground: 'text.primary',
+        accent: 'surface.base',
+        accentForeground: 'text.primary',
+        destructive: 'negative.default',
+        border: 'border.default',
+        input: 'border.default',
+        ring: 'accentBrand.default',
+        sidebar: 'surface.base',
+        sidebarForeground: 'text.primary',
+        sidebarPrimary: 'accentBrand.default',
+        sidebarPrimaryForeground: 'text.primary',
+        sidebarAccent: 'surface.base',
+        sidebarAccentForeground: 'text.primary',
+        sidebarBorder: 'border.default',
+        sidebarRing: 'accentBrand.default',
+      },
+      typography: {
+        fontFamily: { sans: 'Inter' },
+        fontSize: { xs: '0.75rem' },
+        fontWeight: { normal: '400' },
+      },
+      geometry: {
+        radiusBase: '0.375rem',
+        radiusScale: { sm: 0.5 },
+        shadow: { sm: '0 1px 2px rgba(0,0,0,0.05)' },
+      },
+      components: { card: { radius: 'sm' } },
+      dashboard: {
+        filterBar: { bg: 'gray.0' },
+        filterTrigger: { bg: 'gray.0' },
+        filterActive: { bg: 'blue.0' },
+        filterBadge: { bg: 'blue.0' },
+        tab: { rail: 'gray.0' },
+        table: { headerBg: 'gray.0' },
+        heading: { overline: 'gray.0' },
+      },
+      viz: {
+        categorical: ['blue.0', 'green.0', 'red.0'],
+        sequential: ['gray.0', 'blue.0', 'green.0'],
+        diverging: ['red.0', 'gray.0', 'green.0'],
+      },
+    };
+  }
+
+  it('accepts a valid theme', () => {
+    expect(validateTheme(validTheme())).toEqual([]);
+  });
+
+  it('rejects missing required top-level sections', () => {
+    const t = validTheme();
+    delete (t as any).palette;
+    delete (t as any).viz;
+    const errors = validateTheme(t);
+    expect(errors.some((e) => e.includes('palette'))).toBe(true);
+    expect(errors.some((e) => e.includes('viz'))).toBe(true);
+  });
+
+  it('rejects invalid hex in palette', () => {
+    const t = validTheme();
+    t.palette.gray = ['not-a-hex'];
+    const errors = validateTheme(t);
+    expect(errors.some((e) => e.includes('pattern'))).toBe(true);
+  });
+
+  it('rejects missing required shadcn keys', () => {
+    const t = validTheme();
+    delete (t.shadcn as any).background;
+    delete (t.shadcn as any).ring;
+    const errors = validateTheme(t);
+    expect(errors.some((e) => e.includes('background'))).toBe(true);
+    expect(errors.some((e) => e.includes('ring'))).toBe(true);
+  });
+
+  it('rejects negative radius scale values', () => {
+    const t = validTheme();
+    t.geometry.radiusScale.bad = -1;
+    const errors = validateTheme(t);
+    expect(errors.some((e) => e.includes('radiusScale'))).toBe(true);
+  });
+
+  it('rejects viz palette with fewer than 3 entries', () => {
+    const t = validTheme();
+    t.viz.categorical = ['blue.0'];
+    const errors = validateTheme(t);
+    expect(errors.some((e) => e.includes('categorical'))).toBe(true);
+  });
+
+  it('rejects unresolvable palette refs in colors', () => {
+    const t = validTheme();
+    t.colors.surface.base = 'purple.99';
+    const errors = validateTheme(t);
+    expect(errors.some((e) => e.includes('purple'))).toBe(true);
+  });
+
+  it('rejects unresolvable color refs in shadcn', () => {
+    const t = validTheme();
+    t.shadcn.background = 'nonexistent.section';
+    const errors = validateTheme(t);
+    expect(errors.some((e) => e.includes('nonexistent'))).toBe(true);
   });
 });
