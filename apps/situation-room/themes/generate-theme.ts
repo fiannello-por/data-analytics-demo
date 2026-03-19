@@ -117,3 +117,87 @@ export function resolveGeometryRef(
 export function resolveVizPalette(refs: string[], palette: Palette): string[] {
   return refs.map((ref) => resolvePaletteRef(ref, palette));
 }
+
+// ─── CSS Generation ───
+
+export { type Theme };
+
+function kebabCase(str: string): string {
+  return str
+    .replace(/([a-z])([A-Z])/g, '$1-$2')
+    .toLowerCase()
+    .replace(/\s+/g, '-');
+}
+
+function cssVarName(section: string, key: string): string {
+  return `--${kebabCase(section)}-${kebabCase(key)}`;
+}
+
+function shadcnVarName(key: string): string {
+  return `--${kebabCase(key)}`;
+}
+
+export function generateCssFromTheme(theme: Theme): string {
+  const lines: string[] = [];
+  const { palette, colors, shadcn, geometry, dashboard, viz } = theme;
+
+  const selector = theme.name === 'Light' ? ':root' : '.dark';
+  lines.push(`${selector} {`);
+
+  // 1. shadcn tokens — use Set to track emitted var names and avoid duplicates
+  const emitted = new Set<string>();
+  for (const [key, ref] of Object.entries(shadcn)) {
+    const resolved = resolveColorRef(ref, colors, palette);
+    const varName = shadcnVarName(key);
+    lines.push(`  ${varName}: ${resolved};`);
+    emitted.add(varName);
+  }
+
+  // 2. Radius base
+  lines.push(`  --radius: ${geometry.radiusBase};`);
+  emitted.add('--radius');
+
+  // 3. Surface/text/border/accentBrand/status colors from `colors`
+  for (const [section, entries] of Object.entries(colors)) {
+    for (const [key, ref] of Object.entries(entries)) {
+      const resolved = resolvePaletteRef(ref, palette);
+      let varName: string;
+      if (section === 'surface' && key === 'base') {
+        varName = '--surface';
+      } else if (key === 'default') {
+        varName = `--${kebabCase(section)}`;
+      } else {
+        varName = cssVarName(section, key);
+      }
+      // Dedup: skip if already emitted by shadcn (e.g. --border)
+      if (!emitted.has(varName)) {
+        lines.push(`  ${varName}: ${resolved};`);
+        emitted.add(varName);
+      }
+    }
+  }
+
+  // 4. Dashboard tokens
+  for (const [section, entries] of Object.entries(dashboard)) {
+    for (const [key, ref] of Object.entries(entries)) {
+      const resolved = resolveColorRef(ref, colors, palette);
+      const varName = cssVarName(section, key);
+      if (!emitted.has(varName)) {
+        lines.push(`  ${varName}: ${resolved};`);
+        emitted.add(varName);
+      }
+    }
+  }
+
+  // 5. Chart tokens from viz.categorical (--chart-N only, no --viz-N yet)
+  const resolvedCategorical = resolveVizPalette(viz.categorical, palette);
+  resolvedCategorical.forEach((hex, i) => {
+    lines.push(`  --chart-${i + 1}: ${hex};`);
+  });
+
+  // NOTE: Component geometry (--card-radius, --filter-height, etc.) and --viz-N aliases
+  // are NOT emitted here. They will be added in Task 7a after parity verification.
+
+  lines.push('}');
+  return lines.join('\n');
+}

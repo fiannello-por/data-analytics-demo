@@ -4,6 +4,8 @@ import {
   resolveColorRef,
   resolveGeometryRef,
   resolveVizPalette,
+  generateCssFromTheme,
+  type Theme,
 } from '../themes/generate-theme';
 
 const testPalette = {
@@ -120,5 +122,130 @@ describe('resolveVizPalette', () => {
     const vizCategorical = ['blue.3', 'gray.0', 'white'];
     const result = resolveVizPalette(vizCategorical, testPalette);
     expect(result).toEqual(['#3574c4', '#f7f8fa', '#ffffff']);
+  });
+});
+
+describe('generateCssFromTheme', () => {
+  it('generates CSS with correct variable names for a minimal theme', () => {
+    const minimalTheme: Theme = {
+      name: 'Light',
+      palette: {
+        gray: ['#aaa', '#bbb'],
+        blue: ['#ccc'],
+        green: ['#ddd'],
+        red: ['#eee'],
+        amber: ['#fff'],
+        cyan: ['#111'],
+        white: '#ffffff',
+        black: '#000000',
+        transparent: 'transparent',
+      },
+      colors: {
+        surface: { base: 'gray.0', elevated: 'white' },
+        text: { primary: 'gray.1' },
+        border: { default: 'gray.0' },
+        accentBrand: { default: 'blue.0' },
+        positive: { default: 'green.0', bg: 'green.0', border: 'green.0' },
+        negative: { default: 'red.0', bg: 'red.0', border: 'red.0' },
+        neutral: { change: 'gray.1', changeBg: 'gray.0' },
+        interactive: { bg: 'blue.0', text: 'white', focusRing: 'blue.0' },
+      },
+      shadcn: {
+        background: 'surface.base',
+        foreground: 'text.primary',
+        card: 'surface.elevated',
+        cardForeground: 'text.primary',
+        popover: 'surface.elevated',
+        popoverForeground: 'text.primary',
+        primary: 'accentBrand.default',
+        primaryForeground: 'text.primary',
+        secondary: 'surface.base',
+        secondaryForeground: 'text.primary',
+        muted: 'surface.base',
+        mutedForeground: 'text.primary',
+        accent: 'surface.base',
+        accentForeground: 'text.primary',
+        destructive: 'negative.default',
+        border: 'border.default',
+        input: 'border.default',
+        ring: 'accentBrand.default',
+        sidebar: 'surface.base',
+        sidebarForeground: 'text.primary',
+        sidebarPrimary: 'accentBrand.default',
+        sidebarPrimaryForeground: 'text.primary',
+        sidebarAccent: 'surface.base',
+        sidebarAccentForeground: 'text.primary',
+        sidebarBorder: 'border.default',
+        sidebarRing: 'accentBrand.default',
+      },
+      typography: {
+        fontFamily: { sans: 'Inter', mono: 'monospace' },
+        fontSize: { xs: '0.75rem' },
+        fontWeight: { normal: '400', medium: '500' },
+      },
+      geometry: {
+        radiusBase: '0.5rem',
+        radiusScale: { sm: 0.5, md: 1.0 },
+        shadow: { sm: '0 1px 2px rgba(0,0,0,0.05)' },
+      },
+      components: {
+        card: { radius: 'md', shadow: 'sm' },
+        filter: { radius: 'sm', height: '2rem' },
+        tab: { railRadius: 'md', pillRadius: 'sm' },
+        pill: { radius: 'sm' },
+      },
+      dashboard: {
+        filterBar: { bg: 'gray.0', border: 'border.default' },
+        filterTrigger: {
+          bg: 'surface.elevated',
+          border: 'border.default',
+          text: 'text.primary',
+        },
+        filterActive: {
+          bg: 'accentBrand.default',
+          border: 'blue.0',
+          text: 'accentBrand.default',
+        },
+        filterBadge: { bg: 'accentBrand.default', text: 'white' },
+        tab: { rail: 'surface.base', text: 'text.primary' },
+        table: { headerBg: 'surface.base', headerText: 'text.primary' },
+        heading: { overline: 'text.primary', section: 'text.primary' },
+      },
+      viz: {
+        categorical: ['blue.0', 'green.0', 'red.0'],
+        sequential: ['gray.0', 'gray.1', 'blue.0'],
+        diverging: ['red.0', 'gray.0', 'green.0'],
+      },
+    };
+
+    const css = generateCssFromTheme(minimalTheme);
+
+    // Check that it has the :root selector
+    expect(css).toContain(':root {');
+
+    // Check shadcn vars are resolved
+    expect(css).toContain('--background: #aaa');
+    expect(css).toContain('--foreground: #bbb');
+    expect(css).toContain('--primary: #ccc');
+
+    // Check surface vars
+    expect(css).toContain('--surface: #aaa');
+    expect(css).toContain('--surface-elevated: #ffffff');
+
+    // Check radius
+    expect(css).toContain('--radius: 0.5rem');
+
+    // Check chart derivation from viz
+    expect(css).toContain('--chart-1: #ccc');
+    expect(css).toContain('--chart-2: #ddd');
+    expect(css).toContain('--chart-3: #eee');
+
+    // Phase 1 exclusions — these vars don't exist in current CSS
+    expect(css).not.toContain('--viz-1');
+    expect(css).not.toContain('--card-radius');
+    expect(css).not.toContain('--filter-height');
+    // --font-sans and --font-mono live only in @theme inline, not in :root/.dark
+    expect(css).not.toMatch(/^\s+--font-sans:/m);
+    expect(css).not.toMatch(/^\s+--font-mono:/m);
   });
 });
