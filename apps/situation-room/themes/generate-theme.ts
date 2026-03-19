@@ -84,3 +84,32 @@ export function resolveColorRef(
 
   return resolvePaletteRef(paletteRef, palette);
 }
+
+export function resolveGeometryRef(
+  value: string | number,
+  propertyName: string,
+  geometry: Theme['geometry'],
+  typography: Theme['typography'],
+): string {
+  const strValue = String(value);
+  const lowerProp = propertyName.toLowerCase();
+
+  if (lowerProp.includes('radius')) {
+    const scale = geometry.radiusScale[strValue];
+    if (scale !== undefined) {
+      return `calc(${geometry.radiusBase} * ${scale})`;
+    }
+  }
+
+  if (lowerProp.includes('shadow')) {
+    const shadow = geometry.shadow[strValue];
+    if (shadow !== undefined) return shadow;
+  }
+
+  if (lowerProp.includes('weight')) {
+    const weight = typography.fontWeight[strValue];
+    if (weight !== undefined) return weight;
+  }
+
+  return strValue;
+}

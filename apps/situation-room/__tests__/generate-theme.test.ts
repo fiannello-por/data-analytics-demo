@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { resolvePaletteRef, resolveColorRef } from '../themes/generate-theme';
+import {
+  resolvePaletteRef,
+  resolveColorRef,
+  resolveGeometryRef,
+} from '../themes/generate-theme';
 
 const testPalette = {
   gray: ['#f7f8fa', '#eef1f5', '#e4e8ee', '#dce0e8'],
@@ -66,5 +70,46 @@ describe('resolveColorRef', () => {
     expect(() =>
       resolveColorRef('nonexistent.99', testColors, testPalette),
     ).toThrow();
+  });
+});
+
+const testGeometry = {
+  radiusBase: '0.375rem',
+  radiusScale: { sm: 0.6, md: 0.8, lg: 1.0 },
+  shadow: {
+    sm: '0 1px 2px rgba(0,0,0,0.05)',
+    md: '0 4px 6px -1px rgba(0,0,0,0.1)',
+  },
+};
+
+const testTypography = {
+  fontFamily: { sans: 'Inter, system-ui, sans-serif' },
+  fontSize: { xs: '0.75rem' },
+  fontWeight: { normal: '400', medium: '500' },
+};
+
+describe('resolveGeometryRef', () => {
+  it('resolves radius ref "md" for property named "radius"', () => {
+    expect(
+      resolveGeometryRef('md', 'radius', testGeometry, testTypography),
+    ).toBe('calc(0.375rem * 0.8)');
+  });
+
+  it('resolves shadow ref "sm" for property named "shadow"', () => {
+    expect(
+      resolveGeometryRef('sm', 'shadow', testGeometry, testTypography),
+    ).toBe('0 1px 2px rgba(0,0,0,0.05)');
+  });
+
+  it('resolves weight ref "medium" for property named "headerWeight"', () => {
+    expect(
+      resolveGeometryRef('medium', 'headerWeight', testGeometry, testTypography),
+    ).toBe('500');
+  });
+
+  it('passes through literal CSS values like "2rem"', () => {
+    expect(
+      resolveGeometryRef('2rem', 'height', testGeometry, testTypography),
+    ).toBe('2rem');
   });
 });
