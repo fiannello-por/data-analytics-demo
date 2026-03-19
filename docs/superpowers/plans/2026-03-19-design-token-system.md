@@ -55,16 +55,16 @@
 - [ ] **Step 1: Install dev dependencies**
 
 ```bash
-cd apps/situation-room && pnpm add -D tsx chokidar concurrently
+cd apps/situation-room && pnpm add -D tsx chokidar concurrently ajv
 ```
 
 - [ ] **Step 2: Verify installation**
 
 ```bash
-cd apps/situation-room && pnpm ls tsx chokidar concurrently
+cd apps/situation-room && pnpm ls tsx chokidar concurrently ajv
 ```
 
-Expected: All three packages listed with versions.
+Expected: All four packages listed with versions.
 
 - [ ] **Step 3: Add npm scripts to package.json**
 
@@ -336,7 +336,7 @@ Create `apps/situation-room/themes/light.json`. The values below are extracted f
   },
 
   "typography": {
-    "fontFamily": { "sans": "Inter, system-ui, sans-serif", "mono": "JetBrains Mono, ui-monospace, monospace" },
+    "fontFamily": { "sans": "Inter, system-ui, sans-serif", "mono": "'JetBrains Mono', ui-monospace, monospace" },
     "fontSize":   { "xs": "0.75rem", "sm": "0.875rem", "base": "1rem", "lg": "1.125rem", "xl": "1.25rem", "2xl": "1.5rem" },
     "fontWeight": { "normal": "400", "medium": "500", "semibold": "600", "bold": "700" }
   },
@@ -359,14 +359,10 @@ Create `apps/situation-room/themes/light.json`. The values below are extracted f
   },
 
   "dashboard": {
-    "filterBar": {
-      "bg": "gray.1", "border": "border.default",
-      "triggerBg": "surface.elevated", "triggerBorder": "border.default",
-      "triggerText": "text.secondary",
-      "triggerHoverBg": "surface.sunken", "triggerHoverBorder": "border.strong",
-      "activeBg": "accentBrand.subtle", "activeBorder": "blue.4", "activeText": "accentBrand.hover",
-      "badgeBg": "accentBrand.default", "badgeText": "text.inverse"
-    },
+    "filterBar":     { "bg": "gray.1", "border": "border.default" },
+    "filterTrigger": { "bg": "surface.elevated", "border": "border.default", "text": "text.secondary", "hoverBg": "surface.sunken", "hoverBorder": "border.strong" },
+    "filterActive":  { "bg": "accentBrand.subtle", "border": "blue.4", "text": "accentBrand.hover" },
+    "filterBadge":   { "bg": "accentBrand.default", "text": "text.inverse" },
     "table": {
       "headerBg": "surface.sunken", "headerText": "text.secondary", "headerBorder": "border.default",
       "rowBg": "transparent", "rowAltBg": "surface.base",
@@ -375,7 +371,7 @@ Create `apps/situation-room/themes/light.json`. The values below are extracted f
       "cellText": "text.primary", "cellSecondary": "text.secondary"
     },
     "tab": {
-      "railBg": "gray.5", "text": "text.tertiary", "hoverText": "text.secondary",
+      "rail": "gray.5", "text": "text.tertiary", "hoverText": "text.secondary",
       "activeBg": "surface.elevated", "activeText": "text.primary"
     },
     "heading": { "primary": "text.primary", "section": "text.secondary", "overline": "text.tertiary" }
@@ -491,7 +487,7 @@ Create `apps/situation-room/themes/dark.json`. Same schema as `light.json`, but 
   },
 
   "typography": {
-    "fontFamily": { "sans": "Inter, system-ui, sans-serif", "mono": "JetBrains Mono, ui-monospace, monospace" },
+    "fontFamily": { "sans": "Inter, system-ui, sans-serif", "mono": "'JetBrains Mono', ui-monospace, monospace" },
     "fontSize":   { "xs": "0.75rem", "sm": "0.875rem", "base": "1rem", "lg": "1.125rem", "xl": "1.25rem", "2xl": "1.5rem" },
     "fontWeight": { "normal": "400", "medium": "500", "semibold": "600", "bold": "700" }
   },
@@ -514,14 +510,10 @@ Create `apps/situation-room/themes/dark.json`. Same schema as `light.json`, but 
   },
 
   "dashboard": {
-    "filterBar": {
-      "bg": "surface.sunken", "border": "border.default",
-      "triggerBg": "surface.base", "triggerBorder": "border.default",
-      "triggerText": "text.secondary",
-      "triggerHoverBg": "surface.elevated", "triggerHoverBorder": "border.strong",
-      "activeBg": "accentBrand.subtle", "activeBorder": "blue.3", "activeText": "accentBrand.default",
-      "badgeBg": "accentBrand.default", "badgeText": "surface.base"
-    },
+    "filterBar":     { "bg": "surface.sunken", "border": "border.default" },
+    "filterTrigger": { "bg": "surface.base", "border": "border.default", "text": "text.secondary", "hoverBg": "surface.elevated", "hoverBorder": "border.strong" },
+    "filterActive":  { "bg": "accentBrand.subtle", "border": "blue.3", "text": "accentBrand.default" },
+    "filterBadge":   { "bg": "accentBrand.default", "text": "surface.base" },
     "table": {
       "headerBg": "surface.elevated", "headerText": "text.secondary", "headerBorder": "border.default",
       "rowBg": "transparent", "rowAltBg": "gray.3",
@@ -530,7 +522,7 @@ Create `apps/situation-room/themes/dark.json`. Same schema as `light.json`, but 
       "cellText": "text.primary", "cellSecondary": "text.secondary"
     },
     "tab": {
-      "railBg": "gray.1", "text": "text.tertiary", "hoverText": "text.secondary",
+      "rail": "gray.1", "text": "text.tertiary", "hoverText": "text.secondary",
       "activeBg": "surface.elevated", "activeText": "text.primary"
     },
     "heading": { "primary": "text.primary", "section": "text.secondary", "overline": "text.tertiary" }
@@ -1001,7 +993,13 @@ describe('generateCssFromTheme', () => {
         card: { radius: 'md', shadow: 'sm' },
       },
       dashboard: {
-        tab: { railBg: 'surface.base', text: 'text.primary' },
+        filterBar: { bg: 'gray.0', border: 'border.default' },
+        filterTrigger: { bg: 'surface.elevated', border: 'border.default', text: 'text.primary' },
+        filterActive: { bg: 'accentBrand.default', border: 'blue.0', text: 'accentBrand.default' },
+        filterBadge: { bg: 'accentBrand.default', text: 'white' },
+        tab: { rail: 'surface.base', text: 'text.primary' },
+        table: { headerBg: 'surface.base', headerText: 'text.primary' },
+        heading: { overline: 'text.primary', section: 'text.primary' },
       },
       viz: {
         categorical: ['blue.0', 'green.0', 'red.0'],
@@ -1026,15 +1024,20 @@ describe('generateCssFromTheme', () => {
 
     // Check radius
     expect(css).toContain('--radius: 0.5rem');
-    expect(css).toContain('--card-radius: calc(0.5rem * 1)');
+    // Note: --card-radius NOT emitted in Phase 1 (component geometry is Task 7b)
 
     // Check chart derivation from viz
     expect(css).toContain('--chart-1: #ccc');
     expect(css).toContain('--chart-2: #ddd');
     expect(css).toContain('--chart-3: #eee');
 
-    // Check viz vars
-    expect(css).toContain('--viz-1: #ccc');
+    // Phase 1 exclusions — these vars don't exist in current CSS
+    expect(css).not.toContain('--viz-1');
+    expect(css).not.toContain('--card-radius');
+    expect(css).not.toContain('--filter-height');
+    // --font-sans and --font-mono live only in @theme inline, not in :root/.dark
+    expect(css).not.toMatch(/^\s+--font-sans:/m);
+    expect(css).not.toMatch(/^\s+--font-mono:/m);
   });
 });
 ```
@@ -1114,25 +1117,16 @@ export function generateCssFromTheme(theme: Theme): string {
     }
   }
 
-  // 5. Component geometry tokens
-  for (const [comp, props] of Object.entries(components)) {
-    for (const [prop, value] of Object.entries(props)) {
-      const resolved = resolveGeometryRef(value, prop, geometry, typography);
-      lines.push(`  --${kebabCase(comp)}-${kebabCase(prop)}: ${resolved};`);
-    }
-  }
-
-  // 6. Chart + Viz tokens from viz.categorical
+  // 5. Chart tokens from viz.categorical (--chart-N only, no --viz-N alias yet)
   const resolvedCategorical = resolveVizPalette(viz.categorical, palette);
   resolvedCategorical.forEach((hex, i) => {
     lines.push(`  --chart-${i + 1}: ${hex};`);
-    lines.push(`  --viz-${i + 1}: ${hex};`);
   });
 
-  // 7. Typography
-  for (const [key, value] of Object.entries(typography.fontFamily)) {
-    lines.push(`  --font-${key}: ${value};`);
-  }
+  // NOTE: Component geometry (--card-radius, --filter-height, etc.) and --viz-N aliases
+  // are NOT emitted here. They don't exist in the current CSS and will be added in Task 7b
+  // after parity verification passes in Task 6. --font-* vars are also not emitted in :root
+  // because the current CSS only defines them in @theme inline.
 
   lines.push('}');
 
@@ -1140,7 +1134,7 @@ export function generateCssFromTheme(theme: Theme): string {
 }
 ```
 
-**Note:** The above is a starting implementation. The implementer must verify that every CSS variable name in the generated output matches what the current `global.css` uses. Special cases: `surface.base` → `--surface` (not `--surface-base`); `key === 'default'` → `--{section}` (e.g. `accentBrand.default` → `--accent-brand`, `border.default` → `--border`). The `neutral` section uses keys `change` and `changeBg`, generating `--neutral-change` and `--neutral-change-bg` — matching the current CSS exactly.
+**Note:** The above generates ONLY the variables that exist in the current `global.css`. This is intentional — the first generated output must be byte-identical to the current CSS. Special cases: `surface.base` → `--surface` (not `--surface-base`); `key === 'default'` → `--{section}` (e.g. `accentBrand.default` → `--accent-brand`, `border.default` → `--border`). The `neutral` section uses keys `change` and `changeBg`, generating `--neutral-change` and `--neutral-change-bg`. Component geometry vars (`--card-radius`, `--filter-height`, etc.), `--viz-N` aliases, and `--font-*` in `:root` are added later in Task 8 after parity is verified.
 
 - [ ] **Step 22: Run tests to verify they pass**
 
@@ -1165,41 +1159,36 @@ Add to `__tests__/generate-theme.test.ts`:
 import { generateThemeInlineBlock } from '../themes/generate-theme';
 
 describe('generateThemeInlineBlock', () => {
+  const baseOpts = {
+    geometry: { radiusBase: '0.375rem', radiusScale: { sm: 0.6 }, shadow: {} },
+    typography: { fontFamily: { sans: 'Inter, system-ui, sans-serif', mono: "'JetBrains Mono', ui-monospace, monospace" } },
+  };
+
   it('maps color vars to --color- prefix', () => {
-    const vars = ['--surface', '--surface-elevated', '--text-primary', '--background', '--chart-1', '--viz-1'];
-    const block = generateThemeInlineBlock(vars, { radiusBase: '0.375rem', radiusScale: { sm: 0.6 }, shadow: {} });
+    const vars = ['--surface', '--surface-elevated', '--text-primary', '--background', '--chart-1'];
+    const block = generateThemeInlineBlock(vars, baseOpts);
     expect(block).toContain('--color-surface: var(--surface)');
     expect(block).toContain('--color-surface-elevated: var(--surface-elevated)');
     expect(block).toContain('--color-text-primary: var(--text-primary)');
     expect(block).toContain('--color-background: var(--background)');
     expect(block).toContain('--color-chart-1: var(--chart-1)');
-    expect(block).toContain('--color-viz-1: var(--viz-1)');
   });
 
   it('maps radius scale to calc expressions', () => {
-    const vars: string[] = [];
-    const block = generateThemeInlineBlock(vars, { radiusBase: '0.375rem', radiusScale: { sm: 0.6 }, shadow: {} });
+    const block = generateThemeInlineBlock([], baseOpts);
     expect(block).toContain('--radius-sm: calc(var(--radius) * 0.6)');
   });
 
-  it('maps component radius vars to --radius- prefix', () => {
-    const vars = ['--card-radius', '--filter-radius'];
-    const block = generateThemeInlineBlock(vars, { radiusBase: '0.375rem', radiusScale: {}, shadow: {} });
-    expect(block).toContain('--radius-card: var(--card-radius)');
-    expect(block).toContain('--radius-filter: var(--filter-radius)');
-  });
-
-  it('maps shadow vars to --shadow- prefix', () => {
-    const vars = ['--card-shadow'];
-    const block = generateThemeInlineBlock(vars, { radiusBase: '0.375rem', radiusScale: {}, shadow: {} });
-    expect(block).toContain('--shadow-card: var(--card-shadow)');
-  });
-
-  it('maps font vars to --font- prefix', () => {
-    const vars = ['--font-sans', '--font-mono'];
-    const block = generateThemeInlineBlock(vars, { radiusBase: '0.375rem', radiusScale: {}, shadow: {} });
+  it('emits --font-sans as var(--font-sans) for Next.js delegation', () => {
+    const block = generateThemeInlineBlock([], baseOpts);
     expect(block).toContain('--font-sans: var(--font-sans)');
-    expect(block).toContain('--font-mono: var(--font-mono)');
+    // Must NOT hardcode the font stack — Next.js injects the optimized value
+    expect(block).not.toContain('--font-sans: Inter');
+  });
+
+  it('emits --font-mono as literal font stack', () => {
+    const block = generateThemeInlineBlock([], baseOpts);
+    expect(block).toContain("--font-mono: 'JetBrains Mono', ui-monospace, monospace");
   });
 });
 ```
@@ -1209,40 +1198,30 @@ describe('generateThemeInlineBlock', () => {
 Add to `themes/generate-theme.ts`:
 
 ```typescript
+interface ThemeInlineOpts {
+  geometry: { radiusBase: string; radiusScale: Record<string, number>; shadow: Record<string, string> };
+  typography: { fontFamily: Record<string, string> };
+}
+
 export function generateThemeInlineBlock(
   allVarNames: string[],
-  geometry: { radiusBase: string; radiusScale: Record<string, number>; shadow: Record<string, string> },
+  opts: ThemeInlineOpts,
 ): string {
   const lines: string[] = ['@theme inline {'];
 
-  // Color vars: everything except --radius*, --font-*, and component geometry
+  // Color vars → --color-{name}: var(--{name})
+  // Match every var except --radius (handled separately)
   const colorVarPrefixes = [
     '--surface', '--text-', '--border', '--positive', '--negative',
     '--warning', '--info', '--neutral', '--interactive', '--filter-', '--table-',
-    '--tab-', '--heading-', '--viz-', '--chart-', '--accent',
+    '--tab-', '--heading-', '--chart-', '--accent',
     // shadcn vars
     '--background', '--foreground', '--card', '--popover', '--primary',
     '--secondary', '--muted', '--destructive', '--input', '--ring', '--sidebar',
   ];
 
   for (const varName of allVarNames) {
-    if (varName === '--radius' || varName.startsWith('--font-')) continue;
-
-    // Component radius → --radius-{component}
-    if (varName.endsWith('-radius')) {
-      const component = varName.replace('--', '').replace('-radius', '');
-      lines.push(`  --radius-${component}: var(${varName});`);
-      continue;
-    }
-
-    // Component shadow → --shadow-{component}
-    if (varName.endsWith('-shadow')) {
-      const component = varName.replace('--', '').replace('-shadow', '');
-      lines.push(`  --shadow-${component}: var(${varName});`);
-      continue;
-    }
-
-    // Color vars → --color-{name}
+    if (varName === '--radius') continue;
     if (colorVarPrefixes.some(prefix => varName.startsWith(prefix))) {
       const name = varName.replace('--', '');
       lines.push(`  --color-${name}: var(${varName});`);
@@ -1250,15 +1229,22 @@ export function generateThemeInlineBlock(
   }
 
   // Radius scale
-  for (const [name, multiplier] of Object.entries(geometry.radiusScale)) {
+  for (const [name, multiplier] of Object.entries(opts.geometry.radiusScale)) {
     lines.push(`  --radius-${name}: calc(var(--radius) * ${multiplier});`);
   }
 
-  // Font vars
-  for (const varName of allVarNames) {
-    if (varName.startsWith('--font-')) {
-      const name = varName.replace('--', '');
-      lines.push(`  --${name}: var(${varName});`);
+  // Font families — emitted from typography, not from :root vars
+  // (current CSS defines these only in @theme inline, not in :root)
+  // Special case: --font-sans uses var(--font-sans) to delegate to Next.js font optimization.
+  // Next.js injects a --font-sans CSS custom property with its optimized font; @theme inline
+  // just re-exports it. Other font families are emitted as literals.
+  for (const [key, value] of Object.entries(opts.typography.fontFamily)) {
+    if (key === 'sans') {
+      // Delegate to Next.js-provided var — do NOT hardcode the font stack
+      lines.push(`  --font-${key}: var(--font-${key});`);
+    } else {
+      // Literal font stack — wrap multi-word names in single quotes for CSS
+      lines.push(`  --font-${key}: ${value};`);
     }
   }
 
@@ -1266,6 +1252,8 @@ export function generateThemeInlineBlock(
   return lines.join('\n');
 }
 ```
+
+**Note:** In Phase 1 (parity), `allVarNames` comes from the union of both theme `:root` and `.dark` blocks. Since Phase 1 does not emit `--viz-N`, `--card-radius`, `--font-*` etc. in `:root`/`.dark`, they won't appear in `allVarNames` and won't get `@theme inline` entries — matching the current CSS's `@theme inline` exactly. When Phase 2 (Task 7b) adds new vars to the theme blocks, they automatically get picked up by the prefix matching.
 
 - [ ] **Step 26: Run tests to verify they pass**
 
@@ -1282,7 +1270,7 @@ git commit -m "feat(tokens): add @theme inline block generation with tests"
 
 ### Part G: Theme Validation
 
-The JSON Schema from Task 2 is documentation. This step implements the real validation that runs on every generation. Tests first.
+Validation has two layers: (1) JSON Schema validation via `ajv` using `theme.schema.json` from Task 2, and (2) semantic validation that schemas can't express (ref resolution, cross-section consistency). Both run on every generation. Tests first.
 
 - [ ] **Step 28: Write failing tests for validateTheme**
 
@@ -1303,7 +1291,7 @@ describe('validateTheme', () => {
       typography: { fontFamily: { sans: 'Inter' }, fontSize: { xs: '0.75rem' }, fontWeight: { normal: '400' } },
       geometry: { radiusBase: '0.375rem', radiusScale: { sm: 0.5 }, shadow: { sm: '0 1px 2px rgba(0,0,0,0.05)' } },
       components: { card: { radius: 'sm' } },
-      dashboard: { tab: { railBg: 'surface.base' } },
+      dashboard: { filterBar: { bg: 'gray.0' }, filterTrigger: { bg: 'gray.0' }, filterActive: { bg: 'blue.0' }, filterBadge: { bg: 'blue.0' }, tab: { rail: 'gray.0' }, table: { headerBg: 'gray.0' }, heading: { overline: 'gray.0' } },
       viz: { categorical: ['blue.0', 'green.0', 'red.0'], sequential: ['gray.0', 'blue.0', 'green.0'], diverging: ['red.0', 'gray.0', 'green.0'] },
     };
   }
@@ -1325,7 +1313,7 @@ describe('validateTheme', () => {
     const t = validTheme();
     t.palette.gray = ['not-a-hex'];
     const errors = validateTheme(t);
-    expect(errors.some(e => e.includes('hex'))).toBe(true);
+    expect(errors.some(e => e.includes('pattern'))).toBe(true);
   });
 
   it('rejects missing required shadcn keys', () => {
@@ -1378,75 +1366,36 @@ cd apps/situation-room && pnpm test -- __tests__/generate-theme.test.ts
 Add to `themes/generate-theme.ts`:
 
 ```typescript
-const REQUIRED_SECTIONS = ['name', 'palette', 'colors', 'shadcn', 'typography', 'geometry', 'components', 'dashboard', 'viz'] as const;
+import Ajv from 'ajv';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
-const REQUIRED_SHADCN_KEYS = [
-  'background', 'foreground', 'card', 'cardForeground',
-  'popover', 'popoverForeground', 'primary', 'primaryForeground',
-  'secondary', 'secondaryForeground', 'muted', 'mutedForeground',
-  'accent', 'accentForeground', 'destructive',
-  'border', 'input', 'ring',
-] as const;
+let _ajvValidate: ReturnType<Ajv['compile']> | null = null;
 
-const HEX_RE = /^#[0-9a-fA-F]{6}$/;
+function getSchemaValidator(): ReturnType<Ajv['compile']> {
+  if (!_ajvValidate) {
+    const schemaPath = join(import.meta.dirname, 'theme.schema.json');
+    const schema = JSON.parse(readFileSync(schemaPath, 'utf-8'));
+    const ajv = new Ajv({ allErrors: true });
+    _ajvValidate = ajv.compile(schema);
+  }
+  return _ajvValidate;
+}
 
 export function validateTheme(theme: any): string[] {
   const errors: string[] = [];
 
-  // 1. Required top-level sections
-  for (const key of REQUIRED_SECTIONS) {
-    if (theme[key] === undefined || theme[key] === null) {
-      errors.push(`Missing required section: "${key}"`);
+  // Layer 1: JSON Schema validation (structure, types, hex patterns, required fields)
+  const validate = getSchemaValidator();
+  if (!validate(theme)) {
+    for (const err of validate.errors ?? []) {
+      const path = err.instancePath || '(root)';
+      errors.push(`schema: ${path} ${err.message}`);
     }
-  }
-  if (errors.length > 0) return errors; // Can't validate further without structure
-
-  // 2. Palette: hex strings or arrays of hex strings
-  if (theme.palette && typeof theme.palette === 'object') {
-    for (const [key, val] of Object.entries(theme.palette)) {
-      if (key === 'transparent') continue;
-      if (Array.isArray(val)) {
-        val.forEach((v, i) => {
-          if (typeof v !== 'string' || !HEX_RE.test(v)) {
-            errors.push(`palette.${key}[${i}]: "${v}" is not a valid hex color`);
-          }
-        });
-      } else if (typeof val === 'string') {
-        if (!HEX_RE.test(val)) {
-          errors.push(`palette.${key}: "${val}" is not a valid hex color`);
-        }
-      }
-    }
+    return errors; // Can't validate refs if structure is invalid
   }
 
-  // 3. Required shadcn keys
-  if (theme.shadcn) {
-    for (const key of REQUIRED_SHADCN_KEYS) {
-      if (!theme.shadcn[key]) {
-        errors.push(`shadcn: missing required key "${key}"`);
-      }
-    }
-  }
-
-  // 4. Geometry constraints
-  if (theme.geometry) {
-    if (theme.geometry.radiusScale) {
-      for (const [name, val] of Object.entries(theme.geometry.radiusScale)) {
-        if (typeof val !== 'number' || val <= 0) {
-          errors.push(`geometry.radiusScale.${name}: must be a positive number, got ${val}`);
-        }
-      }
-    }
-  }
-
-  // 5. Viz palette minimums
-  if (theme.viz) {
-    for (const key of ['categorical', 'sequential', 'diverging'] as const) {
-      if (theme.viz[key] && theme.viz[key].length < 3) {
-        errors.push(`viz.${key}: must have at least 3 entries, got ${theme.viz[key].length}`);
-      }
-    }
-  }
+  // Layer 2: Semantic validation (ref resolution — schemas can't express this)
 
   // 6. Validate all refs actually resolve (catches typos early)
   if (theme.colors && theme.palette) {
@@ -1509,11 +1458,11 @@ git commit -m "feat(tokens): add comprehensive theme validation with tests"
 Add to `themes/generate-theme.ts` the main orchestration code.
 
 **Critical design decisions:**
-- `generate()` **throws** on errors instead of calling `process.exit(1)`. This is essential: `process.exit()` terminates the entire Node process, which means the watcher would die on the first bad JSON edit. By throwing, the watcher's try/catch can log the error and keep running, preserving the previous `generated-theme.css`.
-- Only `main()` calls `process.exit(1)` in one-shot mode (no `--watch`) after catching a thrown error.
-- The script reads exactly two theme files: `light.json` (→ `:root`) and `dark.json` (→ `.dark`). No dynamic discovery.
-- Variable names for `@theme inline` are merged from **both** themes using a `Set`, so any variable present in either theme is registered with Tailwind.
-- Geometry for the `@theme inline` radius scale comes from the Light theme (the base theme).
+- **Build mode** (`pnpm theme:generate`): validate → generate → write. On any error, throw and exit with code 1. Hard failure is correct here — CI and `prebuild` should not silently produce bad CSS.
+- **Watch mode** (`pnpm theme:watch`): same pipeline, but errors are caught and logged. The previous `generated-theme.css` is preserved on disk so the running dev server keeps working. The watcher stays alive and regenerates on the next save. `process.exit(1)` is **never** called in watch mode.
+- The script reads exactly two theme files: `light.json` (→ `:root`) and `dark.json` (→ `.dark`). No dynamic discovery. The system is explicitly constrained to these two themes.
+- Variable names for `@theme inline` are computed from the **union** of both theme objects' generated var inventories (extracted from the CSS output of both themes via regex). This ensures any variable present in either theme is registered with Tailwind, making the inline block resilient to theme divergence.
+- Typography and geometry for the `@theme inline` come from the Light theme (the base theme).
 
 ```typescript
 class ThemeGenerationError extends Error {
@@ -1560,10 +1509,10 @@ function generate(themesDir: string, outputPath: string): void {
     }
   }
 
-  // Use Light theme geometry for @theme inline (base theme)
+  // Use Light theme geometry + typography for @theme inline (base theme)
   const inlineBlock = generateThemeInlineBlock(
     [...varSet],
-    lightTheme.geometry,
+    { geometry: lightTheme.geometry, typography: lightTheme.typography },
   );
 
   const output = [
@@ -1664,7 +1613,7 @@ git commit -m "feat(tokens): add main script with file I/O and watch mode"
 **Files:**
 - None modified (verification only). If mismatches are found, go back and fix the theme JSON files before proceeding.
 
-This task verifies that the generated CSS produces **byte-identical** variable values to the current hand-written CSS. Because Tasks 3–4 include palette entries for every hex value in `global.css`, there should be zero differences. If any are found, the JSON is wrong — fix it, don't add workarounds.
+This task verifies that the generated CSS is **identical** to the current hand-written CSS for all existing variables. Phase 1 generation emits only variables that exist in the current `global.css` — no new vars, no missing vars, no different values. If any discrepancy is found, fix the theme JSON, not the generator.
 
 - [ ] **Step 1: Generate CSS**
 
@@ -1676,19 +1625,22 @@ Expected: `✓ Generated app/generated-theme.css`
 
 - [ ] **Step 2: Extract and diff variable values**
 
-Extract all `--var: value` pairs from both the current `global.css` (`:root` and `.dark` blocks) and the generated `generated-theme.css` (`:root` and `.dark` blocks). Compare them. Every variable name and value in the current CSS must appear identically in the generated output.
+Extract all `--var: value` pairs from the current `global.css` `:root`, `.dark`, and `@theme inline` blocks AND from `generated-theme.css`. Compare them. There should be **zero** differences — no extra vars, no missing vars, no value mismatches.
 
 ```bash
-# Quick diff approach: extract sorted var declarations from both files
+# Extract sorted var declarations from both files
 cd apps/situation-room
 grep -oP '\-\-[\w-]+:\s*[^;]+' app/global.css | sort > /tmp/current-vars.txt
 grep -oP '\-\-[\w-]+:\s*[^;]+' app/generated-theme.css | sort > /tmp/generated-vars.txt
 diff /tmp/current-vars.txt /tmp/generated-vars.txt
 ```
 
-Expected: The diff shows **only** additions (new vars like `--viz-*`, `--font-*`, `--card-radius`, `--filter-height`, etc.) and the `--neutral-change`/`--neutral-change-bg` vars that match their current CSS counterparts. There should be **zero** cases where a variable exists in both files with different values.
+Expected: **Empty diff.** If there are ANY differences — extra vars in generated output, missing vars, or value mismatches — **stop**. Go back to the theme JSON or the generator and fix the source of the discrepancy. Do not proceed until the diff is clean.
 
-If there ARE value mismatches: **stop**. Go back to `light.json` or `dark.json` and fix the palette or ref that produces the wrong value. Do not proceed until the diff is clean.
+**Known items to watch for:**
+- Duplicate `--border` declarations: the shadcn loop emits `--border` (from `shadcn.border → border.default`) and the colors loop also emits `--border` (from `colors.border.default` via `key === 'default'`). Fix: use a `Set<string>` of already-emitted var names; skip if already present. The shadcn block runs first, so the colors loop should skip `--border`.
+- `@theme inline` font entries must match current CSS exactly (e.g. `--font-mono` may use an inline value rather than `var()`)
+- Variable ordering may differ from current CSS — sort both sides before comparing values
 
 - [ ] **Step 3: Start dev server and visually verify**
 
@@ -1829,6 +1781,111 @@ Expected: All tests pass.
 ```bash
 git add apps/situation-room/app/global.css
 git commit -m "feat(tokens): replace hand-written CSS vars with generated import + component classes"
+```
+
+---
+
+## Task 7b: Extend Generator with Phase 2 Variables
+
+**Files:**
+- Modify: `apps/situation-room/themes/generate-theme.ts`
+- Modify: `apps/situation-room/__tests__/generate-theme.test.ts`
+
+Now that Task 6 has confirmed byte-level parity with the current CSS, extend `generateCssFromTheme` to emit additional variables that don't exist in the current CSS but are needed by component migrations (Tasks 8-18). These vars are NEW — they won't break parity because `global.css` has already been switched to use the generated import.
+
+- [ ] **Step 1: Add component geometry vars to generateCssFromTheme**
+
+After the chart tokens section (section 5), add a new section 6 that emits component-resolved geometry:
+
+```typescript
+  // 6. Component-resolved geometry (NEW — not in original CSS)
+  if (theme.components) {
+    for (const [comp, config] of Object.entries(theme.components)) {
+      if (config.radius) {
+        const resolvedRadius = `calc(${radiusBase} * ${radiusScale[config.radius]})`;
+        lines.push(`  --${kebabCase(comp)}-radius: ${resolvedRadius};`);
+      }
+      if (config.shadow) {
+        lines.push(`  --${kebabCase(comp)}-shadow: ${shadow[config.shadow]};`);
+      }
+    }
+  }
+```
+
+- [ ] **Step 2: Add --viz-N aliases**
+
+After the component geometry section, add `--viz-N` aliases that mirror `--chart-N`:
+
+```typescript
+  // 7. --viz-N aliases for chart colors (NEW — convenience aliases)
+  resolvedCategorical.forEach((hex, i) => {
+    lines.push(`  --viz-${i + 1}: ${hex};`);
+  });
+```
+
+- [ ] **Step 3: Add --filter-height**
+
+Emit `--filter-height` from component config (or hardcode `2rem` if not in JSON):
+
+```typescript
+  // 8. Additional component tokens
+  lines.push(`  --filter-height: 2rem;`);
+```
+
+- [ ] **Step 4: Update @theme inline to include new vars**
+
+The `generateThemeInlineBlock` already picks up new vars from the merged var set. Since the new vars (`--viz-*`, `--card-radius`, `--filter-height`) will now appear in `:root`/`.dark`, they'll be included in `allVarNames` and get `@theme inline` entries automatically via prefix matching. Verify this works by checking the generated output includes entries like:
+- `--color-viz-1: var(--viz-1);` (matched by `'--viz'` prefix — add `'--viz'` to `colorVarPrefixes`)
+- `--radius-card: var(--card-radius);` (needs special handling or a new prefix)
+- `--shadow-card: var(--card-shadow);` (needs special handling or a new prefix)
+
+Add to `colorVarPrefixes`: `'--viz'`
+
+Add component geometry mapping after the font entries in `generateThemeInlineBlock`:
+
+```typescript
+  // Component-resolved geometry → Tailwind utilities
+  for (const varName of allVarNames) {
+    if (varName.match(/^--\w+-radius$/)) {
+      const name = varName.replace('--', '').replace('-radius', '');
+      lines.push(`  --radius-${name}: var(${varName});`);
+    }
+    if (varName.match(/^--\w+-shadow$/)) {
+      const name = varName.replace('--', '').replace('-shadow', '');
+      lines.push(`  --shadow-${name}: var(${varName});`);
+    }
+  }
+```
+
+- [ ] **Step 5: Add tests for new vars**
+
+```typescript
+describe('Phase 2 vars', () => {
+  it('emits --viz-N aliases', () => {
+    const css = generateCssFromTheme(minimalTheme);
+    expect(css).toContain('--viz-1: #ccc');
+    expect(css).toContain('--viz-2: #ddd');
+  });
+
+  it('emits component geometry vars', () => {
+    const css = generateCssFromTheme(minimalTheme);
+    expect(css).toContain('--card-radius:');
+    expect(css).toContain('--card-shadow:');
+  });
+
+  it('emits --filter-height', () => {
+    const css = generateCssFromTheme(minimalTheme);
+    expect(css).toContain('--filter-height: 2rem');
+  });
+});
+```
+
+- [ ] **Step 6: Run tests and commit**
+
+```bash
+cd apps/situation-room && pnpm test -- __tests__/generate-theme.test.ts
+git add apps/situation-room/themes/generate-theme.ts apps/situation-room/__tests__/generate-theme.test.ts
+git commit -m "feat(tokens): add Phase 2 vars — component geometry, --viz-N, --filter-height"
 ```
 
 ---
@@ -2127,7 +2184,7 @@ Specifically remove fallbacks from:
 - Line 126: `borderSubtle || '#f0f0f0'` → `borderSubtle`
 - Line 128: `textTertiary || '#9ca3af'` → `textTertiary`
 
-Also update the CSS var names to use `--viz-*` for chart colors:
+Also update the CSS var names to use `--viz-*` for chart colors (available since Task 7b):
 ```typescript
 // Before:
 const accent = useCssVar('--accent-brand');
