@@ -5,6 +5,7 @@ import {
   resolveGeometryRef,
   resolveVizPalette,
   generateCssFromTheme,
+  generateThemeInlineBlock,
   type Theme,
 } from '../themes/generate-theme';
 
@@ -247,5 +248,55 @@ describe('generateCssFromTheme', () => {
     // --font-sans and --font-mono live only in @theme inline, not in :root/.dark
     expect(css).not.toMatch(/^\s+--font-sans:/m);
     expect(css).not.toMatch(/^\s+--font-mono:/m);
+  });
+});
+
+describe('generateThemeInlineBlock', () => {
+  const baseOpts = {
+    geometry: {
+      radiusBase: '0.375rem',
+      radiusScale: { sm: 0.6 },
+      shadow: {},
+    },
+    typography: {
+      fontFamily: {
+        sans: 'Inter, system-ui, sans-serif',
+        mono: "'JetBrains Mono', ui-monospace, monospace",
+      },
+    },
+  };
+
+  it('maps color vars to --color- prefix', () => {
+    const vars = [
+      '--surface',
+      '--surface-elevated',
+      '--text-primary',
+      '--background',
+      '--chart-1',
+    ];
+    const block = generateThemeInlineBlock(vars, baseOpts);
+    expect(block).toContain('--color-surface: var(--surface)');
+    expect(block).toContain('--color-surface-elevated: var(--surface-elevated)');
+    expect(block).toContain('--color-text-primary: var(--text-primary)');
+    expect(block).toContain('--color-background: var(--background)');
+    expect(block).toContain('--color-chart-1: var(--chart-1)');
+  });
+
+  it('maps radius scale to calc expressions', () => {
+    const block = generateThemeInlineBlock([], baseOpts);
+    expect(block).toContain('--radius-sm: calc(var(--radius) * 0.6)');
+  });
+
+  it('emits --font-sans as var(--font-sans) for Next.js delegation', () => {
+    const block = generateThemeInlineBlock([], baseOpts);
+    expect(block).toContain('--font-sans: var(--font-sans)');
+    expect(block).not.toContain('--font-sans: Inter');
+  });
+
+  it('emits --font-mono as literal font stack', () => {
+    const block = generateThemeInlineBlock([], baseOpts);
+    expect(block).toContain(
+      "--font-mono: 'JetBrains Mono', ui-monospace, monospace",
+    );
   });
 });

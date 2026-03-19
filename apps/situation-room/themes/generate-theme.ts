@@ -201,3 +201,75 @@ export function generateCssFromTheme(theme: Theme): string {
   lines.push('}');
   return lines.join('\n');
 }
+
+// ─── @theme inline Block ───
+
+interface ThemeInlineOpts {
+  geometry: {
+    radiusBase: string;
+    radiusScale: Record<string, number>;
+    shadow: Record<string, string>;
+  };
+  typography: { fontFamily: Record<string, string> };
+}
+
+export function generateThemeInlineBlock(
+  allVarNames: string[],
+  opts: ThemeInlineOpts,
+): string {
+  const lines: string[] = ['@theme inline {'];
+
+  const colorVarPrefixes = [
+    '--surface',
+    '--text-',
+    '--border',
+    '--positive',
+    '--negative',
+    '--warning',
+    '--info',
+    '--neutral',
+    '--interactive',
+    '--filter-',
+    '--table-',
+    '--tab-',
+    '--heading-',
+    '--chart-',
+    '--accent',
+    '--background',
+    '--foreground',
+    '--card',
+    '--popover',
+    '--primary',
+    '--secondary',
+    '--muted',
+    '--destructive',
+    '--input',
+    '--ring',
+    '--sidebar',
+  ];
+
+  for (const varName of allVarNames) {
+    if (varName === '--radius') continue;
+    if (colorVarPrefixes.some((prefix) => varName.startsWith(prefix))) {
+      const name = varName.replace('--', '');
+      lines.push(`  --color-${name}: var(${varName});`);
+    }
+  }
+
+  // Radius scale
+  for (const [name, multiplier] of Object.entries(opts.geometry.radiusScale)) {
+    lines.push(`  --radius-${name}: calc(var(--radius) * ${multiplier});`);
+  }
+
+  // Font families
+  for (const [key, value] of Object.entries(opts.typography.fontFamily)) {
+    if (key === 'sans') {
+      lines.push(`  --font-${key}: var(--font-${key});`);
+    } else {
+      lines.push(`  --font-${key}: ${value};`);
+    }
+  }
+
+  lines.push('}');
+  return lines.join('\n');
+}
