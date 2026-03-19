@@ -41,7 +41,7 @@
 | `apps/situation-room/components/filter-chip.tsx` | Replace inline theming classes with semantic tokens |
 | `apps/situation-room/components/report-content.tsx` | Replace inline surface/heading classes with `surface-page`, `surface-header`, `surface-filter-bar`, `heading-overline` |
 | `apps/situation-room/components/report-header.tsx` | Replace inline heading classes with `heading-overline`, `heading-primary` |
-| `apps/situation-room/components/trend-chart.tsx` | Remove fallback hex values, read CSS vars only |
+| `apps/situation-room/components/trend-chart.tsx` | Switch to `--viz-*` var names, keep fallback hex values |
 | `apps/situation-room/components/ui/tabs.tsx` | Compose tab variants from `tab-rail`, `tab-pill`, `tab-pill-active` classes |
 
 ---
@@ -1148,7 +1148,7 @@ export function generateCssFromTheme(theme: Theme): string {
 }
 ```
 
-**Note:** The above generates ONLY the variables that exist in the current `global.css`. This is intentional — the first generated output must be byte-identical to the current CSS. Special cases: `surface.base` → `--surface` (not `--surface-base`); `key === 'default'` → `--{section}` (e.g. `accentBrand.default` → `--accent-brand`, `border.default` → `--border`). The `neutral` section uses keys `change` and `changeBg`, generating `--neutral-change` and `--neutral-change-bg`. Component geometry vars (`--card-radius`, `--filter-height`, etc.), `--viz-N` aliases, and `--font-*` in `:root` are added later in Task 8 after parity is verified.
+**Note:** The above generates ONLY the variables that exist in the current `global.css`. This is intentional — the first generated output must be byte-identical to the current CSS. Special cases: `surface.base` → `--surface` (not `--surface-base`); `key === 'default'` → `--{section}` (e.g. `accentBrand.default` → `--accent-brand`, `border.default` → `--border`). The `neutral` section uses keys `change` and `changeBg`, generating `--neutral-change` and `--neutral-change-bg`. Component geometry vars (`--card-radius`, `--filter-height`, etc.), `--viz-N` aliases, and `--font-*` in `:root` are added later in Task 7a after parity is verified.
 
 - [ ] **Step 22: Run tests to verify they pass**
 
