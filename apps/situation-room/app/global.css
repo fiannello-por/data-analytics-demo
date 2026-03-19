@@ -1,6 +1,6 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -164,7 +164,7 @@
   --color-neutral-change: var(--neutral-change);
   --color-accent-brand: var(--accent-brand);
   --color-accent-brand-subtle: var(--accent-brand-subtle);
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
 @layer base {
@@ -183,6 +183,11 @@
 }
 
 @media print {
-  body { background: white !important; color: black !important; }
-  .no-print { display: none !important; }
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .no-print {
+    display: none !important;
+  }
 }

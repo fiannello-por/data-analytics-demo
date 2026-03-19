@@ -1,14 +1,14 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import { NuqsAdapter } from "nuqs/adapters/next/app";
-import { ThemeProvider } from "@/components/theme-provider";
-import "./global.css";
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import { NuqsAdapter } from 'nuqs/adapters/next/app';
+import { ThemeProvider } from '@/components/theme-provider';
+import './global.css';
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
-  title: "Situation Room — Sales Performance Report",
-  description: "Board-facing sales performance scorecard report",
+  title: 'Situation Room — Sales Performance Report',
+  description: 'Board-facing sales performance scorecard report',
 };
 
 export default function RootLayout({

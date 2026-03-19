@@ -1,4 +1,4 @@
-import { ThemeToggle } from "./theme-toggle";
+import { ThemeToggle } from './theme-toggle';
 
 interface ReportHeaderProps {
   lastRefreshed?: Date;
@@ -19,14 +19,16 @@ export function ReportHeader({ lastRefreshed }: ReportHeaderProps) {
             Sales Performance Report
           </h1>
           <p className="mt-3 text-sm text-text-secondary max-w-2xl leading-relaxed">
-            Year-to-date performance across all booking categories.
-            Metrics compare current period against prior year at the same point in time.
+            Year-to-date performance across all booking categories. Metrics
+            compare current period against prior year at the same point in time.
           </p>
         </div>
         <div className="flex items-center gap-4 shrink-0">
           <div className="text-right">
             <p className="text-xs text-text-tertiary">Reporting Period</p>
-            <p className="text-sm font-medium text-text-primary tabular-nums">{year} YTD</p>
+            <p className="text-sm font-medium text-text-primary tabular-nums">
+              {year} YTD
+            </p>
           </div>
           <div className="no-print">
             <ThemeToggle />
@@ -35,13 +37,13 @@ export function ReportHeader({ lastRefreshed }: ReportHeaderProps) {
       </div>
       {lastRefreshed && (
         <p className="mt-4 text-xs text-text-tertiary">
-          Last refreshed{" "}
+          Last refreshed{' '}
           <time dateTime={lastRefreshed.toISOString()}>
-            {lastRefreshed.toLocaleString("en-US", {
-              month: "short",
-              day: "numeric",
-              hour: "numeric",
-              minute: "2-digit",
+            {lastRefreshed.toLocaleString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              hour: 'numeric',
+              minute: '2-digit',
             })}
           </time>
         </p>

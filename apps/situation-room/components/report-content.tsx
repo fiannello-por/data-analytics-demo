@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { ReportHeader } from "@/components/report-header";
-import { FilterRail } from "@/components/filter-rail";
-import { ExecutiveSnapshot } from "@/components/executive-snapshot";
-import { TrendChart } from "@/components/trend-chart";
-import { CategorySection } from "@/components/category-section";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Separator } from "@/components/ui/separator";
-import { useFilters } from "@/hooks/use-filters";
-import { useScorecardQuery } from "@/hooks/use-scorecard-query";
-import { CATEGORIES } from "@/lib/queries";
+import { ReportHeader } from '@/components/report-header';
+import { FilterRail } from '@/components/filter-rail';
+import { ExecutiveSnapshot } from '@/components/executive-snapshot';
+import { TrendChart } from '@/components/trend-chart';
+import { CategorySection } from '@/components/category-section';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
+import { useFilters } from '@/hooks/use-filters';
+import { useScorecardQuery } from '@/hooks/use-scorecard-query';
+import { CATEGORIES } from '@/lib/queries';
 
 export function ReportContent() {
   const { activeFilters, activeCount, setFilter, clearAll } = useFilters();
@@ -77,7 +77,8 @@ export function ReportContent() {
       <Separator className="mt-12" />
       <footer className="py-6 text-center">
         <p className="text-xs text-text-tertiary">
-          Data sourced from Lightdash semantic layer · All metrics governed centrally
+          Data sourced from Lightdash semantic layer · All metrics governed
+          centrally
         </p>
       </footer>
     </main>

@@ -1,5 +1,5 @@
-import { Suspense } from "react";
-import { ReportContent } from "@/components/report-content";
+import { Suspense } from 'react';
+import { ReportContent } from '@/components/report-content';
 
 export default function ReportPage() {
   return (

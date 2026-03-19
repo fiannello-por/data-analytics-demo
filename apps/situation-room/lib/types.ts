@@ -1,9 +1,9 @@
 export type Category =
-  | "New Logo"
-  | "Expansion"
-  | "Migration"
-  | "Renewal"
-  | "Total";
+  | 'New Logo'
+  | 'Expansion'
+  | 'Migration'
+  | 'Renewal'
+  | 'Total';
 
 export interface ScorecardRow {
   sortOrder: number;

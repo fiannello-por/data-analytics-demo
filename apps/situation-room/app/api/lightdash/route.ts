@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
-import { executeScorecardQuery, pollResults } from "@/lib/lightdash-client";
-import { parseScorecardRows } from "@/lib/scorecard-parser";
-import type { Category, CategoryData } from "@/lib/types";
-import { buildCategoryFilters, CATEGORIES } from "@/lib/queries";
+import { NextRequest, NextResponse } from 'next/server';
+import { executeScorecardQuery, pollResults } from '@/lib/lightdash-client';
+import { parseScorecardRows } from '@/lib/scorecard-parser';
+import type { Category, CategoryData } from '@/lib/types';
+import { buildCategoryFilters, CATEGORIES } from '@/lib/queries';
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,8 +21,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ data: results });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Unknown error";
+    const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
