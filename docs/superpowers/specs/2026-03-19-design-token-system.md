@@ -64,7 +64,7 @@ Each theme is a self-contained JSON file in `themes/`. No inheritance or merging
     "negative": { "text": "red.2", "bg": "red.0", "border": "red.1" },
     "warning":  { "text": "amber.2", "bg": "amber.0", "border": "amber.1" },
     "info":     { "text": "blue.3", "bg": "blue.0", "border": "blue.1" },
-    "neutral":  { "text": "gray.6", "bg": "gray.1" },
+    "neutral":  { "text": "gray.6", "bg": "gray.1", "border": "gray.3" },
     "interactive": {
       "bg": "blue.3", "bgHover": "blue.4", "bgActive": "blue.5",
       "text": "white",
@@ -228,11 +228,13 @@ A TypeScript script (run via `tsx`) that:
 
 1. Reads all `themes/*.json` files (excluding `theme.schema.json`)
 2. Validates each against the schema
-3. Resolves all refs to final hex/CSS values
-4. Outputs `app/generated-theme.css` containing:
+3. Resolves all refs to final hex/CSS values (all colors emitted as bare hex for Tailwind alpha modifier compatibility)
+4. Derives `--chart-1` through `--chart-N` from `viz.categorical` entries
+5. Outputs `app/generated-theme.css` containing:
    - `:root { ... }` block from the theme where `name` is `"Light"`
    - `.dark { ... }` block from the theme where `name` is `"Dark"`
-   - `@theme inline { ... }` block mapping properties to Tailwind utilities
+   - Additional `.[kebab-name] { ... }` blocks for any other themes discovered
+   - `@theme inline { ... }` block mapping all properties to Tailwind utilities
 
 **Error handling:** On any validation or resolution failure, the script exits with code 1 and prints a human-readable list of all errors. Partial output is never written — the previous `generated-theme.css` is preserved so the app doesn't break.
 
@@ -244,7 +246,7 @@ The `@theme inline` block maps CSS custom properties to Tailwind's utility names
 |---|---|---|
 | `--surface-*`, `--text-*`, `--border-*`, `--brand-*`, `--positive-*`, `--negative-*`, `--warning-*`, `--info-*`, `--neutral-*`, `--interactive-*`, `--filter-*`, `--table-*`, `--tab-*`, `--heading-*`, `--viz-*` | `--color-` | `--color-surface: var(--surface)` → `bg-surface` |
 | All shadcn color vars: `--background`, `--foreground`, `--card`, `--primary`, etc. | `--color-` | `--color-background: var(--background)` → `bg-background` |
-| `--chart-*` | `--color-` | `--color-chart-1: var(--chart-1)` |
+| `--chart-1` through `--chart-N` (derived from `viz.categorical`) | `--color-` | `--color-chart-1: var(--chart-1)` → `bg-chart-1` |
 | `--radius` (base) | No prefix, as `--radius` | Used by shadcn computed radius scale |
 | `--card-radius`, `--filter-radius`, `--tab-*-radius`, `--pill-radius` | `--radius-` | `--radius-card: var(--card-radius)` → `rounded-card` |
 | `--card-shadow` | `--shadow-` | `--shadow-card: var(--card-shadow)` → `shadow-card` |
@@ -252,9 +254,53 @@ The `@theme inline` block maps CSS custom properties to Tailwind's utility names
 
 The shadcn radius scale (`--radius-sm`, `--radius-md`, etc.) is generated using `calc(var(--radius) * multiplier)` from `geometry.radiusScale`, preserving the current behavior where all radii scale proportionally from a single base value.
 
+#### Alpha / Opacity Variants
+
+The current codebase relies on Tailwind's opacity modifier syntax (`bg-destructive/10`, `ring-ring/50`, `ring-foreground/10`, `dark:bg-input/30`). Tailwind v4 supports this natively when the color value uses a format that allows alpha injection — either `oklch()`, `hsl()`, or bare hex without an existing alpha channel.
+
+**Strategy:** The build script emits **all** color custom properties as bare hex values (e.g. `--destructive: #c9363f`). Tailwind v4's `@theme inline` color mapping automatically enables the `/opacity` modifier for any color registered through `--color-*`. No additional tokens are needed — `bg-destructive/10` works out of the box because Tailwind decomposes the hex into its color space and applies the alpha at build time.
+
+**Constraint:** Theme JSON palette values MUST be opaque hex colors (no `rgba()` or `hsla()` with baked-in alpha). If a semi-transparent color is genuinely needed as a token (not just a utility modifier), add it as a separate semantic token with an explicit alpha value (e.g. `"overlayBackdrop": "rgba(0,0,0,0.5)"`), which the build script passes through as a literal.
+
+#### Chart Token Derivation
+
+The shadcn chart system expects `--chart-1` through `--chart-5` (minimum). The build script derives these from `viz.categorical`:
+
+```
+--chart-1: {resolved viz.categorical[0]}
+--chart-2: {resolved viz.categorical[1]}
+--chart-3: {resolved viz.categorical[2]}
+--chart-4: {resolved viz.categorical[3]}
+--chart-5: {resolved viz.categorical[4]}
+```
+
+If `viz.categorical` has more than 5 entries, additional `--chart-N` vars are emitted up to the array length. The `@theme inline` block registers each as `--color-chart-N: var(--chart-N)`, enabling utilities like `text-chart-1`, `bg-chart-2`, etc.
+
+The `--viz-*` variables are also emitted separately (1-indexed: `--viz-1`, `--viz-2`, ...) for components that reference visualization colors directly (e.g. `trend-chart.tsx`). Both `--chart-*` and `--viz-*` resolve to the same underlying colors but serve different consumers (shadcn charts vs. custom dashboard charts).
+
+#### Theme Activation & Additional Variants
+
+The build script discovers themes dynamically — it reads **all** `themes/*.json` files (excluding `theme.schema.json`) and uses the `name` field to determine how each theme is emitted:
+
+| `name` value | CSS selector | Notes |
+|---|---|---|
+| `"Light"` | `:root { ... }` | Default theme (no class needed) |
+| `"Dark"` | `.dark { ... }` | Activated by `next-themes` adding `.dark` to `<html>` |
+| Any other value | `.[kebab-case-name] { ... }` | e.g. `"High Contrast"` → `.high-contrast { ... }` |
+
+To add a new theme variant:
+1. Duplicate an existing JSON file (e.g. `cp light.json high-contrast.json`)
+2. Change `"name"` to your variant name (e.g. `"High Contrast"`)
+3. Modify palette/color values as needed
+4. The build script automatically emits the new CSS block
+5. Activate in the app by adding the corresponding class to `<html>` (wire into `next-themes` or a custom theme switcher)
+
+The `prebuild` hook and dev watcher pick up new files automatically — no script changes needed.
+
 **npm scripts in `package.json`:**
 - `"theme:generate"`: `tsx themes/generate-theme.ts`
 - `"theme:watch"`: watches `themes/*.json` via chokidar and re-runs generation (the script itself contains the watcher loop, activated by a `--watch` flag)
+- `"predev"`: `pnpm theme:generate` (ensures `generated-theme.css` exists before Next.js starts — critical for fresh clones where the gitignored file doesn't exist yet)
 - `"dev"`: `concurrently \"pnpm theme:watch\" \"next dev -p 3100\"`
 - `"prebuild"`: `pnpm theme:generate` (ensures CI generates before `next build`)
 
@@ -315,7 +361,7 @@ After migration, `global.css` contains:
   }
   .pill-positive { @apply pill-status bg-positive-bg text-positive border-positive-border; }
   .pill-negative { @apply pill-status bg-negative-bg text-negative border-negative-border; }
-  .pill-neutral  { @apply pill-status bg-neutral-change-bg text-neutral-change border-border-subtle; }
+  .pill-neutral  { @apply pill-status bg-neutral-bg text-neutral border-neutral-border; }
 
   /* ── Headings ── */
   .heading-overline { @apply text-xs font-medium uppercase tracking-[0.15em] text-heading-overline; }
@@ -397,7 +443,7 @@ After:
 - Replace hand-written variable blocks in `global.css` with `@import './generated-theme.css'`
 - Keep `@import 'shadcn/tailwind.css'` (required by shadcn ui primitives)
 - Add all `@layer components` class definitions
-- Add `theme:generate` as `prebuild` hook
+- Add `theme:generate` as `prebuild` and `predev` hooks (ensures `generated-theme.css` exists before Next.js starts — critical for fresh clones)
 - **Checkpoint:** `global.css` is ~80 lines. All tokens flow from JSON. App looks identical.
 
 ### Phase 3: Component Refactor
