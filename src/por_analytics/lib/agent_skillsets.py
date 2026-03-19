@@ -12,6 +12,10 @@ if TYPE_CHECKING:
 
 
 TARGET_SKILL_ROOTS = (Path(".agents/skills"), Path(".claude/skills"))
+REPO_LOCAL_SKILL_NAMES = (
+    "developing-in-lightdash",
+    "thoughtspot-to-lightdash",
+)
 
 
 @dataclass(frozen=True)
@@ -40,6 +44,16 @@ DEFAULT_SKILLSET_SPECS = (
 )
 
 
+def copy_skill_directory(*, source: Path, destination: Path) -> list[Path]:
+    """Replace a destination skill directory with a fresh copy from source."""
+
+    if destination.exists():
+        shutil.rmtree(destination)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(source, destination)
+    return [path for path in destination.rglob("*") if path.is_file()]
+
+
 def sync_skillsets_from_checkouts(
     *,
     repo_root: Path,
@@ -63,13 +77,31 @@ def sync_skillsets_from_checkouts(
 
         for skill_dir in sorted(path for path in source_root.iterdir() if path.is_dir()):
             for target_root in TARGET_SKILL_ROOTS:
-                destination = repo_root / target_root / skill_dir.name
-                if destination.exists():
-                    shutil.rmtree(destination)
-                destination.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copytree(skill_dir, destination)
                 copied_files.extend(
-                    path for path in destination.rglob("*") if path.is_file()
+                    copy_skill_directory(
+                        source=skill_dir,
+                        destination=repo_root / target_root / skill_dir.name,
+                    )
                 )
+
+    return copied_files
+
+
+def sync_repo_local_skills(repo_root: Path) -> list[Path]:
+    """Mirror repo-native skills from `.agents/skills` into `.claude/skills`."""
+
+    copied_files: list[Path] = []
+
+    for skill_name in REPO_LOCAL_SKILL_NAMES:
+        source = repo_root / ".agents/skills" / skill_name
+        if not source.is_dir():
+            raise FileNotFoundError(f"Expected repo-local skill directory: {source}")
+
+        copied_files.extend(
+            copy_skill_directory(
+                source=source,
+                destination=repo_root / ".claude/skills" / skill_name,
+            )
+        )
 
     return copied_files

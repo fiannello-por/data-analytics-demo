@@ -3,8 +3,6 @@ node_modules
 .claude/*
 !.claude/skills/
 !.claude/skills/**
-.claude/skills/developing-in-lightdash/
-.claude/skills/thoughtspot-to-lightdash/
 .codex
 .env
 .env.*

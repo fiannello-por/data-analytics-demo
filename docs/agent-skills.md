@@ -19,6 +19,12 @@ They are mirrored into two project-local discovery roots:
 These copies are intentionally checked into git so contributors using this repo
 do not need to install the skillsets globally before they are discoverable.
 
+In addition, this repo tracks two repo-native analytics skills directly under
+`.agents/skills/` and mirrors them into `.claude/skills/` during sync:
+
+- `developing-in-lightdash`
+- `thoughtspot-to-lightdash`
+
 ## Refreshing The Vendor Copy
 
 Run:
@@ -28,7 +34,9 @@ uv run sync-agent-skillsets
 ```
 
 That command clones the pinned upstream commits and mirrors their skill folders
-into the repo-local `.agents/skills/` and `.claude/skills/` directories.
+into the repo-local `.agents/skills/` and `.claude/skills/` directories, then
+copies the repo-native Lightdash skills from `.agents/skills/` into
+`.claude/skills/`.
 
 ## Notes
 
