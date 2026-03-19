@@ -148,8 +148,8 @@ Create `apps/situation-room/themes/theme.schema.json`:
   "properties": {
     "name": {
       "type": "string",
-      "minLength": 1,
-      "description": "Theme display name. Must be 'Light' (maps to :root) or 'Dark' (maps to .dark)"
+      "enum": ["Light", "Dark"],
+      "description": "Theme identifier. 'Light' maps to :root, 'Dark' maps to .dark"
     },
     "palette": {
       "type": "object",
@@ -189,7 +189,10 @@ Create `apps/situation-room/themes/theme.schema.json`:
         "popover", "popoverForeground", "primary", "primaryForeground",
         "secondary", "secondaryForeground", "muted", "mutedForeground",
         "accent", "accentForeground", "destructive",
-        "border", "input", "ring"
+        "border", "input", "ring",
+        "sidebar", "sidebarForeground", "sidebarPrimary",
+        "sidebarPrimaryForeground", "sidebarAccent",
+        "sidebarAccentForeground", "sidebarBorder", "sidebarRing"
       ],
       "additionalProperties": { "type": "string" }
     },
@@ -978,6 +981,14 @@ describe('generateCssFromTheme', () => {
         border: 'border.default',
         input: 'border.default',
         ring: 'accentBrand.default',
+        sidebar: 'surface.base',
+        sidebarForeground: 'text.primary',
+        sidebarPrimary: 'accentBrand.default',
+        sidebarPrimaryForeground: 'text.primary',
+        sidebarAccent: 'surface.base',
+        sidebarAccentForeground: 'text.primary',
+        sidebarBorder: 'border.default',
+        sidebarRing: 'accentBrand.default',
       },
       typography: {
         fontFamily: { sans: 'Inter', mono: 'monospace' },
@@ -1284,10 +1295,10 @@ describe('validateTheme', () => {
 
   function validTheme(): Theme {
     return {
-      name: 'Test',
+      name: 'Light',
       palette: { gray: ['#aaa'], blue: ['#bbb'], green: ['#ccc'], red: ['#ddd'], amber: ['#eee'], cyan: ['#fff'], white: '#ffffff', black: '#000000', transparent: 'transparent' },
       colors: { surface: { base: 'gray.0' }, text: { primary: 'gray.0' }, border: { default: 'gray.0' }, accentBrand: { default: 'blue.0' }, positive: { default: 'green.0', bg: 'green.0', border: 'green.0' }, negative: { default: 'red.0', bg: 'red.0', border: 'red.0' }, neutral: { change: 'gray.0', changeBg: 'gray.0' }, interactive: { bg: 'blue.0', text: 'white', focusRing: 'blue.0' } },
-      shadcn: { background: 'surface.base', foreground: 'text.primary', card: 'surface.base', cardForeground: 'text.primary', popover: 'surface.base', popoverForeground: 'text.primary', primary: 'accentBrand.default', primaryForeground: 'text.primary', secondary: 'surface.base', secondaryForeground: 'text.primary', muted: 'surface.base', mutedForeground: 'text.primary', accent: 'surface.base', accentForeground: 'text.primary', destructive: 'negative.default', border: 'border.default', input: 'border.default', ring: 'accentBrand.default' },
+      shadcn: { background: 'surface.base', foreground: 'text.primary', card: 'surface.base', cardForeground: 'text.primary', popover: 'surface.base', popoverForeground: 'text.primary', primary: 'accentBrand.default', primaryForeground: 'text.primary', secondary: 'surface.base', secondaryForeground: 'text.primary', muted: 'surface.base', mutedForeground: 'text.primary', accent: 'surface.base', accentForeground: 'text.primary', destructive: 'negative.default', border: 'border.default', input: 'border.default', ring: 'accentBrand.default', sidebar: 'surface.base', sidebarForeground: 'text.primary', sidebarPrimary: 'accentBrand.default', sidebarPrimaryForeground: 'text.primary', sidebarAccent: 'surface.base', sidebarAccentForeground: 'text.primary', sidebarBorder: 'border.default', sidebarRing: 'accentBrand.default' },
       typography: { fontFamily: { sans: 'Inter' }, fontSize: { xs: '0.75rem' }, fontWeight: { normal: '400' } },
       geometry: { radiusBase: '0.375rem', radiusScale: { sm: 0.5 }, shadow: { sm: '0 1px 2px rgba(0,0,0,0.05)' } },
       components: { card: { radius: 'sm' } },
@@ -1731,7 +1742,7 @@ Replace the entire contents of `apps/situation-room/app/global.css` with:
   }
   .pill-positive { @apply pill-status bg-positive-bg text-positive border-positive-border; }
   .pill-negative { @apply pill-status bg-negative-bg text-negative border-negative-border; }
-  .pill-neutral  { @apply pill-status bg-neutral-change-bg text-neutral-change border-neutral-change-bg; }
+  .pill-neutral  { @apply pill-status bg-neutral-change-bg text-neutral-change border-border-subtle; }
 
   /* ── Headings ── */
   .heading-overline { @apply text-xs font-medium uppercase tracking-[0.15em] text-heading-overline; }
@@ -2159,32 +2170,12 @@ git commit -m "refactor(tokens): migrate report-header to semantic heading class
 **Files:**
 - Modify: `apps/situation-room/components/trend-chart.tsx`
 
-- [ ] **Step 1: Remove fallback hex values**
+- [ ] **Step 1: Update CSS var names to use `--viz-*` — keep fallbacks**
 
-The component currently uses `useCssVar()` with fallback hex values in Chart.js config:
+The `useCssVar` hook (line 29) calls `getComputedStyle` synchronously and returns `''` during SSR. Chart.js config runs during render, so removing fallbacks would produce invisible charts on first paint before hydration. **Keep all `|| '#...'` fallbacks** — they are a safety net, not dead code.
 
-```typescript
-// Before:
-backgroundColor: accent || '#1e40af',
-// After:
-backgroundColor: accent,
-```
+Only change the var names to use the new `--viz-*` tokens (available since Task 7b):
 
-Remove ALL `|| '#...'` fallbacks. The CSS vars will always be available since the generated theme is imported before any rendering.
-
-Specifically remove fallbacks from:
-- Line 73: `accent || '#1e40af'` → `accent`
-- Line 80: `border || '#e5e7eb'` → `border`
-- Line 100: `textSecondary || '#6b7280'` → `textSecondary`
-- Line 104: `surfaceElevated || '#f8f9fa'` → `surfaceElevated`
-- Line 105: `textPrimary || '#111827'` → `textPrimary`
-- Line 106: `textSecondary || '#6b7280'` → `textSecondary`
-- Line 107: `border || '#e5e7eb'` → `border`
-- Line 120: `textTertiary || '#9ca3af'` → `textTertiary`
-- Line 126: `borderSubtle || '#f0f0f0'` → `borderSubtle`
-- Line 128: `textTertiary || '#9ca3af'` → `textTertiary`
-
-Also update the CSS var names to use `--viz-*` for chart colors (available since Task 7b):
 ```typescript
 // Before:
 const accent = useCssVar('--accent-brand');
@@ -2192,11 +2183,13 @@ const accent = useCssVar('--accent-brand');
 const accent = useCssVar('--viz-1');
 ```
 
+Do NOT remove any `|| '#...'` fallbacks. The fallbacks can be removed in a future task if/when `useCssVar` is made reactive (e.g. with `useEffect` + state), but that is out of scope for this plan.
+
 - [ ] **Step 2: Verify chart still renders in both themes and commit**
 
 ```bash
 git add apps/situation-room/components/trend-chart.tsx
-git commit -m "refactor(tokens): remove fallback hex values from trend-chart, use --viz-* vars"
+git commit -m "refactor(tokens): switch trend-chart to --viz-* vars, keep fallbacks"
 ```
 
 ---
