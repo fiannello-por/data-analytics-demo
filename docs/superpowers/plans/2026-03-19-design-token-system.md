@@ -149,7 +149,7 @@ Create `apps/situation-room/themes/theme.schema.json`:
     "name": {
       "type": "string",
       "minLength": 1,
-      "description": "Theme display name. 'Light' maps to :root, 'Dark' maps to .dark, others map to .kebab-case-name"
+      "description": "Theme display name. Must be 'Light' (maps to :root) or 'Dark' (maps to .dark)"
     },
     "palette": {
       "type": "object",
@@ -263,45 +263,46 @@ git commit -m "feat(tokens): add JSON Schema for theme validation"
 **Files:**
 - Create: `apps/situation-room/themes/light.json`
 
-This task extracts every CSS custom property value from the current `:root` block in `global.css` (lines 12–140) into the JSON schema format.
+This task extracts every CSS custom property value from the current `:root` block in `global.css` (lines 12–140) into the JSON schema format. The palette arrays include ALL hex values that appear in the current CSS — including intermediate values that don't fit a neat 10-step ramp. Every palette ref resolves to the exact hex value currently in `global.css`.
 
 - [ ] **Step 1: Create light.json**
 
-Create `apps/situation-room/themes/light.json`. The values below are extracted from the current `global.css` `:root` block. Every hex value must match the current CSS exactly.
+Create `apps/situation-room/themes/light.json`. The values below are extracted from the current `global.css` `:root` block. Every hex value must match the current CSS exactly. The palette index reference table at the end of this step lists every hex and its index for cross-checking.
 
 ```json
 {
   "name": "Light",
 
   "palette": {
-    "gray":  ["#f7f8fa", "#eef1f5", "#e4e8ee", "#dce0e8", "#c5cad4", "#8690a2", "#636a7e", "#4a5068", "#1e2028"],
-    "blue":  ["#edf4fc", "#c4daf0", "#8db8e4", "#3574c4", "#2a5ea0", "#234e88"],
-    "green": ["#eaf7ef", "#b8e0c8", "#1a7f42"],
-    "red":   ["#fdf0f0", "#f0c0c3", "#c9363f"],
-    "amber": ["#fef9eb", "#f0dfa0", "#b07d1a"],
-    "cyan":  ["#e8f8fa", "#b0e0e6", "#2e95a3"],
-    "white": "#ffffff",
-    "black": "#1e2028",
+    "gray":   ["#f7f8fa", "#f0f2f5", "#eef1f5", "#e8ecf2", "#e4e8ee", "#e2e6ed", "#dce0e8", "#c5cad4", "#b0b6c4", "#8690a2", "#636a7e", "#4a5068", "#1e2028"],
+    "blue":   ["#edf4fc", "#dbe9f8", "#c4daf0", "#b0cfe8", "#8db8e4", "#3574c4", "#2a5ea0", "#234e88"],
+    "green":  ["#eaf7ef", "#b8e0c8", "#5c8a3e", "#3a9a5e", "#1a7f42"],
+    "red":    ["#fdf0f0", "#f0c0c3", "#c9363f"],
+    "amber":  ["#fef9eb", "#f0dfa0", "#c7872e", "#b07d1a"],
+    "cyan":   ["#e8f8fa", "#b0e0e6", "#2e95a3"],
+    "purple": ["#9556cf", "#7c6eb5"],
+    "white":  "#ffffff",
+    "black":  "#1e2028",
     "transparent": "transparent"
   },
 
   "colors": {
-    "surface":  { "base": "gray.0", "elevated": "white", "sunken": "gray.1", "overlay": "white" },
-    "text":     { "primary": "gray.8", "secondary": "gray.7", "tertiary": "gray.5", "inverse": "white", "link": "blue.3", "linkHover": "blue.4" },
-    "border":   { "default": "gray.3", "subtle": "gray.2", "strong": "gray.4" },
-    "brand":    { "default": "blue.3", "subtle": "blue.0", "hover": "blue.4", "muted": "blue.1" },
-    "positive": { "text": "green.2", "bg": "green.0", "border": "green.1" },
-    "negative": { "text": "red.2", "bg": "red.0", "border": "red.1" },
-    "warning":  { "text": "amber.2", "bg": "amber.0", "border": "amber.1" },
-    "info":     { "text": "blue.3", "bg": "blue.0", "border": "blue.1" },
-    "neutral":  { "text": "gray.6", "bg": "gray.1", "border": "gray.3" },
+    "surface":  { "base": "gray.0", "elevated": "white", "sunken": "gray.2", "overlay": "white" },
+    "text":     { "primary": "gray.12", "secondary": "gray.11", "tertiary": "gray.9", "inverse": "white", "link": "blue.5", "linkHover": "blue.6" },
+    "border":   { "default": "gray.6", "subtle": "gray.4", "strong": "gray.7" },
+    "accentBrand": { "default": "blue.5", "subtle": "blue.0", "hover": "blue.6", "muted": "blue.2" },
+    "positive": { "default": "green.4", "bg": "green.0", "border": "green.1" },
+    "negative": { "default": "red.2", "bg": "red.0", "border": "red.1" },
+    "warning":  { "default": "amber.3", "bg": "amber.0", "border": "amber.1" },
+    "info":     { "default": "blue.5", "bg": "blue.0", "border": "blue.3" },
+    "neutral":  { "change": "gray.10", "changeBg": "gray.2" },
     "interactive": {
-      "bg": "blue.3", "bgHover": "blue.4", "bgActive": "blue.5",
+      "bg": "blue.5", "bgHover": "blue.6", "bgActive": "blue.7",
       "text": "white",
-      "ghostHover": "gray.1", "ghostActive": "gray.2",
-      "outlineBorder": "gray.3", "outlineHover": "gray.4",
-      "focusRing": "blue.3",
-      "disabledBg": "gray.1", "disabledText": "gray.4"
+      "ghostHover": "gray.2", "ghostActive": "gray.4",
+      "outlineBorder": "gray.6", "outlineHover": "gray.7",
+      "focusRing": "blue.5",
+      "disabledBg": "gray.2", "disabledText": "gray.8"
     }
   },
 
@@ -312,26 +313,26 @@ Create `apps/situation-room/themes/light.json`. The values below are extracted f
     "cardForeground": "text.primary",
     "popover": "surface.elevated",
     "popoverForeground": "text.primary",
-    "primary": "brand.default",
+    "primary": "accentBrand.default",
     "primaryForeground": "text.inverse",
     "secondary": "surface.sunken",
     "secondaryForeground": "text.primary",
     "muted": "surface.sunken",
-    "mutedForeground": "text.tertiary",
-    "accent": "surface.sunken",
+    "mutedForeground": "gray.10",
+    "accent": "gray.3",
     "accentForeground": "text.primary",
-    "destructive": "negative.text",
+    "destructive": "negative.default",
     "border": "border.default",
     "input": "border.default",
-    "ring": "brand.default",
-    "sidebar": "surface.sunken",
+    "ring": "accentBrand.default",
+    "sidebar": "gray.1",
     "sidebarForeground": "text.primary",
-    "sidebarPrimary": "brand.default",
+    "sidebarPrimary": "accentBrand.default",
     "sidebarPrimaryForeground": "text.inverse",
-    "sidebarAccent": "surface.sunken",
+    "sidebarAccent": "gray.3",
     "sidebarAccentForeground": "text.primary",
     "sidebarBorder": "border.default",
-    "sidebarRing": "brand.default"
+    "sidebarRing": "accentBrand.default"
   },
 
   "typography": {
@@ -359,38 +360,48 @@ Create `apps/situation-room/themes/light.json`. The values below are extracted f
 
   "dashboard": {
     "filterBar": {
-      "bg": "surface.sunken", "border": "border.default",
+      "bg": "gray.1", "border": "border.default",
       "triggerBg": "surface.elevated", "triggerBorder": "border.default",
       "triggerText": "text.secondary",
       "triggerHoverBg": "surface.sunken", "triggerHoverBorder": "border.strong",
-      "activeBg": "brand.subtle", "activeBorder": "brand.default", "activeText": "brand.hover",
-      "badgeBg": "brand.default", "badgeText": "text.inverse"
+      "activeBg": "accentBrand.subtle", "activeBorder": "blue.4", "activeText": "accentBrand.hover",
+      "badgeBg": "accentBrand.default", "badgeText": "text.inverse"
     },
     "table": {
       "headerBg": "surface.sunken", "headerText": "text.secondary", "headerBorder": "border.default",
       "rowBg": "transparent", "rowAltBg": "surface.base",
-      "rowHoverBg": "brand.subtle", "rowSelectedBg": "brand.muted",
+      "rowHoverBg": "accentBrand.subtle", "rowSelectedBg": "blue.1",
       "rowBorder": "border.subtle",
       "cellText": "text.primary", "cellSecondary": "text.secondary"
     },
     "tab": {
-      "railBg": "border.subtle", "text": "text.tertiary", "hoverText": "text.secondary",
+      "railBg": "gray.5", "text": "text.tertiary", "hoverText": "text.secondary",
       "activeBg": "surface.elevated", "activeText": "text.primary"
     },
     "heading": { "primary": "text.primary", "section": "text.secondary", "overline": "text.tertiary" }
   },
 
   "viz": {
-    "categorical": ["blue.3", "cyan.2", "green.2", "amber.2", "red.2", "blue.4", "amber.1", "green.1"],
-    "sequential":  ["blue.0", "blue.1", "blue.2", "blue.3", "blue.4", "blue.5"],
-    "diverging":   ["red.2", "red.1", "gray.1", "green.1", "green.2"]
+    "categorical": ["blue.5", "purple.0", "green.3", "amber.2", "cyan.2", "red.2", "purple.1", "green.2"],
+    "sequential":  ["blue.0", "blue.1", "blue.2", "blue.3", "blue.5", "blue.6"],
+    "diverging":   ["red.2", "red.1", "gray.2", "green.1", "green.4"]
   }
 }
 ```
 
-**Important verification note:** After this file is created, cross-reference every hex value in the palette against the current `global.css` `:root` block to ensure no values were lost or changed. The light theme's `dashboard.filterBar.bg` maps to `surface.sunken` → `gray.1` → `#eef1f5`. In the current CSS, `--filter-bar-bg` is `#f0f2f5` which is slightly different — this is intentional; some current values don't follow a strict palette and the JSON will now normalize them. The build script output will be validated against the running app visually.
+**Palette index reference (light):**
 
-However, there is a known deviation: current `--accent` is `#e8ecf2` but the JSON maps it to `surface.sunken` → `#eef1f5`. And `--filter-bar-bg` is `#f0f2f5` vs the ref-derived `#eef1f5`. When the build script generates CSS, **manually compare the generated output against the current `global.css` values** and add any one-off overrides to the dashboard section or adjust palette values to match exactly. The checkpoint requires **visual parity**.
+| Palette | Indices |
+|---------|---------|
+| gray | 0:#f7f8fa 1:#f0f2f5 2:#eef1f5 3:#e8ecf2 4:#e4e8ee 5:#e2e6ed 6:#dce0e8 7:#c5cad4 8:#b0b6c4 9:#8690a2 10:#636a7e 11:#4a5068 12:#1e2028 |
+| blue | 0:#edf4fc 1:#dbe9f8 2:#c4daf0 3:#b0cfe8 4:#8db8e4 5:#3574c4 6:#2a5ea0 7:#234e88 |
+| green | 0:#eaf7ef 1:#b8e0c8 2:#5c8a3e 3:#3a9a5e 4:#1a7f42 |
+| red | 0:#fdf0f0 1:#f0c0c3 2:#c9363f |
+| amber | 0:#fef9eb 1:#f0dfa0 2:#c7872e 3:#b07d1a |
+| cyan | 0:#e8f8fa 1:#b0e0e6 2:#2e95a3 |
+| purple | 0:#9556cf 1:#7c6eb5 |
+
+Every hex value in `global.css` `:root` (lines 12–140) has a corresponding palette entry. Every ref in the JSON resolves to the exact hex in the current CSS. The generated output must be byte-identical to the current variables — no "close enough" approximations, no manual reconciliation step.
 
 - [ ] **Step 2: Commit**
 
@@ -406,45 +417,47 @@ git commit -m "feat(tokens): add light theme JSON with all current values"
 **Files:**
 - Create: `apps/situation-room/themes/dark.json`
 
-This task extracts every CSS custom property value from the current `.dark` block in `global.css` (lines 147–274).
+This task extracts every CSS custom property value from the current `.dark` block in `global.css` (lines 147–274). The palette arrays include ALL hex values — including intermediates like `#262a31`, `#333842`, `#1c2027` that appear between the core Atom One Dark steps. Additional palettes (`purple`, `orange`) are added for chart colors that don't fit the status color palettes.
 
 - [ ] **Step 1: Create dark.json**
 
-Create `apps/situation-room/themes/dark.json`. Same schema as `light.json`, but with Atom One Dark color values. Every hex value must match the current `.dark` block in `global.css`.
+Create `apps/situation-room/themes/dark.json`. Same schema as `light.json`, but with Atom One Dark color values. Every hex value must match the current `.dark` block in `global.css`. The palette index reference table at the end of this step lists every hex and its index for cross-checking.
 
 ```json
 {
   "name": "Dark",
 
   "palette": {
-    "gray":  ["#1a1d23", "#21252b", "#282c34", "#2c313a", "#3e4451", "#5c6370", "#828997", "#abb2bf", "#d7dae0"],
-    "blue":  ["#253545", "#354a5e", "#3a6090", "#61afef", "#82c0f5", "#a8d4f7"],
-    "green": ["#2a3a2a", "#3d5a3d", "#98c379"],
-    "red":   ["#3a2a2a", "#5a3a3a", "#e06c75"],
-    "amber": ["#3a3525", "#5a5035", "#e5c07b"],
-    "cyan":  ["#253a3e", "#3a5a60", "#56b6c2"],
-    "white": "#d7dae0",
-    "black": "#282c34",
+    "gray":   ["#1a1d23", "#1c2027", "#21252b", "#262a31", "#282c34", "#2c313a", "#2e3440", "#333842", "#3e4451", "#4d5566", "#5c6370", "#828997", "#abb2bf", "#d7dae0"],
+    "blue":   ["#253545", "#354a5e", "#355565", "#3a6090", "#4a9be0", "#528bff", "#61afef", "#82c0f5", "#a8d4f7"],
+    "green":  ["#2a3a2a", "#3d5a3d", "#98c379"],
+    "red":    ["#3a2a2a", "#5a3a3a", "#e06c75"],
+    "amber":  ["#3a3525", "#5a5035", "#e5c07b"],
+    "cyan":   ["#253a3e", "#3a5a60", "#56b6c2"],
+    "purple": ["#c678dd"],
+    "orange": ["#be5046", "#d19a66"],
+    "white":  "#d7dae0",
+    "black":  "#282c34",
     "transparent": "transparent"
   },
 
   "colors": {
-    "surface":  { "base": "gray.2", "elevated": "gray.3", "sunken": "gray.1", "overlay": "gray.3" },
-    "text":     { "primary": "gray.7", "secondary": "gray.6", "tertiary": "gray.5", "inverse": "gray.2", "link": "blue.3", "linkHover": "blue.4" },
-    "border":   { "default": "gray.4", "subtle": "gray.4", "strong": "gray.4" },
-    "brand":    { "default": "blue.3", "subtle": "blue.0", "hover": "blue.4", "muted": "blue.1" },
-    "positive": { "text": "green.2", "bg": "green.0", "border": "green.1" },
-    "negative": { "text": "red.2", "bg": "red.0", "border": "red.1" },
-    "warning":  { "text": "amber.2", "bg": "amber.0", "border": "amber.1" },
-    "info":     { "text": "blue.3", "bg": "blue.0", "border": "blue.1" },
-    "neutral":  { "text": "gray.5", "bg": "gray.3", "border": "gray.4" },
+    "surface":  { "base": "gray.4", "elevated": "gray.5", "sunken": "gray.2", "overlay": "gray.5" },
+    "text":     { "primary": "gray.12", "secondary": "gray.11", "tertiary": "gray.10", "inverse": "gray.4", "link": "blue.6", "linkHover": "blue.7" },
+    "border":   { "default": "gray.8", "subtle": "gray.8", "strong": "gray.9" },
+    "accentBrand": { "default": "blue.6", "subtle": "blue.0", "hover": "blue.7", "muted": "blue.1" },
+    "positive": { "default": "green.2", "bg": "green.0", "border": "green.1" },
+    "negative": { "default": "red.2", "bg": "red.0", "border": "red.1" },
+    "warning":  { "default": "amber.2", "bg": "amber.0", "border": "amber.1" },
+    "info":     { "default": "blue.6", "bg": "blue.0", "border": "blue.2" },
+    "neutral":  { "change": "gray.10", "changeBg": "gray.5" },
     "interactive": {
-      "bg": "blue.3", "bgHover": "blue.4", "bgActive": "blue.2",
-      "text": "gray.2",
-      "ghostHover": "gray.3", "ghostActive": "gray.4",
-      "outlineBorder": "gray.4", "outlineHover": "gray.4",
-      "focusRing": "blue.2",
-      "disabledBg": "gray.3", "disabledText": "gray.4"
+      "bg": "blue.6", "bgHover": "blue.7", "bgActive": "blue.4",
+      "text": "gray.4",
+      "ghostHover": "gray.5", "ghostActive": "gray.7",
+      "outlineBorder": "gray.8", "outlineHover": "gray.9",
+      "focusRing": "blue.5",
+      "disabledBg": "gray.5", "disabledText": "gray.9"
     }
   },
 
@@ -455,7 +468,7 @@ Create `apps/situation-room/themes/dark.json`. Same schema as `light.json`, but 
     "cardForeground": "text.primary",
     "popover": "surface.sunken",
     "popoverForeground": "text.primary",
-    "primary": "brand.default",
+    "primary": "accentBrand.default",
     "primaryForeground": "surface.base",
     "secondary": "border.default",
     "secondaryForeground": "text.primary",
@@ -463,18 +476,18 @@ Create `apps/situation-room/themes/dark.json`. Same schema as `light.json`, but 
     "mutedForeground": "text.tertiary",
     "accent": "border.default",
     "accentForeground": "text.primary",
-    "destructive": "negative.text",
+    "destructive": "negative.default",
     "border": "border.default",
     "input": "border.default",
-    "ring": "brand.default",
+    "ring": "blue.5",
     "sidebar": "surface.sunken",
     "sidebarForeground": "text.primary",
-    "sidebarPrimary": "brand.default",
+    "sidebarPrimary": "accentBrand.default",
     "sidebarPrimaryForeground": "surface.base",
     "sidebarAccent": "surface.elevated",
     "sidebarAccentForeground": "text.primary",
     "sidebarBorder": "border.default",
-    "sidebarRing": "brand.default"
+    "sidebarRing": "blue.5"
   },
 
   "typography": {
@@ -506,39 +519,45 @@ Create `apps/situation-room/themes/dark.json`. Same schema as `light.json`, but 
       "triggerBg": "surface.base", "triggerBorder": "border.default",
       "triggerText": "text.secondary",
       "triggerHoverBg": "surface.elevated", "triggerHoverBorder": "border.strong",
-      "activeBg": "brand.subtle", "activeBorder": "brand.default", "activeText": "brand.default",
-      "badgeBg": "brand.default", "badgeText": "surface.base"
+      "activeBg": "accentBrand.subtle", "activeBorder": "blue.3", "activeText": "accentBrand.default",
+      "badgeBg": "accentBrand.default", "badgeText": "surface.base"
     },
     "table": {
       "headerBg": "surface.elevated", "headerText": "text.secondary", "headerBorder": "border.default",
-      "rowBg": "transparent", "rowAltBg": "surface.base",
-      "rowHoverBg": "brand.subtle", "rowSelectedBg": "brand.subtle",
-      "rowBorder": "border.subtle",
+      "rowBg": "transparent", "rowAltBg": "gray.3",
+      "rowHoverBg": "gray.6", "rowSelectedBg": "accentBrand.subtle",
+      "rowBorder": "gray.7",
       "cellText": "text.primary", "cellSecondary": "text.secondary"
     },
     "tab": {
-      "railBg": "surface.sunken", "text": "text.tertiary", "hoverText": "text.secondary",
+      "railBg": "gray.1", "text": "text.tertiary", "hoverText": "text.secondary",
       "activeBg": "surface.elevated", "activeText": "text.primary"
     },
     "heading": { "primary": "text.primary", "section": "text.secondary", "overline": "text.tertiary" }
   },
 
   "viz": {
-    "categorical": ["blue.3", "cyan.2", "green.2", "amber.2", "red.2", "blue.4", "amber.1", "green.1"],
-    "sequential":  ["blue.0", "blue.1", "blue.2", "blue.3", "blue.4", "blue.5"],
-    "diverging":   ["red.2", "red.1", "gray.2", "green.1", "green.2"]
+    "categorical": ["blue.6", "purple.0", "green.2", "amber.2", "cyan.2", "red.2", "orange.1", "orange.0"],
+    "sequential":  ["blue.0", "blue.1", "blue.3", "blue.4", "blue.6", "blue.7"],
+    "diverging":   ["red.2", "red.1", "gray.4", "green.1", "green.2"]
   }
 }
 ```
 
-**Critical note on dark palette:** The dark theme palette arrays are ordered from darkest to lightest (opposite of light). `gray.0` in dark is `#1a1d23` (deepest dark), `gray.8` is `#d7dae0` (lightest text). This means `colors.text.primary` = `"gray.7"` = `#abb2bf` matches the current dark `--text-primary` value. Cross-reference every resolved hex against the current `.dark` block after the build script is working.
+**Palette index reference (dark):**
 
-**Some current dark values don't map cleanly to palette refs.** For example:
-- Current `--table-row-alt-bg: #262a31` is between `gray.1` (#21252b) and `gray.2` (#282c34). Use `gray.2` and note the small visual difference, OR add `#262a31` to the gray palette. The implementer should choose based on visual comparison.
-- Current `--table-row-border: #333842` falls between gray indexes. Same approach — use nearest or extend palette.
-- Current `--tab-rail: #1c2027` is between `gray.0` and `gray.1`. Use `gray.0` or adjust.
+| Palette | Indices |
+|---------|---------|
+| gray | 0:#1a1d23 1:#1c2027 2:#21252b 3:#262a31 4:#282c34 5:#2c313a 6:#2e3440 7:#333842 8:#3e4451 9:#4d5566 10:#5c6370 11:#828997 12:#abb2bf 13:#d7dae0 |
+| blue | 0:#253545 1:#354a5e 2:#355565 3:#3a6090 4:#4a9be0 5:#528bff 6:#61afef 7:#82c0f5 8:#a8d4f7 |
+| green | 0:#2a3a2a 1:#3d5a3d 2:#98c379 |
+| red | 0:#3a2a2a 1:#5a3a3a 2:#e06c75 |
+| amber | 0:#3a3525 1:#5a5035 2:#e5c07b |
+| cyan | 0:#253a3e 1:#3a5a60 2:#56b6c2 |
+| purple | 0:#c678dd |
+| orange | 0:#be5046 1:#d19a66 |
 
-**Resolution strategy:** Start with the closest palette refs. After the build script generates CSS, do a **side-by-side visual comparison** of the running app vs the current hard-coded version. Adjust palette arrays or add intermediate values as needed until visual parity is achieved.
+Every hex value in `global.css` `.dark` (lines 147–274) has a corresponding palette entry. Every ref resolves to the exact hex in the current CSS. No approximations, no manual reconciliation.
 
 - [ ] **Step 2: Commit**
 
@@ -693,8 +712,8 @@ Add to `__tests__/generate-theme.test.ts`:
 const testColors = {
   surface: { base: 'gray.0', elevated: 'white', sunken: 'gray.1' },
   text: { primary: 'gray.3', inverse: 'white' },
-  brand: { default: 'blue.3', subtle: 'blue.0' },
-  negative: { text: 'blue.3' },
+  accentBrand: { default: 'blue.3', subtle: 'blue.0' },
+  negative: { default: 'blue.3' },
 };
 
 describe('resolveColorRef', () => {
@@ -703,15 +722,21 @@ describe('resolveColorRef', () => {
   });
 
   it('resolves chained ref (color → palette)', () => {
-    expect(resolveColorRef('brand.default', testColors, testPalette)).toBe('#3574c4');
+    expect(resolveColorRef('accentBrand.default', testColors, testPalette)).toBe('#3574c4');
   });
 
   it('resolves "transparent" as literal', () => {
     expect(resolveColorRef('transparent', testColors, testPalette)).toBe('transparent');
   });
 
-  it('throws on invalid section', () => {
-    expect(() => resolveColorRef('nonexistent.key', testColors, testPalette)).toThrow();
+  it('falls back to palette ref when section not in colors', () => {
+    // "gray.3" is not a colors section — should resolve as a palette ref
+    expect(resolveColorRef('gray.3', testColors, testPalette)).toBe('#dce0e8');
+    expect(resolveColorRef('blue.0', testColors, testPalette)).toBe('#edf4fc');
+  });
+
+  it('throws on completely invalid ref', () => {
+    expect(() => resolveColorRef('nonexistent.99', testColors, testPalette)).toThrow();
   });
 });
 ```
@@ -746,7 +771,10 @@ export function resolveColorRef(
   const key = ref.slice(dotIndex + 1);
 
   const sectionObj = colors[section];
-  if (!sectionObj) throw new Error(`Invalid color section: "${section}" in ref "${ref}"`);
+  if (!sectionObj) {
+    // Not a colors section — try as a direct palette ref (e.g. "gray.10", "blue.4")
+    return resolvePaletteRef(ref, palette);
+  }
 
   const paletteRef = sectionObj[key];
   if (paletteRef === undefined) throw new Error(`Invalid color key: "${key}" in section "${section}"`);
@@ -933,10 +961,10 @@ describe('generateCssFromTheme', () => {
         surface: { base: 'gray.0', elevated: 'white' },
         text: { primary: 'gray.1' },
         border: { default: 'gray.0' },
-        brand: { default: 'blue.0' },
-        positive: { text: 'green.0', bg: 'green.0', border: 'green.0' },
-        negative: { text: 'red.0', bg: 'red.0', border: 'red.0' },
-        neutral: { text: 'gray.1', bg: 'gray.0', border: 'gray.0' },
+        accentBrand: { default: 'blue.0' },
+        positive: { default: 'green.0', bg: 'green.0', border: 'green.0' },
+        negative: { default: 'red.0', bg: 'red.0', border: 'red.0' },
+        neutral: { change: 'gray.1', changeBg: 'gray.0' },
         interactive: { bg: 'blue.0', text: 'white', focusRing: 'blue.0' },
       },
       shadcn: {
@@ -946,7 +974,7 @@ describe('generateCssFromTheme', () => {
         cardForeground: 'text.primary',
         popover: 'surface.elevated',
         popoverForeground: 'text.primary',
-        primary: 'brand.default',
+        primary: 'accentBrand.default',
         primaryForeground: 'text.primary',
         secondary: 'surface.base',
         secondaryForeground: 'text.primary',
@@ -954,10 +982,10 @@ describe('generateCssFromTheme', () => {
         mutedForeground: 'text.primary',
         accent: 'surface.base',
         accentForeground: 'text.primary',
-        destructive: 'negative.text',
+        destructive: 'negative.default',
         border: 'border.default',
         input: 'border.default',
-        ring: 'brand.default',
+        ring: 'accentBrand.default',
       },
       typography: {
         fontFamily: { sans: 'Inter', mono: 'monospace' },
@@ -1025,7 +1053,7 @@ Add to `themes/generate-theme.ts` the function that takes a parsed `Theme` and r
 6. Derive `--chart-N` from resolved `viz.categorical`
 7. Emit `--viz-N` from resolved `viz.categorical`
 8. Emit `--font-sans` and `--font-mono` from typography
-9. Return the full CSS string with the correct selector (`:root`, `.dark`, or `.kebab-name`)
+9. Return the full CSS string with the correct selector (`:root` for Light, `.dark` for Dark)
 
 Then add a `generateThemeInlineBlock` function that emits the `@theme inline` block mapping all vars to Tailwind utility prefixes.
 
@@ -1050,7 +1078,7 @@ export function generateCssFromTheme(theme: Theme): string {
   const { palette, colors, shadcn, typography, geometry, components, dashboard, viz } = theme;
 
   // Determine CSS selector
-  const selector = theme.name === 'Light' ? ':root' : theme.name === 'Dark' ? '.dark' : `.${kebabCase(theme.name)}`;
+  const selector = theme.name === 'Light' ? ':root' : '.dark';
 
   lines.push(`${selector} {`);
 
@@ -1063,12 +1091,15 @@ export function generateCssFromTheme(theme: Theme): string {
   // 2. Radius base
   lines.push(`  --radius: ${geometry.radiusBase};`);
 
-  // 3. Surface/text/border/brand/status colors from `colors`
+  // 3. Surface/text/border/accentBrand/status colors from `colors`
   for (const [section, entries] of Object.entries(colors)) {
     for (const [key, ref] of Object.entries(entries)) {
       const resolved = resolvePaletteRef(ref, palette);
       if (section === 'surface' && key === 'base') {
         lines.push(`  --surface: ${resolved};`);
+      } else if (key === 'default') {
+        // border.default → --border, accentBrand.default → --accent-brand
+        lines.push(`  --${kebabCase(section)}: ${resolved};`);
       } else {
         lines.push(`  ${cssVarName(section, key)}: ${resolved};`);
       }
@@ -1109,7 +1140,7 @@ export function generateCssFromTheme(theme: Theme): string {
 }
 ```
 
-**Note:** The above is a starting implementation. The implementer must verify that every CSS variable name in the generated output matches what the current `global.css` uses. For instance, the `surface.base` colors section should emit `--surface` (not `--surface-base`). The `neutral` status section currently emits `--neutral-change` and `--neutral-change-bg` in the current CSS — but per the spec revision, these become `--neutral-text`, `--neutral-bg`, `--neutral-border`. The implementer will need to update component references accordingly.
+**Note:** The above is a starting implementation. The implementer must verify that every CSS variable name in the generated output matches what the current `global.css` uses. Special cases: `surface.base` → `--surface` (not `--surface-base`); `key === 'default'` → `--{section}` (e.g. `accentBrand.default` → `--accent-brand`, `border.default` → `--border`). The `neutral` section uses keys `change` and `changeBg`, generating `--neutral-change` and `--neutral-change-bg` — matching the current CSS exactly.
 
 - [ ] **Step 22: Run tests to verify they pass**
 
@@ -1186,7 +1217,7 @@ export function generateThemeInlineBlock(
 
   // Color vars: everything except --radius*, --font-*, and component geometry
   const colorVarPrefixes = [
-    '--surface', '--text-', '--border-', '--brand-', '--positive', '--negative',
+    '--surface', '--text-', '--border', '--positive', '--negative',
     '--warning', '--info', '--neutral', '--interactive', '--filter-', '--table-',
     '--tab-', '--heading-', '--viz-', '--chart-', '--accent',
     // shadcn vars
@@ -1249,84 +1280,321 @@ git add apps/situation-room/__tests__/generate-theme.test.ts apps/situation-room
 git commit -m "feat(tokens): add @theme inline block generation with tests"
 ```
 
-### Part G: Main Script (File I/O + Watch Mode)
+### Part G: Theme Validation
 
-- [ ] **Step 28: Implement main() function and CLI**
+The JSON Schema from Task 2 is documentation. This step implements the real validation that runs on every generation. Tests first.
 
-Add to `themes/generate-theme.ts` the main orchestration code:
+- [ ] **Step 28: Write failing tests for validateTheme**
+
+Add to `__tests__/generate-theme.test.ts`:
 
 ```typescript
+import { validateTheme } from '../themes/generate-theme';
+
+describe('validateTheme', () => {
+  // Use a valid minimal theme as baseline, then break one thing at a time
+
+  function validTheme(): Theme {
+    return {
+      name: 'Test',
+      palette: { gray: ['#aaa'], blue: ['#bbb'], green: ['#ccc'], red: ['#ddd'], amber: ['#eee'], cyan: ['#fff'], white: '#ffffff', black: '#000000', transparent: 'transparent' },
+      colors: { surface: { base: 'gray.0' }, text: { primary: 'gray.0' }, border: { default: 'gray.0' }, accentBrand: { default: 'blue.0' }, positive: { default: 'green.0', bg: 'green.0', border: 'green.0' }, negative: { default: 'red.0', bg: 'red.0', border: 'red.0' }, neutral: { change: 'gray.0', changeBg: 'gray.0' }, interactive: { bg: 'blue.0', text: 'white', focusRing: 'blue.0' } },
+      shadcn: { background: 'surface.base', foreground: 'text.primary', card: 'surface.base', cardForeground: 'text.primary', popover: 'surface.base', popoverForeground: 'text.primary', primary: 'accentBrand.default', primaryForeground: 'text.primary', secondary: 'surface.base', secondaryForeground: 'text.primary', muted: 'surface.base', mutedForeground: 'text.primary', accent: 'surface.base', accentForeground: 'text.primary', destructive: 'negative.default', border: 'border.default', input: 'border.default', ring: 'accentBrand.default' },
+      typography: { fontFamily: { sans: 'Inter' }, fontSize: { xs: '0.75rem' }, fontWeight: { normal: '400' } },
+      geometry: { radiusBase: '0.375rem', radiusScale: { sm: 0.5 }, shadow: { sm: '0 1px 2px rgba(0,0,0,0.05)' } },
+      components: { card: { radius: 'sm' } },
+      dashboard: { tab: { railBg: 'surface.base' } },
+      viz: { categorical: ['blue.0', 'green.0', 'red.0'], sequential: ['gray.0', 'blue.0', 'green.0'], diverging: ['red.0', 'gray.0', 'green.0'] },
+    };
+  }
+
+  it('accepts a valid theme', () => {
+    expect(validateTheme(validTheme())).toEqual([]);
+  });
+
+  it('rejects missing required top-level sections', () => {
+    const t = validTheme();
+    delete (t as any).palette;
+    delete (t as any).viz;
+    const errors = validateTheme(t);
+    expect(errors.some(e => e.includes('palette'))).toBe(true);
+    expect(errors.some(e => e.includes('viz'))).toBe(true);
+  });
+
+  it('rejects invalid hex in palette', () => {
+    const t = validTheme();
+    t.palette.gray = ['not-a-hex'];
+    const errors = validateTheme(t);
+    expect(errors.some(e => e.includes('hex'))).toBe(true);
+  });
+
+  it('rejects missing required shadcn keys', () => {
+    const t = validTheme();
+    delete (t.shadcn as any).background;
+    delete (t.shadcn as any).ring;
+    const errors = validateTheme(t);
+    expect(errors.some(e => e.includes('background'))).toBe(true);
+    expect(errors.some(e => e.includes('ring'))).toBe(true);
+  });
+
+  it('rejects negative radius scale values', () => {
+    const t = validTheme();
+    t.geometry.radiusScale.bad = -1;
+    const errors = validateTheme(t);
+    expect(errors.some(e => e.includes('radiusScale'))).toBe(true);
+  });
+
+  it('rejects viz palette with fewer than 3 entries', () => {
+    const t = validTheme();
+    t.viz.categorical = ['blue.0'];
+    const errors = validateTheme(t);
+    expect(errors.some(e => e.includes('categorical'))).toBe(true);
+  });
+
+  it('rejects unresolvable palette refs in colors', () => {
+    const t = validTheme();
+    t.colors.surface.base = 'purple.99';
+    const errors = validateTheme(t);
+    expect(errors.some(e => e.includes('purple'))).toBe(true);
+  });
+
+  it('rejects unresolvable color refs in shadcn', () => {
+    const t = validTheme();
+    t.shadcn.background = 'nonexistent.section';
+    const errors = validateTheme(t);
+    expect(errors.some(e => e.includes('nonexistent'))).toBe(true);
+  });
+});
+```
+
+- [ ] **Step 29: Run tests to verify they fail**
+
+```bash
+cd apps/situation-room && pnpm test -- __tests__/generate-theme.test.ts
+```
+
+- [ ] **Step 30: Implement validateTheme**
+
+Add to `themes/generate-theme.ts`:
+
+```typescript
+const REQUIRED_SECTIONS = ['name', 'palette', 'colors', 'shadcn', 'typography', 'geometry', 'components', 'dashboard', 'viz'] as const;
+
+const REQUIRED_SHADCN_KEYS = [
+  'background', 'foreground', 'card', 'cardForeground',
+  'popover', 'popoverForeground', 'primary', 'primaryForeground',
+  'secondary', 'secondaryForeground', 'muted', 'mutedForeground',
+  'accent', 'accentForeground', 'destructive',
+  'border', 'input', 'ring',
+] as const;
+
+const HEX_RE = /^#[0-9a-fA-F]{6}$/;
+
+export function validateTheme(theme: any): string[] {
+  const errors: string[] = [];
+
+  // 1. Required top-level sections
+  for (const key of REQUIRED_SECTIONS) {
+    if (theme[key] === undefined || theme[key] === null) {
+      errors.push(`Missing required section: "${key}"`);
+    }
+  }
+  if (errors.length > 0) return errors; // Can't validate further without structure
+
+  // 2. Palette: hex strings or arrays of hex strings
+  if (theme.palette && typeof theme.palette === 'object') {
+    for (const [key, val] of Object.entries(theme.palette)) {
+      if (key === 'transparent') continue;
+      if (Array.isArray(val)) {
+        val.forEach((v, i) => {
+          if (typeof v !== 'string' || !HEX_RE.test(v)) {
+            errors.push(`palette.${key}[${i}]: "${v}" is not a valid hex color`);
+          }
+        });
+      } else if (typeof val === 'string') {
+        if (!HEX_RE.test(val)) {
+          errors.push(`palette.${key}: "${val}" is not a valid hex color`);
+        }
+      }
+    }
+  }
+
+  // 3. Required shadcn keys
+  if (theme.shadcn) {
+    for (const key of REQUIRED_SHADCN_KEYS) {
+      if (!theme.shadcn[key]) {
+        errors.push(`shadcn: missing required key "${key}"`);
+      }
+    }
+  }
+
+  // 4. Geometry constraints
+  if (theme.geometry) {
+    if (theme.geometry.radiusScale) {
+      for (const [name, val] of Object.entries(theme.geometry.radiusScale)) {
+        if (typeof val !== 'number' || val <= 0) {
+          errors.push(`geometry.radiusScale.${name}: must be a positive number, got ${val}`);
+        }
+      }
+    }
+  }
+
+  // 5. Viz palette minimums
+  if (theme.viz) {
+    for (const key of ['categorical', 'sequential', 'diverging'] as const) {
+      if (theme.viz[key] && theme.viz[key].length < 3) {
+        errors.push(`viz.${key}: must have at least 3 entries, got ${theme.viz[key].length}`);
+      }
+    }
+  }
+
+  // 6. Validate all refs actually resolve (catches typos early)
+  if (theme.colors && theme.palette) {
+    for (const [section, entries] of Object.entries(theme.colors)) {
+      for (const [key, ref] of Object.entries(entries as Record<string, string>)) {
+        try { resolvePaletteRef(ref, theme.palette); }
+        catch { errors.push(`colors.${section}.${key}: unresolvable palette ref "${ref}"`); }
+      }
+    }
+  }
+
+  if (theme.shadcn && theme.colors && theme.palette) {
+    for (const [key, ref] of Object.entries(theme.shadcn as Record<string, string>)) {
+      try { resolveColorRef(ref, theme.colors, theme.palette); }
+      catch { errors.push(`shadcn.${key}: unresolvable color ref "${ref}"`); }
+    }
+  }
+
+  if (theme.dashboard && theme.colors && theme.palette) {
+    for (const [section, entries] of Object.entries(theme.dashboard)) {
+      for (const [key, ref] of Object.entries(entries as Record<string, string>)) {
+        try { resolveColorRef(ref, theme.colors, theme.palette); }
+        catch { errors.push(`dashboard.${section}.${key}: unresolvable color ref "${ref}"`); }
+      }
+    }
+  }
+
+  if (theme.viz && theme.palette) {
+    for (const key of ['categorical', 'sequential', 'diverging'] as const) {
+      if (theme.viz[key]) {
+        theme.viz[key].forEach((ref: string, i: number) => {
+          try { resolvePaletteRef(ref, theme.palette); }
+          catch { errors.push(`viz.${key}[${i}]: unresolvable palette ref "${ref}"`); }
+        });
+      }
+    }
+  }
+
+  return errors;
+}
+```
+
+- [ ] **Step 31: Run tests to verify they pass**
+
+```bash
+cd apps/situation-room && pnpm test -- __tests__/generate-theme.test.ts
+```
+
+- [ ] **Step 32: Commit**
+
+```bash
+git add apps/situation-room/__tests__/generate-theme.test.ts apps/situation-room/themes/generate-theme.ts
+git commit -m "feat(tokens): add comprehensive theme validation with tests"
+```
+
+### Part H: Main Script (File I/O + Watch Mode)
+
+- [ ] **Step 33: Implement main() function and CLI**
+
+Add to `themes/generate-theme.ts` the main orchestration code.
+
+**Critical design decisions:**
+- `generate()` **throws** on errors instead of calling `process.exit(1)`. This is essential: `process.exit()` terminates the entire Node process, which means the watcher would die on the first bad JSON edit. By throwing, the watcher's try/catch can log the error and keep running, preserving the previous `generated-theme.css`.
+- Only `main()` calls `process.exit(1)` in one-shot mode (no `--watch`) after catching a thrown error.
+- The script reads exactly two theme files: `light.json` (→ `:root`) and `dark.json` (→ `.dark`). No dynamic discovery.
+- Variable names for `@theme inline` are merged from **both** themes using a `Set`, so any variable present in either theme is registered with Tailwind.
+- Geometry for the `@theme inline` radius scale comes from the Light theme (the base theme).
+
+```typescript
+class ThemeGenerationError extends Error {
+  constructor(public readonly errors: string[]) {
+    super(`Theme generation failed:\n${errors.map(e => `  ✗ ${e}`).join('\n')}`);
+    this.name = 'ThemeGenerationError';
+  }
+}
+
+function generate(themesDir: string, outputPath: string): void {
+  const lightPath = join(themesDir, 'light.json');
+  const darkPath = join(themesDir, 'dark.json');
+
+  const errors: string[] = [];
+
+  // Parse both theme files
+  let lightTheme: Theme;
+  let darkTheme: Theme;
+  try {
+    lightTheme = JSON.parse(readFileSync(lightPath, 'utf-8'));
+  } catch (e) {
+    throw new ThemeGenerationError([`light.json: ${(e as Error).message}`]);
+  }
+  try {
+    darkTheme = JSON.parse(readFileSync(darkPath, 'utf-8'));
+  } catch (e) {
+    throw new ThemeGenerationError([`dark.json: ${(e as Error).message}`]);
+  }
+
+  // Validate both
+  errors.push(...validateTheme(lightTheme).map(e => `light.json: ${e}`));
+  errors.push(...validateTheme(darkTheme).map(e => `dark.json: ${e}`));
+  if (errors.length > 0) throw new ThemeGenerationError(errors);
+
+  // Generate CSS blocks
+  const lightCss = generateCssFromTheme(lightTheme);
+  const darkCss = generateCssFromTheme(darkTheme);
+
+  // Merge var names from BOTH themes for @theme inline
+  const varSet = new Set<string>();
+  for (const css of [lightCss, darkCss]) {
+    for (const match of css.matchAll(/\s+(--[\w-]+):/g)) {
+      varSet.add(match[1]);
+    }
+  }
+
+  // Use Light theme geometry for @theme inline (base theme)
+  const inlineBlock = generateThemeInlineBlock(
+    [...varSet],
+    lightTheme.geometry,
+  );
+
+  const output = [
+    '/* DO NOT EDIT — generated by theme:generate */',
+    '',
+    lightCss,
+    '',
+    darkCss,
+    '',
+    inlineBlock,
+    '',
+  ].join('\n');
+
+  writeFileSync(outputPath, output, 'utf-8');
+  console.log(`✓ Generated ${outputPath}`);
+}
+
 function main() {
   const themesDir = resolve(import.meta.dirname, '.');
   const outputPath = resolve(import.meta.dirname, '../app/generated-theme.css');
   const isWatch = process.argv.includes('--watch');
 
-  function generate() {
-    const files = readdirSync(themesDir)
-      .filter(f => f.endsWith('.json') && f !== 'theme.schema.json');
-
-    if (files.length === 0) {
-      console.error('No theme JSON files found in', themesDir);
-      process.exit(1);
-    }
-
-    const errors: string[] = [];
-    const themeBlocks: string[] = [];
-    let allVarNames: string[] = [];
-    let geometryForInline: Theme['geometry'] | null = null;
-
-    for (const file of files) {
-      const raw = readFileSync(join(themesDir, file), 'utf-8');
-      let theme: Theme;
-      try {
-        theme = JSON.parse(raw);
-      } catch (e) {
-        errors.push(`${file}: Invalid JSON — ${(e as Error).message}`);
-        continue;
-      }
-
-      // Basic validation
-      if (!theme.name) errors.push(`${file}: Missing "name" field`);
-      if (!theme.palette) errors.push(`${file}: Missing "palette" field`);
-      if (errors.length > 0) continue;
-
-      try {
-        const css = generateCssFromTheme(theme);
-        themeBlocks.push(css);
-
-        // Collect var names from the CSS for @theme inline
-        const varMatches = css.matchAll(/\s+(--[\w-]+):/g);
-        const names = [...varMatches].map(m => m[1]);
-        if (allVarNames.length === 0) {
-          allVarNames = names;
-          geometryForInline = theme.geometry;
-        }
-      } catch (e) {
-        errors.push(`${file}: ${(e as Error).message}`);
-      }
-    }
-
-    if (errors.length > 0) {
-      console.error('Theme generation failed:');
-      errors.forEach(e => console.error(`  ✗ ${e}`));
-      process.exit(1);
-    }
-
-    const inlineBlock = generateThemeInlineBlock(allVarNames, geometryForInline!);
-    const output = [
-      '/* DO NOT EDIT — generated by theme:generate */',
-      '',
-      ...themeBlocks,
-      '',
-      inlineBlock,
-      '',
-    ].join('\n');
-
-    writeFileSync(outputPath, output, 'utf-8');
-    console.log(`✓ Generated ${outputPath} (${files.length} theme(s))`);
+  // One-shot generation — exit on failure
+  try {
+    generate(themesDir, outputPath);
+  } catch (e) {
+    console.error((e as Error).message);
+    if (!isWatch) process.exit(1);
+    // In watch mode, the initial generation failed but we keep watching
+    // so the developer can fix the JSON and save again.
   }
-
-  generate();
 
   if (isWatch) {
     import('chokidar').then(({ watch }) => {
@@ -1335,39 +1603,38 @@ function main() {
         ignored: /theme\.schema\.json$/,
       });
       console.log('Watching themes/*.json for changes...');
-      watcher.on('change', (path) => {
+
+      function regenerate(path: string) {
         console.log(`Theme file changed: ${path}`);
         try {
-          generate();
+          generate(themesDir, outputPath);
         } catch (e) {
-          console.error('Regeneration failed:', (e as Error).message);
+          // Log error but DO NOT exit — keep watching.
+          // Previous generated-theme.css is preserved.
+          console.error((e as Error).message);
         }
-      });
-      watcher.on('add', (path) => {
-        console.log(`New theme file: ${path}`);
-        try {
-          generate();
-        } catch (e) {
-          console.error('Regeneration failed:', (e as Error).message);
-        }
-      });
+      }
+
+      watcher.on('change', regenerate);
+      watcher.on('add', regenerate);
     });
   }
 }
 
 // Only run main when executed directly (not when imported for tests)
-if (process.argv[1] && resolve(process.argv[1]).includes('generate-theme')) {
+const isDirectExecution = process.argv[1] && import.meta.filename === resolve(process.argv[1]);
+if (isDirectExecution) {
   main();
 }
 ```
 
-- [ ] **Step 29: Run the generator and verify output**
+- [ ] **Step 34: Run the generator and verify output**
 
 ```bash
 cd apps/situation-room && pnpm theme:generate
 ```
 
-Expected: `✓ Generated ... (2 theme(s))`. Check the output file:
+Expected: `✓ Generated app/generated-theme.css`. Check the output file:
 
 ```bash
 head -50 apps/situation-room/app/generated-theme.css
@@ -1375,7 +1642,7 @@ head -50 apps/situation-room/app/generated-theme.css
 
 Verify it has `:root { ... }`, `.dark { ... }`, and `@theme inline { ... }`.
 
-- [ ] **Step 30: Run all tests**
+- [ ] **Step 35: Run all tests**
 
 ```bash
 cd apps/situation-room && pnpm test
@@ -1383,7 +1650,7 @@ cd apps/situation-room && pnpm test
 
 Expected: All tests pass (both new generate-theme tests and existing tests).
 
-- [ ] **Step 31: Commit**
+- [ ] **Step 36: Commit**
 
 ```bash
 git add apps/situation-room/themes/generate-theme.ts
@@ -1392,53 +1659,59 @@ git commit -m "feat(tokens): add main script with file I/O and watch mode"
 
 ---
 
-## Task 6: Validate Generated CSS Against Current CSS
+## Task 6: Verify Generated CSS Matches Current CSS Exactly
 
 **Files:**
-- Modify: `apps/situation-room/themes/light.json` (may need value adjustments)
-- Modify: `apps/situation-room/themes/dark.json` (may need value adjustments)
+- None modified (verification only). If mismatches are found, go back and fix the theme JSON files before proceeding.
 
-This task ensures the generated CSS produces identical visual results to the current hand-written CSS.
+This task verifies that the generated CSS produces **byte-identical** variable values to the current hand-written CSS. Because Tasks 3–4 include palette entries for every hex value in `global.css`, there should be zero differences. If any are found, the JSON is wrong — fix it, don't add workarounds.
 
-- [ ] **Step 1: Generate CSS and diff against current variables**
+- [ ] **Step 1: Generate CSS**
 
 ```bash
 cd apps/situation-room && pnpm theme:generate
 ```
 
-Then manually compare. Extract current variable names and values from `global.css` and compare with `generated-theme.css`. Look for:
-- Missing variables (present in current CSS but not generated)
-- Different values (same variable name, different hex/value)
-- Renamed variables (the spec renames `--neutral-change` → `--neutral-text`)
+Expected: `✓ Generated app/generated-theme.css`
 
-- [ ] **Step 2: Fix any value mismatches in theme JSON files**
+- [ ] **Step 2: Extract and diff variable values**
 
-For each mismatch found in Step 1:
-- If the current CSS has a value that doesn't match any palette entry, either:
-  a. Add the value to the palette array, OR
-  b. Add a direct override in the `dashboard` section
+Extract all `--var: value` pairs from both the current `global.css` (`:root` and `.dark` blocks) and the generated `generated-theme.css` (`:root` and `.dark` blocks). Compare them. Every variable name and value in the current CSS must appear identically in the generated output.
 
-Common mismatches to watch for:
-- `--accent` (current: `#e8ecf2` light, `#3e4451` dark) — map to closest palette ref or add to palette
-- `--filter-bar-bg` (current: `#f0f2f5` light) — may need palette addition
-- `--info-border` (current: `#b0cfe8` light) — may need palette addition
-- Dark theme intermediate values (e.g. `#262a31`, `#333842`, `#1c2027`)
+```bash
+# Quick diff approach: extract sorted var declarations from both files
+cd apps/situation-room
+grep -oP '\-\-[\w-]+:\s*[^;]+' app/global.css | sort > /tmp/current-vars.txt
+grep -oP '\-\-[\w-]+:\s*[^;]+' app/generated-theme.css | sort > /tmp/generated-vars.txt
+diff /tmp/current-vars.txt /tmp/generated-vars.txt
+```
 
-For each fix, update the JSON and re-run `pnpm theme:generate` until the diff is minimal.
+Expected: The diff shows **only** additions (new vars like `--viz-*`, `--font-*`, `--card-radius`, `--filter-height`, etc.) and the `--neutral-change`/`--neutral-change-bg` vars that match their current CSS counterparts. There should be **zero** cases where a variable exists in both files with different values.
 
-- [ ] **Step 3: Start the dev server and visually verify**
+If there ARE value mismatches: **stop**. Go back to `light.json` or `dark.json` and fix the palette or ref that produces the wrong value. Do not proceed until the diff is clean.
+
+- [ ] **Step 3: Start dev server and visually verify**
 
 ```bash
 cd apps/situation-room && pnpm dev
 ```
 
-Open `http://localhost:3100` in the browser. Compare against the current app (git stash the generated file, run with current CSS, take a screenshot, then restore). Both light and dark themes should look identical.
+Open `http://localhost:3100`. The app should look identical to its current state in both light and dark themes. There should be zero visible differences.
 
-- [ ] **Step 4: Commit any JSON adjustments**
+- [ ] **Step 4: Commit verification (no file changes expected)**
+
+If the verification passed with no JSON adjustments needed:
+
+```bash
+git log --oneline -1
+# Should be the Part H commit. No new commit needed.
+```
+
+If JSON files were adjusted to fix mismatches, commit the fixes:
 
 ```bash
 git add apps/situation-room/themes/light.json apps/situation-room/themes/dark.json
-git commit -m "fix(tokens): adjust theme values to match current CSS exactly"
+git commit -m "fix(tokens): correct theme values to match current CSS exactly"
 ```
 
 ---
@@ -1506,7 +1779,7 @@ Replace the entire contents of `apps/situation-room/app/global.css` with:
   }
   .pill-positive { @apply pill-status bg-positive-bg text-positive border-positive-border; }
   .pill-negative { @apply pill-status bg-negative-bg text-negative border-negative-border; }
-  .pill-neutral  { @apply pill-status bg-neutral-bg text-neutral border-neutral-border; }
+  .pill-neutral  { @apply pill-status bg-neutral-change-bg text-neutral-change border-neutral-change-bg; }
 
   /* ── Headings ── */
   .heading-overline { @apply text-xs font-medium uppercase tracking-[0.15em] text-heading-overline; }
