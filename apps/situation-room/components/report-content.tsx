@@ -58,7 +58,7 @@ export function ReportContent() {
           <ExecutiveSnapshot data={data} />
 
           <section className="py-8 border-b border-border-subtle">
-            <h2 className="text-xs font-medium uppercase tracking-[0.15em] text-text-tertiary mb-5">
+            <h2 className="heading-overline mb-5">
               Category Comparison
             </h2>
             <TrendChart data={data} metricIndex={0} />

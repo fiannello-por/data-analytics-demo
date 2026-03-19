@@ -12,7 +12,7 @@ export function ReportHeader({ lastRefreshed }: ReportHeaderProps) {
     <header className="pb-8 border-b border-border-subtle">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-xs font-medium uppercase tracking-[0.15em] text-text-tertiary mb-2">
+          <p className="heading-overline mb-2">
             Situation Room
           </p>
           <h1 className="text-3xl font-semibold tracking-tight text-text-primary leading-tight">
