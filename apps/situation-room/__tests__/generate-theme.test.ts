@@ -244,11 +244,189 @@ describe('generateCssFromTheme', () => {
 
     // Phase 1 exclusions — these vars don't exist in current CSS
     expect(css).not.toContain('--viz-1');
-    expect(css).not.toContain('--card-radius');
-    expect(css).not.toContain('--filter-height');
     // --font-sans and --font-mono live only in @theme inline, not in :root/.dark
     expect(css).not.toMatch(/^\s+--font-sans:/m);
     expect(css).not.toMatch(/^\s+--font-mono:/m);
+  });
+
+  it('emits component geometry vars', () => {
+    const theme: Theme = {
+      name: 'Light',
+      palette: {
+        gray: ['#aaa', '#bbb'],
+        blue: ['#ccc'],
+        green: ['#ddd'],
+        red: ['#eee'],
+        amber: ['#fff'],
+        cyan: ['#111'],
+        white: '#ffffff',
+        black: '#000000',
+        transparent: 'transparent',
+      },
+      colors: {
+        surface: { base: 'gray.0', elevated: 'white' },
+        text: { primary: 'gray.1' },
+        border: { default: 'gray.0' },
+        accentBrand: { default: 'blue.0' },
+        positive: { default: 'green.0', bg: 'green.0', border: 'green.0' },
+        negative: { default: 'red.0', bg: 'red.0', border: 'red.0' },
+        neutral: { change: 'gray.1', changeBg: 'gray.0' },
+        interactive: { bg: 'blue.0', text: 'white', focusRing: 'blue.0' },
+      },
+      shadcn: {
+        background: 'surface.base',
+        foreground: 'text.primary',
+        card: 'surface.elevated',
+        cardForeground: 'text.primary',
+        popover: 'surface.elevated',
+        popoverForeground: 'text.primary',
+        primary: 'accentBrand.default',
+        primaryForeground: 'text.primary',
+        secondary: 'surface.base',
+        secondaryForeground: 'text.primary',
+        muted: 'surface.base',
+        mutedForeground: 'text.primary',
+        accent: 'surface.base',
+        accentForeground: 'text.primary',
+        destructive: 'negative.default',
+        border: 'border.default',
+        input: 'border.default',
+        ring: 'accentBrand.default',
+        sidebar: 'surface.base',
+        sidebarForeground: 'text.primary',
+        sidebarPrimary: 'accentBrand.default',
+        sidebarPrimaryForeground: 'text.primary',
+        sidebarAccent: 'surface.base',
+        sidebarAccentForeground: 'text.primary',
+        sidebarBorder: 'border.default',
+        sidebarRing: 'accentBrand.default',
+      },
+      typography: {
+        fontFamily: { sans: 'Inter', mono: 'monospace' },
+        fontSize: { xs: '0.75rem' },
+        fontWeight: { normal: '400', medium: '500' },
+      },
+      geometry: {
+        radiusBase: '0.5rem',
+        radiusScale: { sm: 0.5, md: 1.0, lg: 1.0 },
+        shadow: { sm: '0 1px 2px rgba(0,0,0,0.05)' },
+      },
+      components: {
+        card: { radius: 'md', shadow: 'sm' },
+        filter: { radius: 'sm', height: '2rem' },
+        tab: { railRadius: 'lg', pillRadius: 'md' },
+        pill: { radius: 'sm' },
+      },
+      dashboard: {},
+      viz: {
+        categorical: ['blue.0', 'green.0', 'red.0'],
+        sequential: ['gray.0', 'gray.1', 'blue.0'],
+        diverging: ['red.0', 'gray.0', 'green.0'],
+      },
+    };
+
+    const css = generateCssFromTheme(theme);
+
+    // card geometry
+    expect(css).toContain('--card-radius: 0.5rem');
+    expect(css).toContain('--card-shadow: 0 1px 2px rgba(0,0,0,0.05)');
+
+    // filter geometry
+    expect(css).toContain('--filter-radius: calc(0.5rem * 0.5)');
+    expect(css).toContain('--filter-height: 2rem');
+
+    // tab compound radius keys
+    expect(css).toContain('--tab-rail-radius: 0.5rem');
+    expect(css).toContain('--tab-pill-radius: 0.5rem');
+
+    // pill geometry
+    expect(css).toContain('--pill-radius: calc(0.5rem * 0.5)');
+  });
+
+  it('emits dashboard color tokens', () => {
+    const theme: Theme = {
+      name: 'Light',
+      palette: {
+        gray: ['#aaa'],
+        blue: ['#ccc'],
+        green: ['#ddd'],
+        red: ['#eee'],
+        amber: ['#fff'],
+        cyan: ['#111'],
+        white: '#ffffff',
+        black: '#000000',
+        transparent: 'transparent',
+      },
+      colors: {
+        surface: { base: 'gray.0' },
+        text: { primary: 'gray.0' },
+        border: { default: 'gray.0' },
+        accentBrand: { default: 'blue.0' },
+        positive: { default: 'green.0', bg: 'green.0', border: 'green.0' },
+        negative: { default: 'red.0', bg: 'red.0', border: 'red.0' },
+        neutral: { change: 'gray.0', changeBg: 'gray.0' },
+        interactive: { bg: 'blue.0', text: 'white', focusRing: 'blue.0' },
+      },
+      shadcn: {
+        background: 'surface.base',
+        foreground: 'text.primary',
+        card: 'surface.base',
+        cardForeground: 'text.primary',
+        popover: 'surface.base',
+        popoverForeground: 'text.primary',
+        primary: 'accentBrand.default',
+        primaryForeground: 'text.primary',
+        secondary: 'surface.base',
+        secondaryForeground: 'text.primary',
+        muted: 'surface.base',
+        mutedForeground: 'text.primary',
+        accent: 'surface.base',
+        accentForeground: 'text.primary',
+        destructive: 'negative.default',
+        border: 'border.default',
+        input: 'border.default',
+        ring: 'accentBrand.default',
+        sidebar: 'surface.base',
+        sidebarForeground: 'text.primary',
+        sidebarPrimary: 'accentBrand.default',
+        sidebarPrimaryForeground: 'text.primary',
+        sidebarAccent: 'surface.base',
+        sidebarAccentForeground: 'text.primary',
+        sidebarBorder: 'border.default',
+        sidebarRing: 'accentBrand.default',
+      },
+      typography: {
+        fontFamily: { sans: 'Inter', mono: 'monospace' },
+        fontSize: { xs: '0.75rem' },
+        fontWeight: { normal: '400' },
+      },
+      geometry: {
+        radiusBase: '0.5rem',
+        radiusScale: { sm: 0.5 },
+        shadow: { sm: '0 1px 2px rgba(0,0,0,0.05)' },
+      },
+      dashboard: {
+        filterBar: { bg: '#f0f2f5', border: '#f0f0f0' },
+        heading: { primary: '#111827', section: '#6b7280', overline: '#9ca3af' },
+        tab: { rail: '#f1f3f5', activeBg: '#ffffff', activeText: '#111827' },
+      },
+      viz: {
+        categorical: ['blue.0', 'green.0', 'red.0'],
+        sequential: ['gray.0', 'blue.0', 'green.0'],
+        diverging: ['red.0', 'gray.0', 'green.0'],
+      },
+    };
+
+    const css = generateCssFromTheme(theme);
+
+    expect(css).toContain('--filter-bar-bg: #f0f2f5');
+    expect(css).toContain('--filter-bar-border: #f0f0f0');
+    expect(css).toContain('--heading-primary: #111827');
+    expect(css).toContain('--heading-section: #6b7280');
+    expect(css).toContain('--heading-overline: #9ca3af');
+    expect(css).toContain('--tab-rail: #f1f3f5');
+    expect(css).toContain('--tab-active-bg: #ffffff');
+    expect(css).toContain('--tab-active-text: #111827');
   });
 });
 
@@ -298,6 +476,49 @@ describe('generateThemeInlineBlock', () => {
     expect(block).toContain(
       "--font-mono: 'JetBrains Mono', ui-monospace, monospace",
     );
+  });
+
+  it('maps component radius vars to --radius-{name}', () => {
+    const componentVars = [
+      '--card-radius',
+      '--filter-radius',
+      '--pill-radius',
+      '--tab-rail-radius',
+      '--tab-pill-radius',
+    ];
+    const block = generateThemeInlineBlock([], [], baseOpts, componentVars);
+    expect(block).toContain('--radius-card: var(--card-radius)');
+    expect(block).toContain('--radius-filter: var(--filter-radius)');
+    expect(block).toContain('--radius-pill: var(--pill-radius)');
+    expect(block).toContain('--radius-tab-rail: var(--tab-rail-radius)');
+    expect(block).toContain('--radius-tab-pill: var(--tab-pill-radius)');
+  });
+
+  it('maps component shadow vars to --shadow-{name}', () => {
+    const componentVars = ['--card-shadow'];
+    const block = generateThemeInlineBlock([], [], baseOpts, componentVars);
+    expect(block).toContain('--shadow-card: var(--card-shadow)');
+  });
+
+  it('does not map --*-height vars to --color- prefix', () => {
+    const componentVars = ['--filter-height'];
+    const block = generateThemeInlineBlock([], [], baseOpts, componentVars);
+    expect(block).not.toContain('--color-filter-height');
+    // height vars are just CSS custom properties, no Tailwind mapping
+  });
+
+  it('maps dashboard color vars to --color- prefix', () => {
+    const customVars = [
+      '--filter-bar-bg',
+      '--heading-overline',
+      '--tab-rail',
+      '--tab-active-bg',
+    ];
+    const block = generateThemeInlineBlock([], customVars, baseOpts);
+    expect(block).toContain('--color-filter-bar-bg: var(--filter-bar-bg)');
+    expect(block).toContain('--color-heading-overline: var(--heading-overline)');
+    expect(block).toContain('--color-tab-rail: var(--tab-rail)');
+    expect(block).toContain('--color-tab-active-bg: var(--tab-active-bg)');
   });
 });
 

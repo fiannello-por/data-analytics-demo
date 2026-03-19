@@ -59,8 +59,21 @@
     }
   },
 
-  "components": {},
-  "dashboard": {},
+  "components": {
+    "card": { "radius": "md", "shadow": "sm" },
+    "filter": { "radius": "sm", "height": "2rem" },
+    "tab": { "railRadius": "lg", "pillRadius": "md" },
+    "pill": { "radius": "sm" }
+  },
+  "dashboard": {
+    "filterBar": { "bg": "#09090b", "border": "#1c1c1f" },
+    "filterTrigger": { "bg": "#0a0a0b", "border": "#1c1c1f", "text": "#a1a1aa", "hoverBg": "#141416", "hoverBorder": "#27272a" },
+    "filterActive": { "bg": "#172554", "border": "#60a5fa", "text": "#60a5fa" },
+    "filterBadge": { "bg": "#60a5fa", "text": "#0a0a0b" },
+    "table": { "headerText": "#a1a1aa", "cellText": "#fafafa", "cellSecondary": "#a1a1aa" },
+    "tab": { "rail": "#09090b", "text": "#71717a", "hoverText": "#a1a1aa", "activeBg": "#141416", "activeText": "#fafafa" },
+    "heading": { "primary": "#fafafa", "section": "#a1a1aa", "overline": "#71717a" }
+  },
 
   "viz": {
     "categorical": ["oklch(0.809 0.105 251.813)", "oklch(0.623 0.214 259.815)", "oklch(0.546 0.245 262.881)", "oklch(0.488 0.243 264.376)", "oklch(0.424 0.199 265.638)"],
