@@ -1,6 +1,10 @@
 node_modules
 .DS_Store
-.claude
+.claude/*
+!.claude/skills/
+!.claude/skills/**
+.claude/skills/developing-in-lightdash/
+.claude/skills/thoughtspot-to-lightdash/
 .codex
 .env
 .env.*

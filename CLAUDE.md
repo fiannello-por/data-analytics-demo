@@ -1,5 +1,17 @@
 # Project Rules
 
+## Bundled Repo Skills
+
+This repository includes project-local skills under `.claude/skills/`. They
+mirror pinned snapshots from `obra/superpowers` and `pbakaus/impeccable`, plus
+repo-specific skills mirrored from `.agents/skills/`.
+
+To refresh those vendored copies, run:
+
+```bash
+uv run sync-agent-skillsets
+```
+
 ## Lightdash Skill (Required)
 
 When modifying any file under `lightdash/` (models, charts, dashboards):
