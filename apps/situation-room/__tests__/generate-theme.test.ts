@@ -268,14 +268,13 @@ describe('generateThemeInlineBlock', () => {
   };
 
   it('maps color vars to --color- prefix', () => {
-    const vars = [
+    const shadcnVars = ['--background', '--chart-1'];
+    const customVars = [
       '--surface',
       '--surface-elevated',
       '--text-primary',
-      '--background',
-      '--chart-1',
     ];
-    const block = generateThemeInlineBlock(vars, baseOpts);
+    const block = generateThemeInlineBlock(shadcnVars, customVars, baseOpts);
     expect(block).toContain('--color-surface: var(--surface)');
     expect(block).toContain('--color-surface-elevated: var(--surface-elevated)');
     expect(block).toContain('--color-text-primary: var(--text-primary)');
@@ -284,18 +283,18 @@ describe('generateThemeInlineBlock', () => {
   });
 
   it('maps radius scale to calc expressions', () => {
-    const block = generateThemeInlineBlock([], baseOpts);
+    const block = generateThemeInlineBlock([], [], baseOpts);
     expect(block).toContain('--radius-sm: calc(var(--radius) * 0.6)');
   });
 
   it('emits --font-sans as var(--font-sans) for Next.js delegation', () => {
-    const block = generateThemeInlineBlock([], baseOpts);
+    const block = generateThemeInlineBlock([], [], baseOpts);
     expect(block).toContain('--font-sans: var(--font-sans)');
     expect(block).not.toContain('--font-sans: Inter');
   });
 
   it('emits --font-mono as literal font stack', () => {
-    const block = generateThemeInlineBlock([], baseOpts);
+    const block = generateThemeInlineBlock([], [], baseOpts);
     expect(block).toContain(
       "--font-mono: 'JetBrains Mono', ui-monospace, monospace",
     );
@@ -390,17 +389,23 @@ describe('validateTheme', () => {
   it('rejects missing required top-level sections', () => {
     const t = validTheme();
     delete (t as any).palette;
-    delete (t as any).viz;
+    delete (t as any).shadcn;
     const errors = validateTheme(t);
     expect(errors.some((e) => e.includes('palette'))).toBe(true);
-    expect(errors.some((e) => e.includes('viz'))).toBe(true);
+    expect(errors.some((e) => e.includes('shadcn'))).toBe(true);
   });
 
-  it('rejects invalid hex in palette', () => {
+  it('accepts palette values that are not strict hex (e.g. oklch)', () => {
     const t = validTheme();
-    t.palette.gray = ['not-a-hex'];
+    t.palette.gray = ['oklch(0.5 0 0)'];
+    // Also update refs that point to gray.0
+    t.colors.surface.base = 'gray.0';
+    t.colors.text.primary = 'gray.0';
+    t.colors.border.default = 'gray.0';
+    t.colors.neutral.change = 'gray.0';
+    t.colors.neutral.changeBg = 'gray.0';
     const errors = validateTheme(t);
-    expect(errors.some((e) => e.includes('pattern'))).toBe(true);
+    expect(errors).toEqual([]);
   });
 
   it('rejects missing required shadcn keys', () => {

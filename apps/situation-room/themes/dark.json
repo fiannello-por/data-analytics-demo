@@ -2,76 +2,56 @@
   "name": "Dark",
 
   "palette": {
-    "gray":   ["#1a1d23", "#1c2027", "#21252b", "#262a31", "#282c34", "#2c313a", "#2e3440", "#333842", "#3e4451", "#4d5566", "#5c6370", "#828997", "#abb2bf", "#d7dae0"],
-    "blue":   ["#253545", "#354a5e", "#355565", "#3a6090", "#4a9be0", "#528bff", "#61afef", "#82c0f5", "#a8d4f7"],
-    "green":  ["#2a3a2a", "#3d5a3d", "#98c379"],
-    "red":    ["#3a2a2a", "#5a3a3a", "#e06c75"],
-    "amber":  ["#3a3525", "#5a5035", "#e5c07b"],
-    "cyan":   ["#253a3e", "#3a5a60", "#56b6c2"],
-    "purple": ["#c678dd"],
-    "orange": ["#be5046", "#d19a66"],
-    "white":  "#d7dae0",
-    "black":  "#282c34",
     "transparent": "transparent"
   },
 
   "colors": {
-    "surface":  { "base": "gray.4", "elevated": "gray.5", "sunken": "gray.2", "overlay": "gray.5" },
-    "text":     { "primary": "gray.12", "secondary": "gray.11", "tertiary": "gray.10", "inverse": "gray.4", "link": "blue.6", "linkHover": "blue.7" },
-    "border":   { "default": "gray.8", "subtle": "gray.8", "strong": "gray.9" },
-    "accentBrand": { "default": "blue.6", "subtle": "blue.0", "hover": "blue.7", "muted": "blue.1" },
-    "positive": { "default": "green.2", "bg": "green.0", "border": "green.1" },
-    "negative": { "default": "red.2", "bg": "red.0", "border": "red.1" },
-    "warning":  { "default": "amber.2", "bg": "amber.0", "border": "amber.1" },
-    "info":     { "default": "blue.6", "bg": "blue.0", "border": "blue.2" },
-    "neutral":  { "change": "gray.10", "changeBg": "gray.5" },
-    "interactive": {
-      "bg": "blue.6", "bgHover": "blue.7", "bgActive": "blue.4",
-      "text": "gray.4",
-      "ghostHover": "gray.5", "ghostActive": "gray.7",
-      "outlineBorder": "gray.8", "outlineHover": "gray.9",
-      "focusRing": "blue.5",
-      "disabledBg": "gray.5", "disabledText": "gray.9"
-    }
+    "surface":     { "base": "#0a0a0b", "elevated": "#141416", "sunken": "#09090b" },
+    "border":      { "subtle": "#1c1c1f" },
+    "text":        { "primary": "#fafafa", "secondary": "#a1a1aa", "tertiary": "#71717a" },
+    "positive":    { "default": "#34d399", "bg": "#052e16" },
+    "negative":    { "default": "#f87171", "bg": "#450a0a" },
+    "neutral":     { "change": "#71717a" },
+    "accentBrand": { "default": "#60a5fa", "subtle": "#172554" }
   },
 
   "shadcn": {
-    "background": "surface.base",
-    "foreground": "text.primary",
-    "card": "surface.sunken",
-    "cardForeground": "text.primary",
-    "popover": "surface.sunken",
-    "popoverForeground": "text.primary",
-    "primary": "accentBrand.default",
-    "primaryForeground": "surface.base",
-    "secondary": "border.default",
-    "secondaryForeground": "text.primary",
-    "muted": "border.default",
-    "mutedForeground": "text.tertiary",
-    "accent": "border.default",
-    "accentForeground": "text.primary",
-    "destructive": "negative.default",
-    "border": "border.default",
-    "input": "border.default",
-    "ring": "blue.5",
-    "sidebar": "surface.sunken",
-    "sidebarForeground": "text.primary",
-    "sidebarPrimary": "accentBrand.default",
-    "sidebarPrimaryForeground": "surface.base",
-    "sidebarAccent": "surface.elevated",
-    "sidebarAccentForeground": "text.primary",
-    "sidebarBorder": "border.default",
-    "sidebarRing": "blue.5"
+    "background":                "oklch(0.145 0 0)",
+    "foreground":                "oklch(0.985 0 0)",
+    "card":                      "oklch(0.205 0 0)",
+    "cardForeground":            "oklch(0.985 0 0)",
+    "popover":                   "oklch(0.205 0 0)",
+    "popoverForeground":         "oklch(0.985 0 0)",
+    "primary":                   "oklch(0.922 0 0)",
+    "primaryForeground":         "oklch(0.205 0 0)",
+    "secondary":                 "oklch(0.269 0 0)",
+    "secondaryForeground":       "oklch(0.985 0 0)",
+    "muted":                     "oklch(0.269 0 0)",
+    "mutedForeground":           "oklch(0.708 0 0)",
+    "accent":                    "oklch(0.269 0 0)",
+    "accentForeground":          "oklch(0.985 0 0)",
+    "destructive":               "oklch(0.704 0.191 22.216)",
+    "border":                    "oklch(1 0 0 / 10%)",
+    "input":                     "oklch(1 0 0 / 15%)",
+    "ring":                      "oklch(0.556 0 0)",
+    "sidebar":                   "oklch(0.205 0 0)",
+    "sidebarForeground":         "oklch(0.985 0 0)",
+    "sidebarPrimary":            "oklch(0.488 0.243 264.376)",
+    "sidebarPrimaryForeground":  "oklch(0.985 0 0)",
+    "sidebarAccent":             "oklch(0.269 0 0)",
+    "sidebarAccentForeground":   "oklch(0.985 0 0)",
+    "sidebarBorder":             "oklch(1 0 0 / 10%)",
+    "sidebarRing":               "oklch(0.556 0 0)"
   },
 
   "typography": {
-    "fontFamily": { "sans": "Inter, system-ui, sans-serif", "mono": "'JetBrains Mono', ui-monospace, monospace" },
+    "fontFamily": { "sans": "var(--font-sans)", "mono": "'JetBrains Mono', ui-monospace, monospace" },
     "fontSize":   { "xs": "0.75rem", "sm": "0.875rem", "base": "1rem", "lg": "1.125rem", "xl": "1.25rem", "2xl": "1.5rem" },
     "fontWeight": { "normal": "400", "medium": "500", "semibold": "600", "bold": "700" }
   },
 
   "geometry": {
-    "radiusBase": "0.375rem",
+    "radiusBase": "0.625rem",
     "radiusScale": { "sm": 0.6, "md": 0.8, "lg": 1.0, "xl": 1.4, "2xl": 1.8, "3xl": 2.2, "4xl": 2.6 },
     "shadow": {
       "sm": "0 1px 2px rgba(0,0,0,0.15)",
@@ -79,36 +59,12 @@
     }
   },
 
-  "components": {
-    "card":   { "radius": "md", "shadow": "sm" },
-    "filter": { "radius": "sm", "height": "2rem" },
-    "tab":    { "railRadius": "lg", "pillRadius": "md" },
-    "pill":   { "radius": "sm" },
-    "table":  { "headerWeight": "medium" }
-  },
-
-  "dashboard": {
-    "filterBar":     { "bg": "surface.sunken", "border": "border.default" },
-    "filterTrigger": { "bg": "surface.base", "border": "border.default", "text": "text.secondary", "hoverBg": "surface.elevated", "hoverBorder": "border.strong" },
-    "filterActive":  { "bg": "accentBrand.subtle", "border": "blue.3", "text": "accentBrand.default" },
-    "filterBadge":   { "bg": "accentBrand.default", "text": "surface.base" },
-    "table": {
-      "headerBg": "surface.elevated", "headerText": "text.secondary", "headerBorder": "border.default",
-      "rowBg": "transparent", "rowAltBg": "gray.3",
-      "rowHoverBg": "gray.6", "rowSelectedBg": "accentBrand.subtle",
-      "rowBorder": "gray.7",
-      "cellText": "text.primary", "cellSecondary": "text.secondary"
-    },
-    "tab": {
-      "rail": "gray.1", "text": "text.tertiary", "hoverText": "text.secondary",
-      "activeBg": "surface.elevated", "activeText": "text.primary"
-    },
-    "heading": { "primary": "text.primary", "section": "text.secondary", "overline": "text.tertiary" }
-  },
+  "components": {},
+  "dashboard": {},
 
   "viz": {
-    "categorical": ["blue.6", "purple.0", "green.2", "amber.2", "cyan.2", "red.2", "orange.1", "orange.0"],
-    "sequential":  ["blue.0", "blue.1", "blue.3", "blue.4", "blue.6", "blue.7"],
-    "diverging":   ["red.2", "red.1", "gray.4", "green.1", "green.2"]
+    "categorical": ["oklch(0.809 0.105 251.813)", "oklch(0.623 0.214 259.815)", "oklch(0.546 0.245 262.881)", "oklch(0.488 0.243 264.376)", "oklch(0.424 0.199 265.638)"],
+    "sequential":  ["oklch(0.809 0.105 251.813)", "oklch(0.623 0.214 259.815)", "oklch(0.546 0.245 262.881)"],
+    "diverging":   ["oklch(0.577 0.245 27.325)", "oklch(0.809 0.105 251.813)", "oklch(0.424 0.199 265.638)"]
   }
 }

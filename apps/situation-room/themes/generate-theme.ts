@@ -27,9 +27,9 @@ interface Theme {
     radiusScale: Record<string, number>;
     shadow: Record<string, string>;
   };
-  components: Record<string, Record<string, string | number>>;
-  dashboard: Record<string, Record<string, string>>;
-  viz: {
+  components?: Record<string, Record<string, string | number>>;
+  dashboard?: Record<string, Record<string, string>>;
+  viz?: {
     categorical: string[];
     sequential: string[];
     diverging: string[];
@@ -38,8 +38,23 @@ interface Theme {
 
 // ─── Ref Resolution ───
 
+/**
+ * Check if a string is a literal CSS value (not a palette/color ref).
+ * Literal values include: oklch(...), #hex, rgb(...), hsl(...), transparent, etc.
+ */
+export function isLiteralCssValue(value: string): boolean {
+  return (
+    value.startsWith('#') ||
+    value.startsWith('oklch(') ||
+    value.startsWith('rgb') ||
+    value.startsWith('hsl') ||
+    value === 'transparent'
+  );
+}
+
 export function resolvePaletteRef(ref: string, palette: Palette): string {
-  if (ref === 'transparent') return 'transparent';
+  // If the ref is a literal CSS value, return it as-is
+  if (isLiteralCssValue(ref)) return ref;
 
   const dotIndex = ref.indexOf('.');
   if (dotIndex === -1) {
@@ -68,7 +83,8 @@ export function resolveColorRef(
   colors: Record<string, Record<string, string>>,
   palette: Palette,
 ): string {
-  if (ref === 'transparent') return 'transparent';
+  // If the ref is a literal CSS value, return it as-is
+  if (isLiteralCssValue(ref)) return ref;
 
   const dotIndex = ref.indexOf('.');
   if (dotIndex === -1) {
@@ -120,7 +136,9 @@ export function resolveGeometryRef(
 }
 
 export function resolveVizPalette(refs: string[], palette: Palette): string[] {
-  return refs.map((ref) => resolvePaletteRef(ref, palette));
+  return refs.map((ref) =>
+    isLiteralCssValue(ref) ? ref : resolvePaletteRef(ref, palette),
+  );
 }
 
 // ─── CSS Generation ───
@@ -145,24 +163,56 @@ function shadcnVarName(key: string): string {
 export function generateCssFromTheme(theme: Theme): string {
   const lines: string[] = [];
   const { palette, colors, shadcn, geometry, dashboard, viz } = theme;
+  const isLight = theme.name === 'Light';
 
-  const selector = theme.name === 'Light' ? ':root' : '.dark';
+  const selector = isLight ? ':root' : '.dark';
   lines.push(`${selector} {`);
 
   // 1. shadcn tokens — use Set to track emitted var names and avoid duplicates
+  //    Emit non-sidebar shadcn first, then charts, then radius, then sidebar
+  lines.push('  /* shadcn base tokens (neutral) */');
   const emitted = new Set<string>();
+  const sidebarEntries: [string, string][] = [];
+
   for (const [key, ref] of Object.entries(shadcn)) {
+    if (key.startsWith('sidebar')) {
+      sidebarEntries.push([key, ref]);
+      continue;
+    }
     const resolved = resolveColorRef(ref, colors, palette);
     const varName = shadcnVarName(key);
     lines.push(`  ${varName}: ${resolved};`);
     emitted.add(varName);
   }
 
-  // 2. Radius base
-  lines.push(`  --radius: ${geometry.radiusBase};`);
-  emitted.add('--radius');
+  // 2. Chart tokens from viz.categorical (--chart-N only)
+  if (viz) {
+    const resolvedCategorical = resolveVizPalette(viz.categorical, palette);
+    resolvedCategorical.forEach((value, i) => {
+      const varName = `--chart-${i + 1}`;
+      lines.push(`  ${varName}: ${value};`);
+      emitted.add(varName);
+    });
+  }
 
-  // 3. Surface/text/border/accentBrand/status colors from `colors`
+  // 3. Radius base — only in :root, not in .dark
+  if (isLight) {
+    lines.push(`  --radius: ${geometry.radiusBase};`);
+    emitted.add('--radius');
+  }
+
+  // 4. Sidebar tokens from shadcn
+  for (const [key, ref] of sidebarEntries) {
+    const resolved = resolveColorRef(ref, colors, palette);
+    const varName = shadcnVarName(key);
+    lines.push(`  ${varName}: ${resolved};`);
+    emitted.add(varName);
+  }
+
+  // 5. Surface/text/border/accentBrand/status colors from `colors`
+  const modeLabel = isLight ? 'light' : 'dark';
+  lines.push('');
+  lines.push(`  /* project custom tokens \u2013 ${modeLabel} */`);
   for (const [section, entries] of Object.entries(colors)) {
     for (const [key, ref] of Object.entries(entries)) {
       const resolved = resolvePaletteRef(ref, palette);
@@ -182,26 +232,19 @@ export function generateCssFromTheme(theme: Theme): string {
     }
   }
 
-  // 4. Dashboard tokens
-  for (const [section, entries] of Object.entries(dashboard)) {
-    for (const [key, ref] of Object.entries(entries)) {
-      const resolved = resolveColorRef(ref, colors, palette);
-      const varName = cssVarName(section, key);
-      if (!emitted.has(varName)) {
-        lines.push(`  ${varName}: ${resolved};`);
-        emitted.add(varName);
+  // 6. Dashboard tokens (optional, Phase 2)
+  if (dashboard && Object.keys(dashboard).length > 0) {
+    for (const [section, entries] of Object.entries(dashboard)) {
+      for (const [key, ref] of Object.entries(entries)) {
+        const resolved = resolveColorRef(ref, colors, palette);
+        const varName = cssVarName(section, key);
+        if (!emitted.has(varName)) {
+          lines.push(`  ${varName}: ${resolved};`);
+          emitted.add(varName);
+        }
       }
     }
   }
-
-  // 5. Chart tokens from viz.categorical (--chart-N only, no --viz-N yet)
-  const resolvedCategorical = resolveVizPalette(viz.categorical, palette);
-  resolvedCategorical.forEach((hex, i) => {
-    lines.push(`  --chart-${i + 1}: ${hex};`);
-  });
-
-  // NOTE: Component geometry (--card-radius, --filter-height, etc.) and --viz-N aliases
-  // are NOT emitted here. They will be added in Task 7a after parity verification.
 
   lines.push('}');
   return lines.join('\n');
@@ -219,60 +262,46 @@ interface ThemeInlineOpts {
 }
 
 export function generateThemeInlineBlock(
-  allVarNames: string[],
+  shadcnVarNames: string[],
+  customVarNames: string[],
   opts: ThemeInlineOpts,
 ): string {
   const lines: string[] = ['@theme inline {'];
 
-  const colorVarPrefixes = [
-    '--surface',
-    '--text-',
-    '--border',
-    '--positive',
-    '--negative',
-    '--warning',
-    '--info',
-    '--neutral',
-    '--interactive',
-    '--filter-',
-    '--table-',
-    '--tab-',
-    '--heading-',
-    '--chart-',
-    '--accent',
-    '--background',
-    '--foreground',
-    '--card',
-    '--popover',
-    '--primary',
-    '--secondary',
-    '--muted',
-    '--destructive',
-    '--input',
-    '--ring',
-    '--sidebar',
-  ];
+  // 1. Font sans (first, matching global.css order)
+  lines.push('  /* shadcn \u2192 Tailwind mappings */');
+  lines.push('  --font-sans: var(--font-sans);');
 
-  for (const varName of allVarNames) {
+  // 2. shadcn color token mappings
+  for (const varName of shadcnVarNames) {
     if (varName === '--radius') continue;
-    if (colorVarPrefixes.some((prefix) => varName.startsWith(prefix))) {
+    const name = varName.replace('--', '');
+    lines.push(`  --color-${name}: var(${varName});`);
+  }
+
+  // 3. Radius scale
+  for (const [name, multiplier] of Object.entries(opts.geometry.radiusScale)) {
+    if (multiplier === 1 || multiplier === 1.0) {
+      lines.push(`  --radius-${name}: var(--radius);`);
+    } else {
+      lines.push(`  --radius-${name}: calc(var(--radius) * ${multiplier});`);
+    }
+  }
+
+  // 4. Project custom color token mappings
+  if (customVarNames.length > 0) {
+    lines.push('');
+    lines.push('  /* project custom token \u2192 Tailwind mappings */');
+    for (const varName of customVarNames) {
       const name = varName.replace('--', '');
       lines.push(`  --color-${name}: var(${varName});`);
     }
   }
 
-  // Radius scale
-  for (const [name, multiplier] of Object.entries(opts.geometry.radiusScale)) {
-    lines.push(`  --radius-${name}: calc(var(--radius) * ${multiplier});`);
-  }
-
-  // Font families
-  for (const [key, value] of Object.entries(opts.typography.fontFamily)) {
-    if (key === 'sans') {
-      lines.push(`  --font-${key}: var(--font-${key});`);
-    } else {
-      lines.push(`  --font-${key}: ${value};`);
-    }
+  // 5. Font mono (last, matching global.css order)
+  const monoFamily = opts.typography.fontFamily.mono;
+  if (monoFamily) {
+    lines.push(`  --font-mono: ${monoFamily};`);
   }
 
   lines.push('}');
@@ -328,6 +357,8 @@ export function validateTheme(theme: unknown): string[] {
     for (const [key, ref] of Object.entries(
       t.shadcn as Record<string, string>,
     )) {
+      // Literal CSS values (oklch, #hex, etc.) don't need resolution
+      if (isLiteralCssValue(ref)) continue;
       try {
         resolveColorRef(ref, t.colors, t.palette);
       } catch {
@@ -356,6 +387,8 @@ export function validateTheme(theme: unknown): string[] {
     for (const vizKey of ['categorical', 'sequential', 'diverging'] as const) {
       if (t.viz[vizKey]) {
         t.viz[vizKey].forEach((ref: string, i: number) => {
+          // Literal CSS values don't need resolution
+          if (isLiteralCssValue(ref)) return;
           try {
             resolvePaletteRef(ref, t.palette);
           } catch {
@@ -410,14 +443,58 @@ function generate(themesDir: string, outputPath: string): void {
   const lightCss = generateCssFromTheme(lightTheme);
   const darkCss = generateCssFromTheme(darkTheme);
 
-  const varSet = new Set<string>();
-  for (const css of [lightCss, darkCss]) {
-    for (const match of css.matchAll(/\s+(--[\w-]+):/g)) {
-      varSet.add(match[1]);
+  // Collect shadcn var names (from the shadcn section) and chart var names
+  // Order: non-sidebar shadcn, then charts, then sidebar (matches global.css)
+  const shadcnVarNames: string[] = [];
+  const sidebarVarNames: string[] = [];
+  for (const key of Object.keys(lightTheme.shadcn)) {
+    if (key.startsWith('sidebar')) {
+      sidebarVarNames.push(shadcnVarName(key));
+    } else {
+      shadcnVarNames.push(shadcnVarName(key));
+    }
+  }
+  // Add chart vars between non-sidebar and sidebar
+  if (lightTheme.viz) {
+    lightTheme.viz.categorical.forEach((_val, i) => {
+      shadcnVarNames.push(`--chart-${i + 1}`);
+    });
+  }
+  // Append sidebar vars
+  shadcnVarNames.push(...sidebarVarNames);
+
+  // Collect project custom var names (from colors section)
+  const customVarNames: string[] = [];
+  for (const [section, entries] of Object.entries(lightTheme.colors)) {
+    for (const key of Object.keys(entries)) {
+      let varName: string;
+      if (section === 'surface' && key === 'base') {
+        varName = '--surface';
+      } else if (key === 'default') {
+        varName = `--${kebabCase(section)}`;
+      } else {
+        varName = cssVarName(section, key);
+      }
+      // Don't include vars already in shadcn
+      if (!shadcnVarNames.includes(varName)) {
+        customVarNames.push(varName);
+      }
     }
   }
 
-  const inlineBlock = generateThemeInlineBlock([...varSet], {
+  // Add dashboard vars if present
+  if (lightTheme.dashboard) {
+    for (const [section, entries] of Object.entries(lightTheme.dashboard)) {
+      for (const key of Object.keys(entries)) {
+        const varName = cssVarName(section, key);
+        if (!shadcnVarNames.includes(varName) && !customVarNames.includes(varName)) {
+          customVarNames.push(varName);
+        }
+      }
+    }
+  }
+
+  const inlineBlock = generateThemeInlineBlock(shadcnVarNames, customVarNames, {
     geometry: lightTheme.geometry,
     typography: lightTheme.typography,
   });

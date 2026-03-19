@@ -3,7 +3,7 @@
   "title": "Theme",
   "description": "Design token theme file for the Situation Room dashboard",
   "type": "object",
-  "required": ["name", "palette", "colors", "shadcn", "typography", "geometry", "components", "dashboard", "viz"],
+  "required": ["name", "palette", "colors", "shadcn", "typography", "geometry"],
   "additionalProperties": false,
   "properties": {
     "name": {
@@ -13,23 +13,15 @@
     },
     "palette": {
       "type": "object",
-      "description": "Raw color values. Only place hex values appear.",
+      "description": "Raw color values. Hex (#rrggbb), oklch(), or CSS keywords.",
       "properties": {
-        "gray": { "type": "array", "items": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" }, "minItems": 1 },
-        "blue": { "type": "array", "items": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" }, "minItems": 1 },
-        "green": { "type": "array", "items": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" }, "minItems": 1 },
-        "red": { "type": "array", "items": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" }, "minItems": 1 },
-        "amber": { "type": "array", "items": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" }, "minItems": 1 },
-        "cyan": { "type": "array", "items": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" }, "minItems": 1 },
-        "white": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
-        "black": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
         "transparent": { "type": "string", "const": "transparent" }
       },
-      "required": ["gray", "blue", "green", "red", "amber", "cyan", "white", "black", "transparent"],
+      "required": ["transparent"],
       "additionalProperties": {
         "oneOf": [
-          { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
-          { "type": "array", "items": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" }, "minItems": 1 }
+          { "type": "string" },
+          { "type": "array", "items": { "type": "string" }, "minItems": 1 }
         ]
       }
     },
