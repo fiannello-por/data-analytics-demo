@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  executeDistinctQuery,
-  pollResults,
-} from '@/lib/lightdash-client';
+import { executeDistinctQuery, pollResults } from '@/lib/lightdash-client';
 import { FILTER_DEFINITIONS } from '@/lib/filters';
 
 const fieldIdByKey = Object.fromEntries(

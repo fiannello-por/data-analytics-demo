@@ -16,39 +16,40 @@
 
 ### New Files (Create)
 
-| File | Responsibility |
-|------|---------------|
-| `apps/situation-room/themes/light.json` | Light theme source of truth — all palette hex values, semantic color refs, typography, geometry, component tokens, dashboard tokens, viz palettes |
-| `apps/situation-room/themes/dark.json` | Dark theme source of truth — same schema, Atom One Dark color values |
-| `apps/situation-room/themes/theme.schema.json` | JSON Schema (draft-07) for validating theme files |
-| `apps/situation-room/themes/generate-theme.ts` | Build script — reads JSON, resolves refs, outputs CSS. Includes `--watch` mode for dev |
-| `apps/situation-room/app/generated-theme.css` | Auto-generated output (gitignored) — `:root`, `.dark`, `@theme inline` blocks |
-| `apps/situation-room/__tests__/generate-theme.test.ts` | Tests for the build script — ref resolution, validation, CSS output |
+| File                                                   | Responsibility                                                                                                                                    |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/situation-room/themes/light.json`                | Light theme source of truth — all palette hex values, semantic color refs, typography, geometry, component tokens, dashboard tokens, viz palettes |
+| `apps/situation-room/themes/dark.json`                 | Dark theme source of truth — same schema, Atom One Dark color values                                                                              |
+| `apps/situation-room/themes/theme.schema.json`         | JSON Schema (draft-07) for validating theme files                                                                                                 |
+| `apps/situation-room/themes/generate-theme.ts`         | Build script — reads JSON, resolves refs, outputs CSS. Includes `--watch` mode for dev                                                            |
+| `apps/situation-room/app/generated-theme.css`          | Auto-generated output (gitignored) — `:root`, `.dark`, `@theme inline` blocks                                                                     |
+| `apps/situation-room/__tests__/generate-theme.test.ts` | Tests for the build script — ref resolution, validation, CSS output                                                                               |
 
 ### Modified Files
 
-| File | What Changes |
-|------|-------------|
-| `apps/situation-room/app/global.css` | Remove ~400 lines of hand-written `:root`/`.dark`/`@theme inline` blocks. Add `@import './generated-theme.css'`. Add `@layer components` with semantic classes. Final file ~80 lines. |
-| `apps/situation-room/package.json` | Add `tsx`, `chokidar`, `concurrently` devDependencies. Add `theme:generate`, `theme:watch`, `predev`, `prebuild` scripts. Update `dev` script. |
-| `apps/situation-room/.gitignore` | Create file, add `app/generated-theme.css` |
-| `apps/situation-room/components/executive-snapshot.tsx` | Replace inline theming classes with `card-tile`, `heading-overline`, `heading-primary` |
-| `apps/situation-room/components/category-section.tsx` | Replace inline theming classes with `card-tile`, `heading-primary`, `heading-section`, `table-header-cell` |
-| `apps/situation-room/components/metric-row.tsx` | Replace inline theming classes with `table-data-cell`, `table-data-cell-numeric`, `table-data-cell-secondary` |
-| `apps/situation-room/components/change-indicator.tsx` | Replace inline theming classes with `pill-positive`, `pill-negative`, `pill-neutral` |
-| `apps/situation-room/components/filter-dropdown.tsx` | Replace inline trigger classes with `filter-trigger`, `filter-trigger-active` |
-| `apps/situation-room/components/filter-rail.tsx` | Replace inline heading/badge classes with `heading-overline` |
-| `apps/situation-room/components/filter-chip.tsx` | Replace inline theming classes with semantic tokens |
-| `apps/situation-room/components/report-content.tsx` | Replace inline surface/heading classes with `surface-page`, `surface-header`, `surface-filter-bar`, `heading-overline` |
-| `apps/situation-room/components/report-header.tsx` | Replace inline heading classes with `heading-overline`, `heading-primary` |
-| `apps/situation-room/components/trend-chart.tsx` | Switch to `--viz-*` var names, keep fallback hex values |
-| `apps/situation-room/components/ui/tabs.tsx` | Compose tab variants from `tab-rail`, `tab-pill`, `tab-pill-active` classes |
+| File                                                    | What Changes                                                                                                                                                                          |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/situation-room/app/global.css`                    | Remove ~400 lines of hand-written `:root`/`.dark`/`@theme inline` blocks. Add `@import './generated-theme.css'`. Add `@layer components` with semantic classes. Final file ~80 lines. |
+| `apps/situation-room/package.json`                      | Add `tsx`, `chokidar`, `concurrently` devDependencies. Add `theme:generate`, `theme:watch`, `predev`, `prebuild` scripts. Update `dev` script.                                        |
+| `apps/situation-room/.gitignore`                        | Create file, add `app/generated-theme.css`                                                                                                                                            |
+| `apps/situation-room/components/executive-snapshot.tsx` | Replace inline theming classes with `card-tile`, `heading-overline`, `heading-primary`                                                                                                |
+| `apps/situation-room/components/category-section.tsx`   | Replace inline theming classes with `card-tile`, `heading-primary`, `heading-section`, `table-header-cell`                                                                            |
+| `apps/situation-room/components/metric-row.tsx`         | Replace inline theming classes with `table-data-cell`, `table-data-cell-numeric`, `table-data-cell-secondary`                                                                         |
+| `apps/situation-room/components/change-indicator.tsx`   | Replace inline theming classes with `pill-positive`, `pill-negative`, `pill-neutral`                                                                                                  |
+| `apps/situation-room/components/filter-dropdown.tsx`    | Replace inline trigger classes with `filter-trigger`, `filter-trigger-active`                                                                                                         |
+| `apps/situation-room/components/filter-rail.tsx`        | Replace inline heading/badge classes with `heading-overline`                                                                                                                          |
+| `apps/situation-room/components/filter-chip.tsx`        | Replace inline theming classes with semantic tokens                                                                                                                                   |
+| `apps/situation-room/components/report-content.tsx`     | Replace inline surface/heading classes with `surface-page`, `surface-header`, `surface-filter-bar`, `heading-overline`                                                                |
+| `apps/situation-room/components/report-header.tsx`      | Replace inline heading classes with `heading-overline`, `heading-primary`                                                                                                             |
+| `apps/situation-room/components/trend-chart.tsx`        | Switch to `--viz-*` var names, keep fallback hex values                                                                                                                               |
+| `apps/situation-room/components/ui/tabs.tsx`            | Compose tab variants from `tab-rail`, `tab-pill`, `tab-pill-active` classes                                                                                                           |
 
 ---
 
 ## Task 1: Install Dependencies and Configure Scripts
 
 **Files:**
+
 - Modify: `apps/situation-room/package.json`
 - Create: `apps/situation-room/.gitignore`
 
@@ -102,7 +103,7 @@ Replace with:
 
 Create `apps/situation-room/.gitignore`:
 
-```
+```text
 app/generated-theme.css
 ```
 
@@ -125,6 +126,7 @@ git commit -m "chore: add design token build dependencies and scripts"
 ## Task 2: Create Theme JSON Schema
 
 **Files:**
+
 - Create: `apps/situation-room/themes/theme.schema.json`
 
 - [ ] **Step 1: Create the themes directory**
@@ -143,7 +145,17 @@ Create `apps/situation-room/themes/theme.schema.json`:
   "title": "Theme",
   "description": "Design token theme file for the Situation Room dashboard",
   "type": "object",
-  "required": ["name", "palette", "colors", "shadcn", "typography", "geometry", "components", "dashboard", "viz"],
+  "required": [
+    "name",
+    "palette",
+    "colors",
+    "shadcn",
+    "typography",
+    "geometry",
+    "components",
+    "dashboard",
+    "viz"
+  ],
   "additionalProperties": false,
   "properties": {
     "name": {
@@ -155,21 +167,59 @@ Create `apps/situation-room/themes/theme.schema.json`:
       "type": "object",
       "description": "Raw color values. Only place hex values appear.",
       "properties": {
-        "gray": { "type": "array", "items": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" }, "minItems": 1 },
-        "blue": { "type": "array", "items": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" }, "minItems": 1 },
-        "green": { "type": "array", "items": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" }, "minItems": 1 },
-        "red": { "type": "array", "items": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" }, "minItems": 1 },
-        "amber": { "type": "array", "items": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" }, "minItems": 1 },
-        "cyan": { "type": "array", "items": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" }, "minItems": 1 },
+        "gray": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+          "minItems": 1
+        },
+        "blue": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+          "minItems": 1
+        },
+        "green": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+          "minItems": 1
+        },
+        "red": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+          "minItems": 1
+        },
+        "amber": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+          "minItems": 1
+        },
+        "cyan": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+          "minItems": 1
+        },
         "white": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
         "black": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
         "transparent": { "type": "string", "const": "transparent" }
       },
-      "required": ["gray", "blue", "green", "red", "amber", "cyan", "white", "black", "transparent"],
+      "required": [
+        "gray",
+        "blue",
+        "green",
+        "red",
+        "amber",
+        "cyan",
+        "white",
+        "black",
+        "transparent"
+      ],
       "additionalProperties": {
         "oneOf": [
           { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
-          { "type": "array", "items": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" }, "minItems": 1 }
+          {
+            "type": "array",
+            "items": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+            "minItems": 1
+          }
         ]
       }
     },
@@ -185,14 +235,32 @@ Create `apps/situation-room/themes/theme.schema.json`:
       "type": "object",
       "description": "shadcn compatibility tokens mapping to colors refs",
       "required": [
-        "background", "foreground", "card", "cardForeground",
-        "popover", "popoverForeground", "primary", "primaryForeground",
-        "secondary", "secondaryForeground", "muted", "mutedForeground",
-        "accent", "accentForeground", "destructive",
-        "border", "input", "ring",
-        "sidebar", "sidebarForeground", "sidebarPrimary",
-        "sidebarPrimaryForeground", "sidebarAccent",
-        "sidebarAccentForeground", "sidebarBorder", "sidebarRing"
+        "background",
+        "foreground",
+        "card",
+        "cardForeground",
+        "popover",
+        "popoverForeground",
+        "primary",
+        "primaryForeground",
+        "secondary",
+        "secondaryForeground",
+        "muted",
+        "mutedForeground",
+        "accent",
+        "accentForeground",
+        "destructive",
+        "border",
+        "input",
+        "ring",
+        "sidebar",
+        "sidebarForeground",
+        "sidebarPrimary",
+        "sidebarPrimaryForeground",
+        "sidebarAccent",
+        "sidebarAccentForeground",
+        "sidebarBorder",
+        "sidebarRing"
       ],
       "additionalProperties": { "type": "string" }
     },
@@ -200,9 +268,18 @@ Create `apps/situation-room/themes/theme.schema.json`:
       "type": "object",
       "required": ["fontFamily", "fontSize", "fontWeight"],
       "properties": {
-        "fontFamily": { "type": "object", "additionalProperties": { "type": "string" } },
-        "fontSize": { "type": "object", "additionalProperties": { "type": "string" } },
-        "fontWeight": { "type": "object", "additionalProperties": { "type": "string" } }
+        "fontFamily": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "fontSize": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "fontWeight": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
       },
       "additionalProperties": false
     },
@@ -210,7 +287,10 @@ Create `apps/situation-room/themes/theme.schema.json`:
       "type": "object",
       "required": ["radiusBase", "radiusScale", "shadow"],
       "properties": {
-        "radiusBase": { "type": "string", "description": "CSS length value, e.g. '0.375rem'" },
+        "radiusBase": {
+          "type": "string",
+          "description": "CSS length value, e.g. '0.375rem'"
+        },
         "radiusScale": {
           "type": "object",
           "additionalProperties": { "type": "number", "exclusiveMinimum": 0 }
@@ -242,9 +322,21 @@ Create `apps/situation-room/themes/theme.schema.json`:
       "type": "object",
       "required": ["categorical", "sequential", "diverging"],
       "properties": {
-        "categorical": { "type": "array", "items": { "type": "string" }, "minItems": 3 },
-        "sequential": { "type": "array", "items": { "type": "string" }, "minItems": 3 },
-        "diverging": { "type": "array", "items": { "type": "string" }, "minItems": 3 }
+        "categorical": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 3
+        },
+        "sequential": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 3
+        },
+        "diverging": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 3
+        }
       },
       "additionalProperties": false
     }
@@ -264,6 +356,7 @@ git commit -m "feat(tokens): add JSON Schema for theme validation"
 ## Task 3: Create Light Theme JSON
 
 **Files:**
+
 - Create: `apps/situation-room/themes/light.json`
 
 This task extracts every CSS custom property value from the current `:root` block in `global.css` (lines 12–140) into the JSON schema format. The palette arrays include ALL hex values that appear in the current CSS — including intermediate values that don't fit a neat 10-step ramp. Every palette ref resolves to the exact hex value currently in `global.css`.
@@ -277,35 +370,80 @@ Create `apps/situation-room/themes/light.json`. The values below are extracted f
   "name": "Light",
 
   "palette": {
-    "gray":   ["#f7f8fa", "#f0f2f5", "#eef1f5", "#e8ecf2", "#e4e8ee", "#e2e6ed", "#dce0e8", "#c5cad4", "#b0b6c4", "#8690a2", "#636a7e", "#4a5068", "#1e2028"],
-    "blue":   ["#edf4fc", "#dbe9f8", "#c4daf0", "#b0cfe8", "#8db8e4", "#3574c4", "#2a5ea0", "#234e88"],
-    "green":  ["#eaf7ef", "#b8e0c8", "#5c8a3e", "#3a9a5e", "#1a7f42"],
-    "red":    ["#fdf0f0", "#f0c0c3", "#c9363f"],
-    "amber":  ["#fef9eb", "#f0dfa0", "#c7872e", "#b07d1a"],
-    "cyan":   ["#e8f8fa", "#b0e0e6", "#2e95a3"],
+    "gray": [
+      "#f7f8fa",
+      "#f0f2f5",
+      "#eef1f5",
+      "#e8ecf2",
+      "#e4e8ee",
+      "#e2e6ed",
+      "#dce0e8",
+      "#c5cad4",
+      "#b0b6c4",
+      "#8690a2",
+      "#636a7e",
+      "#4a5068",
+      "#1e2028"
+    ],
+    "blue": [
+      "#edf4fc",
+      "#dbe9f8",
+      "#c4daf0",
+      "#b0cfe8",
+      "#8db8e4",
+      "#3574c4",
+      "#2a5ea0",
+      "#234e88"
+    ],
+    "green": ["#eaf7ef", "#b8e0c8", "#5c8a3e", "#3a9a5e", "#1a7f42"],
+    "red": ["#fdf0f0", "#f0c0c3", "#c9363f"],
+    "amber": ["#fef9eb", "#f0dfa0", "#c7872e", "#b07d1a"],
+    "cyan": ["#e8f8fa", "#b0e0e6", "#2e95a3"],
     "purple": ["#9556cf", "#7c6eb5"],
-    "white":  "#ffffff",
-    "black":  "#1e2028",
+    "white": "#ffffff",
+    "black": "#1e2028",
     "transparent": "transparent"
   },
 
   "colors": {
-    "surface":  { "base": "gray.0", "elevated": "white", "sunken": "gray.2", "overlay": "white" },
-    "text":     { "primary": "gray.12", "secondary": "gray.11", "tertiary": "gray.9", "inverse": "white", "link": "blue.5", "linkHover": "blue.6" },
-    "border":   { "default": "gray.6", "subtle": "gray.4", "strong": "gray.7" },
-    "accentBrand": { "default": "blue.5", "subtle": "blue.0", "hover": "blue.6", "muted": "blue.2" },
+    "surface": {
+      "base": "gray.0",
+      "elevated": "white",
+      "sunken": "gray.2",
+      "overlay": "white"
+    },
+    "text": {
+      "primary": "gray.12",
+      "secondary": "gray.11",
+      "tertiary": "gray.9",
+      "inverse": "white",
+      "link": "blue.5",
+      "linkHover": "blue.6"
+    },
+    "border": { "default": "gray.6", "subtle": "gray.4", "strong": "gray.7" },
+    "accentBrand": {
+      "default": "blue.5",
+      "subtle": "blue.0",
+      "hover": "blue.6",
+      "muted": "blue.2"
+    },
     "positive": { "default": "green.4", "bg": "green.0", "border": "green.1" },
     "negative": { "default": "red.2", "bg": "red.0", "border": "red.1" },
-    "warning":  { "default": "amber.3", "bg": "amber.0", "border": "amber.1" },
-    "info":     { "default": "blue.5", "bg": "blue.0", "border": "blue.3" },
-    "neutral":  { "change": "gray.10", "changeBg": "gray.2" },
+    "warning": { "default": "amber.3", "bg": "amber.0", "border": "amber.1" },
+    "info": { "default": "blue.5", "bg": "blue.0", "border": "blue.3" },
+    "neutral": { "change": "gray.10", "changeBg": "gray.2" },
     "interactive": {
-      "bg": "blue.5", "bgHover": "blue.6", "bgActive": "blue.7",
+      "bg": "blue.5",
+      "bgHover": "blue.6",
+      "bgActive": "blue.7",
       "text": "white",
-      "ghostHover": "gray.2", "ghostActive": "gray.4",
-      "outlineBorder": "gray.6", "outlineHover": "gray.7",
+      "ghostHover": "gray.2",
+      "ghostActive": "gray.4",
+      "outlineBorder": "gray.6",
+      "outlineHover": "gray.7",
       "focusRing": "blue.5",
-      "disabledBg": "gray.2", "disabledText": "gray.8"
+      "disabledBg": "gray.2",
+      "disabledText": "gray.8"
     }
   },
 
@@ -339,14 +477,37 @@ Create `apps/situation-room/themes/light.json`. The values below are extracted f
   },
 
   "typography": {
-    "fontFamily": { "sans": "Inter, system-ui, sans-serif", "mono": "'JetBrains Mono', ui-monospace, monospace" },
-    "fontSize":   { "xs": "0.75rem", "sm": "0.875rem", "base": "1rem", "lg": "1.125rem", "xl": "1.25rem", "2xl": "1.5rem" },
-    "fontWeight": { "normal": "400", "medium": "500", "semibold": "600", "bold": "700" }
+    "fontFamily": {
+      "sans": "Inter, system-ui, sans-serif",
+      "mono": "'JetBrains Mono', ui-monospace, monospace"
+    },
+    "fontSize": {
+      "xs": "0.75rem",
+      "sm": "0.875rem",
+      "base": "1rem",
+      "lg": "1.125rem",
+      "xl": "1.25rem",
+      "2xl": "1.5rem"
+    },
+    "fontWeight": {
+      "normal": "400",
+      "medium": "500",
+      "semibold": "600",
+      "bold": "700"
+    }
   },
 
   "geometry": {
     "radiusBase": "0.375rem",
-    "radiusScale": { "sm": 0.6, "md": 0.8, "lg": 1.0, "xl": 1.4, "2xl": 1.8, "3xl": 2.2, "4xl": 2.6 },
+    "radiusScale": {
+      "sm": 0.6,
+      "md": 0.8,
+      "lg": 1.0,
+      "xl": 1.4,
+      "2xl": 1.8,
+      "3xl": 2.2,
+      "4xl": 2.6
+    },
     "shadow": {
       "sm": "0 1px 2px rgba(0,0,0,0.05)",
       "md": "0 4px 6px -1px rgba(0,0,0,0.1)"
@@ -354,51 +515,82 @@ Create `apps/situation-room/themes/light.json`. The values below are extracted f
   },
 
   "components": {
-    "card":   { "radius": "md", "shadow": "sm" },
+    "card": { "radius": "md", "shadow": "sm" },
     "filter": { "radius": "sm", "height": "2rem" },
-    "tab":    { "railRadius": "lg", "pillRadius": "md" },
-    "pill":   { "radius": "sm" },
-    "table":  { "headerWeight": "medium" }
+    "tab": { "railRadius": "lg", "pillRadius": "md" },
+    "pill": { "radius": "sm" },
+    "table": { "headerWeight": "medium" }
   },
 
   "dashboard": {
-    "filterBar":     { "bg": "gray.1", "border": "border.default" },
-    "filterTrigger": { "bg": "surface.elevated", "border": "border.default", "text": "text.secondary", "hoverBg": "surface.sunken", "hoverBorder": "border.strong" },
-    "filterActive":  { "bg": "accentBrand.subtle", "border": "blue.4", "text": "accentBrand.hover" },
-    "filterBadge":   { "bg": "accentBrand.default", "text": "text.inverse" },
+    "filterBar": { "bg": "gray.1", "border": "border.default" },
+    "filterTrigger": {
+      "bg": "surface.elevated",
+      "border": "border.default",
+      "text": "text.secondary",
+      "hoverBg": "surface.sunken",
+      "hoverBorder": "border.strong"
+    },
+    "filterActive": {
+      "bg": "accentBrand.subtle",
+      "border": "blue.4",
+      "text": "accentBrand.hover"
+    },
+    "filterBadge": { "bg": "accentBrand.default", "text": "text.inverse" },
     "table": {
-      "headerBg": "surface.sunken", "headerText": "text.secondary", "headerBorder": "border.default",
-      "rowBg": "transparent", "rowAltBg": "surface.base",
-      "rowHoverBg": "accentBrand.subtle", "rowSelectedBg": "blue.1",
+      "headerBg": "surface.sunken",
+      "headerText": "text.secondary",
+      "headerBorder": "border.default",
+      "rowBg": "transparent",
+      "rowAltBg": "surface.base",
+      "rowHoverBg": "accentBrand.subtle",
+      "rowSelectedBg": "blue.1",
       "rowBorder": "border.subtle",
-      "cellText": "text.primary", "cellSecondary": "text.secondary"
+      "cellText": "text.primary",
+      "cellSecondary": "text.secondary"
     },
     "tab": {
-      "rail": "gray.5", "text": "text.tertiary", "hoverText": "text.secondary",
-      "activeBg": "surface.elevated", "activeText": "text.primary"
+      "rail": "gray.5",
+      "text": "text.tertiary",
+      "hoverText": "text.secondary",
+      "activeBg": "surface.elevated",
+      "activeText": "text.primary"
     },
-    "heading": { "primary": "text.primary", "section": "text.secondary", "overline": "text.tertiary" }
+    "heading": {
+      "primary": "text.primary",
+      "section": "text.secondary",
+      "overline": "text.tertiary"
+    }
   },
 
   "viz": {
-    "categorical": ["blue.5", "purple.0", "green.3", "amber.2", "cyan.2", "red.2", "purple.1", "green.2"],
-    "sequential":  ["blue.0", "blue.1", "blue.2", "blue.3", "blue.5", "blue.6"],
-    "diverging":   ["red.2", "red.1", "gray.2", "green.1", "green.4"]
+    "categorical": [
+      "blue.5",
+      "purple.0",
+      "green.3",
+      "amber.2",
+      "cyan.2",
+      "red.2",
+      "purple.1",
+      "green.2"
+    ],
+    "sequential": ["blue.0", "blue.1", "blue.2", "blue.3", "blue.5", "blue.6"],
+    "diverging": ["red.2", "red.1", "gray.2", "green.1", "green.4"]
   }
 }
 ```
 
 **Palette index reference (light):**
 
-| Palette | Indices |
-|---------|---------|
-| gray | 0:#f7f8fa 1:#f0f2f5 2:#eef1f5 3:#e8ecf2 4:#e4e8ee 5:#e2e6ed 6:#dce0e8 7:#c5cad4 8:#b0b6c4 9:#8690a2 10:#636a7e 11:#4a5068 12:#1e2028 |
-| blue | 0:#edf4fc 1:#dbe9f8 2:#c4daf0 3:#b0cfe8 4:#8db8e4 5:#3574c4 6:#2a5ea0 7:#234e88 |
-| green | 0:#eaf7ef 1:#b8e0c8 2:#5c8a3e 3:#3a9a5e 4:#1a7f42 |
-| red | 0:#fdf0f0 1:#f0c0c3 2:#c9363f |
-| amber | 0:#fef9eb 1:#f0dfa0 2:#c7872e 3:#b07d1a |
-| cyan | 0:#e8f8fa 1:#b0e0e6 2:#2e95a3 |
-| purple | 0:#9556cf 1:#7c6eb5 |
+| Palette | Indices                                                                                                                              |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| gray    | 0:#f7f8fa 1:#f0f2f5 2:#eef1f5 3:#e8ecf2 4:#e4e8ee 5:#e2e6ed 6:#dce0e8 7:#c5cad4 8:#b0b6c4 9:#8690a2 10:#636a7e 11:#4a5068 12:#1e2028 |
+| blue    | 0:#edf4fc 1:#dbe9f8 2:#c4daf0 3:#b0cfe8 4:#8db8e4 5:#3574c4 6:#2a5ea0 7:#234e88                                                      |
+| green   | 0:#eaf7ef 1:#b8e0c8 2:#5c8a3e 3:#3a9a5e 4:#1a7f42                                                                                    |
+| red     | 0:#fdf0f0 1:#f0c0c3 2:#c9363f                                                                                                        |
+| amber   | 0:#fef9eb 1:#f0dfa0 2:#c7872e 3:#b07d1a                                                                                              |
+| cyan    | 0:#e8f8fa 1:#b0e0e6 2:#2e95a3                                                                                                        |
+| purple  | 0:#9556cf 1:#7c6eb5                                                                                                                  |
 
 Every hex value in `global.css` `:root` (lines 12–140) has a corresponding palette entry. Every ref in the JSON resolves to the exact hex in the current CSS. The generated output must be byte-identical to the current variables — no "close enough" approximations, no manual reconciliation step.
 
@@ -414,6 +606,7 @@ git commit -m "feat(tokens): add light theme JSON with all current values"
 ## Task 4: Create Dark Theme JSON
 
 **Files:**
+
 - Create: `apps/situation-room/themes/dark.json`
 
 This task extracts every CSS custom property value from the current `.dark` block in `global.css` (lines 147–274). The palette arrays include ALL hex values — including intermediates like `#262a31`, `#333842`, `#1c2027` that appear between the core Atom One Dark steps. Additional palettes (`purple`, `orange`) are added for chart colors that don't fit the status color palettes.
@@ -427,36 +620,83 @@ Create `apps/situation-room/themes/dark.json`. Same schema as `light.json`, but 
   "name": "Dark",
 
   "palette": {
-    "gray":   ["#1a1d23", "#1c2027", "#21252b", "#262a31", "#282c34", "#2c313a", "#2e3440", "#333842", "#3e4451", "#4d5566", "#5c6370", "#828997", "#abb2bf", "#d7dae0"],
-    "blue":   ["#253545", "#354a5e", "#355565", "#3a6090", "#4a9be0", "#528bff", "#61afef", "#82c0f5", "#a8d4f7"],
-    "green":  ["#2a3a2a", "#3d5a3d", "#98c379"],
-    "red":    ["#3a2a2a", "#5a3a3a", "#e06c75"],
-    "amber":  ["#3a3525", "#5a5035", "#e5c07b"],
-    "cyan":   ["#253a3e", "#3a5a60", "#56b6c2"],
+    "gray": [
+      "#1a1d23",
+      "#1c2027",
+      "#21252b",
+      "#262a31",
+      "#282c34",
+      "#2c313a",
+      "#2e3440",
+      "#333842",
+      "#3e4451",
+      "#4d5566",
+      "#5c6370",
+      "#828997",
+      "#abb2bf",
+      "#d7dae0"
+    ],
+    "blue": [
+      "#253545",
+      "#354a5e",
+      "#355565",
+      "#3a6090",
+      "#4a9be0",
+      "#528bff",
+      "#61afef",
+      "#82c0f5",
+      "#a8d4f7"
+    ],
+    "green": ["#2a3a2a", "#3d5a3d", "#98c379"],
+    "red": ["#3a2a2a", "#5a3a3a", "#e06c75"],
+    "amber": ["#3a3525", "#5a5035", "#e5c07b"],
+    "cyan": ["#253a3e", "#3a5a60", "#56b6c2"],
     "purple": ["#c678dd"],
     "orange": ["#be5046", "#d19a66"],
-    "white":  "#d7dae0",
-    "black":  "#282c34",
+    "white": "#d7dae0",
+    "black": "#282c34",
     "transparent": "transparent"
   },
 
   "colors": {
-    "surface":  { "base": "gray.4", "elevated": "gray.5", "sunken": "gray.2", "overlay": "gray.5" },
-    "text":     { "primary": "gray.12", "secondary": "gray.11", "tertiary": "gray.10", "inverse": "gray.4", "link": "blue.6", "linkHover": "blue.7" },
-    "border":   { "default": "gray.8", "subtle": "gray.8", "strong": "gray.9" },
-    "accentBrand": { "default": "blue.6", "subtle": "blue.0", "hover": "blue.7", "muted": "blue.1" },
+    "surface": {
+      "base": "gray.4",
+      "elevated": "gray.5",
+      "sunken": "gray.2",
+      "overlay": "gray.5"
+    },
+    "text": {
+      "primary": "gray.12",
+      "secondary": "gray.11",
+      "tertiary": "gray.10",
+      "inverse": "gray.4",
+      "link": "blue.6",
+      "linkHover": "blue.7"
+    },
+    "border": { "default": "gray.8", "subtle": "gray.8", "strong": "gray.9" },
+    "accentBrand": {
+      "default": "blue.6",
+      "subtle": "blue.0",
+      "hover": "blue.7",
+      "muted": "blue.1"
+    },
     "positive": { "default": "green.2", "bg": "green.0", "border": "green.1" },
     "negative": { "default": "red.2", "bg": "red.0", "border": "red.1" },
-    "warning":  { "default": "amber.2", "bg": "amber.0", "border": "amber.1" },
-    "info":     { "default": "blue.6", "bg": "blue.0", "border": "blue.2" },
-    "neutral":  { "change": "gray.10", "changeBg": "gray.5" },
+    "warning": { "default": "amber.2", "bg": "amber.0", "border": "amber.1" },
+    "info": { "default": "blue.6", "bg": "blue.0", "border": "blue.2" },
+    "neutral": { "change": "gray.10", "changeBg": "gray.5" },
     "interactive": {
-      "bg": "blue.6", "bgHover": "blue.7", "bgActive": "blue.4",
+      "bg": "blue.6",
+      "bgHover": "blue.7",
+      "bgActive": "blue.4",
       "text": "gray.4",
-      "ghostHover": "gray.5", "ghostActive": "gray.7",
-      "outlineBorder": "gray.8", "outlineHover": "gray.9",
+      "ghostHover": "gray.5",
+      "ghostActive": "gray.7",
+      "outlineBorder": "gray.8",
+      "outlineHover": "gray.9",
       "focusRing": "blue.5",
-      "disabledBg": "gray.5", "disabledText": "gray.9"
+      "disabledBg": "gray.5",
+      "disabledText": "gray.9"
     }
   },
 
@@ -490,14 +730,37 @@ Create `apps/situation-room/themes/dark.json`. Same schema as `light.json`, but 
   },
 
   "typography": {
-    "fontFamily": { "sans": "Inter, system-ui, sans-serif", "mono": "'JetBrains Mono', ui-monospace, monospace" },
-    "fontSize":   { "xs": "0.75rem", "sm": "0.875rem", "base": "1rem", "lg": "1.125rem", "xl": "1.25rem", "2xl": "1.5rem" },
-    "fontWeight": { "normal": "400", "medium": "500", "semibold": "600", "bold": "700" }
+    "fontFamily": {
+      "sans": "Inter, system-ui, sans-serif",
+      "mono": "'JetBrains Mono', ui-monospace, monospace"
+    },
+    "fontSize": {
+      "xs": "0.75rem",
+      "sm": "0.875rem",
+      "base": "1rem",
+      "lg": "1.125rem",
+      "xl": "1.25rem",
+      "2xl": "1.5rem"
+    },
+    "fontWeight": {
+      "normal": "400",
+      "medium": "500",
+      "semibold": "600",
+      "bold": "700"
+    }
   },
 
   "geometry": {
     "radiusBase": "0.375rem",
-    "radiusScale": { "sm": 0.6, "md": 0.8, "lg": 1.0, "xl": 1.4, "2xl": 1.8, "3xl": 2.2, "4xl": 2.6 },
+    "radiusScale": {
+      "sm": 0.6,
+      "md": 0.8,
+      "lg": 1.0,
+      "xl": 1.4,
+      "2xl": 1.8,
+      "3xl": 2.2,
+      "4xl": 2.6
+    },
     "shadow": {
       "sm": "0 1px 2px rgba(0,0,0,0.15)",
       "md": "0 4px 6px -1px rgba(0,0,0,0.25)"
@@ -505,52 +768,83 @@ Create `apps/situation-room/themes/dark.json`. Same schema as `light.json`, but 
   },
 
   "components": {
-    "card":   { "radius": "md", "shadow": "sm" },
+    "card": { "radius": "md", "shadow": "sm" },
     "filter": { "radius": "sm", "height": "2rem" },
-    "tab":    { "railRadius": "lg", "pillRadius": "md" },
-    "pill":   { "radius": "sm" },
-    "table":  { "headerWeight": "medium" }
+    "tab": { "railRadius": "lg", "pillRadius": "md" },
+    "pill": { "radius": "sm" },
+    "table": { "headerWeight": "medium" }
   },
 
   "dashboard": {
-    "filterBar":     { "bg": "surface.sunken", "border": "border.default" },
-    "filterTrigger": { "bg": "surface.base", "border": "border.default", "text": "text.secondary", "hoverBg": "surface.elevated", "hoverBorder": "border.strong" },
-    "filterActive":  { "bg": "accentBrand.subtle", "border": "blue.3", "text": "accentBrand.default" },
-    "filterBadge":   { "bg": "accentBrand.default", "text": "surface.base" },
+    "filterBar": { "bg": "surface.sunken", "border": "border.default" },
+    "filterTrigger": {
+      "bg": "surface.base",
+      "border": "border.default",
+      "text": "text.secondary",
+      "hoverBg": "surface.elevated",
+      "hoverBorder": "border.strong"
+    },
+    "filterActive": {
+      "bg": "accentBrand.subtle",
+      "border": "blue.3",
+      "text": "accentBrand.default"
+    },
+    "filterBadge": { "bg": "accentBrand.default", "text": "surface.base" },
     "table": {
-      "headerBg": "surface.elevated", "headerText": "text.secondary", "headerBorder": "border.default",
-      "rowBg": "transparent", "rowAltBg": "gray.3",
-      "rowHoverBg": "gray.6", "rowSelectedBg": "accentBrand.subtle",
+      "headerBg": "surface.elevated",
+      "headerText": "text.secondary",
+      "headerBorder": "border.default",
+      "rowBg": "transparent",
+      "rowAltBg": "gray.3",
+      "rowHoverBg": "gray.6",
+      "rowSelectedBg": "accentBrand.subtle",
       "rowBorder": "gray.7",
-      "cellText": "text.primary", "cellSecondary": "text.secondary"
+      "cellText": "text.primary",
+      "cellSecondary": "text.secondary"
     },
     "tab": {
-      "rail": "gray.1", "text": "text.tertiary", "hoverText": "text.secondary",
-      "activeBg": "surface.elevated", "activeText": "text.primary"
+      "rail": "gray.1",
+      "text": "text.tertiary",
+      "hoverText": "text.secondary",
+      "activeBg": "surface.elevated",
+      "activeText": "text.primary"
     },
-    "heading": { "primary": "text.primary", "section": "text.secondary", "overline": "text.tertiary" }
+    "heading": {
+      "primary": "text.primary",
+      "section": "text.secondary",
+      "overline": "text.tertiary"
+    }
   },
 
   "viz": {
-    "categorical": ["blue.6", "purple.0", "green.2", "amber.2", "cyan.2", "red.2", "orange.1", "orange.0"],
-    "sequential":  ["blue.0", "blue.1", "blue.3", "blue.4", "blue.6", "blue.7"],
-    "diverging":   ["red.2", "red.1", "gray.4", "green.1", "green.2"]
+    "categorical": [
+      "blue.6",
+      "purple.0",
+      "green.2",
+      "amber.2",
+      "cyan.2",
+      "red.2",
+      "orange.1",
+      "orange.0"
+    ],
+    "sequential": ["blue.0", "blue.1", "blue.3", "blue.4", "blue.6", "blue.7"],
+    "diverging": ["red.2", "red.1", "gray.4", "green.1", "green.2"]
   }
 }
 ```
 
 **Palette index reference (dark):**
 
-| Palette | Indices |
-|---------|---------|
-| gray | 0:#1a1d23 1:#1c2027 2:#21252b 3:#262a31 4:#282c34 5:#2c313a 6:#2e3440 7:#333842 8:#3e4451 9:#4d5566 10:#5c6370 11:#828997 12:#abb2bf 13:#d7dae0 |
-| blue | 0:#253545 1:#354a5e 2:#355565 3:#3a6090 4:#4a9be0 5:#528bff 6:#61afef 7:#82c0f5 8:#a8d4f7 |
-| green | 0:#2a3a2a 1:#3d5a3d 2:#98c379 |
-| red | 0:#3a2a2a 1:#5a3a3a 2:#e06c75 |
-| amber | 0:#3a3525 1:#5a5035 2:#e5c07b |
-| cyan | 0:#253a3e 1:#3a5a60 2:#56b6c2 |
-| purple | 0:#c678dd |
-| orange | 0:#be5046 1:#d19a66 |
+| Palette | Indices                                                                                                                                         |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| gray    | 0:#1a1d23 1:#1c2027 2:#21252b 3:#262a31 4:#282c34 5:#2c313a 6:#2e3440 7:#333842 8:#3e4451 9:#4d5566 10:#5c6370 11:#828997 12:#abb2bf 13:#d7dae0 |
+| blue    | 0:#253545 1:#354a5e 2:#355565 3:#3a6090 4:#4a9be0 5:#528bff 6:#61afef 7:#82c0f5 8:#a8d4f7                                                       |
+| green   | 0:#2a3a2a 1:#3d5a3d 2:#98c379                                                                                                                   |
+| red     | 0:#3a2a2a 1:#5a3a3a 2:#e06c75                                                                                                                   |
+| amber   | 0:#3a3525 1:#5a5035 2:#e5c07b                                                                                                                   |
+| cyan    | 0:#253a3e 1:#3a5a60 2:#56b6c2                                                                                                                   |
+| purple  | 0:#c678dd                                                                                                                                       |
+| orange  | 0:#be5046 1:#d19a66                                                                                                                             |
 
 Every hex value in `global.css` `.dark` (lines 147–274) has a corresponding palette entry. Every ref resolves to the exact hex in the current CSS. No approximations, no manual reconciliation.
 
@@ -566,6 +860,7 @@ git commit -m "feat(tokens): add dark theme JSON with Atom One Dark values"
 ## Task 5: Build the Theme Generator Script — Tests First
 
 **Files:**
+
 - Create: `apps/situation-room/__tests__/generate-theme.test.ts`
 - Create: `apps/situation-room/themes/generate-theme.ts`
 
@@ -579,7 +874,12 @@ Create `apps/situation-room/__tests__/generate-theme.test.ts`:
 
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { resolvePaletteRef, resolveColorRef, resolveGeometryRef, resolveVizPalette } from '../themes/generate-theme';
+import {
+  resolvePaletteRef,
+  resolveColorRef,
+  resolveGeometryRef,
+  resolveVizPalette,
+} from '../themes/generate-theme';
 
 const testPalette = {
   gray: ['#f7f8fa', '#eef1f5', '#e4e8ee', '#dce0e8'],
@@ -668,7 +968,8 @@ export function resolvePaletteRef(ref: string, palette: Palette): string {
     // Scalar ref like "white"
     const val = palette[ref];
     if (val === undefined) throw new Error(`Invalid palette ref: "${ref}"`);
-    if (typeof val !== 'string') throw new Error(`Palette ref "${ref}" is an array, needs index`);
+    if (typeof val !== 'string')
+      throw new Error(`Palette ref "${ref}" is an array, needs index`);
     return val;
   }
 
@@ -676,8 +977,12 @@ export function resolvePaletteRef(ref: string, palette: Palette): string {
   const index = parseInt(ref.slice(dotIndex + 1), 10);
   const arr = palette[key];
   if (arr === undefined) throw new Error(`Invalid palette key: "${key}"`);
-  if (!Array.isArray(arr)) throw new Error(`Palette key "${key}" is not an array`);
-  if (index < 0 || index >= arr.length) throw new Error(`Index ${index} out of bounds for palette.${key} (length ${arr.length})`);
+  if (!Array.isArray(arr))
+    throw new Error(`Palette key "${key}" is not an array`);
+  if (index < 0 || index >= arr.length)
+    throw new Error(
+      `Index ${index} out of bounds for palette.${key} (length ${arr.length})`,
+    );
   return arr[index];
 }
 ```
@@ -713,15 +1018,21 @@ const testColors = {
 
 describe('resolveColorRef', () => {
   it('resolves two-part color ref like "surface.elevated"', () => {
-    expect(resolveColorRef('surface.elevated', testColors, testPalette)).toBe('#ffffff');
+    expect(resolveColorRef('surface.elevated', testColors, testPalette)).toBe(
+      '#ffffff',
+    );
   });
 
   it('resolves chained ref (color → palette)', () => {
-    expect(resolveColorRef('accentBrand.default', testColors, testPalette)).toBe('#3574c4');
+    expect(
+      resolveColorRef('accentBrand.default', testColors, testPalette),
+    ).toBe('#3574c4');
   });
 
   it('resolves "transparent" as literal', () => {
-    expect(resolveColorRef('transparent', testColors, testPalette)).toBe('transparent');
+    expect(resolveColorRef('transparent', testColors, testPalette)).toBe(
+      'transparent',
+    );
   });
 
   it('falls back to palette ref when section not in colors', () => {
@@ -731,7 +1042,9 @@ describe('resolveColorRef', () => {
   });
 
   it('throws on completely invalid ref', () => {
-    expect(() => resolveColorRef('nonexistent.99', testColors, testPalette)).toThrow();
+    expect(() =>
+      resolveColorRef('nonexistent.99', testColors, testPalette),
+    ).toThrow();
   });
 });
 ```
@@ -772,7 +1085,8 @@ export function resolveColorRef(
   }
 
   const paletteRef = sectionObj[key];
-  if (paletteRef === undefined) throw new Error(`Invalid color key: "${key}" in section "${section}"`);
+  if (paletteRef === undefined)
+    throw new Error(`Invalid color key: "${key}" in section "${section}"`);
 
   return resolvePaletteRef(paletteRef, palette);
 }
@@ -817,19 +1131,32 @@ const testTypography = {
 
 describe('resolveGeometryRef', () => {
   it('resolves radius ref "md" for property named "radius"', () => {
-    expect(resolveGeometryRef('md', 'radius', testGeometry, testTypography)).toBe('calc(0.375rem * 0.8)');
+    expect(
+      resolveGeometryRef('md', 'radius', testGeometry, testTypography),
+    ).toBe('calc(0.375rem * 0.8)');
   });
 
   it('resolves shadow ref "sm" for property named "shadow"', () => {
-    expect(resolveGeometryRef('sm', 'shadow', testGeometry, testTypography)).toBe('0 1px 2px rgba(0,0,0,0.05)');
+    expect(
+      resolveGeometryRef('sm', 'shadow', testGeometry, testTypography),
+    ).toBe('0 1px 2px rgba(0,0,0,0.05)');
   });
 
   it('resolves weight ref "medium" for property named "headerWeight"', () => {
-    expect(resolveGeometryRef('medium', 'headerWeight', testGeometry, testTypography)).toBe('500');
+    expect(
+      resolveGeometryRef(
+        'medium',
+        'headerWeight',
+        testGeometry,
+        testTypography,
+      ),
+    ).toBe('500');
   });
 
   it('passes through literal CSS values like "2rem"', () => {
-    expect(resolveGeometryRef('2rem', 'height', testGeometry, testTypography)).toBe('2rem');
+    expect(
+      resolveGeometryRef('2rem', 'height', testGeometry, testTypography),
+    ).toBe('2rem');
   });
 });
 ```
@@ -1008,8 +1335,16 @@ describe('generateCssFromTheme', () => {
       },
       dashboard: {
         filterBar: { bg: 'gray.0', border: 'border.default' },
-        filterTrigger: { bg: 'surface.elevated', border: 'border.default', text: 'text.primary' },
-        filterActive: { bg: 'accentBrand.default', border: 'blue.0', text: 'accentBrand.default' },
+        filterTrigger: {
+          bg: 'surface.elevated',
+          border: 'border.default',
+          text: 'text.primary',
+        },
+        filterActive: {
+          bg: 'accentBrand.default',
+          border: 'blue.0',
+          text: 'accentBrand.default',
+        },
         filterBadge: { bg: 'accentBrand.default', text: 'white' },
         tab: { rail: 'surface.base', text: 'text.primary' },
         table: { headerBg: 'surface.base', headerText: 'text.primary' },
@@ -1078,7 +1413,10 @@ Then add a `generateThemeInlineBlock` function that emits the `@theme inline` bl
 export { type Theme };
 
 function kebabCase(str: string): string {
-  return str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase().replace(/\s+/g, '-');
+  return str
+    .replace(/([a-z])([A-Z])/g, '$1-$2')
+    .toLowerCase()
+    .replace(/\s+/g, '-');
 }
 
 function cssVarName(section: string, key: string): string {
@@ -1092,7 +1430,16 @@ function shadcnVarName(key: string): string {
 
 export function generateCssFromTheme(theme: Theme): string {
   const lines: string[] = [];
-  const { palette, colors, shadcn, typography, geometry, components, dashboard, viz } = theme;
+  const {
+    palette,
+    colors,
+    shadcn,
+    typography,
+    geometry,
+    components,
+    dashboard,
+    viz,
+  } = theme;
 
   // Determine CSS selector
   const selector = theme.name === 'Light' ? ':root' : '.dark';
@@ -1175,14 +1522,27 @@ import { generateThemeInlineBlock } from '../themes/generate-theme';
 describe('generateThemeInlineBlock', () => {
   const baseOpts = {
     geometry: { radiusBase: '0.375rem', radiusScale: { sm: 0.6 }, shadow: {} },
-    typography: { fontFamily: { sans: 'Inter, system-ui, sans-serif', mono: "'JetBrains Mono', ui-monospace, monospace" } },
+    typography: {
+      fontFamily: {
+        sans: 'Inter, system-ui, sans-serif',
+        mono: "'JetBrains Mono', ui-monospace, monospace",
+      },
+    },
   };
 
   it('maps color vars to --color- prefix', () => {
-    const vars = ['--surface', '--surface-elevated', '--text-primary', '--background', '--chart-1'];
+    const vars = [
+      '--surface',
+      '--surface-elevated',
+      '--text-primary',
+      '--background',
+      '--chart-1',
+    ];
     const block = generateThemeInlineBlock(vars, baseOpts);
     expect(block).toContain('--color-surface: var(--surface)');
-    expect(block).toContain('--color-surface-elevated: var(--surface-elevated)');
+    expect(block).toContain(
+      '--color-surface-elevated: var(--surface-elevated)',
+    );
     expect(block).toContain('--color-text-primary: var(--text-primary)');
     expect(block).toContain('--color-background: var(--background)');
     expect(block).toContain('--color-chart-1: var(--chart-1)');
@@ -1202,7 +1562,9 @@ describe('generateThemeInlineBlock', () => {
 
   it('emits --font-mono as literal font stack', () => {
     const block = generateThemeInlineBlock([], baseOpts);
-    expect(block).toContain("--font-mono: 'JetBrains Mono', ui-monospace, monospace");
+    expect(block).toContain(
+      "--font-mono: 'JetBrains Mono', ui-monospace, monospace",
+    );
   });
 });
 ```
@@ -1213,7 +1575,11 @@ Add to `themes/generate-theme.ts`:
 
 ```typescript
 interface ThemeInlineOpts {
-  geometry: { radiusBase: string; radiusScale: Record<string, number>; shadow: Record<string, string> };
+  geometry: {
+    radiusBase: string;
+    radiusScale: Record<string, number>;
+    shadow: Record<string, string>;
+  };
   typography: { fontFamily: Record<string, string> };
 }
 
@@ -1226,17 +1592,38 @@ export function generateThemeInlineBlock(
   // Color vars → --color-{name}: var(--{name})
   // Match every var except --radius (handled separately)
   const colorVarPrefixes = [
-    '--surface', '--text-', '--border', '--positive', '--negative',
-    '--warning', '--info', '--neutral', '--interactive', '--filter-', '--table-',
-    '--tab-', '--heading-', '--chart-', '--accent',
+    '--surface',
+    '--text-',
+    '--border',
+    '--positive',
+    '--negative',
+    '--warning',
+    '--info',
+    '--neutral',
+    '--interactive',
+    '--filter-',
+    '--table-',
+    '--tab-',
+    '--heading-',
+    '--chart-',
+    '--accent',
     // shadcn vars
-    '--background', '--foreground', '--card', '--popover', '--primary',
-    '--secondary', '--muted', '--destructive', '--input', '--ring', '--sidebar',
+    '--background',
+    '--foreground',
+    '--card',
+    '--popover',
+    '--primary',
+    '--secondary',
+    '--muted',
+    '--destructive',
+    '--input',
+    '--ring',
+    '--sidebar',
   ];
 
   for (const varName of allVarNames) {
     if (varName === '--radius') continue;
-    if (colorVarPrefixes.some(prefix => varName.startsWith(prefix))) {
+    if (colorVarPrefixes.some((prefix) => varName.startsWith(prefix))) {
       const name = varName.replace('--', '');
       lines.push(`  --color-${name}: var(${varName});`);
     }
@@ -1299,14 +1686,80 @@ describe('validateTheme', () => {
   function validTheme(): Theme {
     return {
       name: 'Light',
-      palette: { gray: ['#aaa'], blue: ['#bbb'], green: ['#ccc'], red: ['#ddd'], amber: ['#eee'], cyan: ['#fff'], white: '#ffffff', black: '#000000', transparent: 'transparent' },
-      colors: { surface: { base: 'gray.0' }, text: { primary: 'gray.0' }, border: { default: 'gray.0' }, accentBrand: { default: 'blue.0' }, positive: { default: 'green.0', bg: 'green.0', border: 'green.0' }, negative: { default: 'red.0', bg: 'red.0', border: 'red.0' }, neutral: { change: 'gray.0', changeBg: 'gray.0' }, interactive: { bg: 'blue.0', text: 'white', focusRing: 'blue.0' } },
-      shadcn: { background: 'surface.base', foreground: 'text.primary', card: 'surface.base', cardForeground: 'text.primary', popover: 'surface.base', popoverForeground: 'text.primary', primary: 'accentBrand.default', primaryForeground: 'text.primary', secondary: 'surface.base', secondaryForeground: 'text.primary', muted: 'surface.base', mutedForeground: 'text.primary', accent: 'surface.base', accentForeground: 'text.primary', destructive: 'negative.default', border: 'border.default', input: 'border.default', ring: 'accentBrand.default', sidebar: 'surface.base', sidebarForeground: 'text.primary', sidebarPrimary: 'accentBrand.default', sidebarPrimaryForeground: 'text.primary', sidebarAccent: 'surface.base', sidebarAccentForeground: 'text.primary', sidebarBorder: 'border.default', sidebarRing: 'accentBrand.default' },
-      typography: { fontFamily: { sans: 'Inter' }, fontSize: { xs: '0.75rem' }, fontWeight: { normal: '400' } },
-      geometry: { radiusBase: '0.375rem', radiusScale: { sm: 0.5 }, shadow: { sm: '0 1px 2px rgba(0,0,0,0.05)' } },
+      palette: {
+        gray: ['#aaa'],
+        blue: ['#bbb'],
+        green: ['#ccc'],
+        red: ['#ddd'],
+        amber: ['#eee'],
+        cyan: ['#fff'],
+        white: '#ffffff',
+        black: '#000000',
+        transparent: 'transparent',
+      },
+      colors: {
+        surface: { base: 'gray.0' },
+        text: { primary: 'gray.0' },
+        border: { default: 'gray.0' },
+        accentBrand: { default: 'blue.0' },
+        positive: { default: 'green.0', bg: 'green.0', border: 'green.0' },
+        negative: { default: 'red.0', bg: 'red.0', border: 'red.0' },
+        neutral: { change: 'gray.0', changeBg: 'gray.0' },
+        interactive: { bg: 'blue.0', text: 'white', focusRing: 'blue.0' },
+      },
+      shadcn: {
+        background: 'surface.base',
+        foreground: 'text.primary',
+        card: 'surface.base',
+        cardForeground: 'text.primary',
+        popover: 'surface.base',
+        popoverForeground: 'text.primary',
+        primary: 'accentBrand.default',
+        primaryForeground: 'text.primary',
+        secondary: 'surface.base',
+        secondaryForeground: 'text.primary',
+        muted: 'surface.base',
+        mutedForeground: 'text.primary',
+        accent: 'surface.base',
+        accentForeground: 'text.primary',
+        destructive: 'negative.default',
+        border: 'border.default',
+        input: 'border.default',
+        ring: 'accentBrand.default',
+        sidebar: 'surface.base',
+        sidebarForeground: 'text.primary',
+        sidebarPrimary: 'accentBrand.default',
+        sidebarPrimaryForeground: 'text.primary',
+        sidebarAccent: 'surface.base',
+        sidebarAccentForeground: 'text.primary',
+        sidebarBorder: 'border.default',
+        sidebarRing: 'accentBrand.default',
+      },
+      typography: {
+        fontFamily: { sans: 'Inter' },
+        fontSize: { xs: '0.75rem' },
+        fontWeight: { normal: '400' },
+      },
+      geometry: {
+        radiusBase: '0.375rem',
+        radiusScale: { sm: 0.5 },
+        shadow: { sm: '0 1px 2px rgba(0,0,0,0.05)' },
+      },
       components: { card: { radius: 'sm' } },
-      dashboard: { filterBar: { bg: 'gray.0' }, filterTrigger: { bg: 'gray.0' }, filterActive: { bg: 'blue.0' }, filterBadge: { bg: 'blue.0' }, tab: { rail: 'gray.0' }, table: { headerBg: 'gray.0' }, heading: { overline: 'gray.0' } },
-      viz: { categorical: ['blue.0', 'green.0', 'red.0'], sequential: ['gray.0', 'blue.0', 'green.0'], diverging: ['red.0', 'gray.0', 'green.0'] },
+      dashboard: {
+        filterBar: { bg: 'gray.0' },
+        filterTrigger: { bg: 'gray.0' },
+        filterActive: { bg: 'blue.0' },
+        filterBadge: { bg: 'blue.0' },
+        tab: { rail: 'gray.0' },
+        table: { headerBg: 'gray.0' },
+        heading: { overline: 'gray.0' },
+      },
+      viz: {
+        categorical: ['blue.0', 'green.0', 'red.0'],
+        sequential: ['gray.0', 'blue.0', 'green.0'],
+        diverging: ['red.0', 'gray.0', 'green.0'],
+      },
     };
   }
 
@@ -1319,15 +1772,15 @@ describe('validateTheme', () => {
     delete (t as any).palette;
     delete (t as any).viz;
     const errors = validateTheme(t);
-    expect(errors.some(e => e.includes('palette'))).toBe(true);
-    expect(errors.some(e => e.includes('viz'))).toBe(true);
+    expect(errors.some((e) => e.includes('palette'))).toBe(true);
+    expect(errors.some((e) => e.includes('viz'))).toBe(true);
   });
 
   it('rejects invalid hex in palette', () => {
     const t = validTheme();
     t.palette.gray = ['not-a-hex'];
     const errors = validateTheme(t);
-    expect(errors.some(e => e.includes('pattern'))).toBe(true);
+    expect(errors.some((e) => e.includes('pattern'))).toBe(true);
   });
 
   it('rejects missing required shadcn keys', () => {
@@ -1335,36 +1788,36 @@ describe('validateTheme', () => {
     delete (t.shadcn as any).background;
     delete (t.shadcn as any).ring;
     const errors = validateTheme(t);
-    expect(errors.some(e => e.includes('background'))).toBe(true);
-    expect(errors.some(e => e.includes('ring'))).toBe(true);
+    expect(errors.some((e) => e.includes('background'))).toBe(true);
+    expect(errors.some((e) => e.includes('ring'))).toBe(true);
   });
 
   it('rejects negative radius scale values', () => {
     const t = validTheme();
     t.geometry.radiusScale.bad = -1;
     const errors = validateTheme(t);
-    expect(errors.some(e => e.includes('radiusScale'))).toBe(true);
+    expect(errors.some((e) => e.includes('radiusScale'))).toBe(true);
   });
 
   it('rejects viz palette with fewer than 3 entries', () => {
     const t = validTheme();
     t.viz.categorical = ['blue.0'];
     const errors = validateTheme(t);
-    expect(errors.some(e => e.includes('categorical'))).toBe(true);
+    expect(errors.some((e) => e.includes('categorical'))).toBe(true);
   });
 
   it('rejects unresolvable palette refs in colors', () => {
     const t = validTheme();
     t.colors.surface.base = 'purple.99';
     const errors = validateTheme(t);
-    expect(errors.some(e => e.includes('purple'))).toBe(true);
+    expect(errors.some((e) => e.includes('purple'))).toBe(true);
   });
 
   it('rejects unresolvable color refs in shadcn', () => {
     const t = validTheme();
     t.shadcn.background = 'nonexistent.section';
     const errors = validateTheme(t);
-    expect(errors.some(e => e.includes('nonexistent'))).toBe(true);
+    expect(errors.some((e) => e.includes('nonexistent'))).toBe(true);
   });
 });
 ```
@@ -1414,25 +1867,44 @@ export function validateTheme(theme: any): string[] {
   // 6. Validate all refs actually resolve (catches typos early)
   if (theme.colors && theme.palette) {
     for (const [section, entries] of Object.entries(theme.colors)) {
-      for (const [key, ref] of Object.entries(entries as Record<string, string>)) {
-        try { resolvePaletteRef(ref, theme.palette); }
-        catch { errors.push(`colors.${section}.${key}: unresolvable palette ref "${ref}"`); }
+      for (const [key, ref] of Object.entries(
+        entries as Record<string, string>,
+      )) {
+        try {
+          resolvePaletteRef(ref, theme.palette);
+        } catch {
+          errors.push(
+            `colors.${section}.${key}: unresolvable palette ref "${ref}"`,
+          );
+        }
       }
     }
   }
 
   if (theme.shadcn && theme.colors && theme.palette) {
-    for (const [key, ref] of Object.entries(theme.shadcn as Record<string, string>)) {
-      try { resolveColorRef(ref, theme.colors, theme.palette); }
-      catch { errors.push(`shadcn.${key}: unresolvable color ref "${ref}"`); }
+    for (const [key, ref] of Object.entries(
+      theme.shadcn as Record<string, string>,
+    )) {
+      try {
+        resolveColorRef(ref, theme.colors, theme.palette);
+      } catch {
+        errors.push(`shadcn.${key}: unresolvable color ref "${ref}"`);
+      }
     }
   }
 
   if (theme.dashboard && theme.colors && theme.palette) {
     for (const [section, entries] of Object.entries(theme.dashboard)) {
-      for (const [key, ref] of Object.entries(entries as Record<string, string>)) {
-        try { resolveColorRef(ref, theme.colors, theme.palette); }
-        catch { errors.push(`dashboard.${section}.${key}: unresolvable color ref "${ref}"`); }
+      for (const [key, ref] of Object.entries(
+        entries as Record<string, string>,
+      )) {
+        try {
+          resolveColorRef(ref, theme.colors, theme.palette);
+        } catch {
+          errors.push(
+            `dashboard.${section}.${key}: unresolvable color ref "${ref}"`,
+          );
+        }
       }
     }
   }
@@ -1441,8 +1913,11 @@ export function validateTheme(theme: any): string[] {
     for (const key of ['categorical', 'sequential', 'diverging'] as const) {
       if (theme.viz[key]) {
         theme.viz[key].forEach((ref: string, i: number) => {
-          try { resolvePaletteRef(ref, theme.palette); }
-          catch { errors.push(`viz.${key}[${i}]: unresolvable palette ref "${ref}"`); }
+          try {
+            resolvePaletteRef(ref, theme.palette);
+          } catch {
+            errors.push(`viz.${key}[${i}]: unresolvable palette ref "${ref}"`);
+          }
         });
       }
     }
@@ -1472,6 +1947,7 @@ git commit -m "feat(tokens): add comprehensive theme validation with tests"
 Add to `themes/generate-theme.ts` the main orchestration code.
 
 **Critical design decisions:**
+
 - **Build mode** (`pnpm theme:generate`): validate → generate → write. On any error, throw and exit with code 1. Hard failure is correct here — CI and `prebuild` should not silently produce bad CSS.
 - **Watch mode** (`pnpm theme:watch`): same pipeline, but errors are caught and logged. The previous `generated-theme.css` is preserved on disk so the running dev server keeps working. The watcher stays alive and regenerates on the next save. `process.exit(1)` is **never** called in watch mode.
 - The script reads exactly two theme files: `light.json` (→ `:root`) and `dark.json` (→ `.dark`). No dynamic discovery. The system is explicitly constrained to these two themes.
@@ -1481,7 +1957,9 @@ Add to `themes/generate-theme.ts` the main orchestration code.
 ```typescript
 class ThemeGenerationError extends Error {
   constructor(public readonly errors: string[]) {
-    super(`Theme generation failed:\n${errors.map(e => `  ✗ ${e}`).join('\n')}`);
+    super(
+      `Theme generation failed:\n${errors.map((e) => `  ✗ ${e}`).join('\n')}`,
+    );
     this.name = 'ThemeGenerationError';
   }
 }
@@ -1507,8 +1985,8 @@ function generate(themesDir: string, outputPath: string): void {
   }
 
   // Validate both
-  errors.push(...validateTheme(lightTheme).map(e => `light.json: ${e}`));
-  errors.push(...validateTheme(darkTheme).map(e => `dark.json: ${e}`));
+  errors.push(...validateTheme(lightTheme).map((e) => `light.json: ${e}`));
+  errors.push(...validateTheme(darkTheme).map((e) => `dark.json: ${e}`));
   if (errors.length > 0) throw new ThemeGenerationError(errors);
 
   // Generate CSS blocks
@@ -1524,10 +2002,10 @@ function generate(themesDir: string, outputPath: string): void {
   }
 
   // Use Light theme geometry + typography for @theme inline (base theme)
-  const inlineBlock = generateThemeInlineBlock(
-    [...varSet],
-    { geometry: lightTheme.geometry, typography: lightTheme.typography },
-  );
+  const inlineBlock = generateThemeInlineBlock([...varSet], {
+    geometry: lightTheme.geometry,
+    typography: lightTheme.typography,
+  });
 
   const output = [
     '/* DO NOT EDIT — generated by theme:generate */',
@@ -1585,7 +2063,8 @@ function main() {
 }
 
 // Only run main when executed directly (not when imported for tests)
-const isDirectExecution = process.argv[1] && import.meta.filename === resolve(process.argv[1]);
+const isDirectExecution =
+  process.argv[1] && import.meta.filename === resolve(process.argv[1]);
 if (isDirectExecution) {
   main();
 }
@@ -1625,6 +2104,7 @@ git commit -m "feat(tokens): add main script with file I/O and watch mode"
 ## Task 6: Verify Generated CSS Matches Current CSS Exactly
 
 **Files:**
+
 - None modified (verification only). If mismatches are found, go back and fix the theme JSON files before proceeding.
 
 This task verifies that the generated CSS is **identical** to the current hand-written CSS for all existing variables. Phase 1 generation emits only variables that exist in the current `global.css` — no new vars, no missing vars, no different values. If any discrepancy is found, fix the theme JSON, not the generator.
@@ -1652,6 +2132,7 @@ diff /tmp/current-vars.txt /tmp/generated-vars.txt
 Expected: **Empty diff.** If there are ANY differences — extra vars in generated output, missing vars, or value mismatches — **stop**. Go back to the theme JSON or the generator and fix the source of the discrepancy. Do not proceed until the diff is clean.
 
 **Known items to watch for:**
+
 - Duplicate `--border` declarations: the shadcn loop emits `--border` (from `shadcn.border → border.default`) and the colors loop also emits `--border` (from `colors.border.default` via `key === 'default'`). Fix: use a `Set<string>` of already-emitted var names; skip if already present. The shadcn block runs first, so the colors loop should skip `--border`.
 - `@theme inline` font entries must match current CSS exactly (e.g. `--font-mono` may use an inline value rather than `var()`)
 - Variable ordering may differ from current CSS — sort both sides before comparing values
@@ -1685,6 +2166,7 @@ git commit -m "fix(tokens): correct theme values to match current CSS exactly"
 ## Task 7a: Extend Generator with Phase 2 Variables
 
 **Files:**
+
 - Modify: `apps/situation-room/themes/generate-theme.ts`
 - Modify: `apps/situation-room/__tests__/generate-theme.test.ts`
 
@@ -1695,33 +2177,36 @@ Now that Task 6 has confirmed byte-level parity with the current CSS, extend `ge
 After the chart tokens section (section 5), add a new section 6 that emits component-resolved geometry:
 
 ```typescript
-  // 6. Component-resolved geometry (NEW — not in original CSS)
-  // Handles both simple keys (radius, shadow, height) and compound keys (railRadius, pillRadius).
-  // Simple: card.radius → --card-radius
-  // Compound: tab.railRadius → --tab-rail-radius, tab.pillRadius → --tab-pill-radius
-  if (theme.components) {
-    for (const [comp, config] of Object.entries(theme.components)) {
-      for (const [key, value] of Object.entries(config)) {
-        if (key === 'radius') {
-          const resolvedRadius = `calc(${radiusBase} * ${radiusScale[value as string]})`;
-          lines.push(`  --${kebabCase(comp)}-radius: ${resolvedRadius};`);
-        } else if (key.endsWith('Radius')) {
-          // e.g. railRadius → rail-radius
-          const stem = kebabCase(key); // "railRadius" → "rail-radius"
-          const resolvedRadius = `calc(${radiusBase} * ${radiusScale[value as string]})`;
-          lines.push(`  --${kebabCase(comp)}-${stem}: ${resolvedRadius};`);
-        } else if (key === 'shadow') {
-          lines.push(`  --${kebabCase(comp)}-shadow: ${shadow[value as string]};`);
-        } else if (key === 'height') {
-          lines.push(`  --${kebabCase(comp)}-height: ${value};`);
-        }
-        // Other keys (like headerWeight) are informational, not emitted as CSS vars
+// 6. Component-resolved geometry (NEW — not in original CSS)
+// Handles both simple keys (radius, shadow, height) and compound keys (railRadius, pillRadius).
+// Simple: card.radius → --card-radius
+// Compound: tab.railRadius → --tab-rail-radius, tab.pillRadius → --tab-pill-radius
+if (theme.components) {
+  for (const [comp, config] of Object.entries(theme.components)) {
+    for (const [key, value] of Object.entries(config)) {
+      if (key === 'radius') {
+        const resolvedRadius = `calc(${radiusBase} * ${radiusScale[value as string]})`;
+        lines.push(`  --${kebabCase(comp)}-radius: ${resolvedRadius};`);
+      } else if (key.endsWith('Radius')) {
+        // e.g. railRadius → rail-radius
+        const stem = kebabCase(key); // "railRadius" → "rail-radius"
+        const resolvedRadius = `calc(${radiusBase} * ${radiusScale[value as string]})`;
+        lines.push(`  --${kebabCase(comp)}-${stem}: ${resolvedRadius};`);
+      } else if (key === 'shadow') {
+        lines.push(
+          `  --${kebabCase(comp)}-shadow: ${shadow[value as string]};`,
+        );
+      } else if (key === 'height') {
+        lines.push(`  --${kebabCase(comp)}-height: ${value};`);
       }
+      // Other keys (like headerWeight) are informational, not emitted as CSS vars
     }
   }
+}
 ```
 
 This produces:
+
 - `card: { radius: "md", shadow: "sm" }` → `--card-radius: calc(...)`, `--card-shadow: 0 1px 2px ...`
 - `filter: { radius: "sm", height: "2rem" }` → `--filter-radius: calc(...)`, `--filter-height: 2rem`
 - `tab: { railRadius: "lg", pillRadius: "md" }` → `--tab-rail-radius: calc(...)`, `--tab-pill-radius: calc(...)`
@@ -1732,15 +2217,16 @@ This produces:
 After the component geometry section, add `--viz-N` aliases that mirror `--chart-N`:
 
 ```typescript
-  // 7. --viz-N aliases for chart colors (NEW — convenience aliases)
-  resolvedCategorical.forEach((hex, i) => {
-    lines.push(`  --viz-${i + 1}: ${hex};`);
-  });
+// 7. --viz-N aliases for chart colors (NEW — convenience aliases)
+resolvedCategorical.forEach((hex, i) => {
+  lines.push(`  --viz-${i + 1}: ${hex};`);
+});
 ```
 
 - [ ] **Step 3: Update @theme inline to include new vars**
 
 The `generateThemeInlineBlock` already picks up new vars from the merged var set. Since the new vars (`--viz-*`, `--card-radius`, `--tab-rail-radius`, `--filter-height`) will now appear in `:root`/`.dark`, they'll be included in `allVarNames` and get `@theme inline` entries automatically via prefix matching. Verify this works by checking the generated output includes entries like:
+
 - `--color-viz-1: var(--viz-1);` (matched by `'--viz'` prefix — add `'--viz'` to `colorVarPrefixes`)
 - `--radius-card: var(--card-radius);` → enables `rounded-card`
 - `--radius-tab-rail: var(--tab-rail-radius);` → enables `rounded-tab-rail`
@@ -1754,18 +2240,18 @@ Add to `colorVarPrefixes`: `'--viz'`
 Add component geometry mapping after the font entries in `generateThemeInlineBlock`:
 
 ```typescript
-  // Component-resolved geometry → Tailwind utilities
-  // Regex uses [\w-]+ to match hyphenated stems like --tab-rail-radius, --tab-pill-radius
-  for (const varName of allVarNames) {
-    if (varName.match(/^--[\w-]+-radius$/)) {
-      const name = varName.replace(/^--/, '').replace(/-radius$/, '');
-      lines.push(`  --radius-${name}: var(${varName});`);
-    }
-    if (varName.match(/^--[\w-]+-shadow$/)) {
-      const name = varName.replace(/^--/, '').replace(/-shadow$/, '');
-      lines.push(`  --shadow-${name}: var(${varName});`);
-    }
+// Component-resolved geometry → Tailwind utilities
+// Regex uses [\w-]+ to match hyphenated stems like --tab-rail-radius, --tab-pill-radius
+for (const varName of allVarNames) {
+  if (varName.match(/^--[\w-]+-radius$/)) {
+    const name = varName.replace(/^--/, '').replace(/-radius$/, '');
+    lines.push(`  --radius-${name}: var(${varName});`);
   }
+  if (varName.match(/^--[\w-]+-shadow$/)) {
+    const name = varName.replace(/^--/, '').replace(/-shadow$/, '');
+    lines.push(`  --shadow-${name}: var(${varName});`);
+  }
+}
 ```
 
 - [ ] **Step 4: Add tests for new vars**
@@ -1799,7 +2285,13 @@ describe('Phase 2 vars', () => {
 
 describe('Phase 2 @theme inline', () => {
   it('maps component radius vars to Tailwind --radius-* aliases', () => {
-    const varNames = ['--card-radius', '--tab-rail-radius', '--tab-pill-radius', '--filter-radius', '--pill-radius'];
+    const varNames = [
+      '--card-radius',
+      '--tab-rail-radius',
+      '--tab-pill-radius',
+      '--filter-radius',
+      '--pill-radius',
+    ];
     const block = generateThemeInlineBlock(varNames, baseOpts);
     expect(block).toContain('--radius-card: var(--card-radius)');
     expect(block).toContain('--radius-tab-rail: var(--tab-rail-radius)');
@@ -1829,6 +2321,7 @@ git commit -m "feat(tokens): add Phase 2 vars — component geometry, --viz-N, -
 ## Task 7b: Replace global.css with Generated Import + Component Classes
 
 **Files:**
+
 - Modify: `apps/situation-room/app/global.css`
 
 This is the switchover: the ~440-line `global.css` becomes ~80 lines. All `:root`, `.dark`, and `@theme inline` blocks are removed and replaced by `@import './generated-theme.css'`. The `@layer components` classes are added.
@@ -1847,8 +2340,12 @@ Replace the entire contents of `apps/situation-room/app/global.css` with:
 
 @layer components {
   /* ── Cards & Tiles ── */
-  .card-tile { @apply bg-surface-elevated rounded-card shadow-card ring-1 ring-border-subtle; }
-  .card-tile-header { @apply px-4 py-3 text-heading-primary text-lg font-semibold tracking-tight; }
+  .card-tile {
+    @apply bg-surface-elevated rounded-card shadow-card ring-1 ring-border-subtle;
+  }
+  .card-tile-header {
+    @apply px-4 py-3 text-heading-primary text-lg font-semibold tracking-tight;
+  }
 
   /* ── Filters ── */
   .filter-trigger {
@@ -1866,44 +2363,80 @@ Replace the entire contents of `apps/situation-room/app/global.css` with:
   }
 
   /* ── Tabs ── */
-  .tab-rail { @apply inline-flex items-center gap-0.5 rounded-tab-rail bg-tab-rail p-1; }
+  .tab-rail {
+    @apply inline-flex items-center gap-0.5 rounded-tab-rail bg-tab-rail p-1;
+  }
   .tab-pill {
     @apply rounded-tab-pill px-4 py-1.5 text-sm font-medium text-tab-text
            select-none cursor-pointer transition-[background-color,box-shadow,color,transform]
            duration-200 ease-out;
   }
-  .tab-pill:hover { @apply text-tab-hover-text; }
-  .tab-pill:active { @apply scale-[0.97]; }
-  .tab-pill-active { @apply bg-tab-active-bg text-tab-active-text shadow-sm font-semibold; }
+  .tab-pill:hover {
+    @apply text-tab-hover-text;
+  }
+  .tab-pill:active {
+    @apply scale-[0.97];
+  }
+  .tab-pill-active {
+    @apply bg-tab-active-bg text-tab-active-text shadow-sm font-semibold;
+  }
 
   /* ── Table ── */
-  .table-header-cell { @apply text-xs font-medium uppercase tracking-wider text-table-header-text; }
-  .table-data-cell { @apply text-table-cell-text; }
-  .table-data-cell-numeric { @apply text-table-cell-text tabular-nums font-semibold text-right; }
-  .table-data-cell-secondary { @apply text-table-cell-secondary tabular-nums text-right; }
+  .table-header-cell {
+    @apply text-xs font-medium uppercase tracking-wider text-table-header-text;
+  }
+  .table-data-cell {
+    @apply text-table-cell-text;
+  }
+  .table-data-cell-numeric {
+    @apply text-table-cell-text tabular-nums font-semibold text-right;
+  }
+  .table-data-cell-secondary {
+    @apply text-table-cell-secondary tabular-nums text-right;
+  }
 
   /* ── Status Pills ── */
   .pill-status {
     @apply inline-flex items-center gap-0.5 px-2 py-0.5 rounded-pill
            text-xs font-medium tabular-nums border;
   }
-  .pill-positive { @apply pill-status bg-positive-bg text-positive border-positive-border; }
-  .pill-negative { @apply pill-status bg-negative-bg text-negative border-negative-border; }
-  .pill-neutral  { @apply pill-status bg-neutral-change-bg text-neutral-change border-border-subtle; }
+  .pill-positive {
+    @apply pill-status bg-positive-bg text-positive border-positive-border;
+  }
+  .pill-negative {
+    @apply pill-status bg-negative-bg text-negative border-negative-border;
+  }
+  .pill-neutral {
+    @apply pill-status bg-neutral-change-bg text-neutral-change border-border-subtle;
+  }
 
   /* ── Headings ── */
-  .heading-overline { @apply text-xs font-medium uppercase tracking-[0.15em] text-heading-overline; }
-  .heading-section { @apply text-heading-section leading-relaxed; }
-  .heading-primary { @apply text-lg font-semibold tracking-tight text-heading-primary; }
+  .heading-overline {
+    @apply text-xs font-medium uppercase tracking-[0.15em] text-heading-overline;
+  }
+  .heading-section {
+    @apply text-heading-section leading-relaxed;
+  }
+  .heading-primary {
+    @apply text-lg font-semibold tracking-tight text-heading-primary;
+  }
 
   /* ── Page Surfaces ── */
-  .surface-page { @apply bg-surface-sunken min-h-screen w-full; }
-  .surface-header { @apply bg-surface border-b border-border-subtle; }
-  .surface-filter-bar { @apply bg-filter-bar-bg border-b border-filter-bar-border; }
+  .surface-page {
+    @apply bg-surface-sunken min-h-screen w-full;
+  }
+  .surface-header {
+    @apply bg-surface border-b border-border-subtle;
+  }
+  .surface-filter-bar {
+    @apply bg-filter-bar-bg border-b border-filter-bar-border;
+  }
 }
 
 @layer base {
-  * { @apply border-border outline-ring/50; }
+  * {
+    @apply border-border outline-ring/50;
+  }
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-sans);
@@ -1913,8 +2446,13 @@ Replace the entire contents of `apps/situation-room/app/global.css` with:
 }
 
 @media print {
-  body { background: white !important; color: black !important; }
-  .no-print { display: none !important; }
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .no-print {
+    display: none !important;
+  }
 }
 ```
 
@@ -1946,19 +2484,20 @@ git commit -m "feat(tokens): replace hand-written CSS vars with generated import
 ## Task 8: Migrate executive-snapshot.tsx
 
 **Files:**
+
 - Modify: `apps/situation-room/components/executive-snapshot.tsx`
 
 - [ ] **Step 1: Replace theming classes with semantic classes**
 
 Current code and replacements:
 
-| Line | Current | Replace with |
-|------|---------|-------------|
-| 29 | `"text-xs font-medium uppercase tracking-[0.15em] text-heading-overline mb-5"` | `"heading-overline mb-5"` |
-| 37 | `"bg-surface-elevated shadow-sm hover:shadow-md transition-shadow duration-200"` | `"card-tile hover:shadow-md transition-shadow duration-200"` |
-| 40 | `"text-xs font-medium text-heading-overline uppercase tracking-wider"` | `"heading-overline"` |
-| 43 | `"text-xs text-text-secondary font-normal"` | `"text-xs text-text-secondary font-normal"` (keep — one-off typography) |
-| 48 | `"text-2xl font-bold tabular-nums text-heading-primary tracking-tight"` | `"text-2xl font-bold tabular-nums text-heading-primary tracking-tight"` (keep — one-off heading style) |
+| Line | Current                                                                          | Replace with                                                                                           |
+| ---- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| 29   | `"text-xs font-medium uppercase tracking-[0.15em] text-heading-overline mb-5"`   | `"heading-overline mb-5"`                                                                              |
+| 37   | `"bg-surface-elevated shadow-sm hover:shadow-md transition-shadow duration-200"` | `"card-tile hover:shadow-md transition-shadow duration-200"`                                           |
+| 40   | `"text-xs font-medium text-heading-overline uppercase tracking-wider"`           | `"heading-overline"`                                                                                   |
+| 43   | `"text-xs text-text-secondary font-normal"`                                      | `"text-xs text-text-secondary font-normal"` (keep — one-off typography)                                |
+| 48   | `"text-2xl font-bold tabular-nums text-heading-primary tracking-tight"`          | `"text-2xl font-bold tabular-nums text-heading-primary tracking-tight"` (keep — one-off heading style) |
 
 - [ ] **Step 2: Verify visually**
 
@@ -1980,19 +2519,21 @@ git commit -m "refactor(tokens): migrate executive-snapshot to semantic classes"
 ## Task 9: Migrate category-section.tsx
 
 **Files:**
+
 - Modify: `apps/situation-room/components/category-section.tsx`
 
 - [ ] **Step 1: Replace theming classes**
 
-| Line | Current | Replace with |
-|------|---------|-------------|
-| 31 | `"bg-surface-elevated overflow-hidden"` | `"card-tile overflow-hidden"` |
-| 33 | `"text-lg font-semibold tracking-tight text-heading-primary"` | `"heading-primary"` |
-| 36 | `"text-heading-section leading-relaxed"` | `"heading-section"` |
-| 43 | `"bg-table-header-bg border-table-header-border hover:bg-table-header-bg"` | Keep as-is (TableRow-level, not a reusable pattern) |
+| Line        | Current                                                                         | Replace with                                                                                                           |
+| ----------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| 31          | `"bg-surface-elevated overflow-hidden"`                                         | `"card-tile overflow-hidden"`                                                                                          |
+| 33          | `"text-lg font-semibold tracking-tight text-heading-primary"`                   | `"heading-primary"`                                                                                                    |
+| 36          | `"text-heading-section leading-relaxed"`                                        | `"heading-section"`                                                                                                    |
+| 43          | `"bg-table-header-bg border-table-header-border hover:bg-table-header-bg"`      | Keep as-is (TableRow-level, not a reusable pattern)                                                                    |
 | 44,47,50,53 | `"... text-xs font-medium uppercase tracking-wider text-table-header-text ..."` | Replace the theming part with `table-header-cell`, keep `pl-4`, `text-right`, `hidden sm:table-cell`, `pr-4` as layout |
 
 Example for line 44:
+
 ```tsx
 // Before:
 <TableHead className="pl-4 text-xs font-medium uppercase tracking-wider text-table-header-text">
@@ -2012,15 +2553,16 @@ git commit -m "refactor(tokens): migrate category-section to semantic classes"
 ## Task 10: Migrate metric-row.tsx
 
 **Files:**
+
 - Modify: `apps/situation-room/components/metric-row.tsx`
 
 - [ ] **Step 1: Replace theming classes**
 
-| Line | Current | Replace with |
-|------|---------|-------------|
-| 17 | `"pl-4 font-medium text-table-cell-text"` | `"pl-4 font-medium table-data-cell"` |
-| 20 | `"tabular-nums text-table-cell-text font-semibold text-right"` | `"table-data-cell-numeric"` |
-| 23 | `"hidden sm:table-cell tabular-nums text-table-cell-secondary text-right"` | `"hidden sm:table-cell table-data-cell-secondary"` |
+| Line | Current                                                                    | Replace with                                       |
+| ---- | -------------------------------------------------------------------------- | -------------------------------------------------- |
+| 17   | `"pl-4 font-medium text-table-cell-text"`                                  | `"pl-4 font-medium table-data-cell"`               |
+| 20   | `"tabular-nums text-table-cell-text font-semibold text-right"`             | `"table-data-cell-numeric"`                        |
+| 23   | `"hidden sm:table-cell tabular-nums text-table-cell-secondary text-right"` | `"hidden sm:table-cell table-data-cell-secondary"` |
 
 - [ ] **Step 2: Verify visually and commit**
 
@@ -2034,6 +2576,7 @@ git commit -m "refactor(tokens): migrate metric-row to semantic classes"
 ## Task 11: Migrate change-indicator.tsx
 
 **Files:**
+
 - Modify: `apps/situation-room/components/change-indicator.tsx`
 
 - [ ] **Step 1: Replace direction styles with semantic pill classes**
@@ -2045,7 +2588,8 @@ Replace the `directionStyles` map:
 const directionStyles: Record<ChangeDirection, string> = {
   positive: 'text-positive bg-positive-bg border border-positive-border',
   negative: 'text-negative bg-negative-bg border border-negative-border',
-  neutral: 'text-neutral-change bg-neutral-change-bg border border-border-subtle',
+  neutral:
+    'text-neutral-change bg-neutral-change-bg border border-border-subtle',
 };
 ```
 
@@ -2087,6 +2631,7 @@ git commit -m "refactor(tokens): migrate change-indicator to semantic pill class
 ## Task 12: Migrate filter-dropdown.tsx
 
 **Files:**
+
 - Modify: `apps/situation-room/components/filter-dropdown.tsx`
 
 - [ ] **Step 1: Replace trigger classes**
@@ -2123,6 +2668,7 @@ git commit -m "refactor(tokens): migrate filter-dropdown trigger to semantic cla
 ## Task 13: Migrate filter-rail.tsx
 
 **Files:**
+
 - Modify: `apps/situation-room/components/filter-rail.tsx`
 
 - [ ] **Step 1: Replace heading overline**
@@ -2148,6 +2694,7 @@ git commit -m "refactor(tokens): migrate filter-rail heading to semantic class"
 ## Task 14: Migrate filter-chip.tsx
 
 **Files:**
+
 - Modify: `apps/situation-room/components/filter-chip.tsx`
 
 - [ ] **Step 1: Simplify theming classes**
@@ -2165,17 +2712,18 @@ No commit needed.
 ## Task 15: Migrate report-content.tsx
 
 **Files:**
+
 - Modify: `apps/situation-room/components/report-content.tsx`
 
 - [ ] **Step 1: Replace surface and heading classes**
 
-| Line | Current | Replace with |
-|------|---------|-------------|
-| 20 | `"min-h-screen w-full bg-surface-sunken"` | `"surface-page"` |
-| 21 | `"bg-surface border-b border-border-subtle"` | `"surface-header"` |
-| 27 | `"no-print bg-filter-bar-bg border-b border-filter-bar-border"` | `"no-print surface-filter-bar"` |
-| 63 | `"text-xs font-medium uppercase tracking-[0.15em] text-heading-overline"` | `"heading-overline"` |
-| 61 | `"mt-8 bg-surface-elevated"` | `"mt-8 card-tile"` |
+| Line | Current                                                                   | Replace with                    |
+| ---- | ------------------------------------------------------------------------- | ------------------------------- |
+| 20   | `"min-h-screen w-full bg-surface-sunken"`                                 | `"surface-page"`                |
+| 21   | `"bg-surface border-b border-border-subtle"`                              | `"surface-header"`              |
+| 27   | `"no-print bg-filter-bar-bg border-b border-filter-bar-border"`           | `"no-print surface-filter-bar"` |
+| 63   | `"text-xs font-medium uppercase tracking-[0.15em] text-heading-overline"` | `"heading-overline"`            |
+| 61   | `"mt-8 bg-surface-elevated"`                                              | `"mt-8 card-tile"`              |
 
 - [ ] **Step 2: Verify visually and commit**
 
@@ -2189,14 +2737,15 @@ git commit -m "refactor(tokens): migrate report-content to semantic surface and 
 ## Task 16: Migrate report-header.tsx
 
 **Files:**
+
 - Modify: `apps/situation-room/components/report-header.tsx`
 
 - [ ] **Step 1: Replace heading classes**
 
-| Line | Current | Replace with |
-|------|---------|-------------|
-| 15 | `"text-xs font-medium uppercase tracking-[0.15em] text-heading-overline mb-2"` | `"heading-overline mb-2"` |
-| 18 | `"text-3xl font-semibold tracking-tight text-heading-primary leading-tight"` | Keep as-is — this is a unique hero heading, not the standard `heading-primary` size |
+| Line | Current                                                                        | Replace with                                                                        |
+| ---- | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
+| 15   | `"text-xs font-medium uppercase tracking-[0.15em] text-heading-overline mb-2"` | `"heading-overline mb-2"`                                                           |
+| 18   | `"text-3xl font-semibold tracking-tight text-heading-primary leading-tight"`   | Keep as-is — this is a unique hero heading, not the standard `heading-primary` size |
 
 - [ ] **Step 2: Verify visually and commit**
 
@@ -2210,6 +2759,7 @@ git commit -m "refactor(tokens): migrate report-header to semantic heading class
 ## Task 17: Migrate trend-chart.tsx
 
 **Files:**
+
 - Modify: `apps/situation-room/components/trend-chart.tsx`
 
 - [ ] **Step 1: Update CSS var names to use `--viz-*` — keep fallbacks**
@@ -2239,6 +2789,7 @@ git commit -m "refactor(tokens): switch trend-chart to --viz-* vars, keep fallba
 ## Task 18: Migrate ui/tabs.tsx
 
 **Files:**
+
 - Modify: `apps/situation-room/components/ui/tabs.tsx`
 
 - [ ] **Step 1: Simplify TabsList default variant**
@@ -2278,11 +2829,13 @@ Expected: No type errors.
 - [ ] **Step 3: Test JSON-driven changes propagate**
 
 Start dev server:
+
 ```bash
 cd apps/situation-room && pnpm dev
 ```
 
 Then edit `themes/light.json`:
+
 1. Change `geometry.radiusBase` from `"0.375rem"` to `"0.75rem"` → verify all card corners and borders get rounder, revert
 2. Change `palette.blue[3]` from `"#3574c4"` to `"#e06c75"` → verify brand color goes red everywhere, revert
 3. Change `components.filter.radius` from `"sm"` to `"lg"` → verify only filter triggers change, revert
@@ -2314,15 +2867,15 @@ git commit -m "chore(tokens): finalize design token system migration"
 
 ## Summary of File Changes
 
-| Phase | Files Created | Files Modified |
-|-------|-------------|----------------|
-| Task 1 (deps) | `.gitignore` | `package.json` |
-| Task 2 (schema) | `themes/theme.schema.json` | — |
-| Task 3 (light) | `themes/light.json` | — |
-| Task 4 (dark) | `themes/dark.json` | — |
-| Task 5 (script) | `themes/generate-theme.ts`, `__tests__/generate-theme.test.ts` | — |
-| Task 6 (validate) | — | `themes/light.json`, `themes/dark.json` |
-| Task 7a (Phase 2 vars) | — | `themes/generate-theme.ts`, `__tests__/generate-theme.test.ts` |
-| Task 7b (switchover) | — | `app/global.css` |
-| Tasks 8-18 (migrate) | — | 10 component files |
-| Task 19 (validate) | — | — |
+| Phase                  | Files Created                                                  | Files Modified                                                 |
+| ---------------------- | -------------------------------------------------------------- | -------------------------------------------------------------- |
+| Task 1 (deps)          | `.gitignore`                                                   | `package.json`                                                 |
+| Task 2 (schema)        | `themes/theme.schema.json`                                     | —                                                              |
+| Task 3 (light)         | `themes/light.json`                                            | —                                                              |
+| Task 4 (dark)          | `themes/dark.json`                                             | —                                                              |
+| Task 5 (script)        | `themes/generate-theme.ts`, `__tests__/generate-theme.test.ts` | —                                                              |
+| Task 6 (validate)      | —                                                              | `themes/light.json`, `themes/dark.json`                        |
+| Task 7a (Phase 2 vars) | —                                                              | `themes/generate-theme.ts`, `__tests__/generate-theme.test.ts` |
+| Task 7b (switchover)   | —                                                              | `app/global.css`                                               |
+| Tasks 8-18 (migrate)   | —                                                              | 10 component files                                             |
+| Task 19 (validate)     | —                                                              | —                                                              |

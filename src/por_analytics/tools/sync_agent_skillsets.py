@@ -56,8 +56,7 @@ def main() -> None:
     with tempfile.TemporaryDirectory(prefix="agent-skillsets-") as tmpdir:
         tmp_path = Path(tmpdir)
         checkouts = {
-            spec.name: clone_skillset_checkout(tmp_path, spec)
-            for spec in DEFAULT_SKILLSET_SPECS
+            spec.name: clone_skillset_checkout(tmp_path, spec) for spec in DEFAULT_SKILLSET_SPECS
         }
         copied_files = sync_skillsets_from_checkouts(
             repo_root=repo_root,

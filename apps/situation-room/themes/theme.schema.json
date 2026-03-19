@@ -37,14 +37,32 @@
       "type": "object",
       "description": "shadcn compatibility tokens mapping to colors refs",
       "required": [
-        "background", "foreground", "card", "cardForeground",
-        "popover", "popoverForeground", "primary", "primaryForeground",
-        "secondary", "secondaryForeground", "muted", "mutedForeground",
-        "accent", "accentForeground", "destructive",
-        "border", "input", "ring",
-        "sidebar", "sidebarForeground", "sidebarPrimary",
-        "sidebarPrimaryForeground", "sidebarAccent",
-        "sidebarAccentForeground", "sidebarBorder", "sidebarRing"
+        "background",
+        "foreground",
+        "card",
+        "cardForeground",
+        "popover",
+        "popoverForeground",
+        "primary",
+        "primaryForeground",
+        "secondary",
+        "secondaryForeground",
+        "muted",
+        "mutedForeground",
+        "accent",
+        "accentForeground",
+        "destructive",
+        "border",
+        "input",
+        "ring",
+        "sidebar",
+        "sidebarForeground",
+        "sidebarPrimary",
+        "sidebarPrimaryForeground",
+        "sidebarAccent",
+        "sidebarAccentForeground",
+        "sidebarBorder",
+        "sidebarRing"
       ],
       "additionalProperties": { "type": "string" }
     },
@@ -52,9 +70,18 @@
       "type": "object",
       "required": ["fontFamily", "fontSize", "fontWeight"],
       "properties": {
-        "fontFamily": { "type": "object", "additionalProperties": { "type": "string" } },
-        "fontSize": { "type": "object", "additionalProperties": { "type": "string" } },
-        "fontWeight": { "type": "object", "additionalProperties": { "type": "string" } }
+        "fontFamily": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "fontSize": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "fontWeight": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
       },
       "additionalProperties": false
     },
@@ -62,7 +89,10 @@
       "type": "object",
       "required": ["radiusBase", "radiusScale", "shadow"],
       "properties": {
-        "radiusBase": { "type": "string", "description": "CSS length value, e.g. '0.375rem'" },
+        "radiusBase": {
+          "type": "string",
+          "description": "CSS length value, e.g. '0.375rem'"
+        },
         "radiusScale": {
           "type": "object",
           "additionalProperties": { "type": "number", "exclusiveMinimum": 0 }
@@ -94,9 +124,21 @@
       "type": "object",
       "required": ["categorical", "sequential", "diverging"],
       "properties": {
-        "categorical": { "type": "array", "items": { "type": "string" }, "minItems": 3 },
-        "sequential": { "type": "array", "items": { "type": "string" }, "minItems": 3 },
-        "diverging": { "type": "array", "items": { "type": "string" }, "minItems": 3 }
+        "categorical": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 3
+        },
+        "sequential": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 3
+        },
+        "diverging": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 3
+        }
       },
       "additionalProperties": false
     }

@@ -26,9 +26,7 @@ export function ExecutiveSnapshot({ data }: ExecutiveSnapshotProps) {
 
   return (
     <section>
-      <h2 className="heading-overline mb-5">
-        Executive Snapshot
-      </h2>
+      <h2 className="heading-overline mb-5">Executive Snapshot</h2>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {highlights.map(({ category, metric }) => (
           <Card
@@ -45,9 +43,7 @@ export function ExecutiveSnapshot({ data }: ExecutiveSnapshotProps) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="kpi-value">
-                {metric.currentPeriod}
-              </p>
+              <p className="kpi-value">{metric.currentPeriod}</p>
               <div className="mt-2 flex items-center gap-2">
                 <Tooltip>
                   <TooltipTrigger className="text-xs text-text-tertiary tabular-nums cursor-default">

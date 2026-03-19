@@ -10,7 +10,7 @@ The current Situation Room dashboard has ~205 CSS custom properties defined dire
 
 ## Architecture
 
-```
+```text
 themes/*.json          (source of truth — one file per theme)
        ↓
 generate-theme.ts      (build script — resolves refs, outputs CSS)
@@ -41,38 +41,70 @@ Each theme is a self-contained JSON file in `themes/`. No inheritance or merging
   // Key names are semantic labels, not hue descriptions.
   // Dark theme uses the same keys with different values.
   "palette": {
-    "gray":  ["#f7f8fa", "#eef1f5", "#e4e8ee", "#dce0e8", "#c5cad4", "#8690a2", "#636a7e", "#4a5068", "#1e2028"],
-    "blue":  ["#edf4fc", "#c4daf0", "#8db8e4", "#3574c4", "#2a5ea0", "#234e88"],
+    "gray": [
+      "#f7f8fa",
+      "#eef1f5",
+      "#e4e8ee",
+      "#dce0e8",
+      "#c5cad4",
+      "#8690a2",
+      "#636a7e",
+      "#4a5068",
+      "#1e2028",
+    ],
+    "blue": ["#edf4fc", "#c4daf0", "#8db8e4", "#3574c4", "#2a5ea0", "#234e88"],
     "green": ["#eaf7ef", "#b8e0c8", "#1a7f42"],
-    "red":   ["#fdf0f0", "#f0c0c3", "#c9363f"],
+    "red": ["#fdf0f0", "#f0c0c3", "#c9363f"],
     "amber": ["#fef9eb", "#f0dfa0", "#b07d1a"],
-    "cyan":  ["#e8f8fa", "#b0e0e6", "#2e95a3"],
+    "cyan": ["#e8f8fa", "#b0e0e6", "#2e95a3"],
     "white": "#ffffff",
     "black": "#1e2028",
-    "transparent": "transparent"
+    "transparent": "transparent",
   },
 
   // ─── Semantic color mappings ───
   // Refs use "paletteKey.index" (e.g. "gray.3") or "paletteKey" for scalars.
   // Refs into colors use "section.key" (e.g. "surface.elevated").
   "colors": {
-    "surface":  { "base": "gray.0", "elevated": "white", "sunken": "gray.1", "overlay": "white" },
-    "text":     { "primary": "gray.8", "secondary": "gray.7", "tertiary": "gray.5", "inverse": "white", "link": "blue.3", "linkHover": "blue.4" },
-    "border":   { "default": "gray.3", "subtle": "gray.2", "strong": "gray.4" },
-    "brand":    { "default": "blue.3", "subtle": "blue.0", "hover": "blue.4", "muted": "blue.1" },
+    "surface": {
+      "base": "gray.0",
+      "elevated": "white",
+      "sunken": "gray.1",
+      "overlay": "white",
+    },
+    "text": {
+      "primary": "gray.8",
+      "secondary": "gray.7",
+      "tertiary": "gray.5",
+      "inverse": "white",
+      "link": "blue.3",
+      "linkHover": "blue.4",
+    },
+    "border": { "default": "gray.3", "subtle": "gray.2", "strong": "gray.4" },
+    "brand": {
+      "default": "blue.3",
+      "subtle": "blue.0",
+      "hover": "blue.4",
+      "muted": "blue.1",
+    },
     "positive": { "text": "green.2", "bg": "green.0", "border": "green.1" },
     "negative": { "text": "red.2", "bg": "red.0", "border": "red.1" },
-    "warning":  { "text": "amber.2", "bg": "amber.0", "border": "amber.1" },
-    "info":     { "text": "blue.3", "bg": "blue.0", "border": "blue.1" },
-    "neutral":  { "text": "gray.6", "bg": "gray.1", "border": "gray.3" },
+    "warning": { "text": "amber.2", "bg": "amber.0", "border": "amber.1" },
+    "info": { "text": "blue.3", "bg": "blue.0", "border": "blue.1" },
+    "neutral": { "text": "gray.6", "bg": "gray.1", "border": "gray.3" },
     "interactive": {
-      "bg": "blue.3", "bgHover": "blue.4", "bgActive": "blue.5",
+      "bg": "blue.3",
+      "bgHover": "blue.4",
+      "bgActive": "blue.5",
       "text": "white",
-      "ghostHover": "gray.1", "ghostActive": "gray.2",
-      "outlineBorder": "gray.3", "outlineHover": "gray.4",
+      "ghostHover": "gray.1",
+      "ghostActive": "gray.2",
+      "outlineBorder": "gray.3",
+      "outlineHover": "gray.4",
       "focusRing": "blue.3",
-      "disabledBg": "gray.1", "disabledText": "gray.4"
-    }
+      "disabledBg": "gray.1",
+      "disabledText": "gray.4",
+    },
   },
 
   // ─── shadcn compatibility tokens ───
@@ -104,35 +136,58 @@ Each theme is a self-contained JSON file in `themes/`. No inheritance or merging
     "sidebarAccent": "surface.sunken",
     "sidebarAccentForeground": "text.primary",
     "sidebarBorder": "border.default",
-    "sidebarRing": "brand.default"
+    "sidebarRing": "brand.default",
   },
 
   // ─── Typography ───
   "typography": {
-    "fontFamily": { "sans": "Inter, system-ui, sans-serif", "mono": "JetBrains Mono, monospace" },
-    "fontSize":   { "xs": "0.75rem", "sm": "0.875rem", "base": "1rem", "lg": "1.125rem", "xl": "1.25rem", "2xl": "1.5rem" },
-    "fontWeight": { "normal": "400", "medium": "500", "semibold": "600", "bold": "700" }
+    "fontFamily": {
+      "sans": "Inter, system-ui, sans-serif",
+      "mono": "JetBrains Mono, monospace",
+    },
+    "fontSize": {
+      "xs": "0.75rem",
+      "sm": "0.875rem",
+      "base": "1rem",
+      "lg": "1.125rem",
+      "xl": "1.25rem",
+      "2xl": "1.5rem",
+    },
+    "fontWeight": {
+      "normal": "400",
+      "medium": "500",
+      "semibold": "600",
+      "bold": "700",
+    },
   },
 
   // ─── Geometry ───
   "geometry": {
     "radiusBase": "0.375rem",
-    "radiusScale": { "sm": 0.6, "md": 0.8, "lg": 1.0, "xl": 1.4, "2xl": 1.8, "3xl": 2.2, "4xl": 2.6 },
+    "radiusScale": {
+      "sm": 0.6,
+      "md": 0.8,
+      "lg": 1.0,
+      "xl": 1.4,
+      "2xl": 1.8,
+      "3xl": 2.2,
+      "4xl": 2.6,
+    },
     "shadow": {
       "sm": "0 1px 2px rgba(0,0,0,0.05)",
-      "md": "0 4px 6px -1px rgba(0,0,0,0.1)"
-    }
+      "md": "0 4px 6px -1px rgba(0,0,0,0.1)",
+    },
   },
 
   // ─── Dashboard component token mappings ───
   // Geometry refs resolve against geometry scales.
   // Literal CSS values (like "2rem") are used as-is.
   "components": {
-    "card":   { "radius": "md", "shadow": "sm" },
+    "card": { "radius": "md", "shadow": "sm" },
     "filter": { "radius": "sm", "height": "2rem" },
-    "tab":    { "railRadius": "lg", "pillRadius": "md" },
-    "pill":   { "radius": "sm" },
-    "table":  { "headerWeight": "medium" }
+    "tab": { "railRadius": "lg", "pillRadius": "md" },
+    "pill": { "radius": "sm" },
+    "table": { "headerWeight": "medium" },
   },
 
   // ─── Dashboard semantic color mappings ───
@@ -140,34 +195,61 @@ Each theme is a self-contained JSON file in `themes/`. No inheritance or merging
   // "transparent" is a special literal value.
   "dashboard": {
     "filterBar": {
-      "bg": "surface.sunken", "border": "border.default",
-      "triggerBg": "surface.elevated", "triggerBorder": "border.default",
+      "bg": "surface.sunken",
+      "border": "border.default",
+      "triggerBg": "surface.elevated",
+      "triggerBorder": "border.default",
       "triggerText": "text.tertiary",
-      "triggerHoverBg": "surface.base", "triggerHoverBorder": "border.strong",
-      "activeBg": "brand.subtle", "activeBorder": "brand.default", "activeText": "brand.hover",
-      "badgeBg": "brand.default", "badgeText": "text.inverse"
+      "triggerHoverBg": "surface.base",
+      "triggerHoverBorder": "border.strong",
+      "activeBg": "brand.subtle",
+      "activeBorder": "brand.default",
+      "activeText": "brand.hover",
+      "badgeBg": "brand.default",
+      "badgeText": "text.inverse",
     },
     "table": {
-      "headerBg": "surface.sunken", "headerText": "text.secondary", "headerBorder": "border.default",
-      "rowBg": "transparent", "rowAltBg": "surface.sunken",
-      "rowHoverBg": "brand.subtle", "rowSelectedBg": "brand.muted",
+      "headerBg": "surface.sunken",
+      "headerText": "text.secondary",
+      "headerBorder": "border.default",
+      "rowBg": "transparent",
+      "rowAltBg": "surface.sunken",
+      "rowHoverBg": "brand.subtle",
+      "rowSelectedBg": "brand.muted",
       "rowBorder": "border.subtle",
-      "cellText": "text.primary", "cellSecondary": "text.secondary"
+      "cellText": "text.primary",
+      "cellSecondary": "text.secondary",
     },
     "tab": {
-      "railBg": "border.subtle", "text": "text.tertiary", "hoverText": "text.secondary",
-      "activeBg": "surface.elevated", "activeText": "text.primary"
+      "railBg": "border.subtle",
+      "text": "text.tertiary",
+      "hoverText": "text.secondary",
+      "activeBg": "surface.elevated",
+      "activeText": "text.primary",
     },
-    "heading": { "primary": "text.primary", "section": "text.secondary", "overline": "text.tertiary" }
+    "heading": {
+      "primary": "text.primary",
+      "section": "text.secondary",
+      "overline": "text.tertiary",
+    },
   },
 
   // ─── Visualization palettes ───
   // Use palette refs so chart colors stay in sync with the palette.
   "viz": {
-    "categorical": ["blue.3", "cyan.2", "green.2", "amber.2", "red.2", "blue.4", "amber.1", "green.1"],
-    "sequential":  ["blue.0", "blue.1", "blue.2", "blue.3", "blue.4", "blue.5"],
-    "diverging":   ["red.2", "red.1", "gray.1", "green.1", "green.2"]
-  }
+    "categorical": [
+      "blue.3",
+      "cyan.2",
+      "green.2",
+      "amber.2",
+      "red.2",
+      "blue.4",
+      "amber.1",
+      "green.1",
+    ],
+    "sequential": ["blue.0", "blue.1", "blue.2", "blue.3", "blue.4", "blue.5"],
+    "diverging": ["red.2", "red.1", "gray.1", "green.1", "green.2"],
+  },
 }
 ```
 
@@ -196,7 +278,7 @@ The build script uses a deterministic resolution algorithm based on context:
 
 The radius system uses a base value + multiplier scale, matching the current approach:
 
-```
+```text
 geometry.radiusBase = "0.375rem"
 geometry.radiusScale.sm = 0.6  → calc(0.375rem * 0.6) = ~0.225rem
 geometry.radiusScale.md = 0.8  → calc(0.375rem * 0.8) = ~0.3rem
@@ -209,6 +291,7 @@ The generated CSS uses `calc()` expressions, preserving the multiplicative relat
 #### JSON Schema Validation
 
 `theme.schema.json` (JSON Schema draft-07) validates:
+
 - All required top-level sections exist: `name`, `palette`, `colors`, `shadcn`, `typography`, `geometry`, `components`, `dashboard`, `viz`
 - Palette entries are hex strings or arrays of hex strings
 - Color refs match the pattern `word.word` or `word`
@@ -242,15 +325,15 @@ A TypeScript script (run via `tsx`) that:
 
 The `@theme inline` block maps CSS custom properties to Tailwind's utility namespace using these conventions:
 
-| CSS variable pattern | Tailwind prefix | Example |
-|---|---|---|
-| `--surface-*`, `--text-*`, `--border-*`, `--brand-*`, `--positive-*`, `--negative-*`, `--warning-*`, `--info-*`, `--neutral-*`, `--interactive-*`, `--filter-*`, `--table-*`, `--tab-*`, `--heading-*`, `--viz-*` | `--color-` | `--color-surface: var(--surface)` → `bg-surface` |
-| All shadcn color vars: `--background`, `--foreground`, `--card`, `--primary`, etc. | `--color-` | `--color-background: var(--background)` → `bg-background` |
-| `--chart-1` through `--chart-N` (derived from `viz.categorical`) | `--color-` | `--color-chart-1: var(--chart-1)` → `bg-chart-1` |
-| `--radius` (base) | No prefix, as `--radius` | Used by shadcn computed radius scale |
-| `--card-radius`, `--filter-radius`, `--tab-*-radius`, `--pill-radius` | `--radius-` | `--radius-card: var(--card-radius)` → `rounded-card` |
-| `--card-shadow` | `--shadow-` | `--shadow-card: var(--card-shadow)` → `shadow-card` |
-| `--font-sans`, `--font-mono` | `--font-` | `--font-sans: var(--font-sans)` |
+| CSS variable pattern                                                                                                                                                                                              | Tailwind prefix          | Example                                                   |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ | --------------------------------------------------------- |
+| `--surface-*`, `--text-*`, `--border-*`, `--brand-*`, `--positive-*`, `--negative-*`, `--warning-*`, `--info-*`, `--neutral-*`, `--interactive-*`, `--filter-*`, `--table-*`, `--tab-*`, `--heading-*`, `--viz-*` | `--color-`               | `--color-surface: var(--surface)` → `bg-surface`          |
+| All shadcn color vars: `--background`, `--foreground`, `--card`, `--primary`, etc.                                                                                                                                | `--color-`               | `--color-background: var(--background)` → `bg-background` |
+| `--chart-1` through `--chart-N` (derived from `viz.categorical`)                                                                                                                                                  | `--color-`               | `--color-chart-1: var(--chart-1)` → `bg-chart-1`          |
+| `--radius` (base)                                                                                                                                                                                                 | No prefix, as `--radius` | Used by shadcn computed radius scale                      |
+| `--card-radius`, `--filter-radius`, `--tab-*-radius`, `--pill-radius`                                                                                                                                             | `--radius-`              | `--radius-card: var(--card-radius)` → `rounded-card`      |
+| `--card-shadow`                                                                                                                                                                                                   | `--shadow-`              | `--shadow-card: var(--card-shadow)` → `shadow-card`       |
+| `--font-sans`, `--font-mono`                                                                                                                                                                                      | `--font-`                | `--font-sans: var(--font-sans)`                           |
 
 The shadcn radius scale (`--radius-sm`, `--radius-md`, etc.) is generated using `calc(var(--radius) * multiplier)` from `geometry.radiusScale`, preserving the current behavior where all radii scale proportionally from a single base value.
 
@@ -266,7 +349,7 @@ The current codebase relies on Tailwind's opacity modifier syntax (`bg-destructi
 
 The shadcn chart system expects `--chart-1` through `--chart-5` (minimum). The build script derives these from `viz.categorical`:
 
-```
+```text
 --chart-1: {resolved viz.categorical[0]}
 --chart-2: {resolved viz.categorical[1]}
 --chart-3: {resolved viz.categorical[2]}
@@ -282,13 +365,14 @@ The `--viz-*` variables are also emitted separately (1-indexed: `--viz-1`, `--vi
 
 The build script discovers themes dynamically — it reads **all** `themes/*.json` files (excluding `theme.schema.json`) and uses the `name` field to determine how each theme is emitted:
 
-| `name` value | CSS selector | Notes |
-|---|---|---|
-| `"Light"` | `:root { ... }` | Default theme (no class needed) |
-| `"Dark"` | `.dark { ... }` | Activated by `next-themes` adding `.dark` to `<html>` |
-| Any other value | `.[kebab-case-name] { ... }` | e.g. `"High Contrast"` → `.high-contrast { ... }` |
+| `name` value    | CSS selector                 | Notes                                                 |
+| --------------- | ---------------------------- | ----------------------------------------------------- |
+| `"Light"`       | `:root { ... }`              | Default theme (no class needed)                       |
+| `"Dark"`        | `.dark { ... }`              | Activated by `next-themes` adding `.dark` to `<html>` |
+| Any other value | `.[kebab-case-name] { ... }` | e.g. `"High Contrast"` → `.high-contrast { ... }`     |
 
 To add a new theme variant:
+
 1. Duplicate an existing JSON file (e.g. `cp light.json high-contrast.json`)
 2. Change `"name"` to your variant name (e.g. `"High Contrast"`)
 3. Modify palette/color values as needed
@@ -298,6 +382,7 @@ To add a new theme variant:
 The `prebuild` hook and dev watcher pick up new files automatically — no script changes needed.
 
 **npm scripts in `package.json`:**
+
 - `"theme:generate"`: `tsx themes/generate-theme.ts`
 - `"theme:watch"`: watches `themes/*.json` via chokidar and re-runs generation (the script itself contains the watcher loop, activated by a `--watch` flag)
 - `"predev"`: `pnpm theme:generate` (ensures `generated-theme.css` exists before Next.js starts — critical for fresh clones where the gitignored file doesn't exist yet)
@@ -322,8 +407,12 @@ After migration, `global.css` contains:
 
 @layer components {
   /* ── Cards & Tiles ── */
-  .card-tile { @apply bg-surface-elevated rounded-card shadow-card ring-1 ring-border-subtle; }
-  .card-tile-header { @apply px-4 py-3 text-heading-primary text-lg font-semibold tracking-tight; }
+  .card-tile {
+    @apply bg-surface-elevated rounded-card shadow-card ring-1 ring-border-subtle;
+  }
+  .card-tile-header {
+    @apply px-4 py-3 text-heading-primary text-lg font-semibold tracking-tight;
+  }
 
   /* ── Filters ── */
   .filter-trigger {
@@ -338,44 +427,80 @@ After migration, `global.css` contains:
   }
 
   /* ── Tabs ── */
-  .tab-rail { @apply inline-flex items-center gap-0.5 rounded-tab-rail bg-tab-rail p-1; }
+  .tab-rail {
+    @apply inline-flex items-center gap-0.5 rounded-tab-rail bg-tab-rail p-1;
+  }
   .tab-pill {
     @apply rounded-tab-pill px-4 py-1.5 text-sm font-medium text-tab-text
            select-none cursor-pointer transition-[background-color,box-shadow,color,transform]
            duration-200 ease-out;
   }
-  .tab-pill:hover { @apply text-tab-hover-text; }
-  .tab-pill:active { @apply scale-[0.97]; }
-  .tab-pill-active { @apply bg-tab-active-bg text-tab-active-text shadow-sm font-semibold; }
+  .tab-pill:hover {
+    @apply text-tab-hover-text;
+  }
+  .tab-pill:active {
+    @apply scale-[0.97];
+  }
+  .tab-pill-active {
+    @apply bg-tab-active-bg text-tab-active-text shadow-sm font-semibold;
+  }
 
   /* ── Table ── */
-  .table-header-cell { @apply text-xs font-medium uppercase tracking-wider text-table-header-text; }
-  .table-data-cell { @apply text-table-cell-text; }
-  .table-data-cell-numeric { @apply text-table-cell-text tabular-nums font-semibold text-right; }
-  .table-data-cell-secondary { @apply text-table-cell-secondary tabular-nums text-right; }
+  .table-header-cell {
+    @apply text-xs font-medium uppercase tracking-wider text-table-header-text;
+  }
+  .table-data-cell {
+    @apply text-table-cell-text;
+  }
+  .table-data-cell-numeric {
+    @apply text-table-cell-text tabular-nums font-semibold text-right;
+  }
+  .table-data-cell-secondary {
+    @apply text-table-cell-secondary tabular-nums text-right;
+  }
 
   /* ── Status Pills ── */
   .pill-status {
     @apply inline-flex items-center gap-0.5 px-2 py-0.5 rounded-pill
            text-xs font-medium tabular-nums border;
   }
-  .pill-positive { @apply pill-status bg-positive-bg text-positive border-positive-border; }
-  .pill-negative { @apply pill-status bg-negative-bg text-negative border-negative-border; }
-  .pill-neutral  { @apply pill-status bg-neutral-bg text-neutral border-neutral-border; }
+  .pill-positive {
+    @apply pill-status bg-positive-bg text-positive border-positive-border;
+  }
+  .pill-negative {
+    @apply pill-status bg-negative-bg text-negative border-negative-border;
+  }
+  .pill-neutral {
+    @apply pill-status bg-neutral-bg text-neutral border-neutral-border;
+  }
 
   /* ── Headings ── */
-  .heading-overline { @apply text-xs font-medium uppercase tracking-[0.15em] text-heading-overline; }
-  .heading-section { @apply text-heading-section leading-relaxed; }
-  .heading-primary { @apply text-lg font-semibold tracking-tight text-heading-primary; }
+  .heading-overline {
+    @apply text-xs font-medium uppercase tracking-[0.15em] text-heading-overline;
+  }
+  .heading-section {
+    @apply text-heading-section leading-relaxed;
+  }
+  .heading-primary {
+    @apply text-lg font-semibold tracking-tight text-heading-primary;
+  }
 
   /* ── Page Surfaces ── */
-  .surface-page { @apply bg-surface-sunken min-h-screen w-full; }
-  .surface-header { @apply bg-surface border-b border-border-subtle; }
-  .surface-filter-bar { @apply bg-filter-bar-bg border-b border-filter-bar-border; }
+  .surface-page {
+    @apply bg-surface-sunken min-h-screen w-full;
+  }
+  .surface-header {
+    @apply bg-surface border-b border-border-subtle;
+  }
+  .surface-filter-bar {
+    @apply bg-filter-bar-bg border-b border-filter-bar-border;
+  }
 }
 
 @layer base {
-  * { @apply border-border outline-ring/50; }
+  * {
+    @apply border-border outline-ring/50;
+  }
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-sans);
@@ -385,8 +510,13 @@ After migration, `global.css` contains:
 }
 
 @media print {
-  body { background: white !important; color: black !important; }
-  .no-print { display: none !important; }
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .no-print {
+    display: none !important;
+  }
 }
 ```
 
@@ -395,10 +525,12 @@ After migration, `global.css` contains:
 Components switch from inline Tailwind utility strings to semantic class names.
 
 **What gets semantic classes:**
+
 - Visual theming: colors, radii, shadows, typography styles, borders
 - Repeated patterns: every card, every filter trigger, every table header
 
 **What stays as inline Tailwind:**
+
 - Layout: `flex`, `grid`, `gap-4`, `px-6`, `w-full`, `mt-8`
 - Responsive breakpoints: `md:grid-cols-3`, `hidden sm:table-cell`
 - One-off structural styles unique to a single component
@@ -406,6 +538,7 @@ Components switch from inline Tailwind utility strings to semantic class names.
 **Example migration — `executive-snapshot.tsx`:**
 
 Before:
+
 ```tsx
 <Card size="sm" className="bg-surface-elevated shadow-sm hover:shadow-md transition-shadow duration-200">
   <CardHeader>
@@ -415,6 +548,7 @@ Before:
 ```
 
 After:
+
 ```tsx
 <Card size="sm" className="card-tile hover:shadow-md transition-shadow duration-200">
   <CardHeader>
@@ -432,6 +566,7 @@ After:
 ## Migration Phases
 
 ### Phase 1: Foundation
+
 - Create `themes/` directory with `light.json`, `dark.json`, `theme.schema.json`
 - Extract all current CSS variable values into JSON files (full audit of all ~205 variables)
 - Build `generate-theme.ts` script with ref resolution, validation, and CSS output
@@ -440,6 +575,7 @@ After:
 - **Checkpoint:** Generated CSS produces identical variables to current `global.css`. App looks exactly the same.
 
 ### Phase 2: Switchover
+
 - Replace hand-written variable blocks in `global.css` with `@import './generated-theme.css'`
 - Keep `@import 'shadcn/tailwind.css'` (required by shadcn ui primitives)
 - Add all `@layer components` class definitions
@@ -447,7 +583,9 @@ After:
 - **Checkpoint:** `global.css` is ~80 lines. All tokens flow from JSON. App looks identical.
 
 ### Phase 3: Component Refactor
+
 Each component migrated in its own commit, verifying zero visual change:
+
 1. `executive-snapshot.tsx` — card + heading styles
 2. `category-section.tsx` — card + table header styles
 3. `metric-row.tsx` — table cell styles
@@ -461,7 +599,9 @@ Each component migrated in its own commit, verifying zero visual change:
 11. `tabs.tsx` (ui) — compose from semantic tab classes
 
 ### Phase 4: Validation
+
 Smoke test by editing JSON values and confirming propagation:
+
 - Change `geometry.radiusBase` → all radii scale proportionally
 - Change `palette.blue[3]` → brand color changes everywhere
 - Change `components.filter.radius` → only filters change
@@ -472,6 +612,7 @@ Smoke test by editing JSON values and confirming propagation:
 ## Dependencies
 
 All added to `apps/situation-room/package.json` as `devDependencies`:
+
 - `tsx` — run TypeScript build script without compilation step
 - `chokidar` — file watching in dev mode (inside `generate-theme.ts` via `--watch` flag)
 - `concurrently` — run watcher + Next.js dev server in parallel

@@ -12,7 +12,7 @@
 
 ## File Structure
 
-```
+```text
 apps/situation-room/
 ├── package.json
 ├── next.config.mjs
@@ -328,7 +328,7 @@ export default defineConfig({
 
 - [ ] **Step 9: Create .env.local.example**
 
-```
+```dotenv
 LIGHTDASH_URL=https://app.lightdash.cloud
 LIGHTDASH_API_KEY=your-api-key-here
 LIGHTDASH_PROJECT_UUID=your-project-uuid-here
@@ -352,7 +352,7 @@ Add to root `package.json` scripts:
 
 Run: `cd /Users/f/Documents/GitHub/point-of-rental/data-analytics-demo && pnpm install`
 
-Then: `pnpm sr:dev` — verify the page loads at http://localhost:3100 with the placeholder content.
+Then: `pnpm sr:dev` — verify the page loads at `http://localhost:3100` with the placeholder content.
 
 - [ ] **Step 13: Commit**
 

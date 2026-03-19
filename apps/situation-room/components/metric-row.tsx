@@ -14,9 +14,7 @@ export function MetricRow({ row, isAlt = false }: MetricRowProps) {
         isAlt ? 'bg-table-row-alt-bg' : 'bg-table-row-bg'
       }`}
     >
-      <TableCell className="pl-4 table-data-cell">
-        {row.metricName}
-      </TableCell>
+      <TableCell className="pl-4 table-data-cell">{row.metricName}</TableCell>
       <TableCell className="table-data-cell-numeric text-right">
         {row.currentPeriod}
       </TableCell>

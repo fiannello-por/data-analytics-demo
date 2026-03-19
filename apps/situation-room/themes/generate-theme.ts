@@ -256,9 +256,7 @@ export function generateCssFromTheme(theme: Theme): string {
           const scale = radiusScale[strValue];
           if (scale !== undefined) {
             const resolved =
-              scale === 1
-                ? radiusBase
-                : `calc(${radiusBase} * ${scale})`;
+              scale === 1 ? radiusBase : `calc(${radiusBase} * ${scale})`;
             lines.push(`  --${kebabCase(comp)}-radius: ${resolved};`);
           }
         } else if (key.endsWith('Radius')) {
@@ -267,9 +265,7 @@ export function generateCssFromTheme(theme: Theme): string {
           const scale = radiusScale[strValue];
           if (scale !== undefined) {
             const resolved =
-              scale === 1
-                ? radiusBase
-                : `calc(${radiusBase} * ${scale})`;
+              scale === 1 ? radiusBase : `calc(${radiusBase} * ${scale})`;
             lines.push(`  --${kebabCase(comp)}-${stem}: ${resolved};`);
           }
         } else if (key === 'shadow') {
@@ -484,9 +480,7 @@ function generate(themesDir: string, outputPath: string): void {
   try {
     lightTheme = JSON.parse(readFileSync(lightPath, 'utf-8'));
   } catch (e) {
-    throw new ThemeGenerationError([
-      `light.json: ${(e as Error).message}`,
-    ]);
+    throw new ThemeGenerationError([`light.json: ${(e as Error).message}`]);
   }
   try {
     darkTheme = JSON.parse(readFileSync(darkPath, 'utf-8'));
@@ -545,7 +539,10 @@ function generate(themesDir: string, outputPath: string): void {
     for (const [section, entries] of Object.entries(lightTheme.dashboard)) {
       for (const key of Object.keys(entries)) {
         const varName = cssVarName(section, key);
-        if (!shadcnVarNames.includes(varName) && !customVarNames.includes(varName)) {
+        if (
+          !shadcnVarNames.includes(varName) &&
+          !customVarNames.includes(varName)
+        ) {
           customVarNames.push(varName);
         }
       }

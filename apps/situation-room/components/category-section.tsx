@@ -1,6 +1,12 @@
 import type { CategoryData } from '@/lib/types';
 import { MetricRow } from './metric-row';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -30,9 +36,7 @@ export function CategorySection({ data }: CategorySectionProps) {
   return (
     <Card className="bg-surface-elevated overflow-hidden">
       <CardHeader>
-        <CardTitle className="heading-primary">
-          {data.category}
-        </CardTitle>
+        <CardTitle className="heading-primary">{data.category}</CardTitle>
         <CardDescription className="heading-section">
           {description}
         </CardDescription>
@@ -41,9 +45,7 @@ export function CategorySection({ data }: CategorySectionProps) {
         <Table>
           <TableHeader>
             <TableRow className="bg-table-header-bg border-table-header-border hover:bg-table-header-bg">
-              <TableHead className="pl-4 table-header-cell">
-                Metric
-              </TableHead>
+              <TableHead className="pl-4 table-header-cell">Metric</TableHead>
               <TableHead className="table-header-cell text-right">
                 Current
               </TableHead>

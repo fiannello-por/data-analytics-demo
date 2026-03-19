@@ -108,7 +108,12 @@ describe('resolveGeometryRef', () => {
 
   it('resolves weight ref "medium" for property named "headerWeight"', () => {
     expect(
-      resolveGeometryRef('medium', 'headerWeight', testGeometry, testTypography),
+      resolveGeometryRef(
+        'medium',
+        'headerWeight',
+        testGeometry,
+        testTypography,
+      ),
     ).toBe('500');
   });
 
@@ -407,7 +412,11 @@ describe('generateCssFromTheme', () => {
       },
       dashboard: {
         filterBar: { bg: '#f0f2f5', border: '#f0f0f0' },
-        heading: { primary: '#111827', section: '#6b7280', overline: '#9ca3af' },
+        heading: {
+          primary: '#111827',
+          section: '#6b7280',
+          overline: '#9ca3af',
+        },
         tab: { rail: '#f1f3f5', activeBg: '#ffffff', activeText: '#111827' },
       },
       viz: {
@@ -447,14 +456,12 @@ describe('generateThemeInlineBlock', () => {
 
   it('maps color vars to --color- prefix', () => {
     const shadcnVars = ['--background', '--chart-1'];
-    const customVars = [
-      '--surface',
-      '--surface-elevated',
-      '--text-primary',
-    ];
+    const customVars = ['--surface', '--surface-elevated', '--text-primary'];
     const block = generateThemeInlineBlock(shadcnVars, customVars, baseOpts);
     expect(block).toContain('--color-surface: var(--surface)');
-    expect(block).toContain('--color-surface-elevated: var(--surface-elevated)');
+    expect(block).toContain(
+      '--color-surface-elevated: var(--surface-elevated)',
+    );
     expect(block).toContain('--color-text-primary: var(--text-primary)');
     expect(block).toContain('--color-background: var(--background)');
     expect(block).toContain('--color-chart-1: var(--chart-1)');
@@ -516,7 +523,9 @@ describe('generateThemeInlineBlock', () => {
     ];
     const block = generateThemeInlineBlock([], customVars, baseOpts);
     expect(block).toContain('--color-filter-bar-bg: var(--filter-bar-bg)');
-    expect(block).toContain('--color-heading-overline: var(--heading-overline)');
+    expect(block).toContain(
+      '--color-heading-overline: var(--heading-overline)',
+    );
     expect(block).toContain('--color-tab-rail: var(--tab-rail)');
     expect(block).toContain('--color-tab-active-bg: var(--tab-active-bg)');
   });

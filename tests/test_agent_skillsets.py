@@ -68,11 +68,15 @@ class TestSyncSkillsetsFromCheckouts:
         assert repo_root / ".agents/skills/frontend-design/SKILL.md" in copied_paths
         assert repo_root / ".claude/skills/frontend-design/SKILL.md" in copied_paths
 
-        assert (repo_root / ".agents/skills/brainstorming/SKILL.md").read_text().startswith(
-            "---\nname: brainstorming"
+        assert (
+            (repo_root / ".agents/skills/brainstorming/SKILL.md")
+            .read_text()
+            .startswith("---\nname: brainstorming")
         )
-        assert (repo_root / ".claude/skills/frontend-design/SKILL.md").read_text().startswith(
-            "---\nname: frontend-design"
+        assert (
+            (repo_root / ".claude/skills/frontend-design/SKILL.md")
+            .read_text()
+            .startswith("---\nname: frontend-design")
         )
 
     def test_replaces_stale_skill_directory(self, tmp_path: Path) -> None:
@@ -145,5 +149,7 @@ class TestSyncRepoLocalSkills:
         assert repo_root / ".claude/skills/developing-in-lightdash/SKILL.md" in copied_paths
         assert repo_root / ".claude/skills/thoughtspot-to-lightdash/SKILL.md" in copied_paths
         assert (
-            repo_root / ".claude/skills/developing-in-lightdash/SKILL.md"
-        ).read_text().startswith("---\nname: developing-in-lightdash")
+            (repo_root / ".claude/skills/developing-in-lightdash/SKILL.md")
+            .read_text()
+            .startswith("---\nname: developing-in-lightdash")
+        )

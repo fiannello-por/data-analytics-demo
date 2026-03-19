@@ -8,7 +8,10 @@
   "globs": [
     "**/*.md",
     "**/*.mdx",
+    "!.agents",
+    "!**/.agents/**",
     "!.claude",
+    "!**/.claude/**",
     "!.codex",
     "!**/node_modules/**",
     "!node_modules",
