@@ -3,7 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --port 3100",
+    "theme:generate": "tsx themes/generate-theme.ts",
+    "theme:watch": "tsx themes/generate-theme.ts --watch",
+    "predev": "pnpm theme:generate",
+    "dev": "concurrently --kill-others \"pnpm theme:watch\" \"next dev --port 3100\"",
+    "prebuild": "pnpm theme:generate",
     "build": "next build",
     "start": "next start --port 3100",
     "test": "vitest run",
@@ -35,7 +39,11 @@
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "ajv": "^8.18.0",
+    "chokidar": "^5.0.0",
+    "concurrently": "^9.2.1",
     "tailwindcss": "^4.0.14",
+    "tsx": "^4.21.0",
     "typescript": "5.9.3",
     "vitest": "^3.0.0"
   }
