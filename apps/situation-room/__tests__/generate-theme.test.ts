@@ -3,6 +3,7 @@ import {
   resolvePaletteRef,
   resolveColorRef,
   resolveGeometryRef,
+  resolveVizPalette,
 } from '../themes/generate-theme';
 
 const testPalette = {
@@ -111,5 +112,13 @@ describe('resolveGeometryRef', () => {
     expect(
       resolveGeometryRef('2rem', 'height', testGeometry, testTypography),
     ).toBe('2rem');
+  });
+});
+
+describe('resolveVizPalette', () => {
+  it('resolves categorical palette refs to hex values', () => {
+    const vizCategorical = ['blue.3', 'gray.0', 'white'];
+    const result = resolveVizPalette(vizCategorical, testPalette);
+    expect(result).toEqual(['#3574c4', '#f7f8fa', '#ffffff']);
   });
 });

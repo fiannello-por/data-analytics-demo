@@ -113,3 +113,7 @@ export function resolveGeometryRef(
 
   return strValue;
 }
+
+export function resolveVizPalette(refs: string[], palette: Palette): string[] {
+  return refs.map((ref) => resolvePaletteRef(ref, palette));
+}
