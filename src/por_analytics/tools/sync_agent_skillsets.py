@@ -10,6 +10,7 @@ from pathlib import Path
 from por_analytics.lib.agent_skillsets import (
     DEFAULT_SKILLSET_SPECS,
     SkillsetSpec,
+    sync_repo_local_skills,
     sync_skillsets_from_checkouts,
 )
 
@@ -62,6 +63,7 @@ def main() -> None:
             repo_root=repo_root,
             checkouts=checkouts,
         )
+        copied_files.extend(sync_repo_local_skills(repo_root))
 
     print(f"Synced {len(copied_files)} files into repo-local agent skill directories.")
 

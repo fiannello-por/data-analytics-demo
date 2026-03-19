@@ -6,7 +6,12 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from por_analytics.lib.agent_skillsets import SkillsetSpec, sync_skillsets_from_checkouts
+from por_analytics.lib.agent_skillsets import (
+    REPO_LOCAL_SKILL_NAMES,
+    SkillsetSpec,
+    sync_repo_local_skills,
+    sync_skillsets_from_checkouts,
+)
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -115,3 +120,30 @@ class TestSyncSkillsetsFromCheckouts:
                     ),
                 ),
             )
+
+
+class TestSyncRepoLocalSkills:
+    def test_mirrors_repo_local_skills_into_claude_directory(self, tmp_path: Path) -> None:
+        repo_root = tmp_path / "repo"
+        _write_skill(
+            repo_root,
+            ".agents/skills/developing-in-lightdash/SKILL.md",
+            "---\nname: developing-in-lightdash\ndescription: test\n---\n",
+        )
+        _write_skill(
+            repo_root,
+            ".agents/skills/thoughtspot-to-lightdash/SKILL.md",
+            "---\nname: thoughtspot-to-lightdash\ndescription: test\n---\n",
+        )
+
+        copied_paths = sync_repo_local_skills(repo_root=repo_root)
+
+        assert REPO_LOCAL_SKILL_NAMES == (
+            "developing-in-lightdash",
+            "thoughtspot-to-lightdash",
+        )
+        assert repo_root / ".claude/skills/developing-in-lightdash/SKILL.md" in copied_paths
+        assert repo_root / ".claude/skills/thoughtspot-to-lightdash/SKILL.md" in copied_paths
+        assert (
+            repo_root / ".claude/skills/developing-in-lightdash/SKILL.md"
+        ).read_text().startswith("---\nname: developing-in-lightdash")
