@@ -28,9 +28,15 @@ export function parseChange(raw: string): ParsedChange {
 }
 
 const directionStyles: Record<ChangeDirection, string> = {
-  positive: 'text-positive bg-positive-bg',
-  negative: 'text-negative bg-negative-bg',
-  neutral: 'text-neutral-change bg-surface-sunken',
+  positive: 'text-positive bg-positive-bg border border-positive-border',
+  negative: 'text-negative bg-negative-bg border border-negative-border',
+  neutral: 'text-neutral-change bg-neutral-change-bg border border-border-subtle',
+};
+
+const directionArrows: Record<ChangeDirection, string> = {
+  positive: '↑',
+  negative: '↓',
+  neutral: '',
 };
 
 interface ChangeIndicatorProps {
@@ -39,11 +45,13 @@ interface ChangeIndicatorProps {
 
 export function ChangeIndicator({ value }: ChangeIndicatorProps) {
   const { direction, display } = parseChange(value);
+  const arrow = directionArrows[direction];
 
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium tabular-nums ${directionStyles[direction]}`}
+      className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md text-xs font-medium tabular-nums ${directionStyles[direction]}`}
     >
+      {arrow && <span>{arrow}</span>}
       {display}
     </span>
   );

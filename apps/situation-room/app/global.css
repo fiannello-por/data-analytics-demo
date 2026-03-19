@@ -6,52 +6,6 @@
 @custom-variant dark (&:is(.dark *));
 
 @layer components {
-  /* ── Cards & Tiles ── */
-  .card-tile { @apply bg-surface-elevated rounded-card shadow-card ring-1 ring-border-subtle; }
-
-  /* ── Filters ── */
-  .filter-trigger {
-    @apply flex items-center gap-1.5 h-[var(--filter-height)] rounded-filter
-           border border-filter-trigger-border bg-filter-trigger-bg
-           text-filter-trigger-text text-xs select-none cursor-pointer px-2.5;
-  }
-  .filter-trigger-active {
-    @apply border-filter-active-border bg-filter-active-bg
-           text-filter-active-text font-medium;
-  }
-
-  /* ── Tabs ── */
-  .tab-rail { @apply inline-flex items-center gap-0.5 rounded-tab-rail bg-tab-rail p-1; }
-  .tab-pill {
-    @apply rounded-tab-pill px-4 py-1.5 text-sm font-medium text-tab-text
-           select-none cursor-pointer;
-  }
-  .tab-pill-active { @apply bg-tab-active-bg text-tab-active-text shadow-sm font-semibold; }
-
-  /* ── Table ── */
-  .table-header-cell { @apply text-xs font-medium uppercase tracking-wider text-table-header-text; }
-  .table-data-cell { @apply text-table-cell-text; }
-  .table-data-cell-numeric { @apply text-table-cell-text tabular-nums font-semibold text-right; }
-  .table-data-cell-secondary { @apply text-table-cell-secondary tabular-nums text-right; }
-
-  /* ── Status Pills ── */
-  .pill-status {
-    @apply inline-flex items-center gap-0.5 px-2 py-0.5 rounded-pill
-           text-xs font-medium tabular-nums border;
-  }
-  .pill-positive {
-    @apply inline-flex items-center gap-0.5 px-2 py-0.5 rounded-pill
-           text-xs font-medium tabular-nums border bg-positive-bg text-positive;
-  }
-  .pill-negative {
-    @apply inline-flex items-center gap-0.5 px-2 py-0.5 rounded-pill
-           text-xs font-medium tabular-nums border bg-negative-bg text-negative;
-  }
-  .pill-neutral {
-    @apply inline-flex items-center gap-0.5 px-2 py-0.5 rounded-pill
-           text-xs font-medium tabular-nums border bg-surface-sunken text-neutral-change border-border-subtle;
-  }
-
   /* ── Headings ── */
   .heading-overline { @apply text-xs font-medium uppercase tracking-[0.15em] text-heading-overline; }
   .heading-section { @apply text-heading-section leading-relaxed; }

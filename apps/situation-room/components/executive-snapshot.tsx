@@ -1,5 +1,17 @@
 import type { CategoryData } from '@/lib/types';
 import { ChangeIndicator } from './change-indicator';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface ExecutiveSnapshotProps {
   data: CategoryData[];
@@ -13,32 +25,40 @@ export function ExecutiveSnapshot({ data }: ExecutiveSnapshotProps) {
   if (highlights.length === 0) return null;
 
   return (
-    <section className="py-8 border-b border-border-subtle">
-      <h2 className="heading-overline mb-5">
+    <section>
+      <h2 className="text-xs font-medium uppercase tracking-[0.15em] text-heading-overline mb-5">
         Executive Snapshot
       </h2>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {highlights.map(({ category, metric }) => (
-          <div
+          <Card
             key={category}
-            className="rounded-lg bg-surface-elevated px-4 py-4 border border-border-subtle"
+            size="sm"
+            className="bg-surface-elevated shadow-sm hover:shadow-md transition-shadow duration-200"
           >
-            <p className="text-xs font-medium text-text-tertiary uppercase tracking-wider mb-1">
-              {category}
-            </p>
-            <p className="text-xs text-text-secondary mb-3">
-              {metric.metricName}
-            </p>
-            <p className="text-2xl font-semibold tabular-nums text-text-primary tracking-tight">
-              {metric.currentPeriod}
-            </p>
-            <div className="mt-2 flex items-center gap-2">
-              <span className="text-xs text-text-tertiary tabular-nums">
-                vs {metric.previousPeriod}
-              </span>
-              <ChangeIndicator value={metric.pctChange} />
-            </div>
-          </div>
+            <CardHeader>
+              <CardDescription className="text-xs font-medium text-heading-overline uppercase tracking-wider">
+                {category}
+              </CardDescription>
+              <CardTitle className="text-xs text-text-secondary font-normal">
+                {metric.metricName}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold tabular-nums text-heading-primary tracking-tight">
+                {metric.currentPeriod}
+              </p>
+              <div className="mt-2 flex items-center gap-2">
+                <Tooltip>
+                  <TooltipTrigger className="text-xs text-text-tertiary tabular-nums cursor-default">
+                    vs {metric.previousPeriod}
+                  </TooltipTrigger>
+                  <TooltipContent>Prior year-to-date value</TooltipContent>
+                </Tooltip>
+                <ChangeIndicator value={metric.pctChange} />
+              </div>
+            </CardContent>
+          </Card>
         ))}
       </div>
     </section>

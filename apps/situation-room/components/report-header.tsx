@@ -9,13 +9,13 @@ export function ReportHeader({ lastRefreshed }: ReportHeaderProps) {
   const year = now.getFullYear();
 
   return (
-    <header className="pb-8 border-b border-border-subtle">
+    <header>
       <div className="flex items-start justify-between">
         <div>
           <p className="heading-overline mb-2">
             Situation Room
           </p>
-          <h1 className="text-3xl font-semibold tracking-tight text-text-primary leading-tight">
+          <h1 className="text-3xl font-semibold tracking-tight text-heading-primary leading-tight">
             Sales Performance Report
           </h1>
           <p className="mt-3 text-sm text-text-secondary max-w-2xl leading-relaxed">

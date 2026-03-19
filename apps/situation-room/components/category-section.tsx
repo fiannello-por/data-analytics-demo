@@ -1,5 +1,13 @@
 import type { CategoryData } from '@/lib/types';
 import { MetricRow } from './metric-row';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   'New Logo':
@@ -20,38 +28,40 @@ export function CategorySection({ data }: CategorySectionProps) {
   const description = CATEGORY_DESCRIPTIONS[data.category] ?? '';
 
   return (
-    <section className="py-8">
-      <div className="mb-5">
-        <h2 className="heading-primary">
+    <Card className="bg-surface-elevated overflow-hidden">
+      <CardHeader>
+        <CardTitle className="text-lg font-semibold tracking-tight text-heading-primary">
           {data.category}
-        </h2>
-        <p className="mt-1 heading-section text-sm">
+        </CardTitle>
+        <CardDescription className="text-heading-section leading-relaxed">
           {description}
-        </p>
-      </div>
-
-      <div className="grid grid-cols-2 sm:grid-cols-[1fr_auto_auto_auto] gap-x-4 sm:gap-x-6 items-center pb-2 border-b border-border mb-1">
-        <span className="table-header-cell">
-          Metric
-        </span>
-        <span className="table-header-cell text-right min-w-[80px]">
-          Current
-        </span>
-        <span className="hidden sm:block table-header-cell text-right min-w-[80px]">
-          Prior YTD
-        </span>
-        <span className="table-header-cell text-right min-w-[72px]">
-          Change
-        </span>
-      </div>
-
-      {data.rows.map((row, i) => (
-        <MetricRow
-          key={row.sortOrder}
-          row={row}
-          isLast={i === data.rows.length - 1}
-        />
-      ))}
-    </section>
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="px-0">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-table-header-bg border-table-header-border hover:bg-table-header-bg">
+              <TableHead className="pl-4 text-xs font-medium uppercase tracking-wider text-table-header-text">
+                Metric
+              </TableHead>
+              <TableHead className="text-xs font-medium uppercase tracking-wider text-table-header-text text-right">
+                Current
+              </TableHead>
+              <TableHead className="hidden sm:table-cell text-xs font-medium uppercase tracking-wider text-table-header-text text-right">
+                Prior YTD
+              </TableHead>
+              <TableHead className="pr-4 text-xs font-medium uppercase tracking-wider text-table-header-text text-right">
+                Change
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data.rows.map((row, i) => (
+              <MetricRow key={row.sortOrder} row={row} isAlt={i % 2 === 1} />
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
   );
 }

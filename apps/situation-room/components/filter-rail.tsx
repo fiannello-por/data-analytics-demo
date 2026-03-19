@@ -33,7 +33,7 @@ export function FilterRail({
             variant="ghost"
             size="sm"
             onClick={onClearAll}
-            className="text-xs text-text-secondary hover:text-text-primary"
+            className="text-xs text-text-secondary hover:text-text-primary hover:bg-interactive-ghost-hover"
           >
             Clear all
           </Button>
