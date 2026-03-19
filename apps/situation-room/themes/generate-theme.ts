@@ -57,3 +57,30 @@ export function resolvePaletteRef(ref: string, palette: Palette): string {
     );
   return arr[index];
 }
+
+export function resolveColorRef(
+  ref: string,
+  colors: Record<string, Record<string, string>>,
+  palette: Palette,
+): string {
+  if (ref === 'transparent') return 'transparent';
+
+  const dotIndex = ref.indexOf('.');
+  if (dotIndex === -1) {
+    return resolvePaletteRef(ref, palette);
+  }
+
+  const section = ref.slice(0, dotIndex);
+  const key = ref.slice(dotIndex + 1);
+
+  const sectionObj = colors[section];
+  if (!sectionObj) {
+    return resolvePaletteRef(ref, palette);
+  }
+
+  const paletteRef = sectionObj[key];
+  if (paletteRef === undefined)
+    throw new Error(`Invalid color key: "${key}" in section "${section}"`);
+
+  return resolvePaletteRef(paletteRef, palette);
+}
