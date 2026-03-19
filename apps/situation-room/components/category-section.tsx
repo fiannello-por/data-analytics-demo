@@ -27,10 +27,10 @@ export function CategorySection({ data }: CategorySectionProps) {
         </p>
       </div>
 
-      <div className="grid grid-cols-[1fr_auto_auto_auto] gap-x-6 items-center pb-2 border-b border-border mb-1">
+      <div className="grid grid-cols-2 sm:grid-cols-[1fr_auto_auto_auto] gap-x-4 sm:gap-x-6 items-center pb-2 border-b border-border mb-1">
         <span className="text-xs font-medium uppercase tracking-wider text-text-tertiary">Metric</span>
         <span className="text-xs font-medium uppercase tracking-wider text-text-tertiary text-right min-w-[80px]">Current</span>
-        <span className="text-xs font-medium uppercase tracking-wider text-text-tertiary text-right min-w-[80px]">Prior YTD</span>
+        <span className="hidden sm:block text-xs font-medium uppercase tracking-wider text-text-tertiary text-right min-w-[80px]">Prior YTD</span>
         <span className="text-xs font-medium uppercase tracking-wider text-text-tertiary text-right min-w-[72px]">Change</span>
       </div>
 

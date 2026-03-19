@@ -28,7 +28,9 @@ export function ReportHeader({ lastRefreshed }: ReportHeaderProps) {
             <p className="text-xs text-text-tertiary">Reporting Period</p>
             <p className="text-sm font-medium text-text-primary tabular-nums">{year} YTD</p>
           </div>
-          <ThemeToggle />
+          <div className="no-print">
+            <ThemeToggle />
+          </div>
         </div>
       </div>
       {lastRefreshed && (

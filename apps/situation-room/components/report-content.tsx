@@ -19,12 +19,14 @@ export function ReportContent() {
     <main className="min-h-screen max-w-5xl mx-auto px-6 py-10 md:px-10 md:py-14">
       <ReportHeader lastRefreshed={data ? new Date() : undefined} />
 
-      <FilterRail
-        activeFilters={activeFilters}
-        activeCount={activeCount}
-        onSetFilter={setFilter}
-        onClearAll={clearAll}
-      />
+      <div className="no-print">
+        <FilterRail
+          activeFilters={activeFilters}
+          activeCount={activeCount}
+          onSetFilter={setFilter}
+          onClearAll={clearAll}
+        />
+      </div>
 
       {error && (
         <div className="mt-8 rounded-lg bg-negative-bg border border-negative/20 px-4 py-3">
