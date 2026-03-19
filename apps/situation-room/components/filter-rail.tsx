@@ -20,7 +20,7 @@ export function FilterRail({
   return (
     <div className="py-4 border-b border-border-subtle">
       <div className="flex items-center justify-between mb-3">
-        <p className="text-xs font-medium uppercase tracking-[0.15em] text-text-tertiary">
+        <p className="heading-overline">
           Filters
           {activeCount > 0 && (
             <span className="ml-2 text-accent-brand font-semibold">
