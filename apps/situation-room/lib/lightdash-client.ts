@@ -34,6 +34,7 @@ export async function executeScorecardQuery(filterGroup: {
         'scorecard_daily_pct_change',
       ],
       filters: { dimensions: filterGroup },
+      tableCalculations: [],
       sorts: [{ fieldId: 'scorecard_daily_sort_order', descending: false }],
       limit: 50,
     },
@@ -52,6 +53,41 @@ export async function executeScorecardQuery(filterGroup: {
   if (!res.ok)
     throw new Error(
       `Lightdash query failed: ${res.status} ${await res.text()}`,
+    );
+
+  const data = await res.json();
+  return data.results.queryUuid;
+}
+
+export async function executeDistinctQuery(fieldId: string): Promise<string> {
+  const url = getEnv('LIGHTDASH_URL');
+  const projectUuid = getEnv('LIGHTDASH_PROJECT_UUID');
+
+  const body = {
+    query: {
+      exploreName: 'scorecard_daily',
+      dimensions: [fieldId],
+      metrics: [],
+      tableCalculations: [],
+      filters: {},
+      sorts: [{ fieldId, descending: false }],
+      limit: 500,
+    },
+    context: 'api',
+  };
+
+  const res = await fetch(
+    `${url}/api/v2/projects/${projectUuid}/query/metric-query`,
+    {
+      method: 'POST',
+      headers: headers(),
+      body: JSON.stringify(body),
+    },
+  );
+
+  if (!res.ok)
+    throw new Error(
+      `Lightdash distinct query failed: ${res.status} ${await res.text()}`,
     );
 
   const data = await res.json();

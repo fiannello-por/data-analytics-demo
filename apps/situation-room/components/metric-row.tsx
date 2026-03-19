@@ -1,30 +1,31 @@
 import type { ScorecardRow } from '@/lib/types';
 import { ChangeIndicator } from './change-indicator';
+import { TableCell, TableRow } from '@/components/ui/table';
 
 interface MetricRowProps {
   row: ScorecardRow;
-  isLast?: boolean;
+  isAlt?: boolean;
 }
 
-export function MetricRow({ row, isLast = false }: MetricRowProps) {
+export function MetricRow({ row, isAlt = false }: MetricRowProps) {
   return (
-    <div
-      className={`grid grid-cols-2 sm:grid-cols-[1fr_auto_auto_auto] gap-x-4 sm:gap-x-6 items-center py-3 ${
-        isLast ? '' : 'border-b border-border-subtle'
+    <TableRow
+      className={`border-table-row-border hover:bg-table-row-hover-bg transition-colors ${
+        isAlt ? 'bg-table-row-alt-bg' : 'bg-table-row-bg'
       }`}
     >
-      <span className="text-sm font-medium text-text-primary">
+      <TableCell className="pl-4 font-medium text-table-cell-text">
         {row.metricName}
-      </span>
-      <span className="text-sm tabular-nums text-text-primary font-semibold text-right min-w-[80px]">
+      </TableCell>
+      <TableCell className="tabular-nums text-table-cell-text font-semibold text-right">
         {row.currentPeriod}
-      </span>
-      <span className="hidden sm:block text-sm tabular-nums text-text-secondary text-right min-w-[80px]">
+      </TableCell>
+      <TableCell className="hidden sm:table-cell tabular-nums text-table-cell-secondary text-right">
         {row.previousPeriod}
-      </span>
-      <div className="text-right min-w-[72px]">
+      </TableCell>
+      <TableCell className="pr-4 text-right">
         <ChangeIndicator value={row.pctChange} />
-      </div>
-    </div>
+      </TableCell>
+    </TableRow>
   );
 }
