@@ -1,0 +1,113 @@
+{
+  "name": "Light",
+
+  "palette": {
+    "gray":   ["#f7f8fa", "#f0f2f5", "#eef1f5", "#e8ecf2", "#e4e8ee", "#e2e6ed", "#dce0e8", "#c5cad4", "#b0b6c4", "#8690a2", "#636a7e", "#4a5068", "#1e2028"],
+    "blue":   ["#edf4fc", "#dbe9f8", "#c4daf0", "#b0cfe8", "#8db8e4", "#3574c4", "#2a5ea0", "#234e88"],
+    "green":  ["#eaf7ef", "#b8e0c8", "#5c8a3e", "#3a9a5e", "#1a7f42"],
+    "red":    ["#fdf0f0", "#f0c0c3", "#c9363f"],
+    "amber":  ["#fef9eb", "#f0dfa0", "#c7872e", "#b07d1a"],
+    "cyan":   ["#e8f8fa", "#b0e0e6", "#2e95a3"],
+    "purple": ["#9556cf", "#7c6eb5"],
+    "white":  "#ffffff",
+    "black":  "#1e2028",
+    "transparent": "transparent"
+  },
+
+  "colors": {
+    "surface":  { "base": "gray.0", "elevated": "white", "sunken": "gray.2", "overlay": "white" },
+    "text":     { "primary": "gray.12", "secondary": "gray.11", "tertiary": "gray.9", "inverse": "white", "link": "blue.5", "linkHover": "blue.6" },
+    "border":   { "default": "gray.6", "subtle": "gray.4", "strong": "gray.7" },
+    "accentBrand": { "default": "blue.5", "subtle": "blue.0", "hover": "blue.6", "muted": "blue.2" },
+    "positive": { "default": "green.4", "bg": "green.0", "border": "green.1" },
+    "negative": { "default": "red.2", "bg": "red.0", "border": "red.1" },
+    "warning":  { "default": "amber.3", "bg": "amber.0", "border": "amber.1" },
+    "info":     { "default": "blue.5", "bg": "blue.0", "border": "blue.3" },
+    "neutral":  { "change": "gray.10", "changeBg": "gray.2" },
+    "interactive": {
+      "bg": "blue.5", "bgHover": "blue.6", "bgActive": "blue.7",
+      "text": "white",
+      "ghostHover": "gray.2", "ghostActive": "gray.4",
+      "outlineBorder": "gray.6", "outlineHover": "gray.7",
+      "focusRing": "blue.5",
+      "disabledBg": "gray.2", "disabledText": "gray.8"
+    }
+  },
+
+  "shadcn": {
+    "background": "surface.base",
+    "foreground": "text.primary",
+    "card": "surface.elevated",
+    "cardForeground": "text.primary",
+    "popover": "surface.elevated",
+    "popoverForeground": "text.primary",
+    "primary": "accentBrand.default",
+    "primaryForeground": "text.inverse",
+    "secondary": "surface.sunken",
+    "secondaryForeground": "text.primary",
+    "muted": "surface.sunken",
+    "mutedForeground": "gray.10",
+    "accent": "gray.3",
+    "accentForeground": "text.primary",
+    "destructive": "negative.default",
+    "border": "border.default",
+    "input": "border.default",
+    "ring": "accentBrand.default",
+    "sidebar": "gray.1",
+    "sidebarForeground": "text.primary",
+    "sidebarPrimary": "accentBrand.default",
+    "sidebarPrimaryForeground": "text.inverse",
+    "sidebarAccent": "gray.3",
+    "sidebarAccentForeground": "text.primary",
+    "sidebarBorder": "border.default",
+    "sidebarRing": "accentBrand.default"
+  },
+
+  "typography": {
+    "fontFamily": { "sans": "Inter, system-ui, sans-serif", "mono": "'JetBrains Mono', ui-monospace, monospace" },
+    "fontSize":   { "xs": "0.75rem", "sm": "0.875rem", "base": "1rem", "lg": "1.125rem", "xl": "1.25rem", "2xl": "1.5rem" },
+    "fontWeight": { "normal": "400", "medium": "500", "semibold": "600", "bold": "700" }
+  },
+
+  "geometry": {
+    "radiusBase": "0.375rem",
+    "radiusScale": { "sm": 0.6, "md": 0.8, "lg": 1.0, "xl": 1.4, "2xl": 1.8, "3xl": 2.2, "4xl": 2.6 },
+    "shadow": {
+      "sm": "0 1px 2px rgba(0,0,0,0.05)",
+      "md": "0 4px 6px -1px rgba(0,0,0,0.1)"
+    }
+  },
+
+  "components": {
+    "card":   { "radius": "md", "shadow": "sm" },
+    "filter": { "radius": "sm", "height": "2rem" },
+    "tab":    { "railRadius": "lg", "pillRadius": "md" },
+    "pill":   { "radius": "sm" },
+    "table":  { "headerWeight": "medium" }
+  },
+
+  "dashboard": {
+    "filterBar":     { "bg": "gray.1", "border": "border.default" },
+    "filterTrigger": { "bg": "surface.elevated", "border": "border.default", "text": "text.secondary", "hoverBg": "surface.sunken", "hoverBorder": "border.strong" },
+    "filterActive":  { "bg": "accentBrand.subtle", "border": "blue.4", "text": "accentBrand.hover" },
+    "filterBadge":   { "bg": "accentBrand.default", "text": "text.inverse" },
+    "table": {
+      "headerBg": "surface.sunken", "headerText": "text.secondary", "headerBorder": "border.default",
+      "rowBg": "transparent", "rowAltBg": "surface.base",
+      "rowHoverBg": "accentBrand.subtle", "rowSelectedBg": "blue.1",
+      "rowBorder": "border.subtle",
+      "cellText": "text.primary", "cellSecondary": "text.secondary"
+    },
+    "tab": {
+      "rail": "gray.5", "text": "text.tertiary", "hoverText": "text.secondary",
+      "activeBg": "surface.elevated", "activeText": "text.primary"
+    },
+    "heading": { "primary": "text.primary", "section": "text.secondary", "overline": "text.tertiary" }
+  },
+
+  "viz": {
+    "categorical": ["blue.5", "purple.0", "green.3", "amber.2", "cyan.2", "red.2", "purple.1", "green.2"],
+    "sequential":  ["blue.0", "blue.1", "blue.2", "blue.3", "blue.5", "blue.6"],
+    "diverging":   ["red.2", "red.1", "gray.2", "green.1", "green.4"]
+  }
+}
