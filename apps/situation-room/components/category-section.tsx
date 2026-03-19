@@ -22,25 +22,25 @@ export function CategorySection({ data }: CategorySectionProps) {
   return (
     <section className="py-8">
       <div className="mb-5">
-        <h2 className="text-lg font-semibold tracking-tight text-text-primary">
+        <h2 className="heading-primary">
           {data.category}
         </h2>
-        <p className="mt-1 text-sm text-text-secondary leading-relaxed">
+        <p className="mt-1 heading-section text-sm">
           {description}
         </p>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-[1fr_auto_auto_auto] gap-x-4 sm:gap-x-6 items-center pb-2 border-b border-border mb-1">
-        <span className="text-xs font-medium uppercase tracking-wider text-text-tertiary">
+        <span className="table-header-cell">
           Metric
         </span>
-        <span className="text-xs font-medium uppercase tracking-wider text-text-tertiary text-right min-w-[80px]">
+        <span className="table-header-cell text-right min-w-[80px]">
           Current
         </span>
-        <span className="hidden sm:block text-xs font-medium uppercase tracking-wider text-text-tertiary text-right min-w-[80px]">
+        <span className="hidden sm:block table-header-cell text-right min-w-[80px]">
           Prior YTD
         </span>
-        <span className="text-xs font-medium uppercase tracking-wider text-text-tertiary text-right min-w-[72px]">
+        <span className="table-header-cell text-right min-w-[72px]">
           Change
         </span>
       </div>

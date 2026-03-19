@@ -70,7 +70,7 @@
     "filterTrigger": { "bg": "#0a0a0b", "border": "#1c1c1f", "text": "#a1a1aa", "hoverBg": "#141416", "hoverBorder": "#27272a" },
     "filterActive": { "bg": "#172554", "border": "#60a5fa", "text": "#60a5fa" },
     "filterBadge": { "bg": "#60a5fa", "text": "#0a0a0b" },
-    "table": { "headerText": "#a1a1aa", "cellText": "#fafafa", "cellSecondary": "#a1a1aa" },
+    "table": { "headerText": "#71717a", "cellText": "#fafafa", "cellSecondary": "#a1a1aa" },
     "tab": { "rail": "#09090b", "text": "#71717a", "hoverText": "#a1a1aa", "activeBg": "#141416", "activeText": "#fafafa" },
     "heading": { "primary": "#fafafa", "section": "#a1a1aa", "overline": "#71717a" }
   },
