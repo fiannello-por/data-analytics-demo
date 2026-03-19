@@ -647,7 +647,7 @@ describe('validateTheme', () => {
 
   it('rejects viz palette with fewer than 3 entries', () => {
     const t = validTheme();
-    t.viz.categorical = ['blue.0'];
+    t.viz!.categorical = ['blue.0'];
     const errors = validateTheme(t);
     expect(errors.some((e) => e.includes('categorical'))).toBe(true);
   });
