@@ -3,6 +3,7 @@
 import { ReportHeader } from "@/components/report-header";
 import { FilterRail } from "@/components/filter-rail";
 import { ExecutiveSnapshot } from "@/components/executive-snapshot";
+import { TrendChart } from "@/components/trend-chart";
 import { CategorySection } from "@/components/category-section";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
@@ -53,6 +54,13 @@ export function ReportContent() {
       {data && !isLoading && (
         <>
           <ExecutiveSnapshot data={data} />
+
+          <section className="py-8 border-b border-border-subtle">
+            <h2 className="text-xs font-medium uppercase tracking-[0.15em] text-text-tertiary mb-5">
+              Category Comparison
+            </h2>
+            <TrendChart data={data} metricIndex={0} />
+          </section>
 
           <div className="divide-y divide-border-subtle">
             {CATEGORIES.map((cat) => {
