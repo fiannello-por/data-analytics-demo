@@ -13,13 +13,13 @@ export function MetricRow({ row, isLast = false }: MetricRowProps) {
         isLast ? '' : 'border-b border-border-subtle'
       }`}
     >
-      <span className="text-sm font-medium text-text-primary">
+      <span className="text-sm font-medium table-data-cell">
         {row.metricName}
       </span>
-      <span className="text-sm tabular-nums text-text-primary font-semibold text-right min-w-[80px]">
+      <span className="text-sm table-data-cell-numeric min-w-[80px]">
         {row.currentPeriod}
       </span>
-      <span className="hidden sm:block text-sm tabular-nums text-text-secondary text-right min-w-[80px]">
+      <span className="hidden sm:block text-sm table-data-cell-secondary min-w-[80px]">
         {row.previousPeriod}
       </span>
       <div className="text-right min-w-[72px]">
