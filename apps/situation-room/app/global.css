@@ -1,5 +1,5 @@
-@import './generated-theme.css';
 @import 'tailwindcss';
+@import './generated-theme.css';
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 
