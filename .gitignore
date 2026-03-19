@@ -14,6 +14,7 @@ coverage
 apps/changelog-site/.docusaurus
 apps/changelog-site/build
 apps/pdr/.next
+apps/situation-room/.next
 apps/pdr/.source
 *.tsbuildinfo
 
