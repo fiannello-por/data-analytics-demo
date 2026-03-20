@@ -1,7 +1,11 @@
-import type { ScorecardFilters } from '@/lib/contracts';
+import {
+  FILTER_KEYS,
+  type FilterKey,
+  type ScorecardFilters,
+} from '@/lib/contracts';
 
 export interface FilterDefinition {
-  key: string;
+  key: FilterKey;
   label: string;
   fieldId: string;
   type: 'string' | 'boolean' | 'date';
@@ -102,15 +106,19 @@ export const FILTER_DEFINITIONS: FilterDefinition[] = [
   },
 ];
 
-const VALID_KEYS = new Set(FILTER_DEFINITIONS.map((f) => f.key));
+const VALID_KEYS = new Set<FilterKey>(FILTER_KEYS);
+
+function isFilterKey(key: string): key is FilterKey {
+  return VALID_KEYS.has(key as FilterKey);
+}
 
 export function parseFilterParams(
   params: Record<string, string | undefined>,
 ): ScorecardFilters {
   const result: ScorecardFilters = {};
   for (const [key, value] of Object.entries(params)) {
-    if (!VALID_KEYS.has(key) || !value) continue;
-    result[key as keyof ScorecardFilters] = value
+    if (!isFilterKey(key) || !value) continue;
+    result[key] = value
       .split(',')
       .map((v) => v.trim())
       .filter(Boolean);

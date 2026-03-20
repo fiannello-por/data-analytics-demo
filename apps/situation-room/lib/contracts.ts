@@ -10,28 +10,29 @@ export type Category = (typeof CATEGORY_ORDER)[number];
 
 export const DEFAULT_DATE_RANGE = ['current_year'] as const;
 
-export type ScorecardFilters = Partial<
-  Record<
-    | 'DateRange'
-    | 'Division'
-    | 'Owner'
-    | 'Segment'
-    | 'Region'
-    | 'SE'
-    | 'BookingPlanOppType'
-    | 'ProductFamily'
-    | 'SDRSource'
-    | 'SDR'
-    | 'OppRecordType'
-    | 'AccountOwner'
-    | 'OwnerDepartment'
-    | 'StrategicFilter'
-    | 'Accepted'
-    | 'Gate1CriteriaMet'
-    | 'GateMetOrAccepted',
-    string[]
-  >
->;
+export const FILTER_KEYS = [
+  'DateRange',
+  'Division',
+  'Owner',
+  'Segment',
+  'Region',
+  'SE',
+  'BookingPlanOppType',
+  'ProductFamily',
+  'SDRSource',
+  'SDR',
+  'OppRecordType',
+  'AccountOwner',
+  'OwnerDepartment',
+  'StrategicFilter',
+  'Accepted',
+  'Gate1CriteriaMet',
+  'GateMetOrAccepted',
+] as const;
+
+export type FilterKey = (typeof FILTER_KEYS)[number];
+
+export type ScorecardFilters = Partial<Record<FilterKey, string[]>>;
 
 export type ScorecardRow = {
   sortOrder: number;

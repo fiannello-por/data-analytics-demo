@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { FILTER_KEYS } from '@/lib/contracts';
 import { FILTER_DEFINITIONS, parseFilterParams } from '@/lib/filters';
 
 describe('FILTER_DEFINITIONS', () => {
@@ -13,6 +14,10 @@ describe('FILTER_DEFINITIONS', () => {
       expect(f.fieldId).toBeTruthy();
       expect(['string', 'boolean', 'date']).toContain(f.type);
     }
+  });
+
+  it('stays aligned with the canonical filter keys', () => {
+    expect(FILTER_DEFINITIONS.map((filter) => filter.key)).toEqual(FILTER_KEYS);
   });
 });
 
