@@ -1,3 +1,5 @@
+import type { ScorecardFilters } from '@/lib/contracts';
+
 export interface FilterDefinition {
   key: string;
   label: string;
@@ -104,11 +106,11 @@ const VALID_KEYS = new Set(FILTER_DEFINITIONS.map((f) => f.key));
 
 export function parseFilterParams(
   params: Record<string, string | undefined>,
-): Record<string, string[]> {
-  const result: Record<string, string[]> = {};
+): ScorecardFilters {
+  const result: ScorecardFilters = {};
   for (const [key, value] of Object.entries(params)) {
     if (!VALID_KEYS.has(key) || !value) continue;
-    result[key] = value
+    result[key as keyof ScorecardFilters] = value
       .split(',')
       .map((v) => v.trim())
       .filter(Boolean);
