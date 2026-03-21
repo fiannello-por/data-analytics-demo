@@ -377,21 +377,28 @@ models:
   situation_room:
     app_serving:
       +materialized: table
-      +schema: app_serving
 ```
 
 ```yaml
 # dbt/profiles.yml
 situation_room:
-  target: dev
+  target: "{{ 'dev' if env_var('BIGQUERY_SERVICE_ACCOUNT_JSON', '') else 'parse' }}"
   outputs:
+    parse:
+      type: bigquery
+      method: oauth
+      project: "{{ env_var('BIGQUERY_PROJECT_ID', 'dbt_parse_placeholder') }}"
+      dataset: "{{ env_var('BIGQUERY_DATASET', 'app_serving_dev') }}"
+      location: "{{ env_var('BIGQUERY_LOCATION', 'US') }}"
+      threads: 4
+      job_execution_timeout_seconds: 300
     dev:
       type: bigquery
       method: service-account-json
-      project: "{{ env_var('BIGQUERY_PROJECT_ID') }}"
+      project: "{{ env_var('BIGQUERY_PROJECT_ID', 'dbt_parse_placeholder') }}"
       dataset: "{{ env_var('BIGQUERY_DATASET', 'app_serving_dev') }}"
       location: "{{ env_var('BIGQUERY_LOCATION', 'US') }}"
-      keyfile_json: "{{ env_var('BIGQUERY_SERVICE_ACCOUNT_JSON') }}"
+      keyfile_json: "{{ env_var('BIGQUERY_SERVICE_ACCOUNT_JSON', '{\"type\":\"service_account\",\"project_id\":\"dbt_parse_placeholder\",\"private_key_id\":\"placeholder\",\"private_key\":\"-----BEGIN PRIVATE KEY-----\\nplaceholder\\n-----END PRIVATE KEY-----\\n\",\"client_email\":\"placeholder@dbt-parse-placeholder.iam.gserviceaccount.com\",\"client_id\":\"1234567890\",\"token_uri\":\"https://oauth2.googleapis.com/token\"}') }}"
       threads: 4
       job_execution_timeout_seconds: 300
 ```
@@ -402,7 +409,7 @@ version: 2
 
 sources:
   - name: legacy_scorecard
-    database: "{{ env_var('BIGQUERY_PROJECT_ID') }}"
+    database: "{{ env_var('BIGQUERY_PROJECT_ID', 'dbt_parse_placeholder') }}"
     schema: scorecard_test
     tables:
       - name: scorecard_daily
@@ -444,6 +451,7 @@ aggregated as (
     category,
     sort_order,
     metric_name,
+    report_date,
     Division,
     Owner,
     Segment,
@@ -460,7 +468,6 @@ aggregated as (
     Accepted,
     Gate1CriteriaMet,
     GateMetOrAccepted,
-    max(report_date) as latest_report_date,
     max(agg_type) as agg_type,
     sum(case when period = 'current' then numerator end) as current_numerator,
     sum(case when period = 'current' then denominator end) as current_denominator,
@@ -479,7 +486,9 @@ aggregated as (
       end
     ) as previous_denominator
   from source_rows
-  group by 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19
+  group by
+    1,2,3,4,5,6,7,8,9,10,
+    11,12,13,14,15,16,17,18,19,20
 )
 select
   *,
@@ -522,15 +531,20 @@ unioned as (
   select 'Accepted', Accepted from base union all
   select 'Gate1CriteriaMet', Gate1CriteriaMet from base union all
   select 'GateMetOrAccepted', GateMetOrAccepted from base
+),
+deduped as (
+  select distinct
+    filter_key,
+    value
+  from unioned
+  where value is not null and trim(value) != ''
 )
 select
   filter_key,
   value,
   value as label,
-  row_number() over (partition by filter_key order by value) as sort_order
-from unioned
-where value is not null and trim(value) != ''
-qualify row_number() over (partition by filter_key, value order by value) = 1
+  dense_rank() over (partition by filter_key order by value) as sort_order
+from deduped
 ```
 
 - [ ] **Step 4: Run dbt parse/build to verify it passes**
@@ -602,7 +616,7 @@ describe('BigQueryAdapter', () => {
           current_period: '$10.0K',
           previous_period: '$8.0K',
           pct_change: '+25.0%',
-          latest_report_date: '2026-03-20',
+          report_date: '2026-03-20',
         },
       ]),
     });
@@ -697,7 +711,7 @@ export interface ScorecardDataAdapter {
 
 ```ts
 // apps/situation-room/lib/bigquery/sql.ts
-import type { ScorecardFilters } from '@/lib/contracts';
+import { withDefaultDateRange, type ScorecardFilters } from '@/lib/contracts';
 
 const FILTER_COLUMNS: Record<string, string> = {
   Division: 'Division',
@@ -724,16 +738,24 @@ export function buildScorecardReportQuery(filters: ScorecardFilters) {
   const normalized = withDefaultDateRange(filters);
 
   for (const [key, values] of Object.entries(normalized)) {
+    if (key === 'DateRange') {
+      clauses.push('report_date >= DATE_TRUNC(CURRENT_DATE(), YEAR)');
+      continue;
+    }
+
     const column = FILTER_COLUMNS[key];
     if (!column || !values?.length) continue;
-    if (key === 'DateRange') continue;
     clauses.push(`${column} IN UNNEST(@${key})`);
     params[key] = values;
   }
 
+  // Preserve report_date semantics from the serving model. If the source contains
+  // multiple snapshots inside the selected range, constrain to the intended snapshot
+  // during Task 3 rather than collapsing date grain in dbt.
+
   return {
     sql: `
-      select category, sort_order, metric_name, current_period, previous_period, pct_change, latest_report_date
+      select category, sort_order, metric_name, current_period, previous_period, pct_change, report_date
       from \`${process.env.BIGQUERY_PROJECT_ID}.${process.env.BIGQUERY_DATASET}.scorecard_report_rows\`
       where ${clauses.join(' and ')}
       order by category, sort_order
