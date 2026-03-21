@@ -1,13 +1,14 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import type { FilterKey, ScorecardFilters } from '@/lib/contracts';
 import { FILTER_DEFINITIONS } from '@/lib/filters';
 import { FilterChip } from './filter-chip';
 
 interface FilterRailProps {
-  activeFilters: Record<string, string[]>;
+  activeFilters: ScorecardFilters;
   activeCount: number;
-  onSetFilter: (key: string, values: string[]) => void;
+  onSetFilter: (key: FilterKey, values: string[]) => void;
   onClearAll: () => void;
 }
 
@@ -42,13 +43,11 @@ export function FilterRail({
 
       {activeCount > 0 && (
         <div className="flex flex-wrap gap-2 mb-3">
-          {FILTER_DEFINITIONS.filter(
-            (f) => activeFilters[f.key]?.length > 0,
-          ).map((f) => (
+          {FILTER_DEFINITIONS.filter((f) => (activeFilters[f.key] ?? []).length > 0).map((f) => (
             <FilterChip
               key={f.key}
               label={f.label}
-              values={activeFilters[f.key]}
+              values={activeFilters[f.key] ?? []}
               onRemove={() => onSetFilter(f.key, [])}
             />
           ))}
@@ -62,7 +61,7 @@ export function FilterRail({
               type="text"
               placeholder={f.label}
               className="h-8 px-3 text-xs rounded-md border border-border bg-surface text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-1 focus:ring-accent-brand w-[140px]"
-              defaultValue={activeFilters[f.key]?.join(', ') ?? ''}
+              defaultValue={(activeFilters[f.key] ?? []).join(', ')}
               onBlur={(e) => {
                 const vals = e.target.value
                   .split(',')

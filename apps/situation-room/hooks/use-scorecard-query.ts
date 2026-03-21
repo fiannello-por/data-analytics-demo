@@ -33,6 +33,29 @@ export function buildNormalizedReportRequestPath(
   return query ? `/api/report?${query}` : '/api/report';
 }
 
+export async function fetchNormalizedReport(
+  filters: ScorecardFilters,
+  signal?: AbortSignal,
+): Promise<ScorecardReportPayload> {
+  const requestPath = buildNormalizedReportRequestPath(filters);
+  const res = await fetch(requestPath, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+    },
+    signal,
+  });
+
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as
+      | { error?: string }
+      | null;
+    throw new Error(body?.error ?? `Request failed: ${res.status}`);
+  }
+
+  return (await res.json()) as ScorecardReportPayload;
+}
+
 export function useScorecardQuery(
   filters: ScorecardFilters,
   initialData: ScorecardReportPayload,
@@ -49,10 +72,6 @@ export function useScorecardQuery(
 
   const requestKey = useMemo(
     () => serializeFilterCacheKey(filters),
-    [filters],
-  );
-  const requestPath = useMemo(
-    () => buildNormalizedReportRequestPath(filters),
     [filters],
   );
 
@@ -78,22 +97,7 @@ export function useScorecardQuery(
 
     void (async () => {
       try {
-        const res = await fetch(requestPath, {
-          method: 'GET',
-          headers: {
-            Accept: 'application/json',
-          },
-          signal: controller.signal,
-        });
-
-        if (!res.ok) {
-          const body = (await res.json().catch(() => null)) as
-            | { error?: string }
-            | null;
-          throw new Error(body?.error ?? `Request failed: ${res.status}`);
-        }
-
-        const json = (await res.json()) as ScorecardReportPayload;
+        const json = await fetchNormalizedReport(filters, controller.signal);
 
         if (requestId !== requestIdRef.current || controller.signal.aborted) {
           return;
@@ -122,7 +126,7 @@ export function useScorecardQuery(
     })();
 
     return () => controller.abort();
-  }, [refreshToken, requestKey, requestPath]);
+  }, [refreshToken, requestKey]);
 
   return { data, isLoading, error, refetch: fetchData };
 }
