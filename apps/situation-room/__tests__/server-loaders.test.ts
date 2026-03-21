@@ -211,6 +211,43 @@ describe('server loaders', () => {
     });
   });
 
+  it('ignores repeated unknown report query params', async () => {
+    const adapterResult: AdapterResult<ScorecardReportPayload> = {
+      data: {
+        reportTitle: 'Situation Room',
+        reportPeriodLabel: 'Current Year',
+        lastRefreshedAt: '2026-03-21T00:00:00.000Z',
+        appliedFilters: {
+          Division: ['Enterprise'],
+          DateRange: ['current_year'],
+        },
+        categories: [],
+      },
+      meta: {
+        source: 'bigquery',
+        queryCount: 1,
+      },
+    };
+
+    const scorecardLoader = await import('@/lib/server/get-scorecard-report');
+    vi.spyOn(scorecardLoader, 'getScorecardReport').mockResolvedValueOnce(
+      adapterResult,
+    );
+
+    const { GET } = await import('../app/api/report/route');
+    const response = await GET(
+      new NextRequest(
+        'http://localhost/api/report?bogus=x&bogus=y&Division=Enterprise',
+      ),
+    );
+
+    expect(scorecardLoader.getScorecardReport).toHaveBeenCalledWith({
+      Division: ['Enterprise'],
+    });
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual(adapterResult.data);
+  });
+
   it('rejects unsupported report date ranges with a 400', async () => {
     const { GET } = await import('../app/api/report/route');
     const response = await GET(

@@ -1,12 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getValidatedDateRangeMode } from '@/lib/bigquery/sql';
+import { FILTER_KEYS } from '@/lib/contracts';
 import { parseFilterParams } from '@/lib/filters';
 import { getScorecardReport } from '@/lib/server/get-scorecard-report';
 
-function getRepeatedQueryParamKey(searchParams: URLSearchParams): string | null {
+const SUPPORTED_QUERY_KEYS = new Set(FILTER_KEYS);
+
+function getRepeatedSupportedQueryParamKey(
+  searchParams: URLSearchParams,
+): string | null {
   const seen = new Set<string>();
 
   for (const key of searchParams.keys()) {
+    if (!SUPPORTED_QUERY_KEYS.has(key as (typeof FILTER_KEYS)[number])) {
+      continue;
+    }
+
     if (seen.has(key)) {
       return key;
     }
@@ -21,7 +30,9 @@ function badRequest(message: string) {
 }
 
 export async function GET(request: NextRequest) {
-  const repeatedKey = getRepeatedQueryParamKey(request.nextUrl.searchParams);
+  const repeatedKey = getRepeatedSupportedQueryParamKey(
+    request.nextUrl.searchParams,
+  );
   if (repeatedKey) {
     return badRequest(
       `Repeated query parameter "${repeatedKey}" is not supported.`,
