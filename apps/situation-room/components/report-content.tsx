@@ -9,15 +9,23 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { useFilters } from '@/hooks/use-filters';
 import { useScorecardQuery } from '@/hooks/use-scorecard-query';
-import { CATEGORIES } from '@/lib/queries';
+import type { ScorecardReportPayload } from '@/lib/contracts';
 
-export function ReportContent() {
+interface ReportContentProps {
+  initialData: ScorecardReportPayload;
+}
+
+export function ReportContent({ initialData }: ReportContentProps) {
   const { activeFilters, activeCount, setFilter, clearAll } = useFilters();
-  const { data, isLoading, error } = useScorecardQuery(activeFilters);
+  const { data, isLoading, error } = useScorecardQuery(
+    activeFilters,
+    initialData,
+  );
+  const report = data ?? initialData;
 
   return (
     <main className="min-h-screen max-w-5xl mx-auto px-6 py-10 md:px-10 md:py-14">
-      <ReportHeader lastRefreshed={data ? new Date() : undefined} />
+      <ReportHeader lastRefreshed={new Date(report.lastRefreshedAt)} />
 
       <div className="no-print">
         <FilterRail
@@ -55,21 +63,22 @@ export function ReportContent() {
 
       {data && !isLoading && (
         <>
-          <ExecutiveSnapshot data={data} />
+          <ExecutiveSnapshot data={report.categories} />
 
           <section className="py-8 border-b border-border-subtle">
             <h2 className="text-xs font-medium uppercase tracking-[0.15em] text-text-tertiary mb-5">
               Category Comparison
             </h2>
-            <TrendChart data={data} metricIndex={0} />
+            <TrendChart data={report.categories} metricIndex={0} />
           </section>
 
           <div className="divide-y divide-border-subtle">
-            {CATEGORIES.map((cat) => {
-              const catData = data.find((d) => d.category === cat);
-              if (!catData) return null;
-              return <CategorySection key={cat} data={catData} />;
-            })}
+            {report.categories.map((categoryData) => (
+              <CategorySection
+                key={categoryData.category}
+                data={categoryData}
+              />
+            ))}
           </div>
         </>
       )}
@@ -77,7 +86,7 @@ export function ReportContent() {
       <Separator className="mt-12" />
       <footer className="py-6 text-center">
         <p className="text-xs text-text-tertiary">
-          Data sourced from Lightdash semantic layer · All metrics governed
+          Data served by the BigQuery reporting baseline · All metrics governed
           centrally
         </p>
       </footer>
