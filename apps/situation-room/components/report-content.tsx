@@ -20,7 +20,6 @@ export function ReportContent({ initialData }: ReportContentProps) {
     activeFilters,
     activeCount,
     setFilter,
-    setFilterFromInput,
     clearAll,
   } = useFilters();
   const { data, isLoading, error } = useScorecardQuery(
@@ -38,7 +37,6 @@ export function ReportContent({ initialData }: ReportContentProps) {
           activeFilters={activeFilters}
           activeCount={activeCount}
           onSetFilter={setFilter}
-          onSetFilterFromInput={setFilterFromInput}
           onClearAll={clearAll}
         />
       </div>

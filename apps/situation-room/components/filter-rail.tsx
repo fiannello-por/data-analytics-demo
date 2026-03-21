@@ -5,7 +5,10 @@ import { Button } from '@/components/ui/button';
 import type { FilterKey, ScorecardFilters } from '@/lib/contracts';
 import { FILTER_DEFINITIONS } from '@/lib/filters';
 import type { FilterDictionaryPayload } from '@/lib/data-adapters/types';
-import { formatCommaSeparatedValues } from '@/hooks/use-filters';
+import {
+  formatCommaSeparatedValues,
+  parseCommaSeparatedValues,
+} from '@/hooks/use-filters';
 import { FilterChip } from './filter-chip';
 
 type FilterDictionaryOption = FilterDictionaryPayload['options'][number];
@@ -49,7 +52,6 @@ interface FilterRailProps {
   activeFilters: ScorecardFilters;
   activeCount: number;
   onSetFilter: (key: FilterKey, values: string[]) => void;
-  onSetFilterFromInput: (key: FilterKey, input: string) => void;
   onClearAll: () => void;
 }
 
@@ -58,7 +60,7 @@ interface StringFilterInputProps {
   label: string;
   values: string[];
   options: FilterDictionaryOption[];
-  onCommit: (key: FilterKey, input: string) => void;
+  onSetFilter: (key: FilterKey, values: string[]) => void;
 }
 
 function StringFilterInput({
@@ -66,7 +68,7 @@ function StringFilterInput({
   label,
   values,
   options,
-  onCommit,
+  onSetFilter,
 }: StringFilterInputProps) {
   const [inputValue, setInputValue] = useState(() =>
     formatCommaSeparatedValues(values),
@@ -87,7 +89,7 @@ function StringFilterInput({
         className="h-8 px-3 text-xs rounded-md border border-border bg-surface text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-1 focus:ring-accent-brand w-[140px]"
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
-        onBlur={() => onCommit(keyName, inputValue)}
+        onBlur={() => onSetFilter(keyName, parseCommaSeparatedValues(inputValue))}
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
             e.currentTarget.blur();
@@ -107,7 +109,6 @@ export function FilterRail({
   activeFilters,
   activeCount,
   onSetFilter,
-  onSetFilterFromInput,
   onClearAll,
 }: FilterRailProps) {
   const [filterDictionaries, setFilterDictionaries] = useState<FilterDictionaryMap>({});
@@ -176,7 +177,7 @@ export function FilterRail({
             label={f.label}
             values={activeFilters[f.key] ?? []}
             options={filterDictionaries[f.key] ?? []}
-            onCommit={onSetFilterFromInput}
+            onSetFilter={onSetFilter}
           />
         ))}
       </div>
