@@ -1,12 +1,20 @@
 situation_room:
-  target: dev
+  target: "{{ 'dev' if env_var('BIGQUERY_SERVICE_ACCOUNT_JSON', '') else 'parse' }}"
   outputs:
+    parse:
+      type: bigquery
+      method: oauth
+      project: "{{ env_var('BIGQUERY_PROJECT_ID', 'dbt_parse_placeholder') }}"
+      dataset: "{{ env_var('BIGQUERY_DATASET', 'app_serving_dev') }}"
+      location: "{{ env_var('BIGQUERY_LOCATION', 'US') }}"
+      threads: 4
+      job_execution_timeout_seconds: 300
     dev:
       type: bigquery
       method: service-account-json
-      project: "{{ env_var('BIGQUERY_PROJECT_ID') }}"
+      project: "{{ env_var('BIGQUERY_PROJECT_ID', 'dbt_parse_placeholder') }}"
       dataset: "{{ env_var('BIGQUERY_DATASET', 'app_serving_dev') }}"
       location: "{{ env_var('BIGQUERY_LOCATION', 'US') }}"
-      keyfile_json: "{{ env_var('BIGQUERY_SERVICE_ACCOUNT_JSON') }}"
+      keyfile_json: "{{ env_var('BIGQUERY_SERVICE_ACCOUNT_JSON', '{\"type\":\"service_account\",\"project_id\":\"dbt_parse_placeholder\",\"private_key_id\":\"placeholder\",\"private_key\":\"-----BEGIN PRIVATE KEY-----\\nplaceholder\\n-----END PRIVATE KEY-----\\n\",\"client_email\":\"placeholder@dbt-parse-placeholder.iam.gserviceaccount.com\",\"client_id\":\"1234567890\",\"token_uri\":\"https://oauth2.googleapis.com/token\"}') }}"
       threads: 4
       job_execution_timeout_seconds: 300

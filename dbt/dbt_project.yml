@@ -9,4 +9,3 @@ models:
   situation_room:
     app_serving:
       +materialized: table
-      +schema: app_serving

@@ -32,6 +32,7 @@ aggregated as (
     category,
     sort_order,
     metric_name,
+    report_date,
     Division,
     Owner,
     Segment,
@@ -48,7 +49,6 @@ aggregated as (
     Accepted,
     Gate1CriteriaMet,
     GateMetOrAccepted,
-    max(report_date) as latest_report_date,
     max(agg_type) as agg_type,
     sum(case when period = 'current' then numerator end) as current_numerator,
     sum(case when period = 'current' then denominator end) as current_denominator,
@@ -67,7 +67,27 @@ aggregated as (
       end
     ) as previous_denominator
   from source_rows
-  group by 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
+  group by
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20
 ),
 formatted as (
   select

@@ -18,12 +18,17 @@ unioned as (
   select 'Accepted', Accepted from base union all
   select 'Gate1CriteriaMet', Gate1CriteriaMet from base union all
   select 'GateMetOrAccepted', GateMetOrAccepted from base
+),
+deduped as (
+  select distinct
+    filter_key,
+    value
+  from unioned
+  where value is not null and trim(value) != ''
 )
 select
   filter_key,
   value,
   value as label,
-  row_number() over (partition by filter_key order by value) as sort_order
-from unioned
-where value is not null and trim(value) != ''
-qualify row_number() over (partition by filter_key, value order by value) = 1
+  dense_rank() over (partition by filter_key order by value) as sort_order
+from deduped

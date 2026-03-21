@@ -2,6 +2,7 @@ version: 2
 
 models:
   - name: scorecard_report_rows
+    description: Pre-shaped scorecard rows for the Situation Room report adapter.
     columns:
       - name: category
         tests: [not_null]
@@ -9,8 +10,12 @@ models:
         tests: [not_null]
       - name: metric_name
         tests: [not_null]
+      - name: report_date
+        description: Snapshot date preserved in the serving-model grain.
+        tests: [not_null]
 
   - name: scorecard_filter_dictionary
+    description: Distinct filter values keyed for Situation Room dictionary endpoints.
     columns:
       - name: filter_key
         tests: [not_null]
