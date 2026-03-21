@@ -10,6 +10,7 @@ type QueryDefinition = {
 };
 
 type QueryableFilterKey = Exclude<FilterKey, 'DateRange'>;
+export type SupportedDateRangeMode = 'current_year';
 
 const FILTER_COLUMNS: Record<QueryableFilterKey, string> = {
   Division: 'Division',
@@ -30,11 +31,37 @@ const FILTER_COLUMNS: Record<QueryableFilterKey, string> = {
   GateMetOrAccepted: 'GateMetOrAccepted',
 };
 
+const FILTER_DICTIONARY_KEYS = new Set<QueryableFilterKey>(
+  Object.keys(FILTER_COLUMNS) as QueryableFilterKey[],
+);
+
 function getTableReference(tableName: string): string {
   const projectId = process.env.BIGQUERY_PROJECT_ID ?? 'test-project';
   const dataset = process.env.BIGQUERY_DATASET ?? 'test_dataset';
 
   return `\`${projectId}.${dataset}.${tableName}\``;
+}
+
+export function getValidatedDateRangeMode(
+  filters: ScorecardFilters,
+): SupportedDateRangeMode {
+  const normalized = withDefaultDateRange(filters);
+  const values = normalized.DateRange ?? ['current_year'];
+
+  if (values.length === 1 && values[0] === 'current_year') {
+    return 'current_year';
+  }
+
+  throw new Error(
+    `Unsupported DateRange filter: ${values.join(', ')}. Only current_year is supported.`,
+  );
+}
+
+export function getReportPeriodLabel(mode: SupportedDateRangeMode): string {
+  switch (mode) {
+    case 'current_year':
+      return 'Current Year';
+  }
 }
 
 export function buildScorecardReportQuery(
@@ -43,6 +70,7 @@ export function buildScorecardReportQuery(
   const clauses: string[] = [];
   const params: Record<string, string[]> = {};
   const normalized = withDefaultDateRange(filters);
+  const dateRangeMode = getValidatedDateRangeMode(normalized);
 
   for (const [key, values] of Object.entries(normalized)) {
     if (!values?.length) {
@@ -50,7 +78,7 @@ export function buildScorecardReportQuery(
     }
 
     if (key === 'DateRange') {
-      if (values.includes('current_year')) {
+      if (dateRangeMode === 'current_year') {
         clauses.push('report_date >= DATE_TRUNC(CURRENT_DATE(), YEAR)');
       }
       continue;
@@ -102,6 +130,10 @@ export function buildScorecardReportQuery(
 }
 
 export function buildFilterDictionaryQuery(filterKey: string): QueryDefinition {
+  if (!FILTER_DICTIONARY_KEYS.has(filterKey as QueryableFilterKey)) {
+    throw new Error(`Unsupported filter dictionary key: ${filterKey}.`);
+  }
+
   return {
     sql: `
       select

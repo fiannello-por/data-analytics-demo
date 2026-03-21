@@ -8,6 +8,8 @@ import {
 import {
   buildFilterDictionaryQuery,
   buildScorecardReportQuery,
+  getReportPeriodLabel,
+  getValidatedDateRangeMode,
 } from '@/lib/bigquery/sql';
 import type {
   AdapterResult,
@@ -54,11 +56,15 @@ const defaultQueryClient: QueryClient = {
 
 function mapRow(row: QueryRow): ScorecardRow {
   return {
-    sortOrder: Number(row.sort_order),
-    metricName: String(row.metric_name),
-    currentPeriod: String(row.current_period),
-    previousPeriod: String(row.previous_period),
-    pctChange: String(row.pct_change),
+    sortOrder: requireNumberField(row, 'sort_order', 'scorecard row'),
+    metricName: requireStringField(row, 'metric_name', 'scorecard row'),
+    currentPeriod: requireStringField(row, 'current_period', 'scorecard row'),
+    previousPeriod: requireStringField(
+      row,
+      'previous_period',
+      'scorecard row',
+    ),
+    pctChange: requireStringField(row, 'pct_change', 'scorecard row'),
   };
 }
 
@@ -76,6 +82,41 @@ function nowIsoString(): string {
   return new Date().toISOString();
 }
 
+function requireStringField(
+  row: QueryRow,
+  key: string,
+  context: string,
+): string {
+  const value = row[key];
+  if (typeof value !== 'string') {
+    throw new Error(`Invalid ${context} field "${key}": expected a string.`);
+  }
+  return value;
+}
+
+function requireNumberField(
+  row: QueryRow,
+  key: string,
+  context: string,
+): number {
+  const value = row[key];
+
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
+  }
+
+  throw new Error(
+    `Invalid ${context} field "${key}": expected a finite number.`,
+  );
+}
+
 export class BigQueryAdapter implements ScorecardDataAdapter {
   constructor(private readonly client: QueryClient = defaultQueryClient) {}
 
@@ -91,13 +132,14 @@ export class BigQueryAdapter implements ScorecardDataAdapter {
     }>
   > {
     const appliedFilters = withDefaultDateRange(filters);
+    const dateRangeMode = getValidatedDateRangeMode(appliedFilters);
     const query = buildScorecardReportQuery(appliedFilters);
     const { rows, bytesProcessed } = await this.client.queryRows(query);
 
     return {
       data: {
         reportTitle: 'Situation Room',
-        reportPeriodLabel: 'Current Year',
+        reportPeriodLabel: getReportPeriodLabel(dateRangeMode),
         lastRefreshedAt: nowIsoString(),
         appliedFilters,
         categories: mapCategories(rows),
@@ -122,9 +164,13 @@ export class BigQueryAdapter implements ScorecardDataAdapter {
         refreshedAt: nowIsoString(),
         options: rows
           .map((row) => ({
-            value: String(row.value),
-            label: String(row.label),
-            sortOrder: Number(row.sort_order),
+            value: requireStringField(row, 'value', 'filter dictionary row'),
+            label: requireStringField(row, 'label', 'filter dictionary row'),
+            sortOrder: requireNumberField(
+              row,
+              'sort_order',
+              'filter dictionary row',
+            ),
           }))
           .sort((left, right) => left.sortOrder - right.sortOrder),
       },

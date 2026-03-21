@@ -43,6 +43,7 @@ describe('BigQueryAdapter', () => {
     const result = await adapter.getScorecardReport({});
 
     expect(result.data.appliedFilters).toEqual({ DateRange: ['current_year'] });
+    expect(result.data.reportPeriodLabel).toBe('Current Year');
     expect(result.data.categories.map((category) => category.category)).toEqual([
       'New Logo',
       'Expansion',
@@ -81,6 +82,27 @@ describe('BigQueryAdapter', () => {
     });
   });
 
+  it('rejects malformed scorecard rows', async () => {
+    const adapter = new BigQueryAdapter({
+      queryRows: vi.fn().mockResolvedValue({
+        rows: [
+          {
+            category: 'Expansion',
+            sort_order: 'not-a-number',
+            metric_name: 'Bookings',
+            current_period: '$10.0K',
+            previous_period: '$8.0K',
+            pct_change: '+25.0%',
+          },
+        ],
+      }),
+    });
+
+    await expect(adapter.getScorecardReport({})).rejects.toThrowError(
+      'Invalid scorecard row field "sort_order": expected a finite number.',
+    );
+  });
+
   it('maps filter dictionary rows into sorted options', async () => {
     const adapter = new BigQueryAdapter({
       queryRows: vi.fn().mockResolvedValue({
@@ -110,5 +132,23 @@ describe('BigQueryAdapter', () => {
       queryCount: 1,
       bytesProcessed: 456,
     });
+  });
+
+  it('rejects malformed filter dictionary rows', async () => {
+    const adapter = new BigQueryAdapter({
+      queryRows: vi.fn().mockResolvedValue({
+        rows: [
+          {
+            value: 'rental',
+            label: null,
+            sort_order: 10,
+          },
+        ],
+      }),
+    });
+
+    await expect(adapter.getFilterDictionary('Division')).rejects.toThrowError(
+      'Invalid filter dictionary row field "label": expected a string.',
+    );
   });
 });

@@ -36,6 +36,16 @@ describe('buildScorecardReportQuery', () => {
     expect(query.sql).toContain('scorecard_report_rows');
     expect(query.params).toEqual({});
   });
+
+  it('rejects unsupported date-range values instead of widening scope', () => {
+    expect(() =>
+      buildScorecardReportQuery(
+        normalizeFilters({ DateRange: ['last_30_days'] }),
+      ),
+    ).toThrowError(
+      'Unsupported DateRange filter: last_30_days. Only current_year is supported.',
+    );
+  });
 });
 
 describe('buildFilterDictionaryQuery', () => {
@@ -45,5 +55,11 @@ describe('buildFilterDictionaryQuery', () => {
     expect(query.sql).toContain('where filter_key = @filterKey');
     expect(query.sql).toContain('scorecard_filter_dictionary');
     expect(query.params).toEqual({ filterKey: 'Division' });
+  });
+
+  it('rejects invalid filter keys', () => {
+    expect(() => buildFilterDictionaryQuery('DateRange')).toThrowError(
+      'Unsupported filter dictionary key: DateRange.',
+    );
   });
 });
