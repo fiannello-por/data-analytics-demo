@@ -44,6 +44,8 @@ quote-style = "double"
 
 [dependency-groups]
 dev = [
+    "dbt-bigquery>=1.11.1",
+    "dbt-core>=1.11.7",
     "mypy>=1.19.1",
     "pytest>=9.0.2",
     "ruff>=0.15.6",

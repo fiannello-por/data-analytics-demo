@@ -1,0 +1,18 @@
+version: 2
+
+models:
+  - name: scorecard_report_rows
+    columns:
+      - name: category
+        tests: [not_null]
+      - name: sort_order
+        tests: [not_null]
+      - name: metric_name
+        tests: [not_null]
+
+  - name: scorecard_filter_dictionary
+    columns:
+      - name: filter_key
+        tests: [not_null]
+      - name: value
+        tests: [not_null]

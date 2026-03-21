@@ -10,6 +10,8 @@
     "build": "pnpm changelog:build",
     "changelog:build": "pnpm --filter @point-of-rental/changelog-site build",
     "changelog:dev": "pnpm --filter @point-of-rental/changelog-site start",
+    "dbt:build": "uv run dbt build --project-dir dbt --profiles-dir dbt",
+    "dbt:parse": "uv run dbt parse --project-dir dbt --profiles-dir dbt",
     "pdr:build": "pnpm --filter @point-of-rental/pdr build",
     "pdr:dev": "pnpm --filter @point-of-rental/pdr dev",
     "sr:dev": "pnpm --filter @point-of-rental/situation-room dev",

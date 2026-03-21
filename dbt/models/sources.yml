@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: legacy_scorecard
+    database: "{{ env_var('BIGQUERY_PROJECT_ID') }}"
+    schema: scorecard_test
+    tables:
+      - name: scorecard_daily
