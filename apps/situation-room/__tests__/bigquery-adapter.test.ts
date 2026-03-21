@@ -2,6 +2,17 @@ import { describe, expect, it, vi } from 'vitest';
 import { BigQueryAdapter } from '@/lib/data-adapters/bigquery-adapter';
 
 describe('BigQueryAdapter', () => {
+  it('does not eagerly import the runtime BigQuery client module', async () => {
+    vi.resetModules();
+    vi.doMock('@/lib/bigquery/client', () => {
+      throw new Error('runtime client imported eagerly');
+    });
+
+    const module = await import('@/lib/data-adapters/bigquery-adapter');
+
+    expect(module.BigQueryAdapter).toBeDefined();
+  });
+
   it('groups rows into the canonical category order', async () => {
     const adapter = new BigQueryAdapter({
       queryRows: vi.fn().mockResolvedValue({

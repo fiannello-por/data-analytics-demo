@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { BigQuery } from '@google-cloud/bigquery';
 import { getSituationRoomEnv } from '@/lib/env.server';
 

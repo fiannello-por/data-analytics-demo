@@ -1,3 +1,5 @@
+import 'server-only';
+
 type SituationRoomBackend = 'bigquery' | 'lightdash';
 
 export type SituationRoomEnv = {

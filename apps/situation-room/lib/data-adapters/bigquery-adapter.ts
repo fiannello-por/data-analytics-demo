@@ -5,7 +5,6 @@ import {
   type ScorecardRow,
   withDefaultDateRange,
 } from '@/lib/contracts';
-import { getBigQueryClient } from '@/lib/bigquery/client';
 import {
   buildFilterDictionaryQuery,
   buildScorecardReportQuery,
@@ -34,6 +33,7 @@ type QueryClient = {
 
 const defaultQueryClient: QueryClient = {
   async queryRows(query) {
+    const { getBigQueryClient } = await import('@/lib/bigquery/client');
     const bigquery = getBigQueryClient();
     const [job] = await bigquery.createQueryJob({
       query: query.sql,
