@@ -15,6 +15,17 @@ const filterParsers = Object.fromEntries(
 
 type FilterUrlState = Partial<Record<FilterKey, string>>;
 
+export function parseCommaSeparatedValues(input: string) {
+  return input
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
+export function formatCommaSeparatedValues(values: string[]) {
+  return values.join(', ');
+}
+
 export function useFilters() {
   const [params, setParams] = useQueryStates(filterParsers, {
     history: 'push',
@@ -40,6 +51,13 @@ export function useFilters() {
     [setParams],
   );
 
+  const setFilterFromInput = useCallback(
+    (key: FilterKey, input: string) => {
+      setFilter(key, parseCommaSeparatedValues(input));
+    },
+    [setFilter],
+  );
+
   const clearAll = useCallback(() => {
     const cleared = Object.fromEntries(
       FILTER_DEFINITIONS.map((f) => [f.key, '']),
@@ -47,5 +65,12 @@ export function useFilters() {
     setParams(cleared);
   }, [setParams]);
 
-  return { activeFilters, activeCount, setFilter, clearAll, params };
+  return {
+    activeFilters,
+    activeCount,
+    setFilter,
+    setFilterFromInput,
+    clearAll,
+    params,
+  };
 }

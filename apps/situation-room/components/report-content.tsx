@@ -16,7 +16,13 @@ interface ReportContentProps {
 }
 
 export function ReportContent({ initialData }: ReportContentProps) {
-  const { activeFilters, activeCount, setFilter, clearAll } = useFilters();
+  const {
+    activeFilters,
+    activeCount,
+    setFilter,
+    setFilterFromInput,
+    clearAll,
+  } = useFilters();
   const { data, isLoading, error } = useScorecardQuery(
     activeFilters,
     initialData,
@@ -32,6 +38,7 @@ export function ReportContent({ initialData }: ReportContentProps) {
           activeFilters={activeFilters}
           activeCount={activeCount}
           onSetFilter={setFilter}
+          onSetFilterFromInput={setFilterFromInput}
           onClearAll={clearAll}
         />
       </div>
