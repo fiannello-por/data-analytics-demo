@@ -1,73 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getValidatedDateRangeMode } from '@/lib/bigquery/sql';
-import { FILTER_KEYS } from '@/lib/contracts';
-import { parseFilterParams } from '@/lib/filters';
 import { getScorecardReport } from '@/lib/server/get-scorecard-report';
-
-const SUPPORTED_QUERY_KEYS = new Set(FILTER_KEYS);
-
-function getRepeatedSupportedQueryParamKey(
-  searchParams: URLSearchParams,
-): string | null {
-  const seen = new Set<string>();
-
-  for (const key of searchParams.keys()) {
-    if (!SUPPORTED_QUERY_KEYS.has(key as (typeof FILTER_KEYS)[number])) {
-      continue;
-    }
-
-    if (seen.has(key)) {
-      return key;
-    }
-    seen.add(key);
-  }
-
-  return null;
-}
+import {
+  collectReportRequestSearchParams,
+  parseReportRequestFilters,
+  ReportRequestError,
+} from '@/lib/report-request';
 
 function badRequest(message: string) {
   return NextResponse.json({ error: message }, { status: 400 });
 }
 
 export async function GET(request: NextRequest) {
-  const repeatedKey = getRepeatedSupportedQueryParamKey(
-    request.nextUrl.searchParams,
-  );
-  if (repeatedKey) {
-    return badRequest(
-      `Repeated query parameter "${repeatedKey}" is not supported.`,
-    );
-  }
-
-  const filters = parseFilterParams(
-    Object.fromEntries(request.nextUrl.searchParams.entries()),
-  );
-
   try {
-    getValidatedDateRangeMode(filters);
+    const filters = parseReportRequestFilters(
+      collectReportRequestSearchParams(request.nextUrl.searchParams),
+    );
+
+    const adapterResult = await getScorecardReport(filters);
+    const response = NextResponse.json(adapterResult.data);
+
+    response.headers.set(
+      'x-situation-room-query-count',
+      String(adapterResult.meta.queryCount),
+    );
+
+    if (adapterResult.meta.bytesProcessed != null) {
+      response.headers.set(
+        'x-situation-room-bytes-processed',
+        String(adapterResult.meta.bytesProcessed),
+      );
+    }
+
+    response.headers.set('x-situation-room-source', adapterResult.meta.source);
+
+    return response;
   } catch (error) {
-    if (error instanceof Error) {
+    if (error instanceof ReportRequestError || error instanceof Error) {
       return badRequest(error.message);
     }
     throw error;
   }
-
-  const adapterResult = await getScorecardReport(filters);
-  const response = NextResponse.json(adapterResult.data);
-
-  response.headers.set(
-    'x-situation-room-query-count',
-    String(adapterResult.meta.queryCount),
-  );
-
-  if (adapterResult.meta.bytesProcessed != null) {
-    response.headers.set(
-      'x-situation-room-bytes-processed',
-      String(adapterResult.meta.bytesProcessed),
-    );
-  }
-
-  response.headers.set('x-situation-room-source', adapterResult.meta.source);
-
-  return response;
 }
