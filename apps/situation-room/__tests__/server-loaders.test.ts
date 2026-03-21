@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
-import type { AdapterResult } from '@/lib/data-adapters/types';
+import type {
+  AdapterResult,
+  FilterDictionaryPayload,
+} from '@/lib/data-adapters/types';
+import type { ScorecardReportPayload } from '@/lib/contracts';
 
 const getScorecardReportMock = vi.fn();
 const getFilterDictionaryMock = vi.fn();
@@ -26,8 +30,18 @@ afterEach(() => {
 
 describe('server loaders', () => {
   it('delegates scorecard report loading through the cached adapter wrapper', async () => {
-    const result: AdapterResult<{ value: string }> = {
-      data: { value: 'report' },
+    const result: AdapterResult<ScorecardReportPayload> = {
+      data: {
+        reportTitle: 'Situation Room',
+        reportPeriodLabel: 'Current Year',
+        lastRefreshedAt: '2026-03-21T00:00:00.000Z',
+        appliedFilters: {
+          Division: ['Enterprise'],
+          Region: ['North'],
+          DateRange: ['current_year'],
+        },
+        categories: [],
+      },
       meta: {
         source: 'bigquery',
         queryCount: 1,
@@ -69,8 +83,12 @@ describe('server loaders', () => {
   });
 
   it('delegates filter dictionary loading through the cached adapter wrapper', async () => {
-    const result: AdapterResult<{ key: string }> = {
-      data: { key: 'Division' },
+    const result: AdapterResult<FilterDictionaryPayload> = {
+      data: {
+        key: 'Division',
+        refreshedAt: '2026-03-21T00:00:00.000Z',
+        options: [],
+      },
       meta: {
         source: 'bigquery',
         queryCount: 1,
@@ -98,8 +116,18 @@ describe('server loaders', () => {
   });
 
   it('returns report payloads from the report route and forwards adapter headers', async () => {
-    const adapterResult: AdapterResult<{ ok: boolean }> = {
-      data: { ok: true },
+    const adapterResult: AdapterResult<ScorecardReportPayload> = {
+      data: {
+        reportTitle: 'Situation Room',
+        reportPeriodLabel: 'Current Year',
+        lastRefreshedAt: '2026-03-21T00:00:00.000Z',
+        appliedFilters: {
+          Division: ['Enterprise'],
+          Region: ['North', 'South'],
+          DateRange: ['current_year'],
+        },
+        categories: [],
+      },
       meta: {
         source: 'bigquery',
         queryCount: 2,
@@ -123,7 +151,7 @@ describe('server loaders', () => {
       Division: ['Enterprise'],
       Region: ['North', 'South'],
     });
-    expect(await response.json()).toEqual({ ok: true });
+    expect(await response.json()).toEqual(adapterResult.data);
     expect(response.headers.get('x-situation-room-query-count')).toBe('2');
     expect(response.headers.get('x-situation-room-source')).toBe('bigquery');
     expect(response.headers.get('x-situation-room-bytes-processed')).toBe(
@@ -132,8 +160,12 @@ describe('server loaders', () => {
   });
 
   it('returns dictionary payloads from the filter dictionary route and forwards adapter headers', async () => {
-    const adapterResult: AdapterResult<{ key: string }> = {
-      data: { key: 'Division' },
+    const adapterResult: AdapterResult<FilterDictionaryPayload> = {
+      data: {
+        key: 'Division',
+        refreshedAt: '2026-03-21T00:00:00.000Z',
+        options: [],
+      },
       meta: {
         source: 'bigquery',
         queryCount: 1,
@@ -159,9 +191,52 @@ describe('server loaders', () => {
     expect(dictionaryLoader.getFilterDictionary).toHaveBeenCalledWith(
       'Division',
     );
-    expect(await response.json()).toEqual({ key: 'Division' });
+    expect(await response.json()).toEqual(adapterResult.data);
     expect(response.headers.get('x-situation-room-query-count')).toBe('1');
     expect(response.headers.get('x-situation-room-source')).toBe('bigquery');
     expect(response.headers.get('x-situation-room-bytes-processed')).toBeNull();
+  });
+
+  it('rejects repeated report query params with a 400', async () => {
+    const { GET } = await import('../app/api/report/route');
+    const response = await GET(
+      new NextRequest(
+        'http://localhost/api/report?Division=Enterprise&Division=SMB',
+      ),
+    );
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({
+      error: 'Repeated query parameter "Division" is not supported.',
+    });
+  });
+
+  it('rejects unsupported report date ranges with a 400', async () => {
+    const { GET } = await import('../app/api/report/route');
+    const response = await GET(
+      new NextRequest(
+        'http://localhost/api/report?DateRange=last_30_days',
+      ),
+    );
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({
+      error: 'Unsupported DateRange filter: last_30_days. Only current_year is supported.',
+    });
+  });
+
+  it('rejects unsupported filter dictionary keys with a 400', async () => {
+    const { GET } = await import('../app/api/filter-dictionaries/[key]/route');
+    const response = await GET(
+      new NextRequest('http://localhost/api/filter-dictionaries/Bogus'),
+      {
+        params: Promise.resolve({ key: 'Bogus' }),
+      },
+    );
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({
+      error: 'Unsupported filter dictionary key: Bogus.',
+    });
   });
 });
