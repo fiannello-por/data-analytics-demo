@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
 
     return response;
   } catch (error) {
-    if (error instanceof ReportRequestError || error instanceof Error) {
+    if (error instanceof ReportRequestError) {
       return badRequest(error.message);
     }
     throw error;

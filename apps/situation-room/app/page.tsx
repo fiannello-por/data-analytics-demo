@@ -40,10 +40,10 @@ export default async function ReportPage({
 
     return <ReportContent initialData={initialData.data} />;
   } catch (error) {
-    if (error instanceof ReportRequestError || error instanceof Error) {
+    if (error instanceof ReportRequestError) {
       return <ReportErrorState message={error.message} />;
     }
 
-    return <ReportErrorState message="Unable to load the report." />;
+    throw error;
   }
 }

@@ -50,15 +50,13 @@ describe('ReportPage', () => {
     expect(getScorecardReportMock).not.toHaveBeenCalled();
   });
 
-  it('renders a fallback error when the report loader fails', async () => {
+  it('rejects when the report loader fails', async () => {
     getScorecardReportMock.mockRejectedValueOnce(new Error('loader failed'));
 
-    const element = await renderPage({
-      Division: 'Enterprise',
-    });
-
-    expect(renderToStaticMarkup(element as ReactElement)).toContain(
-      'loader failed',
-    );
+    await expect(
+      renderPage({
+        Division: 'Enterprise',
+      }),
+    ).rejects.toThrow('loader failed');
   });
 });

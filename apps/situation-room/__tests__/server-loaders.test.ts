@@ -159,6 +159,21 @@ describe('server loaders', () => {
     );
   });
 
+  it('propagates report loader failures from the report route', async () => {
+    const scorecardLoader = await import('@/lib/server/get-scorecard-report');
+    vi.spyOn(scorecardLoader, 'getScorecardReport').mockRejectedValueOnce(
+      new Error('loader failed'),
+    );
+
+    const { GET } = await import('../app/api/report/route');
+
+    await expect(
+      GET(
+        new NextRequest('http://localhost/api/report?Division=Enterprise'),
+      ),
+    ).rejects.toThrow('loader failed');
+  });
+
   it('returns dictionary payloads from the filter dictionary route and forwards adapter headers', async () => {
     const adapterResult: AdapterResult<FilterDictionaryPayload> = {
       data: {
