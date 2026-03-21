@@ -44,25 +44,34 @@ describe('loadFilterDictionaries', () => {
     expect(Object.keys(result)).toEqual(stringFilterKeys);
   });
 
-  it('returns the cached preload on repeated calls', async () => {
-    const fetchImpl = vi.fn(async () => {
-      return new Response(
-        JSON.stringify({
-          key: 'Division',
-          refreshedAt: '2026-03-21T00:00:00.000Z',
-          options: [],
-        }),
-        {
-          headers: { 'content-type': 'application/json' },
-        },
-      );
-    });
+  it('does not poison a later load after a failed request', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('temporary failure'))
+      .mockImplementation(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        return new Response(
+          JSON.stringify({
+            key: url.split('/').at(-1),
+            refreshedAt: '2026-03-21T00:00:00.000Z',
+            options: [],
+          }),
+          {
+            headers: { 'content-type': 'application/json' },
+          },
+        );
+      });
 
-    await loadFilterDictionaries(fetchImpl as typeof fetch);
-    await loadFilterDictionaries(fetchImpl as typeof fetch);
+    await expect(
+      loadFilterDictionaries(fetchImpl as typeof fetch),
+    ).rejects.toThrow('temporary failure');
 
-    expect(fetchImpl).toHaveBeenCalledTimes(
-      FILTER_DEFINITIONS.filter((filter) => filter.type === 'string').length,
+    await expect(
+      loadFilterDictionaries(fetchImpl as typeof fetch),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        Division: [],
+      }),
     );
   });
 });

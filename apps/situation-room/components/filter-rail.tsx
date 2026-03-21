@@ -13,23 +13,15 @@ import { FilterChip } from './filter-chip';
 
 type FilterDictionaryOption = FilterDictionaryPayload['options'][number];
 type FilterDictionaryMap = Partial<Record<FilterKey, FilterDictionaryOption[]>>;
-type FetchLike = typeof fetch;
 
 const STRING_FILTER_DEFINITIONS = FILTER_DEFINITIONS.filter(
   (filter) => filter.type === 'string',
 );
 
-const filterDictionaryCache = new WeakMap<FetchLike, Promise<FilterDictionaryMap>>();
-
 export async function loadFilterDictionaries(
-  fetchImpl: FetchLike = fetch,
+  fetchImpl: typeof fetch = fetch,
 ): Promise<FilterDictionaryMap> {
-  const cached = filterDictionaryCache.get(fetchImpl);
-  if (cached) {
-    return cached;
-  }
-
-  const loadPromise = Promise.all(
+  const entries = await Promise.all(
     STRING_FILTER_DEFINITIONS.map(async (filter) => {
       const response = await fetchImpl(
         `/api/filter-dictionaries/${encodeURIComponent(filter.key)}`,
@@ -42,10 +34,9 @@ export async function loadFilterDictionaries(
       const payload = (await response.json()) as FilterDictionaryPayload;
       return [filter.key, payload.options] as const;
     }),
-  ).then((entries) => Object.fromEntries(entries) as FilterDictionaryMap);
+  );
 
-  filterDictionaryCache.set(fetchImpl, loadPromise);
-  return loadPromise;
+  return Object.fromEntries(entries) as FilterDictionaryMap;
 }
 
 interface FilterRailProps {
@@ -70,13 +61,14 @@ function StringFilterInput({
   options,
   onSetFilter,
 }: StringFilterInputProps) {
+  const committedValue = formatCommaSeparatedValues(values);
   const [inputValue, setInputValue] = useState(() =>
-    formatCommaSeparatedValues(values),
+    committedValue,
   );
 
   useEffect(() => {
-    setInputValue(formatCommaSeparatedValues(values));
-  }, [values]);
+    setInputValue(committedValue);
+  }, [committedValue]);
 
   const datalistId = useMemo(() => `filter-dictionary-${keyName}`, [keyName]);
 
