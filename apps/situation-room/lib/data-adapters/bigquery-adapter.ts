@@ -33,6 +33,8 @@ type QueryClient = {
   queryRows: (query: QueryDefinition) => Promise<QueryResult>;
 };
 
+const CATEGORY_SET = new Set<string>(CATEGORY_ORDER);
+
 const defaultQueryClient: QueryClient = {
   async queryRows(query) {
     const { getBigQueryClient } = await import('@/lib/bigquery/client');
@@ -69,6 +71,10 @@ function mapRow(row: QueryRow): ScorecardRow {
 }
 
 function mapCategories(rows: QueryRow[]): CategoryData[] {
+  for (const row of rows) {
+    requireCategory(row);
+  }
+
   return CATEGORY_ORDER.map((category) => ({
     category,
     rows: rows
@@ -115,6 +121,18 @@ function requireNumberField(
   throw new Error(
     `Invalid ${context} field "${key}": expected a finite number.`,
   );
+}
+
+function requireCategory(row: QueryRow): string {
+  const category = requireStringField(row, 'category', 'scorecard row');
+
+  if (!CATEGORY_SET.has(category)) {
+    throw new Error(
+      `Invalid scorecard row field "category": unexpected category "${category}".`,
+    );
+  }
+
+  return category;
 }
 
 export class BigQueryAdapter implements ScorecardDataAdapter {

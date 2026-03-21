@@ -103,6 +103,27 @@ describe('BigQueryAdapter', () => {
     );
   });
 
+  it('rejects scorecard rows with unknown categories', async () => {
+    const adapter = new BigQueryAdapter({
+      queryRows: vi.fn().mockResolvedValue({
+        rows: [
+          {
+            category: 'Upsell',
+            sort_order: 20,
+            metric_name: 'Bookings',
+            current_period: '$10.0K',
+            previous_period: '$8.0K',
+            pct_change: '+25.0%',
+          },
+        ],
+      }),
+    });
+
+    await expect(adapter.getScorecardReport({})).rejects.toThrowError(
+      'Invalid scorecard row field "category": unexpected category "Upsell".',
+    );
+  });
+
   it('maps filter dictionary rows into sorted options', async () => {
     const adapter = new BigQueryAdapter({
       queryRows: vi.fn().mockResolvedValue({
