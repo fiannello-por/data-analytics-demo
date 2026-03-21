@@ -16,6 +16,7 @@
     "pdr:dev": "pnpm --filter @point-of-rental/pdr dev",
     "sr:dev": "pnpm --filter @point-of-rental/situation-room dev",
     "sr:build": "pnpm --filter @point-of-rental/situation-room build",
+    "sr:benchmark": "pnpm --filter @point-of-rental/situation-room benchmark",
     "sr:test": "pnpm --filter @point-of-rental/situation-room test",
     "changelog:generate": "uv run generate-changelog",
     "format": "prettier --write . && uv run ruff format src tests",
