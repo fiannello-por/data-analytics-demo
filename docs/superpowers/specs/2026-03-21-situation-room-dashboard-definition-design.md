@@ -29,7 +29,7 @@ The first version is:
 - each row is a logical `tile`
 - selecting a row shows a two-line trend chart on the right
 - the first implementation uses direct BigQuery reads from the existing
-  Opportunity-based view
+  Opportunity-based table
 
 The dashboard must be designed so that:
 
@@ -99,7 +99,7 @@ The dashboard is a fixed executive product with this interaction model:
 - the chart always shows:
   - one current-window line
   - one previous-window line
-  - one shared time grain for all metrics
+  - one shared weekly grain for all metrics
 
 This is not a generic report viewer. It is a controlled product with a known
 set of tabs, a known set of metrics, and known interactions.
@@ -163,15 +163,15 @@ All tiles use the same previous-window comparison rule in v1.
 
 Example:
 
-- current window: `this month`
-- previous window: `last month`
+- current window: `2026-01-01` to `2026-03-31`
+- previous window: `2025-01-01` to `2025-03-31`
 
 This keeps the product coherent and prevents the table from mixing incompatible
 comparison semantics.
 
 ### 6.7 Same grain for all charts
 
-All trend charts use the same grain in v1.
+All trend charts use the same weekly grain in v1.
 
 This keeps the chart contract standardized across all tiles and simplifies
 benchmarking.
@@ -188,17 +188,20 @@ This is a deliberate tradeoff in favor of speed and simplicity.
 ### 6.9 Direct BigQuery source in v1
 
 The first implementation should query the existing Opportunity-based BigQuery
-view directly.
+table directly.
 
-The team should only introduce dbt materialization or a semantic layer later if
-benchmarks justify it.
+This is a deliberate baseline decision. dbt is expected to land soon, and the
+future dbt-built serving tables are expected to be very similar in shape to the
+current source table. For v1 benchmarking, the app should read from the current
+table so the team can measure the true direct-to-BigQuery baseline without
+blocking on dbt readiness.
 
 ## 7. Logical Architecture
 
 The v1 architecture is:
 
 ```text
-Opportunity-based BigQuery view
+Opportunity-based BigQuery table
         ->
 Curated dashboard definition
         ->
@@ -241,10 +244,11 @@ The runtime dashboard state is:
 
 Rules:
 
-- `previousDateWindow` is always derived from `dateWindow`
-- `trendGrain` is shared by all tiles
+- `dateWindow` defaults to `current year`
+- `previousDateWindow` is always the same period in the previous year
+- `trendGrain` is always `weekly`
 - `selectedTileId` always belongs to the active category
-- each category defines its own default selected tile
+- the default selected tile is the first tile in the curated order
 
 ## 9. Tile Catalog Definition
 
@@ -257,7 +261,6 @@ Each tile definition should include:
 - `label`
 - `sort_order`
 - `format_type`
-- `default_selected`
 - `source_view`
 - `row_filter_sql` or equivalent scoped filter definition
 - `value_expression_sql`
@@ -272,6 +275,72 @@ Those are global dashboard behaviors in v1.
 
 The tile catalog is the authoritative product definition for the rows shown in
 the executive table.
+
+### 9.1 Initial v1 tile catalog
+
+The initial v1 tile catalog is extracted from
+`data-analytics-306119.scorecard_test.scorecard_daily`.
+
+The current `metric_name` values are the default v1 user-facing labels.
+The current `sort_order` values are only a bootstrap signal for the initial
+catalog order; the curated tile catalog becomes the long-term authority once it
+is checked into code.
+
+Initial category contents:
+
+- `New Logo`
+  - `Bookings $`
+  - `Bookings #`
+  - `Annual Pacing (YTD)`
+  - `Close Rate`
+  - `Avg Age`
+  - `Avg Booked Deal`
+  - `Avg Quoted Deal`
+  - `Pipeline Created`
+  - `SQL`
+  - `SQO`
+  - `Gate 1 Complete`
+  - `SDR Points`
+  - `SQO Users`
+- `Expansion`
+  - `Bookings $`
+  - `Bookings #`
+  - `Annual Pacing (YTD)`
+  - `Close Rate`
+  - `Avg Age`
+  - `Avg Booked Deal`
+  - `Avg Quoted Deal`
+  - `Pipeline Created`
+  - `SQL`
+  - `SQO`
+- `Migration`
+  - `Bookings $`
+  - `Bookings #`
+  - `Annual Pacing (YTD)`
+  - `Close Rate`
+  - `Avg Age`
+  - `Avg Booked Deal`
+  - `Avg Quoted Deal`
+  - `Pipeline Created`
+  - `SQL`
+  - `SQO`
+  - `SAL`
+  - `Avg Users`
+- `Renewal`
+  - `Bookings $`
+  - `Bookings #`
+  - `Annual Pacing (YTD)`
+  - `Close Rate`
+  - `Avg Age`
+  - `Avg Booked Deal`
+  - `Avg Quoted Deal`
+  - `Pipeline Created`
+  - `SQL`
+- `Total`
+  - `Bookings $`
+  - `Bookings #`
+  - `Annual Pacing (YTD)`
+  - `One-time Revenue`
 
 ## 10. Query Contracts
 
@@ -288,7 +357,6 @@ Returns the fixed tile metadata for the category:
   - `label`
   - `sort_order`
   - `format_type`
-  - `default_selected`
 
 This is metadata, not warehouse output.
 
@@ -353,20 +421,25 @@ The date model must be explicit so the chart is always interpretable.
 
 ### 11.1 Global date selector
 
-The dashboard date selector defines the current reporting window for the active
-view.
+The dashboard date selector is a custom date range picker.
+
+Rules:
+
+- default range is `current year`
+- user selects `start date` and `end date`
+- the selected range becomes the current reporting window for all tiles
 
 ### 11.2 Shared previous window
 
 The previous window is always derived from the current window using one common
-comparison rule.
+comparison rule: `same period previous year`.
 
 This rule is shared across all tiles.
 
 ### 11.3 Bucket alignment
 
 Trend charts compare current and previous windows using the same bucket index
-and the same shared grain.
+and the same shared weekly grain.
 
 That means:
 
@@ -377,9 +450,40 @@ That means:
 The chart contract always returns both series already aligned, so the frontend
 does not need to perform time-series reconciliation.
 
-## 12. Query Execution Strategy
+## 12. Global Filter Set
 
-### 12.1 Snapshot execution
+The v1 dashboard uses the same filter set as the current Lightdash scorecard
+dashboard, but with application-native behavior.
+
+Rules:
+
+- `Date Range` is the global custom date selector described above
+- every non-date filter is global
+- every non-date filter is multi-select
+- filter dictionaries are global, not contextual
+
+The locked v1 non-date filters are:
+
+- `Division`
+- `Owner`
+- `Segment`
+- `Region`
+- `SE`
+- `Booking Plan Opp Type`
+- `Product Family`
+- `SDR Source`
+- `SDR`
+- `POR v R360`
+- `Account Owner`
+- `Owner Department`
+- `Strategic Filter`
+- `Accepted`
+- `Gate 1 Criteria Met`
+- `Gate Met or Accepted`
+
+## 13. Query Execution Strategy
+
+### 13.1 Snapshot execution
 
 For an active tab:
 
@@ -394,7 +498,7 @@ This satisfies both goals:
 - tile-level measurement is preserved
 - the UI still behaves like one coherent report load
 
-### 12.2 Trend execution
+### 13.2 Trend execution
 
 For the selected tile:
 
@@ -402,13 +506,13 @@ For the selected tile:
 - build the selected tile's trend query
 - return one aligned two-line series
 
-### 12.3 Filter dictionary execution
+### 13.3 Filter dictionary execution
 
 Filter dictionaries are executed independently from snapshot and trend queries.
 
 They should be cached aggressively because they are global and stable in v1.
 
-## 13. Performance and Measurement
+## 14. Performance and Measurement
 
 The important performance units in v1 are:
 
@@ -432,7 +536,7 @@ This will tell the team:
 - whether the trend path is acceptable
 - whether a later semantic layer adds unacceptable latency
 
-## 14. Evolution Path
+## 15. Evolution Path
 
 If direct BigQuery performs well enough:
 
@@ -460,7 +564,7 @@ If per-tile fan-out becomes too expensive:
 
 The product model should stay stable even if execution strategy evolves.
 
-## 15. Next Steps
+## 16. Next Steps
 
 1. Write the tile catalog for all five categories.
 2. Define the global filter set.
