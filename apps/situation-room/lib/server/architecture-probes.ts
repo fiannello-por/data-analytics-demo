@@ -203,7 +203,6 @@ function mergeProbePayload<T>(
       cacheMode?: 'auto' | 'off';
     };
   },
-  cacheMode: 'auto' | 'off',
 ): ProbeRunResult<T> {
   return {
     payload: {
@@ -211,7 +210,7 @@ function mergeProbePayload<T>(
       source: result.meta.source,
       queryCount: result.meta.queryCount,
       bytesProcessed: result.meta.bytesProcessed,
-      cacheMode,
+      cacheMode: result.meta.cacheMode ?? 'auto',
     },
   };
 }
@@ -378,42 +377,43 @@ export async function runProbe(
   const execution = normalizeProbeExecutionOptions(options);
 
   if (id === 'ping') {
-    return mergeProbePayload(await getProbePing(undefined, execution), execution.cacheMode);
+    return mergeProbePayload(await getProbePing(undefined, execution));
   }
 
   if (id === 'summary') {
-    return mergeProbePayload(
-      await getProbeSummary(undefined, execution),
-      execution.cacheMode,
-    );
+    return mergeProbePayload(await getProbeSummary(undefined, execution));
   }
 
   if (id === 'division-options') {
     return mergeProbePayload(
       await getProbeDivisionFilterOptions('Division', undefined, execution),
-      execution.cacheMode,
     );
   }
 
   if (id === 'dashboard-category-snapshot') {
     return mergeProbePayload(
-      await getDashboardCategorySnapshot(buildDashboardState('New Logo')),
-      execution.cacheMode,
+      await getDashboardCategorySnapshot(
+        buildDashboardState('New Logo'),
+        undefined,
+        execution,
+      ),
     );
   }
 
   if (id === 'dashboard-tile-trend') {
     return mergeProbePayload(
-      await getDashboardTileTrend({
-        ...buildDashboardState('New Logo', 'new_logo_bookings_amount'),
-        trendGrain: 'weekly',
-      }),
-      execution.cacheMode,
+      await getDashboardTileTrend(
+        {
+          ...buildDashboardState('New Logo', 'new_logo_bookings_amount'),
+          trendGrain: 'weekly',
+        },
+        undefined,
+        execution,
+      ),
     );
   }
 
   return mergeProbePayload(
-    await getDashboardFilterDictionary('Division'),
-    execution.cacheMode,
+    await getDashboardFilterDictionary('Division', undefined, execution),
   );
 }

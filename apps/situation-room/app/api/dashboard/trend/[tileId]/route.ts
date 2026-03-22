@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { findCategoryForTileId } from '@/lib/dashboard/catalog';
 import { parseDashboardSearchParams } from '@/lib/dashboard/query-inputs';
+import {
+  applyProbeHeaders,
+  getProbeExecutionOptionsFromRequest,
+} from '@/lib/server/probe-http';
 import { getDashboardTileTrend } from '@/lib/server/get-dashboard-tile-trend';
 
 function badRequest(message: string) {
@@ -11,6 +15,7 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ tileId: string }> },
 ) {
+  const startedAt = performance.now();
   const { tileId } = await params;
   const category = findCategoryForTileId(tileId);
 
@@ -22,29 +27,27 @@ export async function GET(
   searchParams.set('category', category);
   searchParams.set('tileId', tileId);
   const state = parseDashboardSearchParams(searchParams);
-  const result = await getDashboardTileTrend({
-    activeCategory: category,
-    selectedTileId: state.selectedTileId,
-    filters: state.filters,
-    dateRange: state.dateRange,
-    previousDateRange: state.previousDateRange,
-    trendGrain: state.trendGrain,
-  });
-  const response = NextResponse.json(result.data);
-
-  response.headers.set(
-    'x-situation-room-query-count',
-    String(result.meta.queryCount),
-  );
-
-  if (result.meta.bytesProcessed != null) {
-    response.headers.set(
-      'x-situation-room-bytes-processed',
-      String(result.meta.bytesProcessed),
+  let execution;
+  try {
+    execution = getProbeExecutionOptionsFromRequest(request);
+  } catch (error) {
+    return badRequest(
+      error instanceof Error ? error.message : 'Invalid dashboard request.',
     );
   }
+  const result = await getDashboardTileTrend(
+    {
+      activeCategory: category,
+      selectedTileId: state.selectedTileId,
+      filters: state.filters,
+      dateRange: state.dateRange,
+      previousDateRange: state.previousDateRange,
+      trendGrain: state.trendGrain,
+    },
+    undefined,
+    execution,
+  );
+  const response = NextResponse.json(result.data);
 
-  response.headers.set('x-situation-room-source', result.meta.source);
-
-  return response;
+  return applyProbeHeaders(response, result.meta, startedAt);
 }

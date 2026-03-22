@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isCategory } from '@/lib/dashboard/catalog';
 import { parseDashboardSearchParams } from '@/lib/dashboard/query-inputs';
+import {
+  applyProbeHeaders,
+  getProbeExecutionOptionsFromRequest,
+} from '@/lib/server/probe-http';
 import { getDashboardCategorySnapshot } from '@/lib/server/get-dashboard-category-snapshot';
 
 function badRequest(message: string) {
@@ -11,6 +15,7 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ category: string }> },
 ) {
+  const startedAt = performance.now();
   const { category } = await params;
 
   if (!isCategory(category)) {
@@ -20,22 +25,18 @@ export async function GET(
   const searchParams = new URLSearchParams(request.nextUrl.searchParams);
   searchParams.set('category', category);
   const state = parseDashboardSearchParams(searchParams);
-  const result = await getDashboardCategorySnapshot(state);
-  const response = NextResponse.json(result.data);
-
-  response.headers.set(
-    'x-situation-room-query-count',
-    String(result.meta.queryCount),
-  );
-
-  if (result.meta.bytesProcessed != null) {
-    response.headers.set(
-      'x-situation-room-bytes-processed',
-      String(result.meta.bytesProcessed),
+  let execution;
+  try {
+    execution = getProbeExecutionOptionsFromRequest(request);
+  } catch (error) {
+    return badRequest(
+      error instanceof Error ? error.message : 'Invalid dashboard request.',
     );
   }
+  const result = await getDashboardCategorySnapshot(state, undefined, execution);
+  const response = NextResponse.json(result.data);
 
-  response.headers.set('x-situation-room-source', result.meta.source);
+  applyProbeHeaders(response, result.meta, startedAt);
   response.headers.set(
     'x-situation-room-tile-timings',
     JSON.stringify(result.data.tileTimings),

@@ -200,6 +200,7 @@ describe('architecture probe loaders', () => {
         source: 'bigquery',
         queryCount: 1,
         bytesProcessed: 45,
+        cacheMode: 'off',
       },
     });
 
@@ -212,6 +213,8 @@ describe('architecture probe loaders', () => {
         activeCategory: 'New Logo',
         selectedTileId: 'new_logo_bookings_amount',
       }),
+      undefined,
+      { cacheMode: 'off' },
     );
     expect(result.payload).toMatchObject({
       source: 'bigquery',
@@ -245,6 +248,8 @@ describe('architecture probe loaders', () => {
       expect.objectContaining({
         activeCategory: 'New Logo',
       }),
+      undefined,
+      { cacheMode: 'auto' },
     );
     expect(result.payload).toMatchObject({
       source: 'bigquery',
@@ -252,5 +257,31 @@ describe('architecture probe loaders', () => {
         { tileId: 'new_logo_bookings_amount', durationMs: 12.34 },
       ],
     });
+  });
+
+  it('runs the dashboard filter dictionary probe with the requested cache mode', async () => {
+    getDashboardFilterDictionaryMock.mockResolvedValueOnce({
+      data: {
+        filterKey: 'Division',
+        options: [],
+      },
+      meta: {
+        source: 'bigquery',
+        queryCount: 1,
+        bytesProcessed: 22,
+        cacheMode: 'off',
+      },
+    });
+
+    const result = await runProbe('dashboard-filter-dictionary', {
+      cacheMode: 'off',
+    });
+
+    expect(getDashboardFilterDictionaryMock).toHaveBeenCalledWith(
+      'Division',
+      undefined,
+      { cacheMode: 'off' },
+    );
+    expect(result.payload.cacheMode).toBe('off');
   });
 });

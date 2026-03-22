@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isGlobalFilterKey } from '@/lib/dashboard/filter-config';
+import {
+  applyProbeHeaders,
+  getProbeExecutionOptionsFromRequest,
+} from '@/lib/server/probe-http';
 import { getDashboardFilterDictionary } from '@/lib/server/get-dashboard-filter-dictionary';
 
 function badRequest(message: string) {
@@ -7,31 +11,26 @@ function badRequest(message: string) {
 }
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ key: string }> },
 ) {
+  const startedAt = performance.now();
   const { key } = await params;
 
   if (!isGlobalFilterKey(key)) {
     return badRequest(`Unsupported dashboard filter dictionary key: ${key}.`);
   }
 
-  const result = await getDashboardFilterDictionary(key);
-  const response = NextResponse.json(result.data);
-
-  response.headers.set(
-    'x-situation-room-query-count',
-    String(result.meta.queryCount),
-  );
-
-  if (result.meta.bytesProcessed != null) {
-    response.headers.set(
-      'x-situation-room-bytes-processed',
-      String(result.meta.bytesProcessed),
+  let execution;
+  try {
+    execution = getProbeExecutionOptionsFromRequest(request);
+  } catch (error) {
+    return badRequest(
+      error instanceof Error ? error.message : 'Invalid dashboard request.',
     );
   }
+  const result = await getDashboardFilterDictionary(key, undefined, execution);
+  const response = NextResponse.json(result.data);
 
-  response.headers.set('x-situation-room-source', result.meta.source);
-
-  return response;
+  return applyProbeHeaders(response, result.meta, startedAt);
 }

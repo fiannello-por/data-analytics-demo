@@ -2,6 +2,12 @@ import 'server-only';
 
 import { getBigQueryClient } from '@/lib/bigquery/client';
 import { getSituationRoomEnv } from '@/lib/env.server';
+import {
+  normalizeProbeExecutionOptions,
+  shouldUseBigQueryQueryCache,
+  type ProbeExecutionOptions,
+  type ProbeCacheMode,
+} from '@/lib/probe-cache-mode';
 import type { DashboardQueryDefinition } from '@/lib/bigquery/dashboard-sql';
 
 export type DashboardQueryRow = Record<string, unknown>;
@@ -11,14 +17,22 @@ export type DashboardQueryResult = {
   bytesProcessed?: number;
 };
 
+export type DashboardQueryExecution = {
+  cacheMode: ProbeCacheMode;
+};
+
 export type DashboardQueryClient = {
-  queryRows: (query: DashboardQueryDefinition) => Promise<DashboardQueryResult>;
+  queryRows: (
+    query: DashboardQueryDefinition,
+    execution: DashboardQueryExecution,
+  ) => Promise<DashboardQueryResult>;
 };
 
 export type DashboardLoaderMeta = {
   source: 'bigquery';
   queryCount: number;
   bytesProcessed?: number;
+  cacheMode: ProbeCacheMode;
 };
 
 export type DashboardLoaderResult<T> = {
@@ -27,13 +41,14 @@ export type DashboardLoaderResult<T> = {
 };
 
 export const defaultDashboardQueryClient: DashboardQueryClient = {
-  async queryRows(query) {
+  async queryRows(query, execution) {
     const bigquery = getBigQueryClient();
     const env = getSituationRoomEnv();
     const [job] = await bigquery.createQueryJob({
       query: query.sql,
       params: query.params,
       location: env.location,
+      useQueryCache: shouldUseBigQueryQueryCache(execution.cacheMode),
     });
     const [rows] = await job.getQueryResults();
     const [metadata] = await job.getMetadata();
@@ -44,6 +59,12 @@ export const defaultDashboardQueryClient: DashboardQueryClient = {
     };
   },
 };
+
+export function normalizeDashboardExecutionOptions(
+  options: ProbeExecutionOptions = {},
+): DashboardQueryExecution {
+  return normalizeProbeExecutionOptions(options);
+}
 
 export function nowIsoString(): string {
   return new Date().toISOString();

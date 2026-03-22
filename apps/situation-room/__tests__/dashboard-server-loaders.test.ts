@@ -243,4 +243,39 @@ describe('dashboard server loaders', () => {
     expect(result.meta.queryCount).toBe(1);
     expect(result.meta.bytesProcessed).toBe(7);
   });
+
+  it('bypasses unstable_cache when cache mode is off', async () => {
+    const queryRows = vi.fn().mockResolvedValue({
+      rows: [
+        {
+          tile_id: 'new_logo_bookings_amount',
+          label: 'Bookings $',
+          sort_order: 1,
+          format_type: 'currency',
+          current_value: 100,
+          previous_value: 80,
+        },
+      ],
+      bytesProcessed: 10,
+    });
+
+    const { getDashboardCategorySnapshot } = await import(
+      '@/lib/server/get-dashboard-category-snapshot'
+    );
+
+    await getDashboardCategorySnapshot(
+      {
+        activeCategory: 'New Logo',
+        selectedTileId: 'new_logo_bookings_amount',
+        filters: {},
+        dateRange: { startDate: '2026-01-01', endDate: '2026-03-31' },
+        previousDateRange: { startDate: '2025-01-01', endDate: '2025-03-31' },
+      },
+      { queryRows },
+      { cacheMode: 'off' },
+    );
+
+    expect(unstableCacheMock).not.toHaveBeenCalled();
+    expect(queryRows).toHaveBeenCalled();
+  });
 });

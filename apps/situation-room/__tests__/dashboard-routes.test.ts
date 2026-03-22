@@ -38,6 +38,7 @@ describe('dashboard routes', () => {
         source: 'bigquery',
         queryCount: 13,
         bytesProcessed: 130,
+        cacheMode: 'off',
       },
     });
 
@@ -54,6 +55,8 @@ describe('dashboard routes', () => {
         activeCategory: 'New Logo',
         filters: { Division: ['Enterprise'] },
       }),
+      undefined,
+      { cacheMode: 'auto' },
     );
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({
@@ -67,6 +70,9 @@ describe('dashboard routes', () => {
     expect(response.headers.get('x-situation-room-query-count')).toBe('13');
     expect(response.headers.get('x-situation-room-source')).toBe('bigquery');
     expect(response.headers.get('x-situation-room-bytes-processed')).toBe('130');
+    expect(response.headers.get('x-situation-room-cache-mode')).toBe('off');
+    expect(response.headers.get('x-situation-room-server-ms')).toBeTruthy();
+    expect(response.headers.get('x-situation-room-tile-timings')).toBe('[]');
   });
 
   it('returns the selected tile trend payload', async () => {
@@ -84,13 +90,14 @@ describe('dashboard routes', () => {
         source: 'bigquery',
         queryCount: 1,
         bytesProcessed: 45,
+        cacheMode: 'off',
       },
     });
 
     const { GET } = await import('../app/api/dashboard/trend/[tileId]/route');
     const response = await GET(
       new NextRequest(
-        'http://localhost/api/dashboard/trend/new_logo_bookings_amount?Division=Enterprise',
+        'http://localhost/api/dashboard/trend/new_logo_bookings_amount?Division=Enterprise&cache=off',
       ),
       { params: Promise.resolve({ tileId: 'new_logo_bookings_amount' }) },
     );
@@ -101,11 +108,15 @@ describe('dashboard routes', () => {
         selectedTileId: 'new_logo_bookings_amount',
         filters: { Division: ['Enterprise'] },
       }),
+      undefined,
+      { cacheMode: 'off' },
     );
     expect(response.status).toBe(200);
     expect(response.headers.get('x-situation-room-query-count')).toBe('1');
     expect(response.headers.get('x-situation-room-source')).toBe('bigquery');
     expect(response.headers.get('x-situation-room-bytes-processed')).toBe('45');
+    expect(response.headers.get('x-situation-room-cache-mode')).toBe('off');
+    expect(response.headers.get('x-situation-room-server-ms')).toBeTruthy();
   });
 
   it('returns the global filter dictionary payload', async () => {
@@ -117,6 +128,7 @@ describe('dashboard routes', () => {
       meta: {
         source: 'bigquery',
         queryCount: 1,
+        cacheMode: 'off',
       },
     });
 
@@ -124,14 +136,20 @@ describe('dashboard routes', () => {
       '../app/api/dashboard/filter-dictionaries/[key]/route'
     );
     const response = await GET(
-      new NextRequest('http://localhost/api/dashboard/filter-dictionaries/Division'),
+      new NextRequest('http://localhost/api/dashboard/filter-dictionaries/Division?cache=off'),
       { params: Promise.resolve({ key: 'Division' }) },
     );
 
-    expect(getDashboardFilterDictionaryMock).toHaveBeenCalledWith('Division');
+    expect(getDashboardFilterDictionaryMock).toHaveBeenCalledWith(
+      'Division',
+      undefined,
+      { cacheMode: 'off' },
+    );
     expect(response.status).toBe(200);
     expect(response.headers.get('x-situation-room-query-count')).toBe('1');
     expect(response.headers.get('x-situation-room-source')).toBe('bigquery');
+    expect(response.headers.get('x-situation-room-cache-mode')).toBe('off');
+    expect(response.headers.get('x-situation-room-server-ms')).toBeTruthy();
   });
 
   it('rejects unsupported category paths with a 400', async () => {
@@ -160,5 +178,19 @@ describe('dashboard routes', () => {
     expect(await response.json()).toEqual({
       error: 'Unsupported dashboard filter dictionary key: Bogus.',
     });
+  });
+
+  it('rejects an unsupported dashboard cache mode with a 400', async () => {
+    const { GET } = await import('../app/api/dashboard/category/[category]/route');
+    const response = await GET(
+      new NextRequest('http://localhost/api/dashboard/category/New%20Logo?cache=nope'),
+      { params: Promise.resolve({ category: 'New Logo' }) },
+    );
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({
+      error: 'Unsupported probe cache mode: nope.',
+    });
+    expect(getDashboardCategorySnapshotMock).not.toHaveBeenCalled();
   });
 });

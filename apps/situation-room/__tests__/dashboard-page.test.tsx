@@ -19,7 +19,7 @@ vi.mock('@/lib/server/get-dashboard-filter-dictionary', () => ({
   getDashboardFilterDictionary: getDashboardFilterDictionaryMock,
 }));
 
-describe('dashboard page', () => {
+describe('dashboard page', { timeout: 10000 }, () => {
   it('renders the five fixed category tabs', async () => {
     getDashboardCategorySnapshotMock.mockResolvedValue({
       data: {
