@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { CalendarRangeIcon, ChevronDownIcon, XIcon } from 'lucide-react';
+import { CalendarRangeIcon, ChevronDownIcon, CircleHelpIcon, XIcon } from 'lucide-react';
 import type { DateRange as DayPickerDateRange } from 'react-day-picker';
 import type {
   FilterDictionaryPayload,
@@ -37,6 +37,11 @@ import {
 } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Separator } from '@/components/ui/separator';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 type DashboardFiltersProps = {
@@ -269,12 +274,34 @@ export function DashboardFilters({
                   />
                 </PopoverTrigger>
                 <PopoverContent align="start" className="w-[17.5rem] p-0">
-                  <PopoverHeader className="px-2.5 py-2">
+                  <PopoverHeader className="px-2.5 py-1.5">
                     <div className="flex items-center justify-between gap-2">
-                      <PopoverTitle>{filter.label}</PopoverTitle>
-                      {draftValues.length > 0 ? (
-                        <Badge variant="secondary">{draftValues.length} selected</Badge>
-                      ) : null}
+                      <div className="flex items-center gap-1">
+                        <Tooltip>
+                          <TooltipTrigger
+                            render={
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon-xs"
+                                aria-label={`About ${filter.label}`}
+                                className="rounded-full text-muted-foreground"
+                              />
+                            }
+                          >
+                            <CircleHelpIcon />
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-56 flex-col items-start gap-0.5 text-left">
+                            <span className="font-medium">{filter.label}</span>
+                            <span>{filter.description}</span>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {draftValues.length > 0 ? (
+                          <Badge variant="secondary">{draftValues.length} selected</Badge>
+                        ) : null}
+                      </div>
                     </div>
                   </PopoverHeader>
                   <Separator />
@@ -315,6 +342,7 @@ export function DashboardFilters({
                       variant="ghost"
                       size="xs"
                       aria-label={`Clear ${filter.label} filter`}
+                      className="h-7 self-center"
                       disabled={draftValues.length === 0}
                       onClick={() =>
                         setDraftSelections((current) => ({
@@ -330,7 +358,7 @@ export function DashboardFilters({
                       type="button"
                       size="xs"
                       aria-label={`Apply ${filter.label} filter`}
-                      className="bg-accent-brand text-background hover:bg-accent-brand/90"
+                      className="h-7 self-center bg-accent-brand text-background hover:bg-accent-brand/90"
                       disabled={!hasChanges}
                       onClick={() => applyDraft(filter.key)}
                     >

@@ -63,6 +63,22 @@ vi.mock('@/components/ui/popover', () => ({
     React.createElement('div', null, children),
 }));
 
+vi.mock('@/components/ui/tooltip', () => ({
+  TooltipProvider: ({ children }: { children: React.ReactNode }) =>
+    React.createElement('div', null, children),
+  Tooltip: ({ children }: { children: React.ReactNode }) =>
+    React.createElement('div', null, children),
+  TooltipTrigger: ({
+    children,
+    render,
+  }: {
+    children: React.ReactNode;
+    render: React.ReactElement;
+  }) => React.cloneElement(render, undefined, children),
+  TooltipContent: ({ children }: { children: React.ReactNode }) =>
+    React.createElement('div', null, children),
+}));
+
 vi.mock('@/components/ui/calendar', () => ({
   Calendar: ({
     onSelect,
