@@ -99,14 +99,17 @@ vi.mock('@/components/dashboard/category-tabs', () => ({
 vi.mock('@/components/dashboard/tile-table', () => ({
   TileTable: ({
     snapshot,
+    selectedTileId,
     onRowSelect,
   }: {
     snapshot: CategorySnapshotPayload;
+    selectedTileId: string;
     onRowSelect?: (tileId: string) => void;
   }) =>
     React.createElement(
       'div',
       { 'data-testid': 'tile-table' },
+      React.createElement('span', { 'data-testid': 'selected-tile' }, selectedTileId),
       snapshot.rows.map((row) =>
         React.createElement(
           'button',
@@ -120,16 +123,43 @@ vi.mock('@/components/dashboard/tile-table', () => ({
         ),
       ),
     ),
+  TileTableSkeleton: ({
+    category,
+  }: {
+    category: DashboardState['activeCategory'];
+  }) =>
+    React.createElement(
+      'div',
+      { 'data-testid': 'tile-table-skeleton' },
+      `${category} loading`,
+    ),
 }));
 
 vi.mock('@/components/dashboard/trend-panel', () => ({
-  TrendPanel: ({ trend }: { trend: TileTrendPayload }) =>
-    React.createElement('div', { 'data-testid': 'trend-panel' }, trend.label),
+  TrendPanel: ({
+    trend,
+    isLoading,
+    displayLabel,
+  }: {
+    trend: TileTrendPayload;
+    isLoading?: boolean;
+    displayLabel?: string;
+  }) =>
+    React.createElement(
+      'div',
+      { 'data-testid': 'trend-panel' },
+      `${displayLabel ?? trend.label}${isLoading ? ' refreshing' : ''}`,
+    ),
 }));
 
 const snapshotCalls: string[] = [];
 const trendCalls: string[] = [];
 let failSnapshotRequests = false;
+let deferSnapshotRequests = false;
+let deferredSnapshotResolvers: Array<() => void> = [];
+let failTrendRequests = false;
+let deferTrendRequests = false;
+let deferredTrendResolvers: Array<() => void> = [];
 
 function jsonResponse(body: unknown): Response {
   return {
@@ -174,6 +204,15 @@ describe('dashboard shell client interactions', () => {
         previousValue: '8',
         pctChange: '+25%',
       },
+      {
+        tileId: 'new_logo_sqo',
+        label: 'SQO',
+        sortOrder: 2,
+        formatType: 'number',
+        currentValue: '6',
+        previousValue: '4',
+        pctChange: '+50%',
+      },
     ],
     tileTimings: [],
   };
@@ -201,6 +240,11 @@ describe('dashboard shell client interactions', () => {
     snapshotCalls.length = 0;
     trendCalls.length = 0;
     failSnapshotRequests = false;
+    deferSnapshotRequests = false;
+    deferredSnapshotResolvers = [];
+    failTrendRequests = false;
+    deferTrendRequests = false;
+    deferredTrendResolvers = [];
     vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
     replaceStateSpy = vi.spyOn(window.history, 'replaceState').mockImplementation(() => {});
     vi.stubGlobal(
@@ -209,6 +253,11 @@ describe('dashboard shell client interactions', () => {
         const url = String(input);
         if (url.startsWith('/api/dashboard/category/')) {
           snapshotCalls.push(url);
+          if (deferSnapshotRequests) {
+            await new Promise<void>((resolve) => {
+              deferredSnapshotResolvers.push(resolve);
+            });
+          }
           if (failSnapshotRequests) {
             return {
               ok: false,
@@ -221,6 +270,18 @@ describe('dashboard shell client interactions', () => {
 
         if (url.startsWith('/api/dashboard/trend/')) {
           trendCalls.push(url);
+          if (deferTrendRequests) {
+            await new Promise<void>((resolve) => {
+              deferredTrendResolvers.push(resolve);
+            });
+          }
+          if (failTrendRequests) {
+            return {
+              ok: false,
+              status: 500,
+              json: async () => ({ error: 'boom' }),
+            } as Response;
+          }
           return jsonResponse(initialTrend);
         }
 
@@ -253,7 +314,7 @@ describe('dashboard shell client interactions', () => {
   });
 
   it('refreshes only the trend endpoint when a row is selected', async () => {
-    const rowButton = container.querySelector('[data-testid="row-new_logo_sql"]');
+    const rowButton = container.querySelector('[data-testid="row-new_logo_sqo"]');
     expect(rowButton).not.toBeNull();
 
     await act(async () => {
@@ -264,7 +325,38 @@ describe('dashboard shell client interactions', () => {
 
     expect(snapshotCalls).toHaveLength(0);
     expect(trendCalls).toHaveLength(1);
-    expect(trendCalls[0]).toContain('/api/dashboard/trend/new_logo_sql');
+    expect(trendCalls[0]).toContain('/api/dashboard/trend/new_logo_sqo');
+  });
+
+  it('selects the clicked row immediately and shows trend loading while the trend refreshes', async () => {
+    deferTrendRequests = true;
+
+    const rowButton = container.querySelector('[data-testid="row-new_logo_sqo"]');
+    const selectedTile = () =>
+      container.querySelector('[data-testid="selected-tile"]')?.textContent;
+
+    expect(rowButton).not.toBeNull();
+    expect(selectedTile()).toBe('new_logo_sql');
+
+    await act(async () => {
+      rowButton!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(selectedTile()).toBe('new_logo_sqo');
+    expect(container.querySelector('[data-testid="trend-panel"]')?.textContent).toContain(
+      'SQO refreshing',
+    );
+    expect(trendCalls).toHaveLength(1);
+
+    await act(async () => {
+      deferredTrendResolvers.forEach((resolve) => resolve());
+      deferredTrendResolvers = [];
+    });
+
+    await flush();
+
+    expect(container.querySelector('[data-testid="trend-panel"]')?.textContent).toBe('SQL');
   });
 
   it('defaults to the first tile and refreshes both endpoints when the category changes', async () => {
@@ -286,6 +378,35 @@ describe('dashboard shell client interactions', () => {
     expect(replaceStateSpy).toHaveBeenCalled();
   });
 
+  it('activates the clicked tab immediately and shows tile loading while the snapshot refreshes', async () => {
+    deferSnapshotRequests = true;
+
+    const categoryButton = container.querySelector('[data-testid="select-total"]');
+    const activeCategory = () =>
+      container.querySelector('[data-testid="active-category"]')?.textContent;
+
+    expect(categoryButton).not.toBeNull();
+
+    await act(async () => {
+      categoryButton!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(activeCategory()).toBe('Total');
+    expect(container.textContent).toContain('Total loading');
+    expect(snapshotCalls).toHaveLength(1);
+    expect(trendCalls).toHaveLength(1);
+
+    await act(async () => {
+      deferredSnapshotResolvers.forEach((resolve) => resolve());
+      deferredSnapshotResolvers = [];
+    });
+
+    await flush();
+
+    expect(container.querySelector('[data-testid="tile-table-skeleton"]')).toBeNull();
+  });
+
   it('keeps the current state and URL when a category refresh fails', async () => {
     failSnapshotRequests = true;
 
@@ -305,7 +426,7 @@ describe('dashboard shell client interactions', () => {
     expect(snapshotCalls).toHaveLength(1);
     expect(trendCalls).toHaveLength(1);
     expect(activeCategory()).toBe('New Logo');
-    expect(replaceStateSpy).not.toHaveBeenCalled();
+    expect(replaceStateSpy).toHaveBeenCalledTimes(2);
     expect(container.textContent).toContain('Dashboard refresh failed');
   });
 });

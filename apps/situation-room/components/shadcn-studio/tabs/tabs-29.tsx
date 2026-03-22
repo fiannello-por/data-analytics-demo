@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { toStableDomId } from '@/lib/stable-dom-id';
 import { cn } from '@/lib/utils';
 
 export type AnimatedUnderlineTabItem = {
@@ -54,6 +55,7 @@ export function AnimatedUnderlineTabs({
           {tabs.map((tab, index) => (
             <TabsTrigger
               key={tab.value}
+              id={`category-tab-${toStableDomId(tab.value)}`}
               value={tab.value}
               ref={(el) => {
                 tabRefs.current[index] = el;
@@ -85,6 +87,7 @@ export function AnimatedUnderlineTabs({
         {tabs.map((tab) => (
           <TabsContent
             key={tab.value}
+            id={`category-panel-${toStableDomId(tab.value)}`}
             value={tab.value}
             className={cn('mt-0 outline-none', contentClassName)}
           >

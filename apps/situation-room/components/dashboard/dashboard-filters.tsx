@@ -42,6 +42,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { toStableDomId } from '@/lib/stable-dom-id';
 import { cn } from '@/lib/utils';
 
 type DashboardFiltersProps = {
@@ -172,6 +173,7 @@ export function DashboardFilters({
             <PopoverTrigger
               render={
                 <Button
+                  id="date-range-trigger"
                   variant="outline"
                   aria-label="Date range filter"
                   className="h-9 min-w-56 justify-between rounded-lg px-3"
@@ -254,6 +256,7 @@ export function DashboardFilters({
                 <PopoverTrigger
                   render={
                     <Button
+                      id={`filter-trigger-${toStableDomId(filter.key)}`}
                       type="button"
                       variant={selectedCount > 0 ? 'secondary' : 'outline'}
                       aria-label={`${filter.label} filter`}

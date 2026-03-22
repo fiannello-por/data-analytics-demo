@@ -1,86 +1,130 @@
 'use client';
 
 import * as React from 'react';
-import { useMemo } from 'react';
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Tooltip,
-  Legend,
-  Filler,
-} from 'chart.js';
-import { Line } from 'react-chartjs-2';
+  CartesianGrid,
+  Line,
+  LineChart,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import type { TileTrendPayload } from '@/lib/dashboard/contracts';
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Tooltip,
-  Legend,
-  Filler,
-);
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart';
+import {
+  TREND_CHART_CONFIG,
+  buildTrendChartData,
+  formatTrendAxisLabel,
+  formatTrendAxisValue,
+  formatTrendTooltipValue,
+  getTrendFormatType,
+  getTrendAxisWidth,
+} from '@/lib/trend-chart-model';
+import { toStableDomId } from '@/lib/stable-dom-id';
 
 export function TrendChart({ trend }: { trend: TileTrendPayload }) {
-  const data = useMemo(
-    () => ({
-      labels: trend.points.map((point) => point.bucketLabel),
-      datasets: [
-        {
-          label: 'Current period',
-          data: trend.points.map((point) => point.currentValue),
-          borderColor: '#111111',
-          backgroundColor: 'rgba(17, 17, 17, 0.08)',
-          tension: 0.25,
-          fill: false,
-        },
-        {
-          label: 'Previous year',
-          data: trend.points.map((point) => point.previousValue),
-          borderColor: '#9f9f9f',
-          backgroundColor: 'rgba(159, 159, 159, 0.08)',
-          tension: 0.25,
-          fill: false,
-        },
-      ],
-    }),
-    [trend.points],
-  );
-
-  const options = useMemo(
-    () => ({
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: {
-        intersect: false,
-        mode: 'index' as const,
-      },
-      plugins: {
-        legend: {
-          display: true,
-          position: 'top' as const,
-          align: 'start' as const,
-        },
-      },
-      scales: {
-        x: {
-          grid: { display: false },
-        },
-        y: {
-          beginAtZero: true,
-        },
-      },
-    }),
-    [],
-  );
+  const data = React.useMemo(() => buildTrendChartData(trend), [trend]);
+  const formatType = React.useMemo(() => getTrendFormatType(trend), [trend]);
+  const yAxisWidth = React.useMemo(() => getTrendAxisWidth(trend), [trend]);
 
   return (
-    <div className="h-72 w-full">
-      <Line data={data} options={options} />
+    <div className="flex h-full min-h-[19rem] flex-col gap-3">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-muted-foreground">
+        <div className="inline-flex items-center gap-2">
+          <span
+            className="h-0.5 w-6 rounded-full"
+            style={{ backgroundColor: 'var(--chart-1)' }}
+          />
+          <span>{TREND_CHART_CONFIG.current.label}</span>
+        </div>
+        <div className="inline-flex items-center gap-2">
+          <span
+            className="h-0.5 w-6 rounded-full opacity-75"
+            style={{ backgroundColor: 'var(--chart-2)' }}
+          />
+          <span>{TREND_CHART_CONFIG.previous.label}</span>
+        </div>
+      </div>
+
+      <ChartContainer
+        id={`trend-chart-${toStableDomId(trend.category)}-${toStableDomId(trend.tileId)}`}
+        config={TREND_CHART_CONFIG}
+        className="aspect-auto h-full min-h-0 flex-1 w-full"
+      >
+        <LineChart
+          accessibilityLayer
+          data={data}
+          margin={{
+            top: 10,
+            left: 10,
+            right: 18,
+            bottom: 8,
+          }}
+        >
+          <CartesianGrid
+            vertical={false}
+            stroke="var(--border-subtle)"
+            strokeWidth={1}
+            strokeDasharray="2 4"
+          />
+          <XAxis
+            dataKey="bucketLabel"
+            tickLine={{ stroke: 'var(--border-subtle)', strokeWidth: 1 }}
+            tickSize={6}
+            axisLine={{ stroke: 'var(--border-subtle)', strokeWidth: 1 }}
+            tickMargin={12}
+            minTickGap={24}
+            tickFormatter={formatTrendAxisLabel}
+          />
+          <YAxis
+            tickLine={{ stroke: 'var(--border-subtle)', strokeWidth: 1 }}
+            tickSize={6}
+            axisLine={{ stroke: 'var(--border-subtle)', strokeWidth: 1 }}
+            tickMargin={12}
+            width={yAxisWidth}
+            tickFormatter={(value: number) => formatTrendAxisValue(value, formatType)}
+          />
+          <ChartTooltip
+            cursor={false}
+            content={
+              <ChartTooltipContent
+                indicator="line"
+                valueFormatter={(value) => formatTrendTooltipValue(value, formatType)}
+              />
+            }
+          />
+          <Line
+            dataKey="previous"
+            type="monotone"
+            stroke="var(--color-previous)"
+            strokeWidth={1.5}
+            strokeOpacity={0.68}
+            dot={false}
+            activeDot={{
+              r: 5,
+              fill: 'var(--color-previous)',
+              stroke: 'var(--background)',
+              strokeWidth: 2,
+            }}
+          />
+          <Line
+            dataKey="current"
+            type="monotone"
+            stroke="var(--color-current)"
+            strokeWidth={3}
+            dot={false}
+            activeDot={{
+              r: 5,
+              fill: 'var(--color-current)',
+              stroke: 'var(--background)',
+              strokeWidth: 2,
+            }}
+          />
+        </LineChart>
+      </ChartContainer>
     </div>
   );
 }

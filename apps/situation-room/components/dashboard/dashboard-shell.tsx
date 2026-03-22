@@ -8,6 +8,7 @@ import type {
   FilterDictionaryPayload,
   TileTrendPayload,
 } from '@/lib/dashboard/contracts';
+import { findTileDefinition } from '@/lib/dashboard/catalog';
 import {
   addDashboardFilterValue,
   buildDashboardCategoryUrl,
@@ -17,7 +18,7 @@ import {
   setDashboardActiveCategory,
   setDashboardSelectedTile,
 } from '@/lib/dashboard/query-inputs';
-import { derivePreviousYearRange } from '@/lib/dashboard/date-range';
+import { derivePreviousYearRange, formatDateRange } from '@/lib/dashboard/date-range';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -29,7 +30,7 @@ import {
 } from '@/components/ui/card';
 import { DashboardFilters } from '@/components/dashboard/dashboard-filters';
 import { CategoryTabs } from '@/components/dashboard/category-tabs';
-import { TileTable } from '@/components/dashboard/tile-table';
+import { TileTable, TileTableSkeleton } from '@/components/dashboard/tile-table';
 import { TrendPanel } from '@/components/dashboard/trend-panel';
 
 type DashboardShellProps = {
@@ -42,6 +43,11 @@ type DashboardShellProps = {
 type RefreshScope = {
   snapshot: boolean;
   trend: boolean;
+};
+
+type RefreshOptions = {
+  optimisticState?: DashboardState;
+  revertState?: DashboardState;
 };
 
 async function readJson<T>(response: Response, label: string): Promise<T> {
@@ -82,11 +88,20 @@ export function DashboardShell({
     window.history.replaceState(null, '', nextUrl);
   }
 
-  async function refreshDashboard(nextState: DashboardState, scope: RefreshScope) {
+  async function refreshDashboard(
+    nextState: DashboardState,
+    scope: RefreshScope,
+    options?: RefreshOptions,
+  ) {
     const requestId = ++refreshRequestIdRef.current;
     setError(null);
     setSnapshotLoading(scope.snapshot);
     setTrendLoading(scope.trend);
+
+    if (options?.optimisticState) {
+      setState(options.optimisticState);
+      updateUrl(options.optimisticState);
+    }
 
     const snapshotFetch = scope.snapshot
       ? fetch(buildDashboardCategoryUrl(nextState), {
@@ -129,6 +144,10 @@ export function DashboardShell({
     }
 
     if (nextErrors.length > 0) {
+      if (options?.optimisticState && options.revertState) {
+        setState(options.revertState);
+        updateUrl(options.revertState);
+      }
       setSnapshotLoading(false);
       setTrendLoading(false);
       setError(nextErrors.join(' '));
@@ -143,25 +162,37 @@ export function DashboardShell({
       setTrend(trendResult.value);
     }
 
-    setState(nextState);
-    updateUrl(nextState);
+    if (!options?.optimisticState) {
+      setState(nextState);
+      updateUrl(nextState);
+    }
     setSnapshotLoading(false);
     setTrendLoading(false);
     setError(null);
   }
 
-  function applyStateChange(nextState: DashboardState, scope: RefreshScope) {
-    void refreshDashboard(nextState, scope);
+  function applyStateChange(
+    nextState: DashboardState,
+    scope: RefreshScope,
+    options?: RefreshOptions,
+  ) {
+    void refreshDashboard(nextState, scope, options);
   }
 
   function handleCategoryChange(category: DashboardState['activeCategory']) {
     const nextState = setDashboardActiveCategory(state, category);
-    applyStateChange(nextState, { snapshot: true, trend: true });
+    applyStateChange(nextState, { snapshot: true, trend: true }, {
+      optimisticState: nextState,
+      revertState: state,
+    });
   }
 
   function handleTileSelect(tileId: string) {
     const nextState = setDashboardSelectedTile(state, tileId);
-    applyStateChange(nextState, { snapshot: false, trend: true });
+    applyStateChange(nextState, { snapshot: false, trend: true }, {
+      optimisticState: nextState,
+      revertState: state,
+    });
   }
 
   function handleFilterValueAdd(key: keyof DashboardState['filters'], value: string) {
@@ -191,6 +222,12 @@ export function DashboardShell({
     };
     applyStateChange(nextState, { snapshot: true, trend: true });
   }
+
+  const displayCategory = isSnapshotLoading ? state.activeCategory : snapshot.category;
+  const displayWindowLabel = formatDateRange(state.dateRange);
+  const displayTileLabel =
+    findTileDefinition(state.activeCategory, state.selectedTileId)?.label ?? trend.label;
+  const displayPreviousWindowLabel = formatDateRange(state.previousDateRange);
 
   return (
     <main className="min-h-screen bg-background">
@@ -233,25 +270,41 @@ export function DashboardShell({
           onValueChange={handleCategoryChange}
         >
           <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-            <Card aria-busy={isSnapshotLoading}>
+            <Card
+              aria-busy={isSnapshotLoading}
+              data-testid="snapshot-card"
+              className="ring-0 shadow-none"
+            >
               <CardHeader>
                 <div className="flex flex-wrap items-center gap-2">
-                  <CardTitle>{snapshot.category}</CardTitle>
-                  <Badge variant="outline">{snapshot.currentWindowLabel}</Badge>
+                  <CardTitle>{displayCategory}</CardTitle>
+                  <Badge variant="outline">{displayWindowLabel}</Badge>
                 </div>
                 <CardDescription>
                   Current period vs previous-year equivalent.
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <TileTable
-                  snapshot={snapshot}
-                  selectedTileId={state.selectedTileId}
-                  onRowSelect={handleTileSelect}
-                />
+                {isSnapshotLoading ? (
+                  <TileTableSkeleton category={state.activeCategory} />
+                ) : (
+                  <TileTable
+                    snapshot={snapshot}
+                    selectedTileId={state.selectedTileId}
+                    onRowSelect={handleTileSelect}
+                  />
+                )}
               </CardContent>
             </Card>
-            <TrendPanel trend={trend} isLoading={isTrendLoading} />
+            <TrendPanel
+              trend={trend}
+              isLoading={isTrendLoading}
+              displayLabel={isTrendLoading ? displayTileLabel : undefined}
+              displayCurrentWindowLabel={isTrendLoading ? displayWindowLabel : undefined}
+              displayPreviousWindowLabel={
+                isTrendLoading ? displayPreviousWindowLabel : undefined
+              }
+            />
           </div>
         </CategoryTabs>
       </div>

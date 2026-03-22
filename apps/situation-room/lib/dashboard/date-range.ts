@@ -29,7 +29,7 @@ export function getCurrentYearRange(referenceDate: Date = new Date()): DateRange
   const year = referenceDate.getUTCFullYear();
   return {
     startDate: `${year}-01-01`,
-    endDate: `${year}-12-31`,
+    endDate: toIsoDateUTC(referenceDate),
   };
 }
 

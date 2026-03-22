@@ -11,7 +11,7 @@ describe('dashboard date range', () => {
 
     expect(range).toEqual({
       startDate: '2026-01-01',
-      endDate: '2026-12-31',
+      endDate: '2026-03-22',
     });
   });
 
