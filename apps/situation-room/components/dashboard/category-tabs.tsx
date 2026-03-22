@@ -6,13 +6,15 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 export function CategoryTabs({
   activeCategory,
+  onValueChange,
   children,
 }: {
   activeCategory: Category;
+  onValueChange?: (category: Category) => void;
   children: React.ReactNode;
 }) {
   return (
-    <Tabs value={activeCategory}>
+    <Tabs value={activeCategory} onValueChange={onValueChange}>
       <TabsList className="w-full justify-start">
         {CATEGORY_ORDER.map((category) => (
           <TabsTrigger key={category} value={category}>

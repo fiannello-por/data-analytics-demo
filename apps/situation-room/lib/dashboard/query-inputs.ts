@@ -39,6 +39,48 @@ export function normalizeDashboardFilters(
   return Object.fromEntries(normalizedEntries) as DashboardFilters;
 }
 
+function updateDashboardFilterValues(
+  filters: DashboardFilters,
+  key: keyof DashboardFilters,
+  nextValues: string[],
+): DashboardFilters {
+  const normalizedFilters = normalizeDashboardFilters(filters);
+  const normalizedValues = normalizeFilterValues(nextValues);
+
+  if (normalizedValues.length === 0) {
+    const { [key]: _removed, ...rest } = normalizedFilters;
+    return rest;
+  }
+
+  return {
+    ...normalizedFilters,
+    [key]: normalizedValues,
+  };
+}
+
+export function addDashboardFilterValue(
+  filters: DashboardFilters,
+  key: keyof DashboardFilters,
+  value: string,
+): DashboardFilters {
+  return updateDashboardFilterValues(filters, key, [
+    ...(filters[key] ?? []),
+    value,
+  ]);
+}
+
+export function removeDashboardFilterValue(
+  filters: DashboardFilters,
+  key: keyof DashboardFilters,
+  value: string,
+): DashboardFilters {
+  return updateDashboardFilterValues(
+    filters,
+    key,
+    (filters[key] ?? []).filter((item) => item !== value),
+  );
+}
+
 function parseDateRange(searchParams: URLSearchParams): DateRange {
   const startDate = searchParams.get('startDate')?.trim();
   const endDate = searchParams.get('endDate')?.trim();
@@ -63,6 +105,71 @@ function parseFilters(searchParams: URLSearchParams): DashboardFilters {
   }
 
   return normalizeDashboardFilters(filters);
+}
+
+export function serializeDashboardStateSearchParams(
+  input: DashboardStateKeyInput,
+): URLSearchParams {
+  const state = {
+    activeCategory: input.activeCategory,
+    selectedTileId: input.selectedTileId ?? getDefaultTileId(input.activeCategory),
+    dateRange: input.dateRange ?? getCurrentYearRange(),
+    filters: normalizeDashboardFilters(input.filters ?? {}),
+  };
+  const searchParams = new URLSearchParams();
+
+  searchParams.set('category', state.activeCategory);
+  searchParams.set('tileId', state.selectedTileId);
+  searchParams.set('startDate', state.dateRange.startDate);
+  searchParams.set('endDate', state.dateRange.endDate);
+
+  for (const [key, values] of Object.entries(state.filters)) {
+    for (const value of values) {
+      searchParams.append(key, value);
+    }
+  }
+
+  return searchParams;
+}
+
+export function buildDashboardCategoryUrl(
+  input: DashboardStateKeyInput,
+): string {
+  const searchParams = serializeDashboardStateSearchParams(input);
+  return `/api/dashboard/category/${encodeURIComponent(input.activeCategory)}?${searchParams.toString()}`;
+}
+
+export function buildDashboardTrendUrl(
+  input: DashboardStateKeyInput,
+): string {
+  const selectedTileId =
+    input.selectedTileId ?? getDefaultTileId(input.activeCategory);
+  const searchParams = serializeDashboardStateSearchParams({
+    ...input,
+    selectedTileId,
+  });
+  return `/api/dashboard/trend/${encodeURIComponent(selectedTileId)}?${searchParams.toString()}`;
+}
+
+export function setDashboardActiveCategory(
+  state: DashboardState,
+  activeCategory: Category,
+): DashboardState {
+  return {
+    ...state,
+    activeCategory,
+    selectedTileId: getDefaultTileId(activeCategory),
+  };
+}
+
+export function setDashboardSelectedTile(
+  state: DashboardState,
+  selectedTileId: string,
+): DashboardState {
+  return {
+    ...state,
+    selectedTileId,
+  };
 }
 
 export function parseDashboardSearchParams(

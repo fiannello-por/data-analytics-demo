@@ -7,6 +7,16 @@ import type {
   FilterDictionaryPayload,
   TileTrendPayload,
 } from '@/lib/dashboard/contracts';
+import {
+  addDashboardFilterValue,
+  buildDashboardCategoryUrl,
+  buildDashboardTrendUrl,
+  removeDashboardFilterValue,
+  serializeDashboardStateSearchParams,
+  setDashboardActiveCategory,
+  setDashboardSelectedTile,
+} from '@/lib/dashboard/query-inputs';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import {
   Card,
@@ -27,12 +37,135 @@ type DashboardShellProps = {
   initialDictionaries: Record<string, FilterDictionaryPayload>;
 };
 
+type RefreshScope = {
+  snapshot: boolean;
+  trend: boolean;
+};
+
+async function readJson<T>(response: Response, label: string): Promise<T> {
+  if (!response.ok) {
+    throw new Error(`${label} request failed with status ${response.status}.`);
+  }
+
+  return (await response.json()) as T;
+}
+
 export function DashboardShell({
   initialState,
   initialSnapshot,
   initialTrend,
   initialDictionaries,
 }: DashboardShellProps) {
+  const [state, setState] = React.useState(initialState);
+  const [snapshot, setSnapshot] = React.useState(initialSnapshot);
+  const [trend, setTrend] = React.useState(initialTrend);
+  const [isSnapshotLoading, setSnapshotLoading] = React.useState(false);
+  const [isTrendLoading, setTrendLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const refreshRequestIdRef = React.useRef(0);
+  const isMountedRef = React.useRef(true);
+
+  React.useEffect(
+    () => () => {
+      isMountedRef.current = false;
+    },
+    [],
+  );
+
+  function updateUrl(nextState: DashboardState) {
+    if (typeof window === 'undefined') return;
+
+    const searchParams = serializeDashboardStateSearchParams(nextState);
+    const nextUrl = `${window.location.pathname}?${searchParams.toString()}${window.location.hash}`;
+    window.history.replaceState(null, '', nextUrl);
+  }
+
+  async function refreshDashboard(nextState: DashboardState, scope: RefreshScope) {
+    const requestId = ++refreshRequestIdRef.current;
+    setError(null);
+    setSnapshotLoading(scope.snapshot);
+    setTrendLoading(scope.trend);
+
+    const snapshotFetch = scope.snapshot
+      ? fetch(buildDashboardCategoryUrl(nextState), {
+          headers: { Accept: 'application/json' },
+        }).then((response) =>
+          readJson<CategorySnapshotPayload>(response, 'Snapshot'),
+        )
+      : Promise.resolve(null);
+    const trendFetch = scope.trend
+      ? fetch(buildDashboardTrendUrl(nextState), {
+          headers: { Accept: 'application/json' },
+        }).then((response) => readJson<TileTrendPayload>(response, 'Trend'))
+      : Promise.resolve(null);
+
+    const [snapshotResult, trendResult] = await Promise.allSettled([
+      snapshotFetch,
+      trendFetch,
+    ]);
+
+    if (!isMountedRef.current || requestId !== refreshRequestIdRef.current) {
+      return;
+    }
+
+    const nextErrors: string[] = [];
+
+    if (scope.snapshot) {
+      if (snapshotResult.status === 'fulfilled' && snapshotResult.value) {
+        setSnapshot(snapshotResult.value);
+      } else if (snapshotResult.status === 'rejected') {
+        nextErrors.push(`Snapshot: ${snapshotResult.reason instanceof Error ? snapshotResult.reason.message : 'request failed.'}`);
+      }
+    }
+
+    if (scope.trend) {
+      if (trendResult.status === 'fulfilled' && trendResult.value) {
+        setTrend(trendResult.value);
+      } else if (trendResult.status === 'rejected') {
+        nextErrors.push(`Trend: ${trendResult.reason instanceof Error ? trendResult.reason.message : 'request failed.'}`);
+      }
+    }
+
+    setSnapshotLoading(false);
+    setTrendLoading(false);
+    setError(nextErrors.length > 0 ? nextErrors.join(' ') : null);
+  }
+
+  function applyStateChange(nextState: DashboardState, scope: RefreshScope) {
+    setState(nextState);
+    updateUrl(nextState);
+    void refreshDashboard(nextState, scope);
+  }
+
+  function handleCategoryChange(category: DashboardState['activeCategory']) {
+    const nextState = setDashboardActiveCategory(state, category);
+    applyStateChange(nextState, { snapshot: true, trend: true });
+  }
+
+  function handleTileSelect(tileId: string) {
+    const nextState = setDashboardSelectedTile(state, tileId);
+    applyStateChange(nextState, { snapshot: false, trend: true });
+  }
+
+  function handleFilterValueAdd(key: keyof DashboardState['filters'], value: string) {
+    const nextState = {
+      ...state,
+      filters: addDashboardFilterValue(state.filters, key, value),
+    };
+    applyStateChange(nextState, { snapshot: true, trend: true });
+  }
+
+  function handleFilterValueRemove(
+    key: keyof DashboardState['filters'],
+    value: string,
+  ) {
+    const nextState = {
+      ...state,
+      filters: removeDashboardFilterValue(state.filters, key, value),
+    };
+    applyStateChange(nextState, { snapshot: true, trend: true });
+  }
+
   return (
     <main className="min-h-screen bg-background">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-6 py-8">
@@ -40,6 +173,8 @@ export function DashboardShell({
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="outline">Situation Room</Badge>
             <Badge variant="secondary">Executive product</Badge>
+            {isSnapshotLoading ? <Badge variant="outline">Refreshing snapshot</Badge> : null}
+            {isTrendLoading ? <Badge variant="outline">Refreshing trend</Badge> : null}
           </div>
           <div className="flex flex-col gap-2">
             <h1 className="text-3xl font-semibold tracking-tight">
@@ -52,20 +187,30 @@ export function DashboardShell({
           </div>
         </header>
 
+        {error ? (
+          <Alert variant="destructive">
+            <AlertTitle>Dashboard refresh failed</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        ) : null}
+
         <DashboardFilters
-          state={initialState}
+          state={state}
           dictionaries={initialDictionaries}
+          onFilterValueAdd={handleFilterValueAdd}
+          onFilterValueRemove={handleFilterValueRemove}
         />
 
-        <CategoryTabs activeCategory={initialState.activeCategory}>
+        <CategoryTabs
+          activeCategory={state.activeCategory}
+          onValueChange={handleCategoryChange}
+        >
           <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-            <Card>
+            <Card aria-busy={isSnapshotLoading}>
               <CardHeader>
                 <div className="flex flex-wrap items-center gap-2">
-                  <CardTitle>{initialSnapshot.category}</CardTitle>
-                  <Badge variant="outline">
-                    {initialSnapshot.currentWindowLabel}
-                  </Badge>
+                  <CardTitle>{snapshot.category}</CardTitle>
+                  <Badge variant="outline">{snapshot.currentWindowLabel}</Badge>
                 </div>
                 <CardDescription>
                   Current period vs previous-year equivalent.
@@ -73,12 +218,13 @@ export function DashboardShell({
               </CardHeader>
               <CardContent>
                 <TileTable
-                  snapshot={initialSnapshot}
-                  selectedTileId={initialState.selectedTileId}
+                  snapshot={snapshot}
+                  selectedTileId={state.selectedTileId}
+                  onRowSelect={handleTileSelect}
                 />
               </CardContent>
             </Card>
-            <TrendPanel trend={initialTrend} />
+            <TrendPanel trend={trend} isLoading={isTrendLoading} />
           </div>
         </CategoryTabs>
       </div>

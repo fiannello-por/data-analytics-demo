@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
+  addDashboardFilterValue,
+  buildDashboardCategoryUrl,
+  buildDashboardTrendUrl,
+  removeDashboardFilterValue,
   parseDashboardSearchParams,
+  serializeDashboardStateSearchParams,
   serializeDashboardStateKey,
+  setDashboardActiveCategory,
 } from '@/lib/dashboard/query-inputs';
 
 describe('dashboard query inputs', () => {
@@ -28,6 +34,76 @@ describe('dashboard query inputs', () => {
     });
 
     expect(left).toBe(right);
+  });
+
+  it('serializes dashboard state to stable URL search params', () => {
+    const params = serializeDashboardStateSearchParams({
+      activeCategory: 'Renewal',
+      selectedTileId: 'renewal_sql',
+      filters: {
+        Owner: ['Bravo', 'Alpha'],
+        Division: ['Enterprise'],
+      },
+      dateRange: {
+        startDate: '2026-01-01',
+        endDate: '2026-03-31',
+      },
+    });
+
+    expect(params.toString()).toBe(
+      'category=Renewal&tileId=renewal_sql&startDate=2026-01-01&endDate=2026-03-31&Division=Enterprise&Owner=Alpha&Owner=Bravo',
+    );
+  });
+
+  it('builds dashboard category and trend endpoint urls from state', () => {
+    const state = {
+      activeCategory: 'New Logo' as const,
+      selectedTileId: 'new_logo_bookings_amount',
+      filters: { Division: ['Enterprise'] },
+      dateRange: { startDate: '2026-01-01', endDate: '2026-03-31' },
+    };
+
+    expect(buildDashboardCategoryUrl(state)).toBe(
+      '/api/dashboard/category/New%20Logo?category=New+Logo&tileId=new_logo_bookings_amount&startDate=2026-01-01&endDate=2026-03-31&Division=Enterprise',
+    );
+    expect(buildDashboardTrendUrl(state)).toBe(
+      '/api/dashboard/trend/new_logo_bookings_amount?category=New+Logo&tileId=new_logo_bookings_amount&startDate=2026-01-01&endDate=2026-03-31&Division=Enterprise',
+    );
+  });
+
+  it('adds and removes filter values deterministically', () => {
+    const added = addDashboardFilterValue(
+      { Division: ['Enterprise'] },
+      'Division',
+      'SMB',
+    );
+    const deduped = addDashboardFilterValue(added, 'Division', 'Enterprise');
+    const removed = removeDashboardFilterValue(
+      deduped,
+      'Division',
+      'Enterprise',
+    );
+
+    expect(added.Division).toEqual(['Enterprise', 'SMB']);
+    expect(deduped.Division).toEqual(['Enterprise', 'SMB']);
+    expect(removed.Division).toEqual(['SMB']);
+  });
+
+  it('defaults the selected tile when the active category changes', () => {
+    const nextState = setDashboardActiveCategory(
+      {
+        activeCategory: 'New Logo',
+        selectedTileId: 'new_logo_sql',
+        filters: { Division: ['Enterprise'] },
+        dateRange: { startDate: '2026-01-01', endDate: '2026-03-31' },
+        previousDateRange: { startDate: '2025-01-01', endDate: '2025-03-31' },
+        trendGrain: 'weekly',
+      },
+      'Total',
+    );
+
+    expect(nextState.activeCategory).toBe('Total');
+    expect(nextState.selectedTileId).toBe('total_bookings_amount');
   });
 
   it('falls back to the default tile when tileId does not belong to the category', () => {

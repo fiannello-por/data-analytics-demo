@@ -1,11 +1,12 @@
 'use client';
 
 import * as React from 'react';
-import { CalendarRangeIcon, ChevronDownIcon } from 'lucide-react';
+import { CalendarRangeIcon, ChevronDownIcon, XIcon } from 'lucide-react';
 import type {
   FilterDictionaryPayload,
   DashboardState,
 } from '@/lib/dashboard/contracts';
+import type { GlobalFilterKey } from '@/lib/dashboard/catalog';
 import {
   DASHBOARD_FILTER_DEFINITIONS,
   DATE_RANGE_FILTER_LABEL,
@@ -30,12 +31,21 @@ import {
 type DashboardFiltersProps = {
   state: DashboardState;
   dictionaries: Record<string, FilterDictionaryPayload>;
+  onFilterValueAdd: (key: GlobalFilterKey, value: string) => void;
+  onFilterValueRemove: (key: GlobalFilterKey, value: string) => void;
 };
 
 export function DashboardFilters({
   state,
   dictionaries,
+  onFilterValueAdd,
+  onFilterValueRemove,
 }: DashboardFiltersProps) {
+  function handleValueChange(key: GlobalFilterKey, value: unknown) {
+    if (typeof value !== 'string' || value.length === 0) return;
+    onFilterValueAdd(key, value);
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -47,7 +57,7 @@ export function DashboardFilters({
       <CardContent className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center gap-3">
           <Badge variant="outline">{DATE_RANGE_FILTER_LABEL}</Badge>
-          <Button variant="outline" className="justify-between">
+          <Button variant="outline" className="justify-between" disabled title="Date range is fixed from the initial load">
             <CalendarRangeIcon data-icon="inline-start" />
             {state.dateRange.startDate} to {state.dateRange.endDate}
             <ChevronDownIcon data-icon="inline-end" />
@@ -71,9 +81,9 @@ export function DashboardFilters({
                     {dictionary?.options.length ?? 0} options
                   </Badge>
                 </div>
-                <Select>
+                <Select onValueChange={(value) => handleValueChange(filter.key, value)}>
                   <SelectTrigger aria-label={filter.label}>
-                    <SelectValue placeholder={`Select ${filter.label}`} />
+                    <SelectValue placeholder={`Add ${filter.label}`} />
                   </SelectTrigger>
                   <SelectContent>
                     {(dictionary?.options ?? []).map((option) => (
@@ -86,8 +96,16 @@ export function DashboardFilters({
                 {selectedValues.length > 0 ? (
                   <div className="flex flex-wrap gap-1">
                     {selectedValues.map((value) => (
-                      <Badge key={value} variant="secondary">
-                        {value}
+                      <Badge key={value} variant="secondary" className="gap-1 pr-1">
+                        <span>{value}</span>
+                        <button
+                          type="button"
+                          className="inline-flex h-4 w-4 items-center justify-center rounded-full transition-colors hover:bg-background/70"
+                          aria-label={`Remove ${value} from ${filter.label}`}
+                          onClick={() => onFilterValueRemove(filter.key, value)}
+                        >
+                          <XIcon className="size-3" />
+                        </button>
                       </Badge>
                     ))}
                   </div>
@@ -99,6 +117,9 @@ export function DashboardFilters({
             );
           })}
         </div>
+        <p className="text-xs text-muted-foreground">
+          Date range stays fixed from the initial load in this task.
+        </p>
       </CardContent>
     </Card>
   );
