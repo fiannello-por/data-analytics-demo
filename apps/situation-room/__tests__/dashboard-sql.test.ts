@@ -53,6 +53,28 @@ describe('dashboard sql', () => {
     expect(query.params).toEqual({});
   });
 
+  it('derives Gate Met or Accepted from source fields instead of assuming a physical column', () => {
+    const query = buildFilterDictionaryQuery('Gate Met or Accepted');
+
+    expect(query.sql).toContain('CAST((Gate1CriteriaMet OR Accepted) AS STRING)');
+    expect(query.sql).not.toContain('GateMetOrAccepted AS value');
+  });
+
+  it('applies boolean-like dashboard filters through their stringified expression', () => {
+    const query = buildTileSnapshotQuery({
+      category: 'New Logo',
+      tileId: 'new_logo_bookings_amount',
+      dateRange: { startDate: '2026-01-01', endDate: '2026-03-31' },
+      previousDateRange: { startDate: '2025-01-01', endDate: '2025-03-31' },
+      filters: { 'Gate Met or Accepted': ['true'] },
+    });
+
+    expect(query.sql).toContain(
+      'CAST((Gate1CriteriaMet OR Accepted) AS STRING) IN UNNEST(@filter_gate_met_or_accepted)',
+    );
+    expect(query.params.filter_gate_met_or_accepted).toEqual(['true']);
+  });
+
   it('supports non-new-logo tile ids instead of misparsing their metric key', () => {
     const query = buildTileSnapshotQuery({
       category: 'Expansion',

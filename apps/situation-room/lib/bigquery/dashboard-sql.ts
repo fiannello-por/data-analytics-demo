@@ -36,23 +36,76 @@ type FilterClauseResult = {
   params: Record<string, string[]>;
 };
 
-const FILTER_COLUMNS: Record<GlobalFilterKey, string> = {
-  Division: 'Division',
-  Owner: 'Owner',
-  Segment: 'OpportunitySegment',
-  Region: 'Queue_Region__c',
-  SE: 'SE',
-  'Booking Plan Opp Type': 'BookingPlanOppType2025',
-  'Product Family': 'ProductFamily',
-  'SDR Source': 'SDRSource',
-  SDR: 'SDR',
-  'POR v R360': 'OppRecordType',
-  'Account Owner': 'AccountOwner',
-  'Owner Department': 'OwnerDepartment',
-  'Strategic Filter': 'StrategicFilter',
-  Accepted: 'Accepted',
-  'Gate 1 Criteria Met': 'Gate1CriteriaMet',
-  'Gate Met or Accepted': 'GateMetOrAccepted',
+type FilterExpression = {
+  sourceSql: string;
+  stringSql: string;
+};
+
+const FILTER_EXPRESSIONS: Record<GlobalFilterKey, FilterExpression> = {
+  Division: {
+    sourceSql: 'Division',
+    stringSql: 'Division',
+  },
+  Owner: {
+    sourceSql: 'Owner',
+    stringSql: 'Owner',
+  },
+  Segment: {
+    sourceSql: 'OpportunitySegment',
+    stringSql: 'OpportunitySegment',
+  },
+  Region: {
+    sourceSql: 'Queue_Region__c',
+    stringSql: 'Queue_Region__c',
+  },
+  SE: {
+    sourceSql: 'SE',
+    stringSql: 'SE',
+  },
+  'Booking Plan Opp Type': {
+    sourceSql: 'BookingPlanOppType2025',
+    stringSql: 'BookingPlanOppType2025',
+  },
+  'Product Family': {
+    sourceSql: 'ProductFamily',
+    stringSql: 'ProductFamily',
+  },
+  'SDR Source': {
+    sourceSql: 'SDRSource',
+    stringSql: 'SDRSource',
+  },
+  SDR: {
+    sourceSql: 'SDR',
+    stringSql: 'SDR',
+  },
+  'POR v R360': {
+    sourceSql: 'OppRecordType',
+    stringSql: 'OppRecordType',
+  },
+  'Account Owner': {
+    sourceSql: 'AccountOwner',
+    stringSql: 'AccountOwner',
+  },
+  'Owner Department': {
+    sourceSql: 'OwnerDepartment',
+    stringSql: 'OwnerDepartment',
+  },
+  'Strategic Filter': {
+    sourceSql: 'StrategicFilter',
+    stringSql: 'CAST(StrategicFilter AS STRING)',
+  },
+  Accepted: {
+    sourceSql: 'Accepted',
+    stringSql: 'CAST(Accepted AS STRING)',
+  },
+  'Gate 1 Criteria Met': {
+    sourceSql: 'Gate1CriteriaMet',
+    stringSql: 'CAST(Gate1CriteriaMet AS STRING)',
+  },
+  'Gate Met or Accepted': {
+    sourceSql: '(Gate1CriteriaMet OR Accepted)',
+    stringSql: 'CAST((Gate1CriteriaMet OR Accepted) AS STRING)',
+  },
 };
 
 const CATEGORY_PREDICATES: Record<Category, string> = {
@@ -212,12 +265,12 @@ function buildFilterClauses(filters: DashboardFilters): FilterClauseResult {
   const clauses = Object.entries(filters)
     .filter((entry): entry is [GlobalFilterKey, string[]] => {
       const [key, values] = entry;
-      return key in FILTER_COLUMNS && Array.isArray(values) && values.length > 0;
+      return key in FILTER_EXPRESSIONS && Array.isArray(values) && values.length > 0;
     })
     .map(([key, values]) => {
       const paramName = getFilterParamName(key);
       params[paramName] = values;
-      return `${FILTER_COLUMNS[key]} IN UNNEST(@${paramName})`;
+      return `${FILTER_EXPRESSIONS[key].stringSql} IN UNNEST(@${paramName})`;
     });
 
   return { clauses, params };
@@ -417,8 +470,8 @@ export function buildTileTrendQuery(
 export function buildFilterDictionaryQuery(
   filterKey: GlobalFilterKey,
 ): DashboardQueryDefinition {
-  const column = FILTER_COLUMNS[filterKey];
-  if (!column) {
+  const expression = FILTER_EXPRESSIONS[filterKey];
+  if (!expression) {
     throw new Error(`Unsupported dashboard filter dictionary key: ${filterKey}`);
   }
 
@@ -426,10 +479,11 @@ export function buildFilterDictionaryQuery(
     sql: `
       with deduped as (
         select distinct
-          ${column} AS value,
-          ${column} AS label
+          ${expression.stringSql} AS value,
+          ${expression.stringSql} AS label
         from ${getSourceTableReference()}
-        where ${column} IS NOT NULL
+        where ${expression.sourceSql} IS NOT NULL
+          and trim(${expression.stringSql}) != ''
       )
       select
         value,
