@@ -4,6 +4,7 @@ import * as React from 'react';
 import type {
   CategorySnapshotPayload,
   DashboardState,
+  DateRange,
   FilterDictionaryPayload,
   TileTrendPayload,
 } from '@/lib/dashboard/contracts';
@@ -16,6 +17,7 @@ import {
   setDashboardActiveCategory,
   setDashboardSelectedTile,
 } from '@/lib/dashboard/query-inputs';
+import { derivePreviousYearRange } from '@/lib/dashboard/date-range';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -181,6 +183,15 @@ export function DashboardShell({
     applyStateChange(nextState, { snapshot: true, trend: true });
   }
 
+  function handleDateRangeApply(dateRange: DateRange) {
+    const nextState = {
+      ...state,
+      dateRange,
+      previousDateRange: derivePreviousYearRange(dateRange),
+    };
+    applyStateChange(nextState, { snapshot: true, trend: true });
+  }
+
   return (
     <main className="min-h-screen bg-background">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-6 py-8">
@@ -214,6 +225,7 @@ export function DashboardShell({
           dictionaries={initialDictionaries}
           onFilterValueAdd={handleFilterValueAdd}
           onFilterValueRemove={handleFilterValueRemove}
+          onDateRangeApply={handleDateRangeApply}
         />
 
         <CategoryTabs

@@ -2,15 +2,22 @@
 
 import * as React from 'react';
 import { CalendarRangeIcon, ChevronDownIcon, XIcon } from 'lucide-react';
+import type { DateRange as DayPickerDateRange } from 'react-day-picker';
 import type {
   FilterDictionaryPayload,
   DashboardState,
+  DateRange,
 } from '@/lib/dashboard/contracts';
 import type { GlobalFilterKey } from '@/lib/dashboard/catalog';
 import {
   DASHBOARD_FILTER_DEFINITIONS,
   DATE_RANGE_FILTER_LABEL,
 } from '@/lib/dashboard/filter-config';
+import {
+  formatDateRange,
+  parseIsoDate,
+  toIsoDateString,
+} from '@/lib/dashboard/date-range';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -20,12 +27,22 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import {
+  Popover,
+  PopoverContent,
+  PopoverDescription,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 
 type DashboardFiltersProps = {
   state: DashboardState;
   dictionaries: Record<string, FilterDictionaryPayload>;
   onFilterValueAdd: (key: GlobalFilterKey, value: string) => void;
   onFilterValueRemove: (key: GlobalFilterKey, value: string) => void;
+  onDateRangeApply: (range: DateRange) => void;
 };
 
 function normalizeValues(values: string[] | undefined): string[] {
@@ -45,17 +62,32 @@ export function DashboardFilters({
   dictionaries,
   onFilterValueAdd,
   onFilterValueRemove,
+  onDateRangeApply,
 }: DashboardFiltersProps) {
   const [openFilterKey, setOpenFilterKey] = React.useState<GlobalFilterKey | null>(
     null,
   );
+  const [isDatePickerOpen, setDatePickerOpen] = React.useState(false);
   const [draftSelections, setDraftSelections] = React.useState<
     Partial<Record<GlobalFilterKey, string[]>>
   >(() => state.filters);
+  const [draftDateRange, setDraftDateRange] = React.useState<DayPickerDateRange | undefined>(
+    {
+      from: parseIsoDate(state.dateRange.startDate) ?? undefined,
+      to: parseIsoDate(state.dateRange.endDate) ?? undefined,
+    },
+  );
 
   React.useEffect(() => {
     setDraftSelections(state.filters);
   }, [state.filters]);
+
+  React.useEffect(() => {
+    setDraftDateRange({
+      from: parseIsoDate(state.dateRange.startDate) ?? undefined,
+      to: parseIsoDate(state.dateRange.endDate) ?? undefined,
+    });
+  }, [state.dateRange.endDate, state.dateRange.startDate]);
 
   function toggleDraftValue(key: GlobalFilterKey, value: string) {
     setDraftSelections((current) => {
@@ -90,6 +122,18 @@ export function DashboardFilters({
     setOpenFilterKey(null);
   }
 
+  function applyDateRange() {
+    if (!draftDateRange?.from || !draftDateRange?.to) {
+      return;
+    }
+
+    onDateRangeApply({
+      startDate: toIsoDateString(draftDateRange.from),
+      endDate: toIsoDateString(draftDateRange.to),
+    });
+    setDatePickerOpen(false);
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -101,16 +145,53 @@ export function DashboardFilters({
       <CardContent className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center gap-3">
           <Badge variant="outline">{DATE_RANGE_FILTER_LABEL}</Badge>
-          <Button
-            variant="outline"
-            className="justify-between"
-            disabled
-            title="Date range is fixed from the initial load"
-          >
-            <CalendarRangeIcon data-icon="inline-start" />
-            {state.dateRange.startDate} to {state.dateRange.endDate}
-            <ChevronDownIcon data-icon="inline-end" />
-          </Button>
+          <Popover open={isDatePickerOpen} onOpenChange={setDatePickerOpen}>
+            <PopoverTrigger
+              render={
+                <Button
+                  variant="outline"
+                  aria-label="Date range filter"
+                  className="h-10 min-w-64 justify-between rounded-full px-4"
+                />
+              }
+            >
+              <CalendarRangeIcon data-icon="inline-start" />
+              {formatDateRange(state.dateRange)}
+              <ChevronDownIcon data-icon="inline-end" />
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-auto p-0">
+              <PopoverHeader className="px-4 pt-4">
+                <PopoverTitle>Date Range</PopoverTitle>
+                <PopoverDescription>
+                  Choose a current-period range. The previous period stays aligned to the same dates in the previous year.
+                </PopoverDescription>
+              </PopoverHeader>
+              <div className="px-2 pb-2">
+                <Calendar
+                  mode="range"
+                  numberOfMonths={2}
+                  selected={draftDateRange}
+                  onSelect={(range) => setDraftDateRange(range)}
+                />
+              </div>
+              <div className="flex items-center justify-between border-t px-4 py-3">
+                <span className="text-xs text-muted-foreground">
+                  {draftDateRange?.from && draftDateRange?.to
+                    ? `${toIsoDateString(draftDateRange.from)} to ${toIsoDateString(draftDateRange.to)}`
+                    : 'Select a start and end date'}
+                </span>
+                <Button
+                  type="button"
+                  aria-label="Apply date range"
+                  className="bg-sky-600 text-white hover:bg-sky-700"
+                  disabled={!draftDateRange?.from || !draftDateRange?.to}
+                  onClick={applyDateRange}
+                >
+                  Apply
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
           <Badge variant="secondary">
             Previous year: {state.previousDateRange.startDate} to{' '}
             {state.previousDateRange.endDate}

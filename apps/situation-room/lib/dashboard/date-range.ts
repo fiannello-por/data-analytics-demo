@@ -8,7 +8,7 @@ function toIsoDateUTC(date: Date): string {
   return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
 }
 
-function parseIsoDate(value: string): Date | null {
+export function parseIsoDate(value: string): Date | null {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
     return null;
   }
@@ -19,6 +19,10 @@ function parseIsoDate(value: string): Date | null {
   }
 
   return toIsoDateUTC(date) === value ? date : null;
+}
+
+export function toIsoDateString(date: Date): string {
+  return toIsoDateUTC(date);
 }
 
 export function getCurrentYearRange(referenceDate: Date = new Date()): DateRange {

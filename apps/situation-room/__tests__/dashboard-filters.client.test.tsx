@@ -2,6 +2,7 @@
 import * as React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
+import type { DateRange as DayPickerDateRange } from 'react-day-picker';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DashboardFilters } from '@/components/dashboard/dashboard-filters';
 import type {
@@ -42,6 +43,47 @@ vi.mock('@/components/ui/badge', () => ({
     React.createElement('span', props, children),
 }));
 
+vi.mock('@/components/ui/popover', () => ({
+  Popover: ({ children }: { children: React.ReactNode }) =>
+    React.createElement('div', null, children),
+  PopoverTrigger: ({
+    children,
+    render,
+  }: {
+    children: React.ReactNode;
+    render: React.ReactElement;
+  }) => React.cloneElement(render, undefined, children),
+  PopoverContent: ({ children }: { children: React.ReactNode }) =>
+    React.createElement('div', null, children),
+  PopoverHeader: ({ children }: { children: React.ReactNode }) =>
+    React.createElement('div', null, children),
+  PopoverTitle: ({ children }: { children: React.ReactNode }) =>
+    React.createElement('div', null, children),
+  PopoverDescription: ({ children }: { children: React.ReactNode }) =>
+    React.createElement('div', null, children),
+}));
+
+vi.mock('@/components/ui/calendar', () => ({
+  Calendar: ({
+    onSelect,
+  }: {
+    onSelect?: (range: DayPickerDateRange | undefined) => void;
+  }) =>
+    React.createElement(
+      'button',
+      {
+        type: 'button',
+        'aria-label': 'Select Q2 2026 range',
+        onClick: () =>
+          onSelect?.({
+            from: new Date('2026-04-01T00:00:00.000Z'),
+            to: new Date('2026-06-30T00:00:00.000Z'),
+          }),
+      },
+      'Calendar',
+    ),
+}));
+
 function FiltersHarness({
   dictionaries,
 }: {
@@ -70,6 +112,16 @@ function FiltersHarness({
         setState((current) => ({
           ...current,
           filters: removeDashboardFilterValue(current.filters, key, value),
+        }))
+      }
+      onDateRangeApply={(dateRange) =>
+        setState((current) => ({
+          ...current,
+          dateRange,
+          previousDateRange: {
+            startDate: '2025-04-01',
+            endDate: '2025-06-30',
+          },
         }))
       }
     />
@@ -166,5 +218,36 @@ describe('dashboard filters', () => {
     });
 
     expect(container.textContent).toContain('Division · 1');
+  });
+
+  it('applies a draft date range only after the date apply action', async () => {
+    expect(container.textContent).toContain('Jan 1, 2026 - Mar 31, 2026');
+
+    const applyDateButton = container.querySelector(
+      'button[aria-label="Apply date range"]',
+    ) as HTMLButtonElement | null;
+    const dateTrigger = container.querySelector(
+      'button[aria-label="Date range filter"]',
+    ) as HTMLButtonElement | null;
+    expect(applyDateButton).not.toBeNull();
+    expect(dateTrigger).not.toBeNull();
+
+    const calendarButton = container.querySelector(
+      'button[aria-label="Select Q2 2026 range"]',
+    ) as HTMLButtonElement | null;
+    expect(calendarButton).not.toBeNull();
+
+    await act(async () => {
+      dateTrigger!.click();
+      calendarButton!.click();
+    });
+
+    expect(container.textContent).toContain('Jan 1, 2026 - Mar 31, 2026');
+
+    await act(async () => {
+      applyDateButton!.click();
+    });
+
+    expect(container.textContent).toContain('Apr 1, 2026 - Jun 30, 2026');
   });
 });
