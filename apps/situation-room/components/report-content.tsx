@@ -3,7 +3,6 @@
 import { ReportHeader } from '@/components/report-header';
 import { FilterRail } from '@/components/filter-rail';
 import { ExecutiveSnapshot } from '@/components/executive-snapshot';
-import { TrendChart } from '@/components/trend-chart';
 import { CategorySection } from '@/components/category-section';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
@@ -74,7 +73,9 @@ export function ReportContent({ initialData }: ReportContentProps) {
             <h2 className="text-xs font-medium uppercase tracking-[0.15em] text-text-tertiary mb-5">
               Category Comparison
             </h2>
-            <TrendChart data={report.categories} metricIndex={0} />
+            <div className="rounded-lg border border-border-subtle bg-surface-elevated px-4 py-5 text-sm text-text-secondary">
+              Category comparison moved to the new Situation Room dashboard.
+            </div>
           </section>
 
           <div className="divide-y divide-border-subtle">
