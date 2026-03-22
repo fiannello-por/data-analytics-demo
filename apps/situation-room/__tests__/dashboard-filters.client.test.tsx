@@ -13,8 +13,6 @@ import {
   removeDashboardFilterValue,
 } from '@/lib/dashboard/query-inputs';
 
-const selectValues = new Map<string, string | undefined>();
-
 vi.mock('@/components/ui/button', () => ({
   Button: ({
     children,
@@ -43,63 +41,6 @@ vi.mock('@/components/ui/badge', () => ({
   }: React.HTMLAttributes<HTMLSpanElement>) =>
     React.createElement('span', props, children),
 }));
-
-vi.mock('@/components/ui/select', () => {
-  const ReactLocal = require('react') as typeof React;
-  const SelectContext = ReactLocal.createContext<{
-    value?: string;
-    onValueChange?: (value: string) => void;
-  } | null>(null);
-
-  return {
-    Select: ({
-      children,
-      value,
-      onValueChange,
-    }: {
-      children: React.ReactNode;
-      value?: string;
-      onValueChange?: (value: string) => void;
-    }) =>
-      ReactLocal.createElement(
-        SelectContext.Provider,
-        { value: { value, onValueChange } },
-        children,
-      ),
-    SelectContent: ({ children }: { children: React.ReactNode }) =>
-      ReactLocal.createElement('div', null, children),
-    SelectItem: ({
-      children,
-      value,
-    }: {
-      children: React.ReactNode;
-      value: string;
-    }) => ReactLocal.createElement('div', { 'data-item-value': value }, children),
-    SelectTrigger: ({
-      children,
-      'aria-label': ariaLabel,
-    }: {
-      children: React.ReactNode;
-      'aria-label'?: string;
-    }) => {
-      const context = ReactLocal.useContext(SelectContext);
-      const key = ariaLabel ?? 'unknown';
-      selectValues.set(key, context?.value);
-      return ReactLocal.createElement(
-        'button',
-        {
-          type: 'button',
-          'aria-label': ariaLabel,
-          'data-value': context?.value ?? '',
-          onClick: () => context?.onValueChange?.('Enterprise'),
-        },
-        children,
-      );
-    },
-    SelectValue: ({ placeholder }: { placeholder?: string }) =>
-      ReactLocal.createElement('span', null, placeholder),
-  };
-});
 
 function FiltersHarness({
   dictionaries,
@@ -142,7 +83,6 @@ describe('dashboard filters', () => {
   beforeEach(async () => {
     container = document.createElement('div');
     document.body.appendChild(container);
-    selectValues.clear();
     vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
     root = createRoot(container);
 
@@ -154,6 +94,7 @@ describe('dashboard filters', () => {
               filterKey: 'Division',
               options: [
                 { value: 'Enterprise', label: 'Enterprise', sortOrder: 1 },
+                { value: 'SMB', label: 'SMB', sortOrder: 2 },
               ],
             } as FilterDictionaryPayload,
           }}
@@ -170,36 +111,60 @@ describe('dashboard filters', () => {
     container.remove();
   });
 
-  it('resets the additive filter picker after selection and allows re-adding a removed value', async () => {
+  it('keeps multi-select choices local until apply and lets users reopen to change selections', async () => {
     const divisionTrigger = container.querySelector(
-      'button[aria-label="Division"]',
+      'button[aria-label="Division filter"]',
     ) as HTMLButtonElement | null;
     expect(divisionTrigger).not.toBeNull();
-    expect(selectValues.get('Division') ?? '').toBe('');
+    expect(container.textContent).toContain('Division');
 
     await act(async () => {
       divisionTrigger!.click();
     });
 
-    expect(container.textContent).toContain('Enterprise');
-    expect(selectValues.get('Division') ?? '').toBe('');
-
-    const removeButton = container.querySelector(
-      'button[aria-label="Remove Enterprise from Division"]',
+    const enterpriseCheckbox = container.querySelector(
+      'input[aria-label="Select Enterprise for Division"]',
+    ) as HTMLInputElement | null;
+    const smbCheckbox = container.querySelector(
+      'input[aria-label="Select SMB for Division"]',
+    ) as HTMLInputElement | null;
+    const applyButton = container.querySelector(
+      'button[aria-label="Apply Division filter"]',
     ) as HTMLButtonElement | null;
-    expect(removeButton).not.toBeNull();
+
+    expect(enterpriseCheckbox).not.toBeNull();
+    expect(smbCheckbox).not.toBeNull();
+    expect(applyButton).not.toBeNull();
 
     await act(async () => {
-      removeButton!.click();
+      enterpriseCheckbox!.click();
+      smbCheckbox!.click();
     });
 
-    expect(container.textContent).not.toContain('Remove Enterprise from Division');
-    expect(selectValues.get('Division') ?? '').toBe('');
+    expect(container.textContent).toContain('Division');
+
+    await act(async () => {
+      applyButton!.click();
+    });
+
+    expect(container.textContent).toContain('Division · 2');
 
     await act(async () => {
       divisionTrigger!.click();
     });
 
-    expect(container.textContent).toContain('Enterprise');
+    const smbCheckboxFinal = container.querySelector(
+      'input[aria-label="Select SMB for Division"]',
+    ) as HTMLInputElement | null;
+    const applyButtonFinal = container.querySelector(
+      'button[aria-label="Apply Division filter"]',
+    ) as HTMLButtonElement | null;
+
+    await act(async () => {
+      smbCheckboxFinal!.click();
+      applyButtonFinal!.click();
+    });
+
+    expect(container.textContent).toContain('Division · 1');
   });
 });
