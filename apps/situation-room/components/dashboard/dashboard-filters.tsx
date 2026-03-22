@@ -146,23 +146,30 @@ export function DashboardFilters({
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Global Controls</CardTitle>
-        <CardDescription>
-          One date range, one prior-year comparison rule, and shared multi-select dimensions across every category tab.
+      <CardHeader className="gap-2 pb-0">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <CardTitle className="text-base">Global Controls</CardTitle>
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="secondary">
+              {activeFilterCount} active filter{activeFilterCount === 1 ? '' : 's'}
+            </Badge>
+            <Badge variant="outline">Weekly trend grain</Badge>
+          </div>
+        </div>
+        <CardDescription className="text-xs">
+          Shared across every category tab.
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col gap-4">
-        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-            <Badge variant="outline">{DATE_RANGE_FILTER_LABEL}</Badge>
+      <CardContent className="flex flex-col gap-3 pt-3">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Badge variant="outline">{DATE_RANGE_FILTER_LABEL}</Badge>
           <Popover open={isDatePickerOpen} onOpenChange={setDatePickerOpen}>
             <PopoverTrigger
               render={
                 <Button
                   variant="outline"
                   aria-label="Date range filter"
-                  className="h-10 min-w-64 justify-between rounded-xl px-4"
+                  className="h-9 min-w-56 justify-between rounded-lg px-3"
                 />
               }
             >
@@ -175,7 +182,7 @@ export function DashboardFilters({
               className="w-fit max-w-[calc(100vw-1rem)] p-0"
             >
               <div>
-                <PopoverHeader className="px-4 pt-4">
+                <PopoverHeader className="px-4 pt-4 pb-2">
                   <PopoverTitle>Date Range</PopoverTitle>
                   <PopoverDescription>
                     Compare against the same dates last year.
@@ -210,24 +217,15 @@ export function DashboardFilters({
               </div>
             </PopoverContent>
           </Popover>
-            <div className="flex flex-col gap-1">
-              <span className="text-xs font-medium text-foreground">
-                Prior-year comparison
-              </span>
-              <span className="text-xs text-muted-foreground">
-                {state.previousDateRange.startDate} to {state.previousDateRange.endDate}
-              </span>
-            </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="secondary">
-              {activeFilterCount} active filter{activeFilterCount === 1 ? '' : 's'}
-            </Badge>
-            <Badge variant="outline">Weekly trend grain</Badge>
+          <div className="flex items-center gap-2 text-xs">
+            <Badge variant="outline">Prior year</Badge>
+            <span className="text-muted-foreground">
+              {state.previousDateRange.startDate} to {state.previousDateRange.endDate}
+            </span>
           </div>
         </div>
         <Separator />
-        <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5">
+        <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-5 2xl:grid-cols-6">
           {DASHBOARD_FILTER_DEFINITIONS.map((filter) => {
             const dictionary = dictionaries[filter.key];
             const selectedValues = normalizeValues(state.filters[filter.key]);
@@ -256,7 +254,7 @@ export function DashboardFilters({
                       aria-label={`${filter.label} filter`}
                       aria-expanded={isOpen}
                       className={cn(
-                        'h-10 w-full justify-between rounded-xl px-3',
+                        'h-9 w-full justify-between rounded-lg px-3',
                         selectedCount > 0 && 'border-transparent',
                       )}
                     />
