@@ -312,10 +312,11 @@ export function DashboardFilters({
                     </div>
                   </div>
                   <Separator />
-                  <div className="flex items-center justify-between px-2.5 py-2.5">
+                  <div className="flex items-center justify-between px-2 py-1.5">
                     <Button
                       type="button"
                       variant="ghost"
+                      size="sm"
                       aria-label={`Clear ${filter.label} filter`}
                       disabled={draftValues.length === 0}
                       onClick={() =>
@@ -330,6 +331,7 @@ export function DashboardFilters({
                     </Button>
                     <Button
                       type="button"
+                      size="sm"
                       aria-label={`Apply ${filter.label} filter`}
                       className="bg-accent-brand text-background hover:bg-accent-brand/90"
                       disabled={!hasChanges}
