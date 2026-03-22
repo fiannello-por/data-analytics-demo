@@ -3,19 +3,32 @@ import { performance } from 'node:perf_hooks';
 const DEFAULT_BASE_URL = 'http://localhost:3100';
 const DEFAULT_ITERATIONS = 6;
 const DEFAULT_TIMEOUT_MS = 30_000;
+const DEFAULT_CACHE_MODE = 'auto';
 
 const BENCHMARKS = [
   {
-    label: '/api/report',
-    path: '/api/report',
+    label: '/api/probe/ping',
+    path: '/api/probe/ping',
   },
   {
-    label: '/api/report?Division=Rental&Region=North',
-    path: '/api/report?Division=Rental&Region=North',
+    label: '/api/probe/summary',
+    path: '/api/probe/summary',
   },
   {
-    label: '/api/filter-dictionaries/Division',
-    path: '/api/filter-dictionaries/Division',
+    label: '/api/probe/filter-options/Division',
+    path: '/api/probe/filter-options/Division',
+  },
+  {
+    label: '/api/dashboard/category/New Logo',
+    path: '/api/dashboard/category/New%20Logo',
+  },
+  {
+    label: '/api/dashboard/trend/new_logo_bookings_amount',
+    path: '/api/dashboard/trend/new_logo_bookings_amount',
+  },
+  {
+    label: '/api/dashboard/filter-dictionaries/Division',
+    path: '/api/dashboard/filter-dictionaries/Division',
   },
 ];
 
@@ -23,6 +36,7 @@ function parseArgs(argv) {
   const options = {
     iterations: DEFAULT_ITERATIONS,
     timeoutMs: DEFAULT_TIMEOUT_MS,
+    cacheMode: undefined,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -61,6 +75,17 @@ function parseArgs(argv) {
       continue;
     }
 
+    if (arg.startsWith('--cache=')) {
+      options.cacheMode = parseCacheMode(arg.slice('--cache='.length));
+      continue;
+    }
+
+    if (arg === '--cache') {
+      index += 1;
+      options.cacheMode = parseCacheMode(argv[index]);
+      continue;
+    }
+
     throw new Error(`Unknown argument: ${arg}`);
   }
 
@@ -91,6 +116,14 @@ function parsePositiveInteger(value, flagName) {
   return parsed;
 }
 
+function parseCacheMode(value) {
+  if (value === 'auto' || value === 'off') {
+    return value;
+  }
+
+  throw new Error(`Expected --cache to be "auto" or "off", got ${value}`);
+}
+
 function percentile(values, p) {
   if (values.length === 0) {
     return null;
@@ -117,13 +150,15 @@ function withTimeout(timeoutMs) {
   };
 }
 
-async function measureRequest(baseUrl, path, timeoutMs) {
+async function measureRequest(baseUrl, path, cacheMode, timeoutMs) {
   const startedAt = performance.now();
   const timeout = withTimeout(timeoutMs);
+  const url = new URL(path, baseUrl);
+  url.searchParams.set('cache', cacheMode);
 
   let response;
   try {
-    response = await fetch(new URL(path, baseUrl), {
+    response = await fetch(url, {
       signal: timeout.signal,
       headers: {
         accept: 'application/json',
@@ -143,12 +178,19 @@ async function measureRequest(baseUrl, path, timeoutMs) {
     const bytesProcessedHeader = response.headers.get(
       'x-situation-room-bytes-processed',
     );
+    const tileTimingsHeader = response.headers.get(
+      'x-situation-room-tile-timings',
+    );
     const source = response.headers.get('x-situation-room-source');
+    const responseCacheMode =
+      response.headers.get('x-situation-room-cache-mode') ?? cacheMode;
 
     return {
       elapsedMs,
       bytesProcessed: parseOptionalNumber(bytesProcessedHeader),
+      tileTimings: parseOptionalJson(tileTimingsHeader),
       source,
+      cacheMode: responseCacheMode,
     };
   } catch (error) {
     const reason =
@@ -163,8 +205,19 @@ async function measureRequest(baseUrl, path, timeoutMs) {
   }
 }
 
-async function runBenchmark(baseUrl, benchmark, iterations, timeoutMs) {
-  const coldResult = await measureRequest(baseUrl, benchmark.path, timeoutMs);
+async function runBenchmark(
+  baseUrl,
+  benchmark,
+  iterations,
+  cacheMode,
+  timeoutMs,
+) {
+  const coldResult = await measureRequest(
+    baseUrl,
+    benchmark.path,
+    cacheMode,
+    timeoutMs,
+  );
   const warmLatencies = [];
   const bytesProcessedValues = [];
 
@@ -173,7 +226,12 @@ async function runBenchmark(baseUrl, benchmark, iterations, timeoutMs) {
   }
 
   for (let index = 0; index < iterations; index += 1) {
-    const result = await measureRequest(baseUrl, benchmark.path, timeoutMs);
+    const result = await measureRequest(
+      baseUrl,
+      benchmark.path,
+      cacheMode,
+      timeoutMs,
+    );
     warmLatencies.push(result.elapsedMs);
     if (result.bytesProcessed != null) {
       bytesProcessedValues.push(result.bytesProcessed);
@@ -196,7 +254,9 @@ async function runBenchmark(baseUrl, benchmark, iterations, timeoutMs) {
     warmP50Ms: roundMs(percentile(warmLatencies, 50)),
     warmP95Ms: roundMs(percentile(warmLatencies, 95)),
     avgBytesProcessed,
+    tileTimings: coldResult.tileTimings,
     source: coldResult.source ?? null,
+    cacheMode: coldResult.cacheMode ?? cacheMode,
   };
 }
 
@@ -217,6 +277,19 @@ function parseOptionalNumber(value) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function parseOptionalJson(value) {
+  if (value == null) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
 async function main() {
   const options = parseArgs(process.argv.slice(2));
 
@@ -229,17 +302,27 @@ async function main() {
         '',
         'Environment:',
         `  BENCHMARK_BASE_URL  Base URL for the Situation Room app (default: ${DEFAULT_BASE_URL})`,
+        `  BENCHMARK_CACHE_MODE  Query cache mode: auto or off (default: ${DEFAULT_CACHE_MODE})`,
       ].join('\n'),
     );
     return;
   }
 
   const baseUrl = process.env.BENCHMARK_BASE_URL ?? DEFAULT_BASE_URL;
+  const cacheMode = parseCacheMode(
+    options.cacheMode ?? process.env.BENCHMARK_CACHE_MODE ?? DEFAULT_CACHE_MODE,
+  );
 
   const results = [];
   for (const benchmark of BENCHMARKS) {
     results.push(
-      await runBenchmark(baseUrl, benchmark, options.iterations, options.timeoutMs),
+      await runBenchmark(
+        baseUrl,
+        benchmark,
+        options.iterations,
+        cacheMode,
+        options.timeoutMs,
+      ),
     );
   }
 
@@ -247,6 +330,7 @@ async function main() {
     `${JSON.stringify(
       {
         baseUrl,
+        cacheMode,
         methodology:
           'coldMs is the first hit for each path within the current app process; warm metrics are subsequent requests in the same process.',
         generatedAt: new Date().toISOString(),

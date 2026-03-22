@@ -58,6 +58,7 @@ type ProbeState = {
   cacheMode?: ProbeCacheMode | null;
   queryCount?: number | null;
   bytesProcessed?: number | null;
+  tileTimings?: Array<{ tileId: string; durationMs: number }>;
   loadedAt?: string;
   samples: Array<{ label: string; value: string }>;
   preview?: string;
@@ -203,6 +204,19 @@ function parseNumericHeader(value: string | null): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function parseOptionalJsonArray<T>(value: string | null): T[] | null {
+  if (value == null) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    return Array.isArray(parsed) ? (parsed as T[]) : null;
+  } catch {
+    return null;
+  }
+}
+
 function formatPreview(value: unknown) {
   if (value == null) {
     return 'No response body.';
@@ -318,6 +332,9 @@ async function executeProbeRequest(
       bytesProcessed: parseNumericHeader(
         response.headers.get('x-situation-room-bytes-processed'),
       ),
+      tileTimings: parseOptionalJsonArray<{ tileId: string; durationMs: number }>(
+        response.headers.get('x-situation-room-tile-timings'),
+      ) ?? undefined,
       loadedAt: new Date().toISOString(),
       samples: extractSamples(parsed).slice(0, 2),
       preview: formatPreview(parsed),
@@ -413,6 +430,12 @@ function ProbeCard({
             label="Query count"
             value={formatQueryCount(state.queryCount)}
           />
+          {state.tileTimings?.length ? (
+            <MetricCard
+              label="Tile timings"
+              value={`${state.tileTimings.length} tiles`}
+            />
+          ) : null}
           <MetricCard
             label="Loaded at"
             value={formatRelativeTimestamp(state.loadedAt)}
@@ -429,6 +452,28 @@ function ProbeCard({
               sanity checking.
             </p>
           </div>
+          {state.tileTimings?.length ? (
+            <div className="rounded-xl border border-border-subtle bg-surface/60 p-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-tertiary">
+                Tile timing breakdown
+              </p>
+              <div className="mt-3 grid gap-2 md:grid-cols-2">
+                {state.tileTimings.slice(0, 6).map((timing) => (
+                  <div
+                    key={timing.tileId}
+                    className="rounded-lg border border-border-subtle bg-background px-3 py-2 text-sm"
+                  >
+                    <div className="font-medium text-text-primary">
+                      {timing.tileId}
+                    </div>
+                    <div className="text-text-secondary">
+                      {formatDuration(timing.durationMs)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
           <div className="grid gap-3 md:grid-cols-2">
             {state.status === 'loading' ? (
               <>
@@ -777,8 +822,8 @@ export function ArchitectureLab({ sourceLabel }: { sourceLabel: string }) {
               <CardHeader>
                 <CardTitle>Probe catalog</CardTitle>
                 <CardDescription>
-                  The initial scope focuses on a baseline request, an aggregate
-                  read, and a filter dictionary lookup.
+                  The catalog now covers baseline, aggregate, filter, and
+                  dashboard snapshot/trend paths.
                 </CardDescription>
               </CardHeader>
               <CardContent>
