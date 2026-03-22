@@ -36,6 +36,8 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 type DashboardFiltersProps = {
   state: DashboardState;
@@ -55,6 +57,12 @@ function getTriggerLabel(label: string, selectedCount: number): string {
   }
 
   return `${label} · ${selectedCount}`;
+}
+
+function countActiveFilters(
+  filters: DashboardState['filters'],
+): number {
+  return Object.values(filters).filter((values) => (values?.length ?? 0) > 0).length;
 }
 
 export function DashboardFilters({
@@ -88,6 +96,8 @@ export function DashboardFilters({
       to: parseIsoDate(state.dateRange.endDate) ?? undefined,
     });
   }, [state.dateRange.endDate, state.dateRange.startDate]);
+
+  const activeFilterCount = countActiveFilters(state.filters);
 
   function toggleDraftValue(key: GlobalFilterKey, value: string) {
     setDraftSelections((current) => {
@@ -137,21 +147,22 @@ export function DashboardFilters({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Filters</CardTitle>
+        <CardTitle>Global Controls</CardTitle>
         <CardDescription>
-          One global date range and shared multi-select dimensions for every tab.
+          One date range, one prior-year comparison rule, and shared multi-select dimensions across every category tab.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <Badge variant="outline">{DATE_RANGE_FILTER_LABEL}</Badge>
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <Badge variant="outline">{DATE_RANGE_FILTER_LABEL}</Badge>
           <Popover open={isDatePickerOpen} onOpenChange={setDatePickerOpen}>
             <PopoverTrigger
               render={
                 <Button
                   variant="outline"
                   aria-label="Date range filter"
-                  className="h-10 min-w-64 justify-between rounded-full px-4"
+                  className="h-10 min-w-64 justify-between rounded-xl px-4"
                 />
               }
             >
@@ -166,6 +177,7 @@ export function DashboardFilters({
                   Choose a current-period range. The previous period stays aligned to the same dates in the previous year.
                 </PopoverDescription>
               </PopoverHeader>
+              <Separator />
               <div className="px-2 pb-2">
                 <Calendar
                   mode="range"
@@ -174,7 +186,8 @@ export function DashboardFilters({
                   onSelect={(range) => setDraftDateRange(range)}
                 />
               </div>
-              <div className="flex items-center justify-between border-t px-4 py-3">
+              <Separator />
+              <div className="flex items-center justify-between px-4 py-3">
                 <span className="text-xs text-muted-foreground">
                   {draftDateRange?.from && draftDateRange?.to
                     ? `${toIsoDateString(draftDateRange.from)} to ${toIsoDateString(draftDateRange.to)}`
@@ -183,7 +196,7 @@ export function DashboardFilters({
                 <Button
                   type="button"
                   aria-label="Apply date range"
-                  className="bg-sky-600 text-white hover:bg-sky-700"
+                  className="bg-accent-brand text-background hover:bg-accent-brand/90"
                   disabled={!draftDateRange?.from || !draftDateRange?.to}
                   onClick={applyDateRange}
                 >
@@ -192,12 +205,24 @@ export function DashboardFilters({
               </div>
             </PopoverContent>
           </Popover>
-          <Badge variant="secondary">
-            Previous year: {state.previousDateRange.startDate} to{' '}
-            {state.previousDateRange.endDate}
-          </Badge>
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-medium text-foreground">
+                Prior-year comparison
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {state.previousDateRange.startDate} to {state.previousDateRange.endDate}
+              </span>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="secondary">
+              {activeFilterCount} active filter{activeFilterCount === 1 ? '' : 's'}
+            </Badge>
+            <Badge variant="outline">Weekly trend grain</Badge>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-3">
+        <Separator />
+        <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5">
           {DASHBOARD_FILTER_DEFINITIONS.map((filter) => {
             const dictionary = dictionaries[filter.key];
             const selectedValues = normalizeValues(state.filters[filter.key]);
@@ -206,89 +231,115 @@ export function DashboardFilters({
             );
             const isOpen = openFilterKey === filter.key;
             const selectedCount = selectedValues.length;
+            const hasChanges =
+              selectedValues.length !== draftValues.length ||
+              selectedValues.some((value, index) => value !== draftValues[index]);
 
             return (
-              <div
+              <Popover
                 key={filter.key}
-                className="relative"
+                open={isOpen}
+                onOpenChange={(open) =>
+                  setOpenFilterKey(open ? filter.key : null)
+                }
               >
-                <Button
-                  type="button"
-                  variant="outline"
-                  aria-label={`${filter.label} filter`}
-                  className="h-10 min-w-44 justify-between rounded-full px-4"
-                  onClick={() =>
-                    setOpenFilterKey((current) =>
-                      current === filter.key ? null : filter.key,
-                    )
+                <PopoverTrigger
+                  render={
+                    <Button
+                      type="button"
+                      variant={selectedCount > 0 ? 'secondary' : 'outline'}
+                      aria-label={`${filter.label} filter`}
+                      aria-expanded={isOpen}
+                      className={cn(
+                        'h-10 w-full justify-between rounded-xl px-3',
+                        selectedCount > 0 && 'border-transparent',
+                      )}
+                    />
                   }
                 >
                   <span className="truncate text-left text-sm">
                     {getTriggerLabel(filter.label, selectedCount)}
                   </span>
                   <ChevronDownIcon
-                    className={`size-4 shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                    data-icon="inline-end"
+                    className={cn('transition-transform', isOpen && 'rotate-180')}
                   />
-                </Button>
-                {isOpen ? (
-                  <div className="absolute left-0 top-[calc(100%+0.5rem)] z-20 flex w-72 flex-col gap-3 rounded-2xl border bg-popover p-4 shadow-md">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="space-y-1">
-                        <p className="text-sm font-medium">{filter.label}</p>
-                        <p className="text-xs text-muted-foreground">
-                          Select one or more values, then apply.
-                        </p>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="size-8 rounded-full"
-                        aria-label={`Close ${filter.label} filter`}
-                        onClick={() => setOpenFilterKey(null)}
-                      >
-                        <XIcon className="size-4" />
-                      </Button>
+                </PopoverTrigger>
+                <PopoverContent align="start" className="w-[22rem] p-0">
+                  <PopoverHeader className="px-4 pt-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <PopoverTitle>{filter.label}</PopoverTitle>
+                      {draftValues.length > 0 ? (
+                        <Badge variant="secondary">{draftValues.length} selected</Badge>
+                      ) : null}
                     </div>
-                    <div className="max-h-48 space-y-2 overflow-auto">
+                    <PopoverDescription>
+                      Multi-select values, then apply the change to the active tab.
+                    </PopoverDescription>
+                  </PopoverHeader>
+                  <Separator />
+                  <div className="max-h-56 overflow-auto px-3 py-3">
+                    <div className="flex flex-col gap-1.5">
                       {(dictionary?.options ?? []).map((option) => {
                         const checked = draftValues.includes(option.value);
 
                         return (
                           <label
                             key={option.value}
-                            className="flex items-center gap-2 text-sm"
+                            className={cn(
+                              'flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-sm transition-colors',
+                              checked
+                                ? 'border-accent-brand/20 bg-accent-brand-subtle text-foreground'
+                                : 'border-transparent hover:bg-muted',
+                            )}
                           >
                             <input
                               type="checkbox"
                               aria-label={`Select ${option.label} for ${filter.label}`}
+                              className="size-4 rounded-sm border-input text-accent-brand"
                               checked={checked}
                               onChange={() =>
                                 toggleDraftValue(filter.key, option.value)
                               }
                             />
-                            <span>{option.label}</span>
+                            <span className="truncate">{option.label}</span>
                           </label>
                         );
                       })}
                     </div>
+                  </div>
+                  <Separator />
+                  <div className="flex items-center justify-between px-3 py-3">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      aria-label={`Clear ${filter.label} filter`}
+                      disabled={draftValues.length === 0}
+                      onClick={() =>
+                        setDraftSelections((current) => ({
+                          ...current,
+                          [filter.key]: [],
+                        }))
+                      }
+                    >
+                      <XIcon data-icon="inline-start" />
+                      Clear
+                    </Button>
                     <Button
                       type="button"
                       aria-label={`Apply ${filter.label} filter`}
-                      className="bg-sky-600 text-white hover:bg-sky-700"
+                      className="bg-accent-brand text-background hover:bg-accent-brand/90"
+                      disabled={!hasChanges}
                       onClick={() => applyDraft(filter.key)}
                     >
                       Apply
                     </Button>
                   </div>
-                ) : null}
-              </div>
+                </PopoverContent>
+              </Popover>
             );
           })}
         </div>
-        <p className="text-xs text-muted-foreground">
-          Date range stays fixed from the initial load in this task.
-        </p>
       </CardContent>
     </Card>
   );
