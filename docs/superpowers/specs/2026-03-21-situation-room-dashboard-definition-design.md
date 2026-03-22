@@ -7,6 +7,11 @@ Related designs:
 - `2026-03-19-scorecard-situation-room-report-design.md`
 - `2026-03-20-situation-room-data-backend-roadmap-design.md`
 
+For v1 dashboard-definition work, this spec overrides the earlier backend
+roadmap wherever the two documents disagree about the serving layer. The active
+v1 decision is direct reads from the existing Opportunity-based BigQuery table
+to establish the baseline before dbt is in place.
+
 ## 1. Summary
 
 This document defines the first real `Situation Room` dashboard as a fixed
@@ -286,61 +291,69 @@ The current `sort_order` values are only a bootstrap signal for the initial
 catalog order; the curated tile catalog becomes the long-term authority once it
 is checked into code.
 
+Default v1 format rules:
+
+- labels ending with `$` or containing `Revenue` or `Deal` use `currency`
+- labels ending with `#`, or equal to `SQL`, `SQO`, `SAL`, `SQO Users`,
+  `SDR Points`, or `Gate 1 Complete` use `number`
+- `Close Rate` uses `percent`
+- `Avg Age` uses `days`
+
 Initial category contents:
 
 - `New Logo`
-  - `Bookings $`
-  - `Bookings #`
-  - `Annual Pacing (YTD)`
-  - `Close Rate`
-  - `Avg Age`
-  - `Avg Booked Deal`
-  - `Avg Quoted Deal`
-  - `Pipeline Created`
-  - `SQL`
-  - `SQO`
-  - `Gate 1 Complete`
-  - `SDR Points`
-  - `SQO Users`
+  - `new_logo_bookings_amount` -> `Bookings $` -> `currency`
+  - `new_logo_bookings_count` -> `Bookings #` -> `number`
+  - `new_logo_annual_pacing_ytd` -> `Annual Pacing (YTD)` -> `number`
+  - `new_logo_close_rate` -> `Close Rate` -> `percent`
+  - `new_logo_avg_age` -> `Avg Age` -> `days`
+  - `new_logo_avg_booked_deal` -> `Avg Booked Deal` -> `currency`
+  - `new_logo_avg_quoted_deal` -> `Avg Quoted Deal` -> `currency`
+  - `new_logo_pipeline_created` -> `Pipeline Created` -> `number`
+  - `new_logo_sql` -> `SQL` -> `number`
+  - `new_logo_sqo` -> `SQO` -> `number`
+  - `new_logo_gate_1_complete` -> `Gate 1 Complete` -> `number`
+  - `new_logo_sdr_points` -> `SDR Points` -> `number`
+  - `new_logo_sqo_users` -> `SQO Users` -> `number`
 - `Expansion`
-  - `Bookings $`
-  - `Bookings #`
-  - `Annual Pacing (YTD)`
-  - `Close Rate`
-  - `Avg Age`
-  - `Avg Booked Deal`
-  - `Avg Quoted Deal`
-  - `Pipeline Created`
-  - `SQL`
-  - `SQO`
+  - `expansion_bookings_amount` -> `Bookings $` -> `currency`
+  - `expansion_bookings_count` -> `Bookings #` -> `number`
+  - `expansion_annual_pacing_ytd` -> `Annual Pacing (YTD)` -> `number`
+  - `expansion_close_rate` -> `Close Rate` -> `percent`
+  - `expansion_avg_age` -> `Avg Age` -> `days`
+  - `expansion_avg_booked_deal` -> `Avg Booked Deal` -> `currency`
+  - `expansion_avg_quoted_deal` -> `Avg Quoted Deal` -> `currency`
+  - `expansion_pipeline_created` -> `Pipeline Created` -> `number`
+  - `expansion_sql` -> `SQL` -> `number`
+  - `expansion_sqo` -> `SQO` -> `number`
 - `Migration`
-  - `Bookings $`
-  - `Bookings #`
-  - `Annual Pacing (YTD)`
-  - `Close Rate`
-  - `Avg Age`
-  - `Avg Booked Deal`
-  - `Avg Quoted Deal`
-  - `Pipeline Created`
-  - `SQL`
-  - `SQO`
-  - `SAL`
-  - `Avg Users`
+  - `migration_bookings_amount` -> `Bookings $` -> `currency`
+  - `migration_bookings_count` -> `Bookings #` -> `number`
+  - `migration_annual_pacing_ytd` -> `Annual Pacing (YTD)` -> `number`
+  - `migration_close_rate` -> `Close Rate` -> `percent`
+  - `migration_avg_age` -> `Avg Age` -> `days`
+  - `migration_avg_booked_deal` -> `Avg Booked Deal` -> `currency`
+  - `migration_avg_quoted_deal` -> `Avg Quoted Deal` -> `currency`
+  - `migration_pipeline_created` -> `Pipeline Created` -> `number`
+  - `migration_sql` -> `SQL` -> `number`
+  - `migration_sqo` -> `SQO` -> `number`
+  - `migration_sal` -> `SAL` -> `number`
+  - `migration_avg_users` -> `Avg Users` -> `number`
 - `Renewal`
-  - `Bookings $`
-  - `Bookings #`
-  - `Annual Pacing (YTD)`
-  - `Close Rate`
-  - `Avg Age`
-  - `Avg Booked Deal`
-  - `Avg Quoted Deal`
-  - `Pipeline Created`
-  - `SQL`
+  - `renewal_bookings_amount` -> `Bookings $` -> `currency`
+  - `renewal_bookings_count` -> `Bookings #` -> `number`
+  - `renewal_annual_pacing_ytd` -> `Annual Pacing (YTD)` -> `number`
+  - `renewal_close_rate` -> `Close Rate` -> `percent`
+  - `renewal_avg_age` -> `Avg Age` -> `days`
+  - `renewal_avg_booked_deal` -> `Avg Booked Deal` -> `currency`
+  - `renewal_avg_quoted_deal` -> `Avg Quoted Deal` -> `currency`
+  - `renewal_pipeline_created` -> `Pipeline Created` -> `number`
+  - `renewal_sql` -> `SQL` -> `number`
 - `Total`
-  - `Bookings $`
-  - `Bookings #`
-  - `Annual Pacing (YTD)`
-  - `One-time Revenue`
+  - `total_bookings_amount` -> `Bookings $` -> `currency`
+  - `total_bookings_count` -> `Bookings #` -> `number`
+  - `total_annual_pacing_ytd` -> `Annual Pacing (YTD)` -> `number`
+  - `total_one_time_revenue` -> `One-time Revenue` -> `currency`
 
 ## 10. Query Contracts
 
