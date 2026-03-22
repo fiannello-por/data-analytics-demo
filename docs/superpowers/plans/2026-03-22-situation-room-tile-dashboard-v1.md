@@ -219,9 +219,257 @@ export const TILE_CATALOG = {
       sortOrder: 1,
       formatType: 'currency',
     },
-    // ...continue with the approved spec list
+    {
+      tileId: 'new_logo_bookings_count',
+      label: 'Bookings #',
+      sortOrder: 2,
+      formatType: 'number',
+    },
+    {
+      tileId: 'new_logo_annual_pacing_ytd',
+      label: 'Annual Pacing (YTD)',
+      sortOrder: 3,
+      formatType: 'number',
+    },
+    {
+      tileId: 'new_logo_close_rate',
+      label: 'Close Rate',
+      sortOrder: 4,
+      formatType: 'percent',
+    },
+    {
+      tileId: 'new_logo_avg_age',
+      label: 'Avg Age',
+      sortOrder: 5,
+      formatType: 'days',
+    },
+    {
+      tileId: 'new_logo_avg_booked_deal',
+      label: 'Avg Booked Deal',
+      sortOrder: 6,
+      formatType: 'currency',
+    },
+    {
+      tileId: 'new_logo_avg_quoted_deal',
+      label: 'Avg Quoted Deal',
+      sortOrder: 7,
+      formatType: 'currency',
+    },
+    {
+      tileId: 'new_logo_pipeline_created',
+      label: 'Pipeline Created',
+      sortOrder: 8,
+      formatType: 'number',
+    },
+    { tileId: 'new_logo_sql', label: 'SQL', sortOrder: 9, formatType: 'number' },
+    { tileId: 'new_logo_sqo', label: 'SQO', sortOrder: 10, formatType: 'number' },
+    {
+      tileId: 'new_logo_gate_1_complete',
+      label: 'Gate 1 Complete',
+      sortOrder: 11,
+      formatType: 'number',
+    },
+    {
+      tileId: 'new_logo_sdr_points',
+      label: 'SDR Points',
+      sortOrder: 12,
+      formatType: 'number',
+    },
+    {
+      tileId: 'new_logo_sqo_users',
+      label: 'SQO Users',
+      sortOrder: 13,
+      formatType: 'number',
+    },
   ],
-  // ...other categories
+  Expansion: [
+    {
+      tileId: 'expansion_bookings_amount',
+      label: 'Bookings $',
+      sortOrder: 1,
+      formatType: 'currency',
+    },
+    {
+      tileId: 'expansion_bookings_count',
+      label: 'Bookings #',
+      sortOrder: 2,
+      formatType: 'number',
+    },
+    {
+      tileId: 'expansion_annual_pacing_ytd',
+      label: 'Annual Pacing (YTD)',
+      sortOrder: 3,
+      formatType: 'number',
+    },
+    {
+      tileId: 'expansion_close_rate',
+      label: 'Close Rate',
+      sortOrder: 4,
+      formatType: 'percent',
+    },
+    {
+      tileId: 'expansion_avg_age',
+      label: 'Avg Age',
+      sortOrder: 5,
+      formatType: 'days',
+    },
+    {
+      tileId: 'expansion_avg_booked_deal',
+      label: 'Avg Booked Deal',
+      sortOrder: 6,
+      formatType: 'currency',
+    },
+    {
+      tileId: 'expansion_avg_quoted_deal',
+      label: 'Avg Quoted Deal',
+      sortOrder: 7,
+      formatType: 'currency',
+    },
+    {
+      tileId: 'expansion_pipeline_created',
+      label: 'Pipeline Created',
+      sortOrder: 8,
+      formatType: 'number',
+    },
+    { tileId: 'expansion_sql', label: 'SQL', sortOrder: 9, formatType: 'number' },
+    { tileId: 'expansion_sqo', label: 'SQO', sortOrder: 10, formatType: 'number' },
+  ],
+  Migration: [
+    {
+      tileId: 'migration_bookings_amount',
+      label: 'Bookings $',
+      sortOrder: 1,
+      formatType: 'currency',
+    },
+    {
+      tileId: 'migration_bookings_count',
+      label: 'Bookings #',
+      sortOrder: 2,
+      formatType: 'number',
+    },
+    {
+      tileId: 'migration_annual_pacing_ytd',
+      label: 'Annual Pacing (YTD)',
+      sortOrder: 3,
+      formatType: 'number',
+    },
+    {
+      tileId: 'migration_close_rate',
+      label: 'Close Rate',
+      sortOrder: 4,
+      formatType: 'percent',
+    },
+    {
+      tileId: 'migration_avg_age',
+      label: 'Avg Age',
+      sortOrder: 5,
+      formatType: 'days',
+    },
+    {
+      tileId: 'migration_avg_booked_deal',
+      label: 'Avg Booked Deal',
+      sortOrder: 6,
+      formatType: 'currency',
+    },
+    {
+      tileId: 'migration_avg_quoted_deal',
+      label: 'Avg Quoted Deal',
+      sortOrder: 7,
+      formatType: 'currency',
+    },
+    {
+      tileId: 'migration_pipeline_created',
+      label: 'Pipeline Created',
+      sortOrder: 8,
+      formatType: 'number',
+    },
+    { tileId: 'migration_sql', label: 'SQL', sortOrder: 9, formatType: 'number' },
+    { tileId: 'migration_sqo', label: 'SQO', sortOrder: 10, formatType: 'number' },
+    { tileId: 'migration_sal', label: 'SAL', sortOrder: 11, formatType: 'number' },
+    {
+      tileId: 'migration_avg_users',
+      label: 'Avg Users',
+      sortOrder: 12,
+      formatType: 'number',
+    },
+  ],
+  Renewal: [
+    {
+      tileId: 'renewal_bookings_amount',
+      label: 'Bookings $',
+      sortOrder: 1,
+      formatType: 'currency',
+    },
+    {
+      tileId: 'renewal_bookings_count',
+      label: 'Bookings #',
+      sortOrder: 2,
+      formatType: 'number',
+    },
+    {
+      tileId: 'renewal_annual_pacing_ytd',
+      label: 'Annual Pacing (YTD)',
+      sortOrder: 3,
+      formatType: 'number',
+    },
+    {
+      tileId: 'renewal_close_rate',
+      label: 'Close Rate',
+      sortOrder: 4,
+      formatType: 'percent',
+    },
+    {
+      tileId: 'renewal_avg_age',
+      label: 'Avg Age',
+      sortOrder: 5,
+      formatType: 'days',
+    },
+    {
+      tileId: 'renewal_avg_booked_deal',
+      label: 'Avg Booked Deal',
+      sortOrder: 6,
+      formatType: 'currency',
+    },
+    {
+      tileId: 'renewal_avg_quoted_deal',
+      label: 'Avg Quoted Deal',
+      sortOrder: 7,
+      formatType: 'currency',
+    },
+    {
+      tileId: 'renewal_pipeline_created',
+      label: 'Pipeline Created',
+      sortOrder: 8,
+      formatType: 'number',
+    },
+    { tileId: 'renewal_sql', label: 'SQL', sortOrder: 9, formatType: 'number' },
+  ],
+  Total: [
+    {
+      tileId: 'total_bookings_amount',
+      label: 'Bookings $',
+      sortOrder: 1,
+      formatType: 'currency',
+    },
+    {
+      tileId: 'total_bookings_count',
+      label: 'Bookings #',
+      sortOrder: 2,
+      formatType: 'number',
+    },
+    {
+      tileId: 'total_annual_pacing_ytd',
+      label: 'Annual Pacing (YTD)',
+      sortOrder: 3,
+      formatType: 'number',
+    },
+    {
+      tileId: 'total_one_time_revenue',
+      label: 'One-time Revenue',
+      sortOrder: 4,
+      formatType: 'currency',
+    },
+  ],
 } as const;
 
 export const GLOBAL_FILTER_KEYS = [
@@ -606,6 +854,10 @@ it('measures dashboard tile trend probes', async () => {
   const result = await runProbe('dashboard-tile-trend', { cacheMode: 'off' });
   expect(result.payload.source).toBe('bigquery');
 });
+
+it('registers the dashboard filter dictionary probe', () => {
+  expect(PROBES.some((probe) => probe.id === 'dashboard-filter-dictionary')).toBe(true);
+});
 ```
 
 - [ ] **Step 2: Run the probe tests to verify they fail**
@@ -623,6 +875,11 @@ Expected: FAIL because the new probe registrations are not present yet.
   label: 'Dashboard category snapshot',
   endpoint: '/api/dashboard/category/New%20Logo',
 }
+{
+  id: 'dashboard-filter-dictionary',
+  label: 'Dashboard filter dictionary',
+  endpoint: '/api/dashboard/filter-dictionaries/Division',
+}
 ```
 
 - [ ] **Step 4: Run the probe tests**
@@ -638,53 +895,52 @@ git add apps/situation-room/lib/analytics-lab.ts apps/situation-room/lib/server/
 git commit -m "feat: add dashboard probes to analytics lab"
 ```
 
-## Task 7: Remove The Old Scorecard Report Assumptions
+## Task 7: Protect Legacy Lab Compatibility
 
 **Files:**
-- Modify: `apps/situation-room/lib/contracts.ts`
-- Modify: `apps/situation-room/lib/data-adapters/bigquery-adapter.ts`
-- Modify: `apps/situation-room/lib/server/get-scorecard-report.ts`
-- Modify: `apps/situation-room/lib/server/get-filter-dictionary.ts`
-- Modify: `apps/situation-room/components/report-content.tsx`
-- Modify: `apps/situation-room/hooks/use-scorecard-query.ts`
+- Modify: `apps/situation-room/components/architecture-lab.tsx`
 - Modify: `apps/situation-room/app/api/report/route.ts`
-- Test: `apps/situation-room/__tests__/contracts.test.ts`
-- Test: `apps/situation-room/__tests__/bigquery-adapter.test.ts`
-- Test: `apps/situation-room/__tests__/server-loaders.test.ts`
+- Modify: `apps/situation-room/app/api/filter-dictionaries/[key]/route.ts`
+- Test: `apps/situation-room/__tests__/report-page.test.ts`
+- Test: `apps/situation-room/__tests__/filter-dictionaries.test.ts`
 
-- [ ] **Step 1: Write failing cleanup tests that assert the old report path is no longer the primary UI path**
+- [ ] **Step 1: Write failing compatibility tests for the relocated lab**
 
 ```ts
-it('does not require scorecard_report_rows for the dashboard page', async () => {
-  const page = await DashboardPage();
-  expect(page).toBeDefined();
+it('keeps the lab report endpoints available for the /lab tooling path', async () => {
+  const response = await GET(
+    new Request('http://localhost/api/filter-dictionaries/Division'),
+    { params: Promise.resolve({ key: 'Division' }) },
+  );
+
+  expect(response.status).toBe(200);
 });
 ```
 
-- [ ] **Step 2: Run the cleanup tests to verify they fail or expose stale coupling**
+- [ ] **Step 2: Run the compatibility tests to verify they fail or expose stale coupling**
 
-Run: `pnpm --filter @point-of-rental/situation-room test -- contracts bigquery-adapter server-loaders`
+Run: `pnpm --filter @point-of-rental/situation-room test -- report-page filter-dictionaries`
 
-Expected: FAIL or reveal stale scorecard-specific assumptions still wired into shared modules.
+Expected: FAIL or reveal lab-route assumptions broken by the page split.
 
-- [ ] **Step 3: Remove or quarantine the old scorecard-specific paths**
+- [ ] **Step 3: Keep only the compatibility needed for /lab**
 
 ```ts
-// Keep old modules only for compatibility if still used by /lab,
-// but do not let the new dashboard route depend on them.
+// Preserve the legacy lab endpoints and any probe dependencies,
+// but do not route the new dashboard page through the old scorecard flow.
 ```
 
 - [ ] **Step 4: Run the affected tests**
 
-Run: `pnpm --filter @point-of-rental/situation-room test -- contracts bigquery-adapter server-loaders`
+Run: `pnpm --filter @point-of-rental/situation-room test -- report-page filter-dictionaries`
 
 Expected: PASS
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add apps/situation-room/lib/contracts.ts apps/situation-room/lib/data-adapters/bigquery-adapter.ts apps/situation-room/lib/server/get-scorecard-report.ts apps/situation-room/lib/server/get-filter-dictionary.ts apps/situation-room/components/report-content.tsx apps/situation-room/hooks/use-scorecard-query.ts apps/situation-room/app/api/report/route.ts apps/situation-room/__tests__/contracts.test.ts apps/situation-room/__tests__/bigquery-adapter.test.ts apps/situation-room/__tests__/server-loaders.test.ts
-git commit -m "refactor: decouple new dashboard from old scorecard flow"
+git add apps/situation-room/components/architecture-lab.tsx apps/situation-room/app/api/report/route.ts apps/situation-room/app/api/filter-dictionaries/[key]/route.ts apps/situation-room/__tests__/report-page.test.ts apps/situation-room/__tests__/filter-dictionaries.test.ts
+git commit -m "refactor: preserve lab compatibility during dashboard cutover"
 ```
 
 ## Task 8: Final Verification And Benchmark Capture
