@@ -424,12 +424,19 @@ export function buildFilterDictionaryQuery(
 
   return {
     sql: `
-      select distinct
-        ${column} AS value,
-        ${column} AS label
-      from ${getSourceTableReference()}
-      where ${column} IS NOT NULL
-      order by label
+      with deduped as (
+        select distinct
+          ${column} AS value,
+          ${column} AS label
+        from ${getSourceTableReference()}
+        where ${column} IS NOT NULL
+      )
+      select
+        value,
+        label,
+        dense_rank() over (order by value) AS sort_order
+      from deduped
+      order by sort_order, value
     `.trim(),
     params: {},
   };

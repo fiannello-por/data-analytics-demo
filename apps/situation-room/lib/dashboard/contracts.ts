@@ -31,12 +31,18 @@ export type CategorySnapshotRow = DashboardTileMetadata & {
   pctChange: string;
 };
 
+export type TileTiming = {
+  tileId: string;
+  durationMs: number;
+};
+
 export type CategorySnapshotPayload = {
   category: Category;
   currentWindowLabel: string;
   previousWindowLabel: string;
   lastRefreshedAt: string;
   rows: CategorySnapshotRow[];
+  tileTimings: TileTiming[];
 };
 
 export type TileTrendPoint = {

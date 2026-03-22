@@ -56,3 +56,21 @@ export function isValidDateRange(range: DateRange): boolean {
 
   return start.getTime() <= end.getTime();
 }
+
+export function formatDateRange(range: DateRange): string {
+  const start = parseIsoDate(range.startDate);
+  const end = parseIsoDate(range.endDate);
+
+  if (!start || !end) {
+    throw new Error('Invalid date range');
+  }
+
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
+
+  return `${formatter.format(start)} - ${formatter.format(end)}`;
+}

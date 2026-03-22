@@ -317,3 +317,9 @@ export function findTileDefinition(
 ): TileDefinition | undefined {
   return getCategoryTiles(category).find((tile) => tile.tileId === tileId);
 }
+
+export function findCategoryForTileId(tileId: string): Category | undefined {
+  return CATEGORY_ORDER.find((category) =>
+    getCategoryTiles(category).some((tile) => tile.tileId === tileId),
+  );
+}

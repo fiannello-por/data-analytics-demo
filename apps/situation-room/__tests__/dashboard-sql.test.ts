@@ -48,6 +48,7 @@ describe('dashboard sql', () => {
   it('builds a global dictionary query without contextual filters', () => {
     const query = buildFilterDictionaryQuery('Division');
     expect(query.sql).toContain('distinct');
+    expect(query.sql).toContain('dense_rank() over (order by value)');
     expect(query.sql).not.toContain('where Division in');
     expect(query.params).toEqual({});
   });
