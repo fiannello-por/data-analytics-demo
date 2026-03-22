@@ -122,11 +122,11 @@ describe('dashboard page', { timeout: 10000 }, () => {
     const html = renderToStaticMarkup(await DashboardPage({}));
 
     expect(html).toContain('Division');
-    expect(html).toContain('Enterprise');
     expect(html).toContain('Date Range');
+    expect(html).toContain('0 active filters');
   });
 
-  it('shows all selected values for a multi-select filter in the shell', async () => {
+  it('shows selected-filter counts in the shell', async () => {
     getDashboardCategorySnapshotMock.mockResolvedValue({
       data: {
         category: 'New Logo',
@@ -180,7 +180,7 @@ describe('dashboard page', { timeout: 10000 }, () => {
       }),
     );
 
-    expect(html).toContain('Enterprise');
-    expect(html).toContain('SMB');
+    expect(html).toContain('Division · 2');
+    expect(html).toContain('1 active filter');
   });
 });
