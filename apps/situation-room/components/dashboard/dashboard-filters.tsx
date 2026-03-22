@@ -268,21 +268,21 @@ export function DashboardFilters({
                     className={cn('transition-transform', isOpen && 'rotate-180')}
                   />
                 </PopoverTrigger>
-                <PopoverContent align="start" className="w-[22rem] p-0">
-                  <PopoverHeader className="px-4 pt-4">
+                <PopoverContent align="start" className="w-[21rem] p-0">
+                  <PopoverHeader className="px-3 pt-3 pb-1">
                     <div className="flex items-center justify-between gap-2">
                       <PopoverTitle>{filter.label}</PopoverTitle>
                       {draftValues.length > 0 ? (
                         <Badge variant="secondary">{draftValues.length} selected</Badge>
                       ) : null}
                     </div>
-                    <PopoverDescription>
-                      Multi-select values, then apply the change to the active tab.
+                    <PopoverDescription className="text-xs">
+                      Multi-select values, then apply.
                     </PopoverDescription>
                   </PopoverHeader>
                   <Separator />
-                  <div className="max-h-56 overflow-auto px-3 py-3">
-                    <div className="flex flex-col gap-1.5">
+                  <div className="max-h-56 overflow-auto px-2 py-2">
+                    <div className="flex flex-col gap-1">
                       {(dictionary?.options ?? []).map((option) => {
                         const checked = draftValues.includes(option.value);
 
@@ -290,7 +290,7 @@ export function DashboardFilters({
                           <label
                             key={option.value}
                             className={cn(
-                              'flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-sm transition-colors',
+                              'flex min-h-9 cursor-pointer items-center gap-2.5 rounded-md border px-2.5 py-1.5 text-sm transition-colors',
                               checked
                                 ? 'border-accent-brand/20 bg-accent-brand-subtle text-foreground'
                                 : 'border-transparent hover:bg-muted',
@@ -305,14 +305,14 @@ export function DashboardFilters({
                                 toggleDraftValue(filter.key, option.value)
                               }
                             />
-                            <span className="truncate">{option.label}</span>
+                            <span className="truncate leading-none">{option.label}</span>
                           </label>
                         );
                       })}
                     </div>
                   </div>
                   <Separator />
-                  <div className="flex items-center justify-between px-3 py-3">
+                  <div className="flex items-center justify-between px-2.5 py-2.5">
                     <Button
                       type="button"
                       variant="ghost"
