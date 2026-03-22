@@ -631,6 +631,7 @@ describe('category snapshot loader', () => {
 
     expect(result.rows[0].tileId).toBe('new_logo_bookings_amount');
     expect(result.rows).toHaveLength(13);
+    expect(result.tileTimings).toHaveLength(13);
   });
 });
 
@@ -659,14 +660,22 @@ Expected: FAIL with missing module errors for the new server loaders and routes.
 export async function getDashboardCategorySnapshot(input: DashboardState) {
   const tiles = getCategoryTiles(input.activeCategory);
   const rows = await Promise.all(
-    tiles.map((tile) => runTileSnapshotQuery(tile, input)),
+    tiles.map(async (tile) => {
+      const startedAt = performance.now();
+      const row = await runTileSnapshotQuery(tile, input);
+      return {
+        ...row,
+        durationMs: performance.now() - startedAt,
+      };
+    }),
   );
 
   return {
     category: input.activeCategory,
     currentWindowLabel: formatDateRange(input.dateRange),
     previousWindowLabel: formatDateRange(input.previousDateRange),
-    rows,
+    rows: rows.map(({ durationMs, ...row }) => row),
+    tileTimings: rows.map(({ tileId, durationMs }) => ({ tileId, durationMs })),
   };
 }
 ```
@@ -715,6 +724,13 @@ describe('dashboard page', () => {
     expect(screen.getByRole('tab', { name: 'New Logo' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Total' })).toBeInTheDocument();
   });
+
+  it('renders filter controls with server-provided dictionary options', async () => {
+    const page = await DashboardPage();
+    render(page);
+
+    expect(screen.getByRole('combobox', { name: /Division/i })).toBeInTheDocument();
+  });
 });
 
 describe('lab page', () => {
@@ -743,12 +759,16 @@ export default async function Page() {
     ...initialState,
     tileId: initialSnapshot.rows[0].tileId,
   });
+  const initialDictionaries = await getDashboardFilterDictionaries([
+    ...GLOBAL_FILTER_KEYS,
+  ]);
 
   return (
     <DashboardShell
       initialState={initialState}
       initialSnapshot={initialSnapshot}
       initialTrend={initialTrend}
+      initialDictionaries={initialDictionaries}
     />
   );
 }
@@ -874,6 +894,7 @@ Expected: FAIL because the new probe registrations are not present yet.
   id: 'dashboard-category-snapshot',
   label: 'Dashboard category snapshot',
   endpoint: '/api/dashboard/category/New%20Logo',
+  extractMetrics: ['durationMs', 'serverMs', 'tileTimings'],
 }
 {
   id: 'dashboard-filter-dictionary',
@@ -882,13 +903,24 @@ Expected: FAIL because the new probe registrations are not present yet.
 }
 ```
 
-- [ ] **Step 4: Run the probe tests**
+- [ ] **Step 4: Expose per-tile timings from the dashboard snapshot route**
+
+```ts
+return Response.json(payload, {
+  headers: {
+    'x-situation-room-server-ms': serverMs.toFixed(2),
+    'x-situation-room-tile-timings': JSON.stringify(payload.tileTimings),
+  },
+});
+```
+
+- [ ] **Step 5: Run the probe tests**
 
 Run: `pnpm --filter @point-of-rental/situation-room test -- analytics-lab-registry architecture-probes probe-routes`
 
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
 git add apps/situation-room/lib/analytics-lab.ts apps/situation-room/lib/server/architecture-probes.ts apps/situation-room/components/architecture-lab.tsx apps/situation-room/scripts/benchmark-report.mjs apps/situation-room/__tests__/analytics-lab-registry.test.ts apps/situation-room/__tests__/architecture-probes.test.ts apps/situation-room/__tests__/probe-routes.test.ts
@@ -987,7 +1019,16 @@ BENCHMARK_BASE_URL=http://localhost:3100 \
 node apps/situation-room/scripts/benchmark-report.mjs --cache off --iterations 3
 ```
 
-Expected: dashboard category snapshot and tile trend results print successfully.
+Then:
+
+```bash
+BENCHMARK_BASE_URL=http://localhost:3100 \
+node apps/situation-room/scripts/benchmark-report.mjs --cache auto --iterations 3
+```
+
+Expected: dashboard category snapshot, dashboard filter dictionary, and tile trend
+results print successfully in both cache modes, including per-tile timing
+breakdowns for the category snapshot route.
 
 - [ ] **Step 5: Commit**
 
