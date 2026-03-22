@@ -170,7 +170,10 @@ export function DashboardFilters({
               {formatDateRange(state.dateRange)}
               <ChevronDownIcon data-icon="inline-end" />
             </PopoverTrigger>
-            <PopoverContent align="start" className="w-fit max-w-none p-0">
+            <PopoverContent
+              align="start"
+              className="w-[min(42rem,calc(100vw-2rem))] p-0"
+            >
               <PopoverHeader className="px-4 pt-4">
                 <PopoverTitle>Date Range</PopoverTitle>
                 <PopoverDescription>
