@@ -268,7 +268,7 @@ export function DashboardFilters({
                     className={cn('transition-transform', isOpen && 'rotate-180')}
                   />
                 </PopoverTrigger>
-                <PopoverContent align="start" className="w-[21rem] p-0">
+                <PopoverContent align="start" className="w-[19rem] p-0">
                   <PopoverHeader className="px-3 pt-3 pb-1">
                     <div className="flex items-center justify-between gap-2">
                       <PopoverTitle>{filter.label}</PopoverTitle>
@@ -281,8 +281,8 @@ export function DashboardFilters({
                     </PopoverDescription>
                   </PopoverHeader>
                   <Separator />
-                  <div className="max-h-56 overflow-auto px-2 py-2">
-                    <div className="flex flex-col gap-1">
+                  <div className="max-h-56 overflow-auto px-1.5 py-1.5">
+                    <div className="flex flex-col gap-0.5">
                       {(dictionary?.options ?? []).map((option) => {
                         const checked = draftValues.includes(option.value);
 
@@ -290,22 +290,22 @@ export function DashboardFilters({
                           <label
                             key={option.value}
                             className={cn(
-                              'flex min-h-9 cursor-pointer items-center gap-2.5 rounded-md border px-2.5 py-1.5 text-sm transition-colors',
+                              'flex min-h-8 cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm transition-colors',
                               checked
-                                ? 'border-accent-brand/20 bg-accent-brand-subtle text-foreground'
-                                : 'border-transparent hover:bg-muted',
+                                ? 'bg-accent-brand-subtle text-foreground'
+                                : 'hover:bg-muted/80',
                             )}
                           >
                             <input
                               type="checkbox"
                               aria-label={`Select ${option.label} for ${filter.label}`}
-                              className="size-4 rounded-sm border-input text-accent-brand"
+                              className="size-3.5 rounded-sm border-input text-accent-brand"
                               checked={checked}
                               onChange={() =>
                                 toggleDraftValue(filter.key, option.value)
                               }
                             />
-                            <span className="truncate leading-none">{option.label}</span>
+                            <span className="truncate leading-tight">{option.label}</span>
                           </label>
                         );
                       })}
