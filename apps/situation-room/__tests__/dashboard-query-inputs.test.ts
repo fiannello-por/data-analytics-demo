@@ -5,6 +5,7 @@ import {
   buildDashboardTrendUrl,
   removeDashboardFilterValue,
   parseDashboardSearchParams,
+  serializeDashboardSnapshotSearchParams,
   serializeDashboardStateSearchParams,
   serializeDashboardStateKey,
   setDashboardActiveCategory,
@@ -51,7 +52,7 @@ describe('dashboard query inputs', () => {
     });
 
     expect(params.toString()).toBe(
-      'category=Renewal&tileId=renewal_sql&startDate=2026-01-01&endDate=2026-03-31&Division=Enterprise&Owner=Alpha&Owner=Bravo',
+      'category=Renewal&startDate=2026-01-01&endDate=2026-03-31&Division=Enterprise&Owner=Alpha&Owner=Bravo',
     );
   });
 
@@ -63,11 +64,14 @@ describe('dashboard query inputs', () => {
       dateRange: { startDate: '2026-01-01', endDate: '2026-03-31' },
     };
 
+    expect(serializeDashboardSnapshotSearchParams(state).toString()).toBe(
+      'category=New+Logo&startDate=2026-01-01&endDate=2026-03-31&Division=Enterprise',
+    );
     expect(buildDashboardCategoryUrl(state)).toBe(
-      '/api/dashboard/category/New%20Logo?category=New+Logo&tileId=new_logo_bookings_amount&startDate=2026-01-01&endDate=2026-03-31&Division=Enterprise',
+      '/api/dashboard/category/New%20Logo?category=New+Logo&startDate=2026-01-01&endDate=2026-03-31&Division=Enterprise',
     );
     expect(buildDashboardTrendUrl(state)).toBe(
-      '/api/dashboard/trend/new_logo_bookings_amount?category=New+Logo&tileId=new_logo_bookings_amount&startDate=2026-01-01&endDate=2026-03-31&Division=Enterprise',
+      '/api/dashboard/trend/new_logo_bookings_amount?category=New+Logo&startDate=2026-01-01&endDate=2026-03-31&Division=Enterprise&tileId=new_logo_bookings_amount',
     );
   });
 

@@ -107,19 +107,17 @@ function parseFilters(searchParams: URLSearchParams): DashboardFilters {
   return normalizeDashboardFilters(filters);
 }
 
-export function serializeDashboardStateSearchParams(
-  input: DashboardStateKeyInput,
+export function serializeDashboardSnapshotSearchParams(
+  input: Pick<DashboardStateKeyInput, 'activeCategory' | 'dateRange' | 'filters'>,
 ): URLSearchParams {
   const state = {
     activeCategory: input.activeCategory,
-    selectedTileId: input.selectedTileId ?? getDefaultTileId(input.activeCategory),
     dateRange: input.dateRange ?? getCurrentYearRange(),
     filters: normalizeDashboardFilters(input.filters ?? {}),
   };
   const searchParams = new URLSearchParams();
 
   searchParams.set('category', state.activeCategory);
-  searchParams.set('tileId', state.selectedTileId);
   searchParams.set('startDate', state.dateRange.startDate);
   searchParams.set('endDate', state.dateRange.endDate);
 
@@ -132,10 +130,16 @@ export function serializeDashboardStateSearchParams(
   return searchParams;
 }
 
+export function serializeDashboardStateSearchParams(
+  input: DashboardStateKeyInput,
+): URLSearchParams {
+  return serializeDashboardSnapshotSearchParams(input);
+}
+
 export function buildDashboardCategoryUrl(
   input: DashboardStateKeyInput,
 ): string {
-  const searchParams = serializeDashboardStateSearchParams(input);
+  const searchParams = serializeDashboardSnapshotSearchParams(input);
   return `/api/dashboard/category/${encodeURIComponent(input.activeCategory)}?${searchParams.toString()}`;
 }
 
@@ -144,10 +148,10 @@ export function buildDashboardTrendUrl(
 ): string {
   const selectedTileId =
     input.selectedTileId ?? getDefaultTileId(input.activeCategory);
-  const searchParams = serializeDashboardStateSearchParams({
+  const searchParams = serializeDashboardSnapshotSearchParams({
     ...input,
-    selectedTileId,
   });
+  searchParams.set('tileId', selectedTileId);
   return `/api/dashboard/trend/${encodeURIComponent(selectedTileId)}?${searchParams.toString()}`;
 }
 
