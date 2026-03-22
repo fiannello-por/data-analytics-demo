@@ -336,13 +336,13 @@ export function DashboardFilters({
                     </div>
                   </div>
                   <Separator />
-                  <div className="flex items-center justify-between px-1.5 py-1">
+                  <div className="flex h-10 items-center justify-between px-1.5">
                     <Button
                       type="button"
                       variant="ghost"
                       size="xs"
                       aria-label={`Clear ${filter.label} filter`}
-                      className="h-7 self-center"
+                      className="h-7 self-auto leading-none"
                       disabled={draftValues.length === 0}
                       onClick={() =>
                         setDraftSelections((current) => ({
@@ -358,7 +358,7 @@ export function DashboardFilters({
                       type="button"
                       size="xs"
                       aria-label={`Apply ${filter.label} filter`}
-                      className="h-7 self-center bg-accent-brand text-background hover:bg-accent-brand/90"
+                      className="h-7 self-auto leading-none bg-accent-brand text-background hover:bg-accent-brand/90"
                       disabled={!hasChanges}
                       onClick={() => applyDraft(filter.key)}
                     >
