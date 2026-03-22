@@ -268,20 +268,17 @@ export function DashboardFilters({
                     className={cn('transition-transform', isOpen && 'rotate-180')}
                   />
                 </PopoverTrigger>
-                <PopoverContent align="start" className="w-[19rem] p-0">
-                  <PopoverHeader className="px-3 pt-3 pb-1">
+                <PopoverContent align="start" className="w-[17.5rem] p-0">
+                  <PopoverHeader className="px-2.5 py-2">
                     <div className="flex items-center justify-between gap-2">
                       <PopoverTitle>{filter.label}</PopoverTitle>
                       {draftValues.length > 0 ? (
                         <Badge variant="secondary">{draftValues.length} selected</Badge>
                       ) : null}
                     </div>
-                    <PopoverDescription className="text-xs">
-                      Multi-select values, then apply.
-                    </PopoverDescription>
                   </PopoverHeader>
                   <Separator />
-                  <div className="max-h-56 overflow-auto px-1.5 py-1.5">
+                  <div className="max-h-56 overflow-auto px-1 py-1">
                     <div className="flex flex-col gap-0.5">
                       {(dictionary?.options ?? []).map((option) => {
                         const checked = draftValues.includes(option.value);
@@ -290,7 +287,7 @@ export function DashboardFilters({
                           <label
                             key={option.value}
                             className={cn(
-                              'flex min-h-8 cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm transition-colors',
+                              'flex min-h-7 cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm transition-colors',
                               checked
                                 ? 'bg-accent-brand-subtle text-foreground'
                                 : 'hover:bg-muted/80',
@@ -312,11 +309,11 @@ export function DashboardFilters({
                     </div>
                   </div>
                   <Separator />
-                  <div className="flex items-center justify-between px-2 py-1.5">
+                  <div className="flex items-center justify-between px-1.5 py-1">
                     <Button
                       type="button"
                       variant="ghost"
-                      size="sm"
+                      size="xs"
                       aria-label={`Clear ${filter.label} filter`}
                       disabled={draftValues.length === 0}
                       onClick={() =>
@@ -331,7 +328,7 @@ export function DashboardFilters({
                     </Button>
                     <Button
                       type="button"
-                      size="sm"
+                      size="xs"
                       aria-label={`Apply ${filter.label} filter`}
                       className="bg-accent-brand text-background hover:bg-accent-brand/90"
                       disabled={!hasChanges}
