@@ -172,39 +172,41 @@ export function DashboardFilters({
             </PopoverTrigger>
             <PopoverContent
               align="center"
-              className="w-[min(26rem,calc(100vw-1rem))] p-0"
+              className="w-fit max-w-[calc(100vw-1rem)] p-0"
             >
-              <PopoverHeader className="px-4 pt-4">
-                <PopoverTitle>Date Range</PopoverTitle>
-                <PopoverDescription>
-                  Choose a current-period range. The previous period stays aligned to the same dates in the previous year.
-                </PopoverDescription>
-              </PopoverHeader>
-              <Separator />
-              <div className="px-2 pb-2">
-                <Calendar
-                  mode="range"
-                  numberOfMonths={2}
-                  selected={draftDateRange}
-                  onSelect={(range) => setDraftDateRange(range)}
-                />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between px-4 py-3">
-                <span className="text-xs text-muted-foreground">
-                  {draftDateRange?.from && draftDateRange?.to
-                    ? `${toIsoDateString(draftDateRange.from)} to ${toIsoDateString(draftDateRange.to)}`
-                    : 'Select a start and end date'}
-                </span>
-                <Button
-                  type="button"
-                  aria-label="Apply date range"
-                  className="bg-accent-brand text-background hover:bg-accent-brand/90"
-                  disabled={!draftDateRange?.from || !draftDateRange?.to}
-                  onClick={applyDateRange}
-                >
-                  Apply
-                </Button>
+              <div>
+                <PopoverHeader className="px-4 pt-4">
+                  <PopoverTitle>Date Range</PopoverTitle>
+                  <PopoverDescription>
+                    Compare against the same dates last year.
+                  </PopoverDescription>
+                </PopoverHeader>
+                <Separator />
+                <div className="px-2 pb-2">
+                  <Calendar
+                    mode="range"
+                    numberOfMonths={2}
+                    selected={draftDateRange}
+                    onSelect={(range) => setDraftDateRange(range)}
+                  />
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between px-4 py-3">
+                  <span className="text-xs text-muted-foreground">
+                    {draftDateRange?.from && draftDateRange?.to
+                      ? `${toIsoDateString(draftDateRange.from)} to ${toIsoDateString(draftDateRange.to)}`
+                      : 'Select a start and end date'}
+                  </span>
+                  <Button
+                    type="button"
+                    aria-label="Apply date range"
+                    className="bg-accent-brand text-background hover:bg-accent-brand/90"
+                    disabled={!draftDateRange?.from || !draftDateRange?.to}
+                    onClick={applyDateRange}
+                  >
+                    Apply
+                  </Button>
+                </div>
               </div>
             </PopoverContent>
           </Popover>
