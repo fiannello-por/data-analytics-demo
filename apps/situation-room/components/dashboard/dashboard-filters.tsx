@@ -41,9 +41,14 @@ export function DashboardFilters({
   onFilterValueAdd,
   onFilterValueRemove,
 }: DashboardFiltersProps) {
+  const [draftSelections, setDraftSelections] = React.useState<
+    Partial<Record<GlobalFilterKey, string>>
+  >({});
+
   function handleValueChange(key: GlobalFilterKey, value: unknown) {
     if (typeof value !== 'string' || value.length === 0) return;
     onFilterValueAdd(key, value);
+    setDraftSelections((current) => ({ ...current, [key]: '' }));
   }
 
   return (
@@ -81,7 +86,10 @@ export function DashboardFilters({
                     {dictionary?.options.length ?? 0} options
                   </Badge>
                 </div>
-                <Select onValueChange={(value) => handleValueChange(filter.key, value)}>
+                <Select
+                  value={draftSelections[filter.key] ?? ''}
+                  onValueChange={(value) => handleValueChange(filter.key, value)}
+                >
                   <SelectTrigger aria-label={filter.label}>
                     <SelectValue placeholder={`Add ${filter.label}`} />
                   </SelectTrigger>
@@ -102,7 +110,13 @@ export function DashboardFilters({
                           type="button"
                           className="inline-flex h-4 w-4 items-center justify-center rounded-full transition-colors hover:bg-background/70"
                           aria-label={`Remove ${value} from ${filter.label}`}
-                          onClick={() => onFilterValueRemove(filter.key, value)}
+                          onClick={() => {
+                            onFilterValueRemove(filter.key, value);
+                            setDraftSelections((current) => ({
+                              ...current,
+                              [filter.key]: '',
+                            }));
+                          }}
                         >
                           <XIcon className="size-3" />
                         </button>

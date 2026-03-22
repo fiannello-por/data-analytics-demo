@@ -111,29 +111,44 @@ export function DashboardShell({
     const nextErrors: string[] = [];
 
     if (scope.snapshot) {
-      if (snapshotResult.status === 'fulfilled' && snapshotResult.value) {
-        setSnapshot(snapshotResult.value);
-      } else if (snapshotResult.status === 'rejected') {
+      if (snapshotResult.status === 'rejected') {
         nextErrors.push(`Snapshot: ${snapshotResult.reason instanceof Error ? snapshotResult.reason.message : 'request failed.'}`);
+      } else if (!snapshotResult.value) {
+        nextErrors.push('Snapshot: request failed.');
       }
     }
 
     if (scope.trend) {
-      if (trendResult.status === 'fulfilled' && trendResult.value) {
-        setTrend(trendResult.value);
-      } else if (trendResult.status === 'rejected') {
+      if (trendResult.status === 'rejected') {
         nextErrors.push(`Trend: ${trendResult.reason instanceof Error ? trendResult.reason.message : 'request failed.'}`);
+      } else if (!trendResult.value) {
+        nextErrors.push('Trend: request failed.');
       }
     }
 
+    if (nextErrors.length > 0) {
+      setSnapshotLoading(false);
+      setTrendLoading(false);
+      setError(nextErrors.join(' '));
+      return;
+    }
+
+    if (scope.snapshot && snapshotResult.status === 'fulfilled' && snapshotResult.value) {
+      setSnapshot(snapshotResult.value);
+    }
+
+    if (scope.trend && trendResult.status === 'fulfilled' && trendResult.value) {
+      setTrend(trendResult.value);
+    }
+
+    setState(nextState);
+    updateUrl(nextState);
     setSnapshotLoading(false);
     setTrendLoading(false);
-    setError(nextErrors.length > 0 ? nextErrors.join(' ') : null);
+    setError(null);
   }
 
   function applyStateChange(nextState: DashboardState, scope: RefreshScope) {
-    setState(nextState);
-    updateUrl(nextState);
     void refreshDashboard(nextState, scope);
   }
 

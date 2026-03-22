@@ -133,7 +133,12 @@ export function serializeDashboardSnapshotSearchParams(
 export function serializeDashboardStateSearchParams(
   input: DashboardStateKeyInput,
 ): URLSearchParams {
-  return serializeDashboardSnapshotSearchParams(input);
+  const searchParams = serializeDashboardSnapshotSearchParams(input);
+  searchParams.set(
+    'tileId',
+    input.selectedTileId ?? getDefaultTileId(input.activeCategory),
+  );
+  return searchParams;
 }
 
 export function buildDashboardCategoryUrl(

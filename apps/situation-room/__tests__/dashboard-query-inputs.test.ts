@@ -52,7 +52,7 @@ describe('dashboard query inputs', () => {
     });
 
     expect(params.toString()).toBe(
-      'category=Renewal&startDate=2026-01-01&endDate=2026-03-31&Division=Enterprise&Owner=Alpha&Owner=Bravo',
+      'category=Renewal&startDate=2026-01-01&endDate=2026-03-31&Division=Enterprise&Owner=Alpha&Owner=Bravo&tileId=renewal_sql',
     );
   });
 

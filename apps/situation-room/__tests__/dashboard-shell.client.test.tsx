@@ -129,6 +129,7 @@ vi.mock('@/components/dashboard/trend-panel', () => ({
 
 const snapshotCalls: string[] = [];
 const trendCalls: string[] = [];
+let failSnapshotRequests = false;
 
 function jsonResponse(body: unknown): Response {
   return {
@@ -199,6 +200,7 @@ describe('dashboard shell client interactions', () => {
     document.body.appendChild(container);
     snapshotCalls.length = 0;
     trendCalls.length = 0;
+    failSnapshotRequests = false;
     vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
     replaceStateSpy = vi.spyOn(window.history, 'replaceState').mockImplementation(() => {});
     vi.stubGlobal(
@@ -207,6 +209,13 @@ describe('dashboard shell client interactions', () => {
         const url = String(input);
         if (url.startsWith('/api/dashboard/category/')) {
           snapshotCalls.push(url);
+          if (failSnapshotRequests) {
+            return {
+              ok: false,
+              status: 500,
+              json: async () => ({ error: 'boom' }),
+            } as Response;
+          }
           return jsonResponse(initialSnapshot);
         }
 
@@ -275,5 +284,28 @@ describe('dashboard shell client interactions', () => {
     expect(trendCalls).toHaveLength(1);
     expect(trendCalls[0]).toContain('/api/dashboard/trend/total_bookings_amount');
     expect(replaceStateSpy).toHaveBeenCalled();
+  });
+
+  it('keeps the current state and URL when a category refresh fails', async () => {
+    failSnapshotRequests = true;
+
+    const categoryButton = container.querySelector('[data-testid="select-total"]');
+    const activeCategory = () =>
+      container.querySelector('[data-testid="active-category"]')?.textContent;
+
+    expect(categoryButton).not.toBeNull();
+    expect(activeCategory()).toBe('New Logo');
+
+    await act(async () => {
+      categoryButton!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    await flush();
+
+    expect(snapshotCalls).toHaveLength(1);
+    expect(trendCalls).toHaveLength(1);
+    expect(activeCategory()).toBe('New Logo');
+    expect(replaceStateSpy).not.toHaveBeenCalled();
+    expect(container.textContent).toContain('Dashboard refresh failed');
   });
 });
