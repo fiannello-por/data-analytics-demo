@@ -495,3 +495,54 @@ export function buildFilterDictionaryQuery(
     params: {},
   };
 }
+
+export function buildClosedWonOpportunitiesQuery(
+  input: Pick<DashboardQueryInput, 'category' | 'dateRange' | 'filters'>,
+): DashboardQueryDefinition {
+  const sourceTable = getSourceTableReference();
+  const filterState = buildFilterClauses(input.filters);
+  const scopedClauses = [
+    CATEGORY_PREDICATES[input.category],
+    'Won = TRUE',
+    `StageName = 'Closed Won'`,
+    'ACV >= 0',
+    'CloseDate >= DATE(@currentStartDate)',
+    'CloseDate <= DATE(@currentEndDate)',
+    ...filterState.clauses,
+  ]
+    .filter(Boolean)
+    .join('\n      AND ');
+
+  return {
+    sql: `
+      SELECT
+        AccountName AS account_name,
+        AccountLink AS account_link,
+        OpportunityName AS opportunity_name,
+        OpportunityLink AS opportunity_link,
+        FORMAT_DATE('%Y-%m-%d', CloseDate) AS close_date,
+        FORMAT_DATE('%Y-%m-%d', CreatedDate) AS created_date,
+        COALESCE(Division, '—') AS division,
+        COALESCE(Type, '—') AS type,
+        COALESCE(ProductFamily, '—') AS product_family,
+        COALESCE(BookingPlanOppType2025, '—') AS booking_plan_opp_type_2025,
+        COALESCE(Owner, '—') AS owner,
+        COALESCE(SDR, '—') AS sdr,
+        COALESCE(OppRecordType, '—') AS opp_record_type,
+        CAST(COALESCE(Age__c, 0) AS STRING) AS age,
+        COALESCE(SE, '—') AS se,
+        CONCAT(CAST(EXTRACT(YEAR FROM CloseDate) AS STRING), '-Q', CAST(EXTRACT(QUARTER FROM CloseDate) AS STRING)) AS quarter,
+        COALESCE(FORMAT_DATE('%Y-%m-%d', contract_start_date__c), '—') AS contract_start_date,
+        COALESCE(Users, 0) AS users,
+        COALESCE(ACV, 0) AS acv
+      FROM ${sourceTable}
+      WHERE ${scopedClauses}
+      ORDER BY ACV DESC, OpportunityName
+      LIMIT 500
+    `.trim(),
+    params: {
+      ...buildDateParams(input.dateRange, 'current'),
+      ...filterState.params,
+    },
+  };
+}

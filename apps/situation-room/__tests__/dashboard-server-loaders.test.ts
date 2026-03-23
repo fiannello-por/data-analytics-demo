@@ -244,6 +244,65 @@ describe('dashboard server loaders', () => {
     expect(result.meta.bytesProcessed).toBe(7);
   });
 
+  it('loads closed won opportunities through a cached current-period query', async () => {
+    const queryRows = vi.fn().mockResolvedValue({
+      rows: [
+        {
+          account_name: 'Acme',
+          account_link: 'https://example.com/account',
+          opportunity_name: 'Acme Renewal',
+          opportunity_link: 'https://example.com/opportunity',
+          close_date: '2026-03-21',
+          created_date: '2026-01-10',
+          division: 'Enterprise',
+          type: 'New Business',
+          product_family: 'Core',
+          booking_plan_opp_type_2025: 'Plan A',
+          owner: 'Ada',
+          sdr: 'Sam',
+          opp_record_type: 'POR',
+          age: 42,
+          se: 'Taylor',
+          quarter: '2026-Q1',
+          contract_start_date: '2026-04-01',
+          users: 88,
+          acv: 125000,
+        },
+      ],
+      bytesProcessed: 33,
+    });
+
+    const { getDashboardClosedWonOpportunities } = await import(
+      '@/lib/server/get-dashboard-closed-won-opportunities'
+    );
+
+    const result = await getDashboardClosedWonOpportunities(
+      {
+        activeCategory: 'New Logo',
+        filters: { Division: ['Enterprise'] },
+        dateRange: { startDate: '2026-01-01', endDate: '2026-03-31' },
+      },
+      { queryRows },
+    );
+
+    expect(unstableCacheMock).toHaveBeenCalledWith(
+      expect.any(Function),
+      expect.arrayContaining(['dashboard-closed-won']),
+      expect.objectContaining({
+        revalidate: 60,
+        tags: ['dashboard-closed-won'],
+      }),
+    );
+    expect(result.data.rows[0]).toMatchObject({
+      accountName: 'Acme',
+      opportunityName: 'Acme Renewal',
+      users: '88',
+      acv: '$125,000',
+    });
+    expect(result.meta.queryCount).toBe(1);
+    expect(result.meta.bytesProcessed).toBe(33);
+  });
+
   it('bypasses unstable_cache when cache mode is off', async () => {
     const queryRows = vi.fn().mockResolvedValue({
       rows: [

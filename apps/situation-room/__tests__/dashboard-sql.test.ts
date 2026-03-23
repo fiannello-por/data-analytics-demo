@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildClosedWonOpportunitiesQuery,
   buildFilterDictionaryQuery,
   buildTileSnapshotQuery,
   buildTileTrendQuery,
@@ -100,5 +101,23 @@ describe('dashboard sql', () => {
     expect(query.sql).toContain('Owner IN UNNEST(@filter_owner)');
     expect(query.sql).not.toContain(`O'Hara`);
     expect(query.params.filter_owner).toEqual([`O'Hara`]);
+  });
+
+  it('builds a closed won opportunities query with current-period filters and ACV sorting', () => {
+    const query = buildClosedWonOpportunitiesQuery({
+      category: 'New Logo',
+      dateRange: { startDate: '2026-01-01', endDate: '2026-03-31' },
+      filters: { Division: ['Enterprise'] },
+    });
+
+    expect(query.sql).toContain("Won = TRUE");
+    expect(query.sql).toContain("StageName = 'Closed Won'");
+    expect(query.sql).toContain('Division IN UNNEST(@filter_division)');
+    expect(query.sql).toContain('ORDER BY ACV DESC');
+    expect(query.params).toMatchObject({
+      currentStartDate: '2026-01-01',
+      currentEndDate: '2026-03-31',
+      filter_division: ['Enterprise'],
+    });
   });
 });

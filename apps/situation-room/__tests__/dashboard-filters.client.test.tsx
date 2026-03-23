@@ -35,6 +35,11 @@ vi.mock('@/components/ui/card', () => ({
     React.createElement('h2', null, children),
 }));
 
+vi.mock('@/components/ui/input', () => ({
+  Input: (props: React.InputHTMLAttributes<HTMLInputElement>) =>
+    React.createElement('input', props),
+}));
+
 vi.mock('@/components/ui/badge', () => ({
   Badge: ({
     children,
@@ -42,6 +47,69 @@ vi.mock('@/components/ui/badge', () => ({
   }: React.HTMLAttributes<HTMLSpanElement>) =>
     React.createElement('span', props, children),
 }));
+
+vi.mock('@/components/ui/collapsible', () => {
+  const React = require('react') as typeof import('react');
+
+  const CollapsibleContext = React.createContext<{
+    open: boolean;
+    setOpen: (open: boolean) => void;
+  } | null>(null);
+
+  return {
+    Collapsible: ({
+      children,
+      open,
+      defaultOpen,
+      onOpenChange,
+    }: {
+      children: React.ReactNode;
+      open?: boolean;
+      defaultOpen?: boolean;
+      onOpenChange?: (open: boolean) => void;
+    }) => {
+      const [internalOpen, setInternalOpen] = React.useState(defaultOpen ?? false);
+      const isControlled = open !== undefined;
+      const resolvedOpen = isControlled ? open : internalOpen;
+
+      const setOpen = (nextOpen: boolean) => {
+        if (!isControlled) {
+          setInternalOpen(nextOpen);
+        }
+        onOpenChange?.(nextOpen);
+      };
+
+      return React.createElement(
+        CollapsibleContext.Provider,
+        { value: { open: resolvedOpen, setOpen } },
+        React.createElement('div', null, children),
+      );
+    },
+    CollapsibleTrigger: ({
+      children,
+      render,
+      ...props
+    }: {
+      children: React.ReactNode;
+      render: React.ReactElement;
+    }) => {
+      const context = React.useContext(CollapsibleContext);
+      return React.cloneElement(
+        render as React.ReactElement<any>,
+        {
+          ...props,
+          onClick: () => context?.setOpen(!context.open),
+          'aria-expanded': context?.open,
+        } as any,
+        children,
+      );
+    },
+    CollapsibleContent: ({ children }: { children: React.ReactNode }) => {
+      const context = React.useContext(CollapsibleContext);
+      return context?.open ? React.createElement('div', null, children) : null;
+    },
+  };
+});
 
 vi.mock('@/components/ui/popover', () => ({
   Popover: ({ children }: { children: React.ReactNode }) =>
@@ -118,6 +186,8 @@ function FiltersHarness({
     <DashboardFilters
       state={state}
       dictionaries={dictionaries}
+      lastRefreshedAt="2026-03-31T12:00:00.000Z"
+      renderedAt="2026-03-31T12:05:00.000Z"
       onFilterValueAdd={(key, value) =>
         setState((current) => ({
           ...current,
@@ -179,6 +249,15 @@ describe('dashboard filters', () => {
     container.remove();
   });
 
+  it('counts the date range as an active filter in the summary badge', () => {
+    expect(container.textContent).toContain('1 active filter');
+  });
+
+  it('shows a data freshness label in the controls summary', () => {
+    expect(container.textContent).toContain('Updated 5 min ago');
+    expect(container.textContent).toContain('Last updated at Mar 31, 2026, 12:00 PM UTC');
+  });
+
   it('keeps multi-select choices local until apply and lets users reopen to change selections', async () => {
     const divisionTrigger = container.querySelector(
       'button[aria-label="Division filter"]',
@@ -236,6 +315,43 @@ describe('dashboard filters', () => {
     expect(container.textContent).toContain('Division · 1');
   });
 
+  it('shows a search field and info button inside each filter popover', () => {
+    expect(
+      container.querySelector('input[aria-label="Search Division values"]'),
+    ).not.toBeNull();
+    expect(
+      container.querySelector('button[aria-label="About Division"]'),
+    ).not.toBeNull();
+  });
+
+  it('filters option labels locally inside the filter popover search', async () => {
+    const searchInput = container.querySelector(
+      'input[aria-label="Search Division values"]',
+    ) as HTMLInputElement | null;
+    expect(searchInput).not.toBeNull();
+    const divisionPopoverCandidate = searchInput!.parentElement?.parentElement?.parentElement as HTMLElement | null;
+    expect(divisionPopoverCandidate).not.toBeNull();
+    const divisionPopover = divisionPopoverCandidate!;
+
+    await act(async () => {
+      searchInput!.value = 'enter';
+      searchInput!.dispatchEvent(new Event('input', { bubbles: true }));
+      searchInput!.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+
+    expect(divisionPopover.textContent).toContain('Enterprise');
+    expect(divisionPopover.textContent).not.toContain('SMB');
+    expect(divisionPopover.textContent).not.toContain('No matches');
+
+    await act(async () => {
+      searchInput!.value = 'zzz';
+      searchInput!.dispatchEvent(new Event('input', { bubbles: true }));
+      searchInput!.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+
+    expect(divisionPopover.textContent).toContain('No matches');
+  });
+
   it('applies a draft date range only after the date apply action', async () => {
     expect(container.textContent).toContain('Jan 1, 2026 - Mar 31, 2026');
 
@@ -265,5 +381,48 @@ describe('dashboard filters', () => {
     });
 
     expect(container.textContent).toContain('Apr 1, 2026 - Jun 30, 2026');
+  });
+
+  it('starts expanded and lets the header collapse and reopen the global controls', async () => {
+    expect(container.textContent).toContain('Prior period: 2025-01-01 to 2025-03-31');
+    expect(container.textContent).toContain('Current period: Jan 1, 2026 - Mar 31, 2026');
+    expect(
+      container.querySelector('button[aria-label="Date range filter"]'),
+    ).not.toBeNull();
+    expect(
+      container.querySelector('button[aria-label="Division filter"]'),
+    ).not.toBeNull();
+
+    const toggleButton = container.querySelector(
+      'button[aria-label="Toggle global controls"]',
+    ) as HTMLButtonElement | null;
+    expect(toggleButton).not.toBeNull();
+    expect(toggleButton?.getAttribute('aria-expanded')).toBe('true');
+
+    await act(async () => {
+      toggleButton!.click();
+    });
+
+    expect(toggleButton?.getAttribute('aria-expanded')).toBe('false');
+    expect(container.textContent).toContain('Prior period: 2025-01-01 to 2025-03-31');
+    expect(
+      container.querySelector('button[aria-label="Date range filter"]'),
+    ).toBeNull();
+    expect(
+      container.querySelector('button[aria-label="Division filter"]'),
+    ).toBeNull();
+
+    await act(async () => {
+      toggleButton!.click();
+    });
+
+    expect(toggleButton?.getAttribute('aria-expanded')).toBe('true');
+    expect(container.textContent).toContain('Prior period: 2025-01-01 to 2025-03-31');
+    expect(
+      container.querySelector('button[aria-label="Date range filter"]'),
+    ).not.toBeNull();
+    expect(
+      container.querySelector('button[aria-label="Division filter"]'),
+    ).not.toBeNull();
   });
 });

@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   CATEGORY_ORDER,
+  DASHBOARD_TAB_ORDER,
   GLOBAL_FILTER_KEYS,
   getDefaultTileId,
+  isOverviewTab,
   TILE_CATALOG,
 } from '@/lib/dashboard/catalog';
 
@@ -15,6 +17,18 @@ describe('dashboard catalog', () => {
       'Renewal',
       'Total',
     ]);
+  });
+
+  it('includes Overview before the category tabs', () => {
+    expect(DASHBOARD_TAB_ORDER).toEqual([
+      'Overview',
+      'New Logo',
+      'Expansion',
+      'Migration',
+      'Renewal',
+      'Total',
+    ]);
+    expect(isOverviewTab('Overview')).toBe(true);
   });
 
   it('uses the first curated tile as the default selection', () => {

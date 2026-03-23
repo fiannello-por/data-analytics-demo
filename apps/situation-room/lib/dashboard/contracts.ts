@@ -1,4 +1,9 @@
-import type { Category, GlobalFilterKey, TileFormatType } from '@/lib/dashboard/catalog';
+import type {
+  Category,
+  DashboardTab,
+  GlobalFilterKey,
+  TileFormatType,
+} from '@/lib/dashboard/catalog';
 
 export type DateRange = {
   startDate: string;
@@ -10,7 +15,7 @@ export type DashboardFilters = Partial<Record<GlobalFilterKey, string[]>>;
 export type DashboardTrendGrain = 'weekly';
 
 export type DashboardState = {
-  activeCategory: Category;
+  activeCategory: DashboardTab;
   selectedTileId: string;
   filters: DashboardFilters;
   dateRange: DateRange;
@@ -45,6 +50,13 @@ export type CategorySnapshotPayload = {
   tileTimings: TileTiming[];
 };
 
+export type OverviewBoardPayload = {
+  currentWindowLabel: string;
+  previousWindowLabel: string;
+  lastRefreshedAt: string;
+  snapshots: CategorySnapshotPayload[];
+};
+
 export type TileTrendPoint = {
   bucketKey: string;
   bucketLabel: string;
@@ -60,6 +72,35 @@ export type TileTrendPayload = {
   currentWindowLabel: string;
   previousWindowLabel: string;
   points: TileTrendPoint[];
+};
+
+export type ClosedWonOpportunityRow = {
+  accountName: string;
+  accountLink: string | null;
+  opportunityName: string;
+  opportunityLink: string | null;
+  closeDate: string;
+  createdDate: string;
+  division: string;
+  type: string;
+  productFamily: string;
+  bookingPlanOppType2025: string;
+  owner: string;
+  sdr: string;
+  oppRecordType: string;
+  age: string;
+  se: string;
+  quarter: string;
+  contractStartDate: string;
+  users: string;
+  acv: string;
+};
+
+export type ClosedWonOpportunitiesPayload = {
+  category: Category;
+  currentWindowLabel: string;
+  lastRefreshedAt: string;
+  rows: ClosedWonOpportunityRow[];
 };
 
 export type FilterDictionaryOption = {

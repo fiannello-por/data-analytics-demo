@@ -135,27 +135,27 @@ describe('TrendChart', () => {
     expect(typeof xAxis?.props.tickFormatter).toBe('function');
     expect((xAxis?.props.tickFormatter as (value: string) => string)('Jan 05')).toBe('Jan 5');
     expect(xAxis?.props.tickLine).toEqual(
-      expect.objectContaining({ stroke: 'var(--border-subtle)', strokeWidth: 1 }),
+      expect.objectContaining({ stroke: 'var(--border)', strokeWidth: 1 }),
     );
     expect(xAxis?.props.tickSize).toBe(6);
     expect(xAxis?.props.axisLine).toEqual(
-      expect.objectContaining({ stroke: 'var(--border-subtle)', strokeWidth: 1 }),
+      expect.objectContaining({ stroke: 'var(--border)', strokeWidth: 1 }),
     );
     expect(typeof yAxis?.props.tickFormatter).toBe('function');
     expect((yAxis?.props.tickFormatter as (value: number) => string)(12432)).toBe('$12.4K');
     expect(yAxis?.props.width).toBe(52);
     expect(yAxis?.props.tickLine).toEqual(
-      expect.objectContaining({ stroke: 'var(--border-subtle)', strokeWidth: 1 }),
+      expect.objectContaining({ stroke: 'var(--border)', strokeWidth: 1 }),
     );
     expect(yAxis?.props.tickSize).toBe(6);
     expect(yAxis?.props.axisLine).toEqual(
-      expect.objectContaining({ stroke: 'var(--border-subtle)', strokeWidth: 1 }),
+      expect.objectContaining({ stroke: 'var(--border)', strokeWidth: 1 }),
     );
     const grid = gridProps.at(-1);
     expect(grid).toEqual(
       expect.objectContaining({
         vertical: false,
-        stroke: 'var(--border-subtle)',
+        stroke: 'var(--border)',
         strokeWidth: 1,
       }),
     );

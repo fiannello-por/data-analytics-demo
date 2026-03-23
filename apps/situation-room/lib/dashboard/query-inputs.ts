@@ -1,9 +1,13 @@
 import {
   CATEGORY_ORDER,
   findTileDefinition,
+  findCategoryForTileId,
   getDefaultTileId,
   isCategory,
+  isDashboardTab,
+  OVERVIEW_TAB,
   type Category,
+  type DashboardTab,
 } from '@/lib/dashboard/catalog';
 import type {
   DashboardFilters,
@@ -18,7 +22,7 @@ import {
 } from '@/lib/dashboard/date-range';
 
 export type DashboardStateKeyInput = {
-  activeCategory: Category;
+  activeCategory: DashboardTab;
   filters?: DashboardFilters;
   dateRange?: DateRange;
   selectedTileId?: string;
@@ -134,22 +138,49 @@ export function serializeDashboardStateSearchParams(
   input: DashboardStateKeyInput,
 ): URLSearchParams {
   const searchParams = serializeDashboardSnapshotSearchParams(input);
-  searchParams.set(
-    'tileId',
-    input.selectedTileId ?? getDefaultTileId(input.activeCategory),
+  const selectedTileId = input.selectedTileId ?? (
+    isCategory(input.activeCategory)
+      ? getDefaultTileId(input.activeCategory)
+      : getDefaultTileId(CATEGORY_ORDER[0])
   );
+
+  if (selectedTileId) {
+    searchParams.set('tileId', selectedTileId);
+  }
+
   return searchParams;
 }
 
 export function buildDashboardCategoryUrl(
-  input: DashboardStateKeyInput,
+  input: DashboardStateKeyInput & { activeCategory: Category },
 ): string {
   const searchParams = serializeDashboardSnapshotSearchParams(input);
   return `/api/dashboard/category/${encodeURIComponent(input.activeCategory)}?${searchParams.toString()}`;
 }
 
+export function buildDashboardOverviewUrl(
+  input: Pick<DashboardStateKeyInput, 'filters' | 'dateRange'>,
+): string {
+  const searchParams = new URLSearchParams();
+  const dateRange = input.dateRange ?? getCurrentYearRange();
+
+  searchParams.set('category', OVERVIEW_TAB);
+  searchParams.set('startDate', dateRange.startDate);
+  searchParams.set('endDate', dateRange.endDate);
+
+  for (const [key, values] of Object.entries(
+    normalizeDashboardFilters(input.filters ?? {}),
+  )) {
+    for (const value of values) {
+      searchParams.append(key, value);
+    }
+  }
+
+  return `/api/dashboard/overview?${searchParams.toString()}`;
+}
+
 export function buildDashboardTrendUrl(
-  input: DashboardStateKeyInput,
+  input: DashboardStateKeyInput & { activeCategory: Category },
 ): string {
   const selectedTileId =
     input.selectedTileId ?? getDefaultTileId(input.activeCategory);
@@ -160,14 +191,23 @@ export function buildDashboardTrendUrl(
   return `/api/dashboard/trend/${encodeURIComponent(selectedTileId)}?${searchParams.toString()}`;
 }
 
+export function buildDashboardClosedWonUrl(
+  input: DashboardStateKeyInput & { activeCategory: Category },
+): string {
+  const searchParams = serializeDashboardSnapshotSearchParams(input);
+  return `/api/dashboard/closed-won/${encodeURIComponent(input.activeCategory)}?${searchParams.toString()}`;
+}
+
 export function setDashboardActiveCategory(
   state: DashboardState,
-  activeCategory: Category,
+  activeCategory: DashboardTab,
 ): DashboardState {
   return {
     ...state,
     activeCategory,
-    selectedTileId: getDefaultTileId(activeCategory),
+    selectedTileId: isCategory(activeCategory)
+      ? getDefaultTileId(activeCategory)
+      : state.selectedTileId,
   };
 }
 
@@ -185,15 +225,19 @@ export function parseDashboardSearchParams(
   searchParams: URLSearchParams,
 ): DashboardState {
   const activeCategoryParam = searchParams.get('category');
-  const activeCategory = activeCategoryParam && isCategory(activeCategoryParam)
+  const activeCategory = activeCategoryParam && isDashboardTab(activeCategoryParam)
     ? activeCategoryParam
-    : CATEGORY_ORDER[0];
+    : OVERVIEW_TAB;
   const dateRange = parseDateRange(searchParams);
   const requestedTileId = searchParams.get('tileId')?.trim();
   const selectedTileId =
-    requestedTileId && findTileDefinition(activeCategory, requestedTileId)
-      ? requestedTileId
-      : getDefaultTileId(activeCategory);
+    isCategory(activeCategory)
+      ? requestedTileId && findTileDefinition(activeCategory, requestedTileId)
+        ? requestedTileId
+        : getDefaultTileId(activeCategory)
+      : requestedTileId && findCategoryForTileId(requestedTileId)
+        ? requestedTileId
+        : getDefaultTileId(CATEGORY_ORDER[0]);
 
   return {
     activeCategory,
@@ -211,7 +255,11 @@ export function serializeDashboardStateKey(
   const dateRange = input.dateRange ?? getCurrentYearRange();
   return JSON.stringify({
     activeCategory: input.activeCategory,
-    selectedTileId: input.selectedTileId ?? getDefaultTileId(input.activeCategory),
+    selectedTileId: input.selectedTileId ?? (
+      isCategory(input.activeCategory)
+        ? getDefaultTileId(input.activeCategory)
+        : getDefaultTileId(CATEGORY_ORDER[0])
+    ),
     dateRange,
     filters: normalizeDashboardFilters(input.filters ?? {}),
   });

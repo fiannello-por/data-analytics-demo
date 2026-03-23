@@ -33,7 +33,17 @@ export async function GET(
       error instanceof Error ? error.message : 'Invalid dashboard request.',
     );
   }
-  const result = await getDashboardCategorySnapshot(state, undefined, execution);
+  const result = await getDashboardCategorySnapshot(
+    {
+      activeCategory: category,
+      filters: state.filters,
+      dateRange: state.dateRange,
+      previousDateRange: state.previousDateRange,
+      selectedTileId: state.selectedTileId,
+    },
+    undefined,
+    execution,
+  );
   const response = NextResponse.json(result.data);
 
   applyProbeHeaders(response, result.meta, startedAt);

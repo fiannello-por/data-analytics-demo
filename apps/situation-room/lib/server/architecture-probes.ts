@@ -391,9 +391,16 @@ export async function runProbe(
   }
 
   if (id === 'dashboard-category-snapshot') {
+    const state = buildDashboardState('New Logo');
     return mergeProbePayload(
       await getDashboardCategorySnapshot(
-        buildDashboardState('New Logo'),
+        {
+          activeCategory: 'New Logo',
+          filters: state.filters,
+          dateRange: state.dateRange,
+          previousDateRange: state.previousDateRange,
+          selectedTileId: state.selectedTileId,
+        },
         undefined,
         execution,
       ),
@@ -401,10 +408,15 @@ export async function runProbe(
   }
 
   if (id === 'dashboard-tile-trend') {
+    const state = buildDashboardState('New Logo', 'new_logo_bookings_amount');
     return mergeProbePayload(
       await getDashboardTileTrend(
         {
-          ...buildDashboardState('New Logo', 'new_logo_bookings_amount'),
+          activeCategory: 'New Logo',
+          selectedTileId: state.selectedTileId,
+          filters: state.filters,
+          dateRange: state.dateRange,
+          previousDateRange: state.previousDateRange,
           trendGrain: 'weekly',
         },
         undefined,

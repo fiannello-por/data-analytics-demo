@@ -1,20 +1,31 @@
 'use client';
 
+import * as React from 'react';
 import { useTheme } from 'next-themes';
+import { MoonStarIcon, SunIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isDark = mounted ? resolvedTheme !== 'light' : true;
 
   return (
     <Button
-      variant="ghost"
+      type="button"
+      variant="outline"
       size="sm"
-      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      className="text-text-secondary hover:text-text-primary"
+      aria-label="Toggle color theme"
+      onClick={() => setTheme(isDark ? 'light' : 'dark')}
+      className="gap-1.5"
     >
-      <span className="dark:hidden">Dark</span>
-      <span className="hidden dark:inline">Light</span>
+      {isDark ? <SunIcon data-icon="inline-start" /> : <MoonStarIcon data-icon="inline-start" />}
+      <span>{isDark ? 'Light' : 'Dark'}</span>
     </Button>
   );
 }

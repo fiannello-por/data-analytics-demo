@@ -8,9 +8,10 @@ import { toStableDomId } from '@/lib/stable-dom-id';
 import { cn } from '@/lib/utils';
 
 export type AnimatedUnderlineTabItem = {
-  name: string;
+  name: React.ReactNode;
   value: string;
   content: React.ReactNode;
+  ariaLabel?: string;
 };
 
 export function AnimatedUnderlineTabs({
@@ -57,6 +58,7 @@ export function AnimatedUnderlineTabs({
               key={tab.value}
               id={`category-tab-${toStableDomId(tab.value)}`}
               value={tab.value}
+              aria-label={tab.ariaLabel}
               ref={(el) => {
                 tabRefs.current[index] = el;
               }}

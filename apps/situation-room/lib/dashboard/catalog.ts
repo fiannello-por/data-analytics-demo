@@ -1,3 +1,5 @@
+export const OVERVIEW_TAB = 'Overview' as const;
+
 export const CATEGORY_ORDER = [
   'New Logo',
   'Expansion',
@@ -7,6 +9,9 @@ export const CATEGORY_ORDER = [
 ] as const;
 
 export type Category = (typeof CATEGORY_ORDER)[number];
+export type DashboardTab = typeof OVERVIEW_TAB | Category;
+
+export const DASHBOARD_TAB_ORDER = [OVERVIEW_TAB, ...CATEGORY_ORDER] as const;
 
 export type TileFormatType = 'currency' | 'number' | 'percent' | 'days';
 
@@ -301,6 +306,14 @@ export type GlobalFilterKey = (typeof GLOBAL_FILTER_KEYS)[number];
 
 export function isCategory(value: string): value is Category {
   return CATEGORY_ORDER.includes(value as Category);
+}
+
+export function isOverviewTab(value: string): value is typeof OVERVIEW_TAB {
+  return value === OVERVIEW_TAB;
+}
+
+export function isDashboardTab(value: string): value is DashboardTab {
+  return isOverviewTab(value) || isCategory(value);
 }
 
 export function getCategoryTiles(category: Category): readonly TileDefinition[] {

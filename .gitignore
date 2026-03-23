@@ -15,6 +15,7 @@ apps/changelog-site/.docusaurus
 apps/changelog-site/build
 apps/pdr/.next
 apps/situation-room/.next
+apps/architecture-explainer/.next
 apps/pdr/.source
 .superpowers/
 *.tsbuildinfo

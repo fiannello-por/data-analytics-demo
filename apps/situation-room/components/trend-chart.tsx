@@ -66,23 +66,23 @@ export function TrendChart({ trend }: { trend: TileTrendPayload }) {
         >
           <CartesianGrid
             vertical={false}
-            stroke="var(--border-subtle)"
+            stroke="var(--border)"
             strokeWidth={1}
             strokeDasharray="2 4"
           />
           <XAxis
             dataKey="bucketLabel"
-            tickLine={{ stroke: 'var(--border-subtle)', strokeWidth: 1 }}
+            tickLine={{ stroke: 'var(--border)', strokeWidth: 1 }}
             tickSize={6}
-            axisLine={{ stroke: 'var(--border-subtle)', strokeWidth: 1 }}
+            axisLine={{ stroke: 'var(--border)', strokeWidth: 1 }}
             tickMargin={12}
             minTickGap={24}
             tickFormatter={formatTrendAxisLabel}
           />
           <YAxis
-            tickLine={{ stroke: 'var(--border-subtle)', strokeWidth: 1 }}
+            tickLine={{ stroke: 'var(--border)', strokeWidth: 1 }}
             tickSize={6}
-            axisLine={{ stroke: 'var(--border-subtle)', strokeWidth: 1 }}
+            axisLine={{ stroke: 'var(--border)', strokeWidth: 1 }}
             tickMargin={12}
             width={yAxisWidth}
             tickFormatter={(value: number) => formatTrendAxisValue(value, formatType)}

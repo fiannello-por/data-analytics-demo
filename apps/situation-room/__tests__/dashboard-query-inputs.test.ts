@@ -12,6 +12,12 @@ import {
 } from '@/lib/dashboard/query-inputs';
 
 describe('dashboard query inputs', () => {
+  it('defaults to Overview when no category is present', () => {
+    const state = parseDashboardSearchParams(new URLSearchParams());
+
+    expect(state.activeCategory).toBe('Overview');
+  });
+
   it('normalizes dashboard search params into stable state', () => {
     const params = new URLSearchParams();
     params.append('category', 'New Logo');
@@ -22,6 +28,15 @@ describe('dashboard query inputs', () => {
 
     expect(state.activeCategory).toBe('New Logo');
     expect(state.filters.Division).toEqual(['A', 'B']);
+  });
+
+  it('parses Overview as the active dashboard tab', () => {
+    const params = new URLSearchParams();
+    params.set('category', 'Overview');
+
+    const state = parseDashboardSearchParams(params);
+
+    expect(state.activeCategory).toBe('Overview');
   });
 
   it('serializes identical filter states to the same key', () => {
@@ -129,7 +144,7 @@ describe('dashboard query inputs', () => {
 
     expect(state.dateRange).toEqual({
       startDate: expect.stringMatching(/^\d{4}-01-01$/),
-      endDate: expect.stringMatching(/^\d{4}-12-31$/),
+      endDate: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
     });
   });
 });

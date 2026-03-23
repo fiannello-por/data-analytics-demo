@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 
 const getDashboardCategorySnapshotMock = vi.fn();
+const getDashboardClosedWonOpportunitiesMock = vi.fn();
 const getDashboardTileTrendMock = vi.fn();
 const getDashboardFilterDictionaryMock = vi.fn();
 
@@ -9,6 +10,10 @@ vi.mock('server-only', () => ({}));
 
 vi.mock('@/lib/server/get-dashboard-category-snapshot', () => ({
   getDashboardCategorySnapshot: getDashboardCategorySnapshotMock,
+}));
+
+vi.mock('@/lib/server/get-dashboard-closed-won-opportunities', () => ({
+  getDashboardClosedWonOpportunities: getDashboardClosedWonOpportunitiesMock,
 }));
 
 vi.mock('@/lib/server/get-dashboard-tile-trend', () => ({
@@ -117,6 +122,43 @@ describe('dashboard routes', () => {
     expect(response.headers.get('x-situation-room-bytes-processed')).toBe('45');
     expect(response.headers.get('x-situation-room-cache-mode')).toBe('off');
     expect(response.headers.get('x-situation-room-server-ms')).toBeTruthy();
+  });
+
+  it('returns the closed won opportunities payload', async () => {
+    getDashboardClosedWonOpportunitiesMock.mockResolvedValueOnce({
+      data: {
+        category: 'New Logo',
+        currentWindowLabel: 'Jan 1, 2026 - Mar 31, 2026',
+        lastRefreshedAt: '2026-03-22T00:00:00.000Z',
+        rows: [],
+      },
+      meta: {
+        source: 'bigquery',
+        queryCount: 1,
+        bytesProcessed: 88,
+        cacheMode: 'off',
+      },
+    });
+
+    const { GET } = await import('../app/api/dashboard/closed-won/[category]/route');
+    const response = await GET(
+      new NextRequest(
+        'http://localhost/api/dashboard/closed-won/New%20Logo?Division=Enterprise&cache=off',
+      ),
+      { params: Promise.resolve({ category: 'New Logo' }) },
+    );
+
+    expect(getDashboardClosedWonOpportunitiesMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        activeCategory: 'New Logo',
+        filters: { Division: ['Enterprise'] },
+      }),
+      undefined,
+      { cacheMode: 'off' },
+    );
+    expect(response.status).toBe(200);
+    expect(response.headers.get('x-situation-room-query-count')).toBe('1');
+    expect(response.headers.get('x-situation-room-bytes-processed')).toBe('88');
   });
 
   it('returns the global filter dictionary payload', async () => {

@@ -5,6 +5,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type {
   CategorySnapshotPayload,
+  ClosedWonOpportunitiesPayload,
   DashboardState,
   FilterDictionaryPayload,
   TileTrendPayload,
@@ -92,6 +93,15 @@ vi.mock('@/components/dashboard/category-tabs', () => ({
         },
         'Total',
       ),
+      React.createElement(
+        'button',
+        {
+          type: 'button',
+          onClick: () => onValueChange?.('New Logo'),
+          'data-testid': 'select-new-logo',
+        },
+        'New Logo',
+      ),
       children,
     ),
 }));
@@ -152,14 +162,33 @@ vi.mock('@/components/dashboard/trend-panel', () => ({
     ),
 }));
 
+vi.mock('@/components/dashboard/closed-won-opportunities-table', () => ({
+  ClosedWonOpportunitiesTable: ({
+    payload,
+  }: {
+    payload: ClosedWonOpportunitiesPayload;
+  }) =>
+    React.createElement(
+      'div',
+      { 'data-testid': 'closed-won-table' },
+      `${payload.category} closed won`,
+    ),
+  ClosedWonOpportunitiesTableSkeleton: () =>
+    React.createElement('div', { 'data-testid': 'closed-won-table-skeleton' }, 'closed won loading'),
+}));
+
 const snapshotCalls: string[] = [];
 const trendCalls: string[] = [];
+const closedWonCalls: string[] = [];
 let failSnapshotRequests = false;
 let deferSnapshotRequests = false;
 let deferredSnapshotResolvers: Array<() => void> = [];
 let failTrendRequests = false;
 let deferTrendRequests = false;
 let deferredTrendResolvers: Array<() => void> = [];
+let failClosedWonRequests = false;
+let deferClosedWonRequests = false;
+let deferredClosedWonResolvers: Array<() => void> = [];
 
 function jsonResponse(body: unknown): Response {
   return {
@@ -227,6 +256,49 @@ describe('dashboard shell client interactions', () => {
     points: [],
   };
 
+  const totalSnapshot: CategorySnapshotPayload = {
+    category: 'Total',
+    currentWindowLabel: 'Jan 1, 2026 - Mar 31, 2026',
+    previousWindowLabel: 'Jan 1, 2025 - Mar 31, 2025',
+    lastRefreshedAt: '2026-03-22T00:00:00.000Z',
+    rows: [
+      {
+        tileId: 'total_bookings_amount',
+        label: 'Bookings $',
+        sortOrder: 1,
+        formatType: 'currency',
+        currentValue: '$100',
+        previousValue: '$80',
+        pctChange: '+25%',
+      },
+    ],
+    tileTimings: [],
+  };
+
+  const totalTrend: TileTrendPayload = {
+    category: 'Total',
+    tileId: 'total_bookings_amount',
+    label: 'Bookings $',
+    grain: 'weekly',
+    currentWindowLabel: 'Jan 1, 2026 - Mar 31, 2026',
+    previousWindowLabel: 'Jan 1, 2025 - Mar 31, 2025',
+    points: [],
+  };
+
+  const closedWonPayload: ClosedWonOpportunitiesPayload = {
+    category: 'New Logo',
+    currentWindowLabel: 'Jan 1, 2026 - Mar 31, 2026',
+    lastRefreshedAt: '2026-03-22T00:00:00.000Z',
+    rows: [],
+  };
+
+  const totalClosedWonPayload: ClosedWonOpportunitiesPayload = {
+    category: 'Total',
+    currentWindowLabel: 'Jan 1, 2026 - Mar 31, 2026',
+    lastRefreshedAt: '2026-03-22T00:00:00.000Z',
+    rows: [],
+  };
+
   const dictionaries: Record<string, FilterDictionaryPayload> = {
     Division: {
       filterKey: 'Division',
@@ -234,17 +306,34 @@ describe('dashboard shell client interactions', () => {
     } as FilterDictionaryPayload,
   } as Record<string, FilterDictionaryPayload>;
 
+  const overviewBoard = {
+    currentWindowLabel: 'Jan 1, 2026 - Mar 31, 2026',
+    previousWindowLabel: 'Jan 1, 2025 - Mar 31, 2025',
+    lastRefreshedAt: '2026-03-22T00:00:00.000Z',
+    snapshots: [
+      initialSnapshot,
+      { ...initialSnapshot, category: 'Expansion' as const },
+      { ...initialSnapshot, category: 'Migration' as const },
+      { ...initialSnapshot, category: 'Renewal' as const },
+      totalSnapshot,
+    ],
+  };
+
   beforeEach(async () => {
     container = document.createElement('div');
     document.body.appendChild(container);
     snapshotCalls.length = 0;
     trendCalls.length = 0;
+    closedWonCalls.length = 0;
     failSnapshotRequests = false;
     deferSnapshotRequests = false;
     deferredSnapshotResolvers = [];
     failTrendRequests = false;
     deferTrendRequests = false;
     deferredTrendResolvers = [];
+    failClosedWonRequests = false;
+    deferClosedWonRequests = false;
+    deferredClosedWonResolvers = [];
     vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
     replaceStateSpy = vi.spyOn(window.history, 'replaceState').mockImplementation(() => {});
     vi.stubGlobal(
@@ -265,6 +354,9 @@ describe('dashboard shell client interactions', () => {
               json: async () => ({ error: 'boom' }),
             } as Response;
           }
+          if (url.includes('/api/dashboard/category/Total')) {
+            return jsonResponse(totalSnapshot);
+          }
           return jsonResponse(initialSnapshot);
         }
 
@@ -282,7 +374,30 @@ describe('dashboard shell client interactions', () => {
               json: async () => ({ error: 'boom' }),
             } as Response;
           }
+          if (url.includes('/api/dashboard/trend/total_bookings_amount')) {
+            return jsonResponse(totalTrend);
+          }
           return jsonResponse(initialTrend);
+        }
+
+        if (url.startsWith('/api/dashboard/closed-won/')) {
+          closedWonCalls.push(url);
+          if (deferClosedWonRequests) {
+            await new Promise<void>((resolve) => {
+              deferredClosedWonResolvers.push(resolve);
+            });
+          }
+          if (failClosedWonRequests) {
+            return {
+              ok: false,
+              status: 500,
+              json: async () => ({ error: 'boom' }),
+            } as Response;
+          }
+          if (url.includes('/api/dashboard/closed-won/Total')) {
+            return jsonResponse(totalClosedWonPayload);
+          }
+          return jsonResponse(closedWonPayload);
         }
 
         throw new Error(`Unexpected fetch: ${url}`);
@@ -299,6 +414,7 @@ describe('dashboard shell client interactions', () => {
           initialSnapshot,
           initialTrend,
           initialDictionaries: dictionaries,
+          renderedAt: '2026-03-31T12:05:00.000Z',
         }),
       );
     });
@@ -374,6 +490,10 @@ describe('dashboard shell client interactions', () => {
       '/api/dashboard/category/Total?category=Total&startDate=2026-01-01&endDate=2026-03-31',
     );
     expect(trendCalls).toHaveLength(1);
+    expect(closedWonCalls).toHaveLength(1);
+    expect(closedWonCalls[0]).toBe(
+      '/api/dashboard/closed-won/Total?category=Total&startDate=2026-01-01&endDate=2026-03-31',
+    );
     expect(trendCalls[0]).toContain('/api/dashboard/trend/total_bookings_amount');
     expect(replaceStateSpy).toHaveBeenCalled();
   });
@@ -396,10 +516,13 @@ describe('dashboard shell client interactions', () => {
     expect(container.textContent).toContain('Total loading');
     expect(snapshotCalls).toHaveLength(1);
     expect(trendCalls).toHaveLength(1);
+    expect(closedWonCalls).toHaveLength(1);
 
     await act(async () => {
       deferredSnapshotResolvers.forEach((resolve) => resolve());
       deferredSnapshotResolvers = [];
+      deferredClosedWonResolvers.forEach((resolve) => resolve());
+      deferredClosedWonResolvers = [];
     });
 
     await flush();
@@ -425,8 +548,47 @@ describe('dashboard shell client interactions', () => {
 
     expect(snapshotCalls).toHaveLength(1);
     expect(trendCalls).toHaveLength(1);
+    expect(closedWonCalls).toHaveLength(1);
     expect(activeCategory()).toBe('New Logo');
     expect(replaceStateSpy).toHaveBeenCalledTimes(2);
     expect(container.textContent).toContain('Dashboard refresh failed');
+  });
+
+  it('reuses cached category snapshots after overview preload and only fetches trend on category click', async () => {
+    const { DashboardShell } = await import('@/components/dashboard/dashboard-shell');
+
+    await act(async () => {
+      root.render(
+        React.createElement(DashboardShell, {
+          initialState: {
+            ...initialState,
+            activeCategory: 'Overview',
+          },
+          initialSnapshot: null,
+          initialTrend: null,
+          initialOverviewBoard: overviewBoard,
+          initialDictionaries: dictionaries,
+          renderedAt: '2026-03-31T12:05:00.000Z',
+        }),
+      );
+    });
+
+    snapshotCalls.length = 0;
+    trendCalls.length = 0;
+    closedWonCalls.length = 0;
+
+    const categoryButton = container.querySelector('[data-testid="select-new-logo"]');
+    expect(categoryButton).not.toBeNull();
+
+    await act(async () => {
+      categoryButton!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    await flush();
+
+    expect(snapshotCalls).toHaveLength(0);
+    expect(trendCalls).toHaveLength(1);
+    expect(closedWonCalls).toHaveLength(1);
+    expect(trendCalls[0]).toContain('/api/dashboard/trend/new_logo_bookings_amount');
   });
 });

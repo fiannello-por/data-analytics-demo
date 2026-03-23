@@ -2,7 +2,7 @@ import 'server-only';
 
 import { unstable_cache } from 'next/cache';
 import { buildTileTrendQuery } from '@/lib/bigquery/dashboard-sql';
-import { findTileDefinition } from '@/lib/dashboard/catalog';
+import { findTileDefinition, type Category } from '@/lib/dashboard/catalog';
 import { formatDateRange } from '@/lib/dashboard/date-range';
 import { serializeDashboardStateKey } from '@/lib/dashboard/query-inputs';
 import type { ProbeExecutionOptions } from '@/lib/probe-cache-mode';
@@ -22,11 +22,12 @@ import {
 
 type TileTrendState = Pick<
   DashboardState,
-  'activeCategory' | 'selectedTileId' | 'filters' | 'dateRange' | 'previousDateRange' | 'trendGrain'
+  'selectedTileId' | 'filters' | 'dateRange' | 'previousDateRange' | 'trendGrain'
 >;
+type TileTrendInput = TileTrendState & { activeCategory: Category };
 
 export async function getDashboardTileTrend(
-  input: TileTrendState,
+  input: TileTrendInput,
   client: DashboardQueryClient = defaultDashboardQueryClient,
   options: ProbeExecutionOptions = {},
 ): Promise<DashboardLoaderResult<TileTrendPayload>> {

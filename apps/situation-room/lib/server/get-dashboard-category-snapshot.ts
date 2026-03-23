@@ -2,15 +2,11 @@ import 'server-only';
 
 import { unstable_cache } from 'next/cache';
 import { buildTileSnapshotQuery } from '@/lib/bigquery/dashboard-sql';
-import { getCategoryTiles } from '@/lib/dashboard/catalog';
+import { getCategoryTiles, type Category } from '@/lib/dashboard/catalog';
 import { formatDateRange } from '@/lib/dashboard/date-range';
 import { serializeDashboardStateKey } from '@/lib/dashboard/query-inputs';
 import type { ProbeExecutionOptions } from '@/lib/probe-cache-mode';
-import type {
-  CategorySnapshotPayload,
-  DashboardState,
-  TileTiming,
-} from '@/lib/dashboard/contracts';
+import type { CategorySnapshotPayload, DashboardState, TileTiming } from '@/lib/dashboard/contracts';
 import {
   defaultDashboardQueryClient,
   formatMetricValue,
@@ -26,8 +22,9 @@ import {
 
 type CategorySnapshotState = Pick<
   DashboardState,
-  'activeCategory' | 'filters' | 'dateRange' | 'previousDateRange'
+  'filters' | 'dateRange' | 'previousDateRange'
 > & {
+  activeCategory: Category;
   selectedTileId?: string;
 };
 

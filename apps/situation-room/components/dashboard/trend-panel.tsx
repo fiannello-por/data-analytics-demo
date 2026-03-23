@@ -14,16 +14,17 @@ export function TrendPanel({
   displayCurrentWindowLabel,
   displayPreviousWindowLabel,
 }: {
-  trend: TileTrendPayload;
+  trend: TileTrendPayload | null;
   isLoading?: boolean;
   displayLabel?: string;
   displayCurrentWindowLabel?: string;
   displayPreviousWindowLabel?: string;
 }) {
-  const label = displayLabel ?? trend.label;
-  const currentWindowLabel = displayCurrentWindowLabel ?? trend.currentWindowLabel;
+  const label = displayLabel ?? trend?.label ?? 'Metric trend';
+  const currentWindowLabel =
+    displayCurrentWindowLabel ?? trend?.currentWindowLabel ?? 'Current period';
   const previousWindowLabel =
-    displayPreviousWindowLabel ?? trend.previousWindowLabel;
+    displayPreviousWindowLabel ?? trend?.previousWindowLabel ?? 'Previous period';
 
   return (
     <Card aria-busy={isLoading} className="h-full ring-0 shadow-none">
@@ -55,8 +56,12 @@ export function TrendPanel({
             </div>
             <Skeleton className="h-full w-full rounded-lg" />
           </div>
-        ) : (
+        ) : trend ? (
           <TrendChart trend={trend} />
+        ) : (
+          <div className="flex h-full min-h-[19rem] items-center justify-center text-sm text-muted-foreground">
+            Select a metric to load its trend.
+          </div>
         )}
       </CardContent>
     </Card>
