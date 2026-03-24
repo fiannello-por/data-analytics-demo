@@ -21,6 +21,52 @@ importers:
         specifier: 1.7.0
         version: 1.7.0
 
+  apps/analytics-suite:
+    dependencies:
+      '@por/analytics-adapter':
+        specifier: workspace:*
+        version: link:../../packages/analytics-adapter
+      lucide-react:
+        specifier: 0.577.0
+        version: 0.577.0(react@19.2.4)
+      next:
+        specifier: 15.5.12
+        version: 15.5.12(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      next-themes:
+        specifier: ^0.4.6
+        version: 0.4.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      react:
+        specifier: ^19.0.0
+        version: 19.2.4
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.2.4(react@19.2.4)
+      shadcn:
+        specifier: ^4.0.8
+        version: 4.0.8(@types/node@22.19.15)(typescript@5.9.3)
+    devDependencies:
+      '@tailwindcss/postcss':
+        specifier: ^4.0.14
+        version: 4.2.1
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.15
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.2.14
+      '@types/react-dom':
+        specifier: ^19.0.0
+        version: 19.2.3(@types/react@19.2.14)
+      tailwindcss:
+        specifier: ^4.0.14
+        version: 4.2.1
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.0.0
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.19.15)(jiti@2.6.1)(jsdom@29.0.1(@noble/hashes@1.8.0))(lightningcss@1.31.1)(msw@2.12.13(@types/node@22.19.15)(typescript@5.9.3))(terser@5.46.0)
+
   apps/architecture-explainer:
     dependencies:
       '@base-ui/react':

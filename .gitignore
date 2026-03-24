@@ -16,6 +16,7 @@ apps/changelog-site/build
 apps/pdr/.next
 apps/situation-room/.next
 apps/architecture-explainer/.next
+apps/analytics-suite/.next
 apps/pdr/.source
 .superpowers/
 *.tsbuildinfo

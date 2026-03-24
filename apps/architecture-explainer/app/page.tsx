@@ -1,4 +1,5 @@
 import * as React from 'react';
+import Link from 'next/link';
 import { ArchitectureExplorerScreen } from '@/components/architecture/explorer-screen';
 import { architectureManifest } from '@/lib/architecture/manifest';
 import { sampleArchitectureReport } from '@/lib/architecture/report';
@@ -15,6 +16,14 @@ export default async function Page() {
             <h1 className="text-4xl font-semibold tracking-tight">
               Sales Performance Dashboard
             </h1>
+            <div>
+              <Link
+                href="/semantic-system"
+                className="inline-flex items-center rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/40"
+              >
+                Open semantic system view
+              </Link>
+            </div>
           </div>
           <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground xl:justify-self-end">
             Interactive system map for understanding how UI refreshes turn into BigQuery

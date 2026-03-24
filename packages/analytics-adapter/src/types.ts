@@ -31,6 +31,10 @@ export type SemanticQueryRequest = {
   filters?: SemanticFilter[];
   sorts?: SemanticSort[];
   limit?: number;
+  context?: {
+    dashboardId?: string;
+    surfaceId?: string;
+  };
 };
 
 export type SemanticCatalogEntry = {
@@ -71,6 +75,11 @@ export type SemanticExecutionMeta = {
   compileDurationMs: number;
   executionDurationMs: number;
   bytesProcessed?: number;
+  dashboardId?: string;
+  surfaceId?: string;
+  semanticVersion?: string;
+  cacheStatus?: 'hit' | 'miss';
+  budgetStatus?: 'healthy' | 'warning' | 'degrade';
 };
 
 export type SemanticQueryResult = {

@@ -196,7 +196,13 @@ fragmentation.
 
 ### 8.4 Add shared caching and request deduplication
 
-The platform must cache and deduplicate by semantic request signature.
+The platform must support two distinct behaviors:
+
+- in-flight deduplication for identical concurrent semantic requests
+- persistent result caching for semantic requests that is safe against
+  semantic-layer drift
+
+Those two behaviors must not be treated as equivalent.
 
 This should include:
 
@@ -204,6 +210,17 @@ This should include:
 - in-flight deduplication for identical requests
 - shared behavior across dashboards
 - cache namespacing by dashboard where needed
+- semantic-version-aware cache invalidation for persistent cache entries
+
+At minimum, any persistent cache key must include a semantic version component,
+for example:
+
+- semantic deploy version
+- semantic-layer git SHA
+- explicit semantic cache version value
+
+TTL by itself is not sufficient, because the semantic layer is expected to
+remain authoritative.
 
 This is platform behavior, not one-off dashboard logic.
 
@@ -258,7 +275,7 @@ boundaries rather than through early fragmentation.
 The preferred performance strategy is:
 
 - reusable micro serving entities rather than monster serving tables
-- semantic request caching by request signature
+- semantic request caching by request signature plus semantic version
 - low query fan-out per interaction
 - dashboard-level instrumentation and controls
 - platform-level benchmarkability
@@ -291,6 +308,7 @@ For the Sales Performance semantic system:
 ### 10.3 Performance and controls
 
 - Semantic request caching is shared across dashboards
+- Persistent cache entries use semantic-version-aware invalidation
 - In-flight deduplication exists for identical semantic requests
 - Dashboards declare query or performance budgets in code
 - Runtime captures budget-relevant metadata per dashboard
@@ -316,7 +334,7 @@ For the Sales Performance semantic system:
 - Shared runtime abstractions could become dashboard-specific if registry and
   mapper responsibilities leak into the platform layer
 - Caching and deduplication could become misleading if request signatures are
-  underspecified
+  underspecified or if semantic invalidation is omitted
 - Performance controls could become decorative instead of useful if budgets are
   not enforced or at least reported consistently
 - Architecture visualization could remain too low-level or too flat to explain

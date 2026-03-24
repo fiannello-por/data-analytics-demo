@@ -9,6 +9,7 @@ vi.mock('server-only', () => ({}));
 describe('dashboard v2 server loaders', { timeout: 20000 }, () => {
   it('maps semantic snapshot query groups back into the legacy category snapshot payload shape', async () => {
     const runtime = {
+      getCatalogEntries: vi.fn(),
       runQuery: vi.fn(async (request: { measures?: string[]; filters?: Array<{ values?: string[] }> }) => {
         const isPreviousRange = request.filters?.some((filter) =>
           filter.values?.includes('2025-01-01'),
@@ -70,6 +71,7 @@ describe('dashboard v2 server loaders', { timeout: 20000 }, () => {
 
   it('maps semantic dimension results into filter dictionary options', async () => {
     const runtime = {
+      getCatalogEntries: vi.fn(),
       runQuery: vi.fn(async () => ({
         rows: [
           { division: { raw: 'Enterprise', formatted: 'Enterprise' } },

@@ -1,0 +1,60 @@
+@import 'tailwindcss';
+
+:root {
+  --background: oklch(0.988 0.002 240);
+  --foreground: oklch(0.19 0.01 260);
+  --surface: oklch(1 0 0);
+  --surface-elevated: oklch(0.972 0.004 240);
+  --surface-strong: oklch(0.95 0.01 240);
+  --border: oklch(0.9 0.008 240);
+  --muted: oklch(0.56 0.02 240);
+  --primary: oklch(0.56 0.13 255);
+  --primary-soft: oklch(0.94 0.03 255);
+  --accent: oklch(0.68 0.11 170);
+}
+
+.dark {
+  --background: oklch(0.16 0.01 260);
+  --foreground: oklch(0.97 0.004 240);
+  --surface: oklch(0.2 0.01 260);
+  --surface-elevated: oklch(0.24 0.012 260);
+  --surface-strong: oklch(0.28 0.014 260);
+  --border: oklch(0.36 0.01 260);
+  --muted: oklch(0.72 0.015 240);
+  --primary: oklch(0.73 0.13 255);
+  --primary-soft: oklch(0.27 0.04 255);
+  --accent: oklch(0.74 0.11 170);
+}
+
+@theme inline {
+  --font-sans: var(--font-sans);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-border: var(--border);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-strong: var(--surface-strong);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-primary-soft: var(--primary-soft);
+  --color-accent: var(--accent);
+}
+
+@layer base {
+  * {
+    @apply box-border;
+  }
+
+  html {
+    @apply bg-background text-foreground;
+  }
+
+  body {
+    @apply min-h-screen bg-background text-foreground antialiased;
+    font-family: var(--font-sans);
+  }
+
+  a {
+    @apply text-inherit no-underline;
+  }
+}
