@@ -45,7 +45,7 @@ type QueryClient = {
 type ProbeResult<T> = {
   data: T;
   meta: {
-    source: 'bigquery';
+    source: 'bigquery' | 'lightdash';
     queryCount: number;
     bytesProcessed?: number;
     cacheMode: 'auto' | 'off';
@@ -61,7 +61,7 @@ type ArchitectureProbeId =
   | 'dashboard-filter-dictionary';
 
 type ProbeRunPayload<T> = T & {
-  source: 'bigquery';
+  source: 'bigquery' | 'lightdash';
   queryCount: number;
   bytesProcessed?: number;
   cacheMode: 'auto' | 'off';
@@ -197,7 +197,7 @@ function mergeProbePayload<T>(
   result: {
     data: T;
     meta: {
-      source: 'bigquery';
+      source: 'bigquery' | 'lightdash';
       queryCount: number;
       bytesProcessed?: number;
       cacheMode?: 'auto' | 'off';

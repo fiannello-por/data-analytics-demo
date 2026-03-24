@@ -29,7 +29,7 @@ export type DashboardQueryClient = {
 };
 
 export type DashboardLoaderMeta = {
-  source: 'bigquery';
+  source: 'bigquery' | 'lightdash';
   queryCount: number;
   bytesProcessed?: number;
   cacheMode: ProbeCacheMode;

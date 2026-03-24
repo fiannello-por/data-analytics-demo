@@ -19,10 +19,7 @@ import {
 } from '@/lib/dashboard/catalog';
 import {
   addDashboardFilterValue,
-  buildDashboardCategoryUrl,
-  buildDashboardClosedWonUrl,
-  buildDashboardOverviewUrl,
-  buildDashboardTrendUrl,
+  buildDashboardUrlFactory,
   removeDashboardFilterValue,
   serializeDashboardStateSearchParams,
   setDashboardActiveCategory,
@@ -74,6 +71,7 @@ type DashboardShellProps = {
   initialOverviewBoard?: OverviewBoardPayload | null;
   initialDictionaries: Record<string, FilterDictionaryPayload>;
   renderedAt: string;
+  apiBasePath?: string;
 };
 
 type RefreshScope = {
@@ -136,7 +134,9 @@ export function DashboardShell({
   initialOverviewBoard,
   initialDictionaries,
   renderedAt,
+  apiBasePath = '/api/dashboard',
 }: DashboardShellProps) {
+  const urls = React.useMemo(() => buildDashboardUrlFactory(apiBasePath), [apiBasePath]);
   const [state, setState] = React.useState(initialState);
   const [snapshotByCategory, setSnapshotByCategory] = React.useState<
     Partial<Record<Category, CategorySnapshotPayload>>
@@ -191,7 +191,7 @@ export function DashboardShell({
 
     const overviewFetch = scope.overview
       ? fetch(
-          buildDashboardOverviewUrl({
+          urls.buildOverviewUrl({
             filters: nextState.filters,
             dateRange: nextState.dateRange,
           }),
@@ -202,7 +202,7 @@ export function DashboardShell({
       : Promise.resolve(null);
     const snapshotFetch = scope.snapshot
       ? fetch(
-          buildDashboardCategoryUrl({
+          urls.buildCategoryUrl({
             ...nextState,
             activeCategory: scope.detailCategory,
           }),
@@ -215,7 +215,7 @@ export function DashboardShell({
       : Promise.resolve(null);
     const trendFetch = scope.trend
       ? fetch(
-          buildDashboardTrendUrl({
+          urls.buildTrendUrl({
             ...nextState,
             activeCategory: scope.detailCategory,
           }),
@@ -226,7 +226,7 @@ export function DashboardShell({
       : Promise.resolve(null);
     const closedWonFetch = scope.closedWon
       ? fetch(
-          buildDashboardClosedWonUrl({
+          urls.buildClosedWonUrl({
             ...nextState,
             activeCategory: scope.closedWonCategory,
           }),

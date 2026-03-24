@@ -1,5 +1,5 @@
 situation_room:
-  target: "{{ 'dev' if env_var('BIGQUERY_SERVICE_ACCOUNT_JSON', '') else 'parse' }}"
+  target: "{{ 'dev_path' if env_var('BIGQUERY_SERVICE_ACCOUNT_PATH', '') else ('dev_json' if env_var('BIGQUERY_SERVICE_ACCOUNT_JSON', '') else 'parse') }}"
   outputs:
     parse:
       type: bigquery
@@ -9,7 +9,16 @@ situation_room:
       location: "{{ env_var('BIGQUERY_LOCATION', 'US') }}"
       threads: 4
       job_execution_timeout_seconds: 300
-    dev:
+    dev_path:
+      type: bigquery
+      method: service-account
+      project: "{{ env_var('BIGQUERY_PROJECT_ID', 'dbt_parse_placeholder') }}"
+      dataset: "{{ env_var('BIGQUERY_DATASET', 'app_serving_dev') }}"
+      location: "{{ env_var('BIGQUERY_LOCATION', 'US') }}"
+      keyfile: "{{ env_var('BIGQUERY_SERVICE_ACCOUNT_PATH', '/tmp/dbt-parse-placeholder.json') }}"
+      threads: 4
+      job_execution_timeout_seconds: 300
+    dev_json:
       type: bigquery
       method: service-account-json
       project: "{{ env_var('BIGQUERY_PROJECT_ID', 'dbt_parse_placeholder') }}"

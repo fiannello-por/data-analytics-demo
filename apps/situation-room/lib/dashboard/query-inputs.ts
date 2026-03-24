@@ -28,6 +28,21 @@ export type DashboardStateKeyInput = {
   selectedTileId?: string;
 };
 
+export type DashboardUrlFactory = {
+  buildCategoryUrl: (
+    input: DashboardStateKeyInput & { activeCategory: Category },
+  ) => string;
+  buildOverviewUrl: (
+    input: Pick<DashboardStateKeyInput, 'filters' | 'dateRange'>,
+  ) => string;
+  buildTrendUrl: (
+    input: DashboardStateKeyInput & { activeCategory: Category },
+  ) => string;
+  buildClosedWonUrl: (
+    input: DashboardStateKeyInput & { activeCategory: Category },
+  ) => string;
+};
+
 function normalizeFilterValues(values: string[]): string[] {
   return [...new Set(values.map((value) => value.trim()).filter(Boolean))].sort();
 }
@@ -151,51 +166,79 @@ export function serializeDashboardStateSearchParams(
   return searchParams;
 }
 
+export function buildDashboardUrlFactory(basePath = '/api/dashboard'): DashboardUrlFactory {
+  return {
+    buildCategoryUrl(
+      input: DashboardStateKeyInput & { activeCategory: Category },
+    ): string {
+      const searchParams = serializeDashboardSnapshotSearchParams(input);
+      return `${basePath}/category/${encodeURIComponent(input.activeCategory)}?${searchParams.toString()}`;
+    },
+
+    buildOverviewUrl(
+      input: Pick<DashboardStateKeyInput, 'filters' | 'dateRange'>,
+    ): string {
+      const searchParams = new URLSearchParams();
+      const dateRange = input.dateRange ?? getCurrentYearRange();
+
+      searchParams.set('category', OVERVIEW_TAB);
+      searchParams.set('startDate', dateRange.startDate);
+      searchParams.set('endDate', dateRange.endDate);
+
+      for (const [key, values] of Object.entries(
+        normalizeDashboardFilters(input.filters ?? {}),
+      )) {
+        for (const value of values) {
+          searchParams.append(key, value);
+        }
+      }
+
+      return `${basePath}/overview?${searchParams.toString()}`;
+    },
+
+    buildTrendUrl(
+      input: DashboardStateKeyInput & { activeCategory: Category },
+    ): string {
+      const selectedTileId =
+        input.selectedTileId ?? getDefaultTileId(input.activeCategory);
+      const searchParams = serializeDashboardSnapshotSearchParams({
+        ...input,
+      });
+      searchParams.set('tileId', selectedTileId);
+      return `${basePath}/trend/${encodeURIComponent(selectedTileId)}?${searchParams.toString()}`;
+    },
+
+    buildClosedWonUrl(
+      input: DashboardStateKeyInput & { activeCategory: Category },
+    ): string {
+      const searchParams = serializeDashboardSnapshotSearchParams(input);
+      return `${basePath}/closed-won/${encodeURIComponent(input.activeCategory)}?${searchParams.toString()}`;
+    },
+  };
+}
+
 export function buildDashboardCategoryUrl(
   input: DashboardStateKeyInput & { activeCategory: Category },
 ): string {
-  const searchParams = serializeDashboardSnapshotSearchParams(input);
-  return `/api/dashboard/category/${encodeURIComponent(input.activeCategory)}?${searchParams.toString()}`;
+  return buildDashboardUrlFactory().buildCategoryUrl(input);
 }
 
 export function buildDashboardOverviewUrl(
   input: Pick<DashboardStateKeyInput, 'filters' | 'dateRange'>,
 ): string {
-  const searchParams = new URLSearchParams();
-  const dateRange = input.dateRange ?? getCurrentYearRange();
-
-  searchParams.set('category', OVERVIEW_TAB);
-  searchParams.set('startDate', dateRange.startDate);
-  searchParams.set('endDate', dateRange.endDate);
-
-  for (const [key, values] of Object.entries(
-    normalizeDashboardFilters(input.filters ?? {}),
-  )) {
-    for (const value of values) {
-      searchParams.append(key, value);
-    }
-  }
-
-  return `/api/dashboard/overview?${searchParams.toString()}`;
+  return buildDashboardUrlFactory().buildOverviewUrl(input);
 }
 
 export function buildDashboardTrendUrl(
   input: DashboardStateKeyInput & { activeCategory: Category },
 ): string {
-  const selectedTileId =
-    input.selectedTileId ?? getDefaultTileId(input.activeCategory);
-  const searchParams = serializeDashboardSnapshotSearchParams({
-    ...input,
-  });
-  searchParams.set('tileId', selectedTileId);
-  return `/api/dashboard/trend/${encodeURIComponent(selectedTileId)}?${searchParams.toString()}`;
+  return buildDashboardUrlFactory().buildTrendUrl(input);
 }
 
 export function buildDashboardClosedWonUrl(
   input: DashboardStateKeyInput & { activeCategory: Category },
 ): string {
-  const searchParams = serializeDashboardSnapshotSearchParams(input);
-  return `/api/dashboard/closed-won/${encodeURIComponent(input.activeCategory)}?${searchParams.toString()}`;
+  return buildDashboardUrlFactory().buildClosedWonUrl(input);
 }
 
 export function setDashboardActiveCategory(

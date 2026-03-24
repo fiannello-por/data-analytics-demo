@@ -21,3 +21,17 @@ models:
         tests: [not_null]
       - name: value
         tests: [not_null]
+
+  - name: sales_dashboard_v2_opportunity_base
+    description: Reusable opportunity-grain serving table for Situation Room semantic v2 queries.
+    columns:
+      - name: opportunity_id
+        tests: [not_null]
+      - name: dashboard_category
+        tests: [not_null]
+
+  - name: sales_dashboard_v2_closed_won_opportunities
+    description: Narrow closed-won opportunity serving table for Situation Room semantic v2 detail queries.
+    columns:
+      - name: opportunity_id
+        tests: [not_null]

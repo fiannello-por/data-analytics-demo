@@ -3,6 +3,7 @@ import {
   addDashboardFilterValue,
   buildDashboardCategoryUrl,
   buildDashboardTrendUrl,
+  buildDashboardUrlFactory,
   removeDashboardFilterValue,
   parseDashboardSearchParams,
   serializeDashboardSnapshotSearchParams,
@@ -87,6 +88,31 @@ describe('dashboard query inputs', () => {
     );
     expect(buildDashboardTrendUrl(state)).toBe(
       '/api/dashboard/trend/new_logo_bookings_amount?category=New+Logo&startDate=2026-01-01&endDate=2026-03-31&Division=Enterprise&tileId=new_logo_bookings_amount',
+    );
+  });
+
+  it('builds dashboard urls against a custom api base path for parallel backends', () => {
+    const urls = buildDashboardUrlFactory('/api/dashboard-v2');
+    const state = {
+      activeCategory: 'New Logo' as const,
+      selectedTileId: 'new_logo_bookings_amount',
+      filters: { Division: ['Enterprise'] },
+      dateRange: { startDate: '2026-01-01', endDate: '2026-03-31' },
+    };
+
+    expect(urls.buildCategoryUrl(state)).toBe(
+      '/api/dashboard-v2/category/New%20Logo?category=New+Logo&startDate=2026-01-01&endDate=2026-03-31&Division=Enterprise',
+    );
+    expect(urls.buildTrendUrl(state)).toBe(
+      '/api/dashboard-v2/trend/new_logo_bookings_amount?category=New+Logo&startDate=2026-01-01&endDate=2026-03-31&Division=Enterprise&tileId=new_logo_bookings_amount',
+    );
+    expect(
+      urls.buildOverviewUrl({
+        filters: state.filters,
+        dateRange: state.dateRange,
+      }),
+    ).toBe(
+      '/api/dashboard-v2/overview?category=Overview&startDate=2026-01-01&endDate=2026-03-31&Division=Enterprise',
     );
   });
 
