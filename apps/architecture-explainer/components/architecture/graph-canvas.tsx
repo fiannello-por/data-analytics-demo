@@ -115,17 +115,21 @@ export function GraphCanvas({
           source: edge.from,
           target: edge.to,
           type: 'smoothstep',
+          pathOptions: {
+            borderRadius: 10,
+            offset: 18,
+          },
           animated: edge.type === 'trigger',
           markerEnd: {
             type: MarkerType.ArrowClosed,
             width: 18,
             height: 18,
-            color: 'rgba(148, 163, 184, 0.65)',
+            color: 'rgba(226, 232, 240, 0.78)',
           },
           style: {
-            stroke: edge.type === 'trigger' ? 'rgba(96, 165, 250, 0.75)' : 'rgba(100, 116, 139, 0.65)',
+            stroke: edge.type === 'trigger' ? 'rgba(125, 211, 252, 0.88)' : 'rgba(226, 232, 240, 0.74)',
             strokeWidth: edge.type === 'trigger' ? 1.8 : 1.3,
-            opacity: 0.7,
+            opacity: 0.82,
           },
         })),
     [manifest.edges, visibleEdgeIds],
@@ -180,10 +184,10 @@ export function GraphCanvas({
             width: 18,
             height: 18,
             color: isIncoming
-              ? 'rgba(248, 113, 113, 0.95)'
-              : isOutgoing
-                ? 'rgba(34, 197, 94, 0.95)'
-                : 'rgba(148, 163, 184, 0.65)',
+                ? 'rgba(248, 113, 113, 0.95)'
+                : isOutgoing
+                  ? 'rgba(34, 197, 94, 0.95)'
+                : 'rgba(226, 232, 240, 0.82)',
           },
           style: {
             ...edge.style,
@@ -191,9 +195,9 @@ export function GraphCanvas({
               ? 'rgba(248, 113, 113, 0.92)'
               : isOutgoing
                 ? 'rgba(34, 197, 94, 0.92)'
-                : 'rgba(100, 116, 139, 0.42)',
+                : 'rgba(226, 232, 240, 0.62)',
             strokeWidth: isRelated ? 2.6 : 1.2,
-            opacity: selectedNodeId == null ? 0.72 : isRelated ? 0.98 : 0.24,
+            opacity: selectedNodeId == null ? 0.88 : isRelated ? 0.98 : 0.26,
           },
         };
       }),

@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { ChevronRightIcon } from 'lucide-react';
 import { parseChange } from '@/components/change-indicator';
+import { TileBackendSheet } from '@/components/dashboard/tile-backend-sheet';
 import type { CategorySnapshotPayload } from '@/lib/dashboard/contracts';
 import type { Category } from '@/lib/dashboard/catalog';
 import { getCategoryTiles } from '@/lib/dashboard/catalog';
@@ -70,7 +71,17 @@ export function TileTable({
                   : undefined
               }
             >
-              <TableCell className="font-medium">{row.label}</TableCell>
+              <TableCell className="font-medium">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="truncate">{row.label}</span>
+                  <TileBackendSheet
+                    title={row.label}
+                    trace={row.backendTrace}
+                    triggerStopsPropagation
+                    triggerClassName="shrink-0 group-hover:opacity-100"
+                  />
+                </div>
+              </TableCell>
               <TableCell>{row.currentValue}</TableCell>
               <TableCell>{row.previousValue}</TableCell>
               <TableCell className={cn(changeCellStyles[parseChange(row.pctChange).direction])}>

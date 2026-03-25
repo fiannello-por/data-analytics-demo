@@ -22,6 +22,7 @@ import type {
   ClosedWonOpportunitiesPayload,
   ClosedWonOpportunityRow,
 } from '@/lib/dashboard/contracts';
+import { TileBackendSheet } from '@/components/dashboard/tile-backend-sheet';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -268,13 +269,22 @@ export function ClosedWonOpportunitiesTable({
   const endRow = totalRows === 0 ? 0 : Math.min((pageIndex + 1) * pageSize, totalRows);
 
   return (
-    <Card className="border-border/70 bg-card shadow-none">
+    <Card className="group border-border/70 bg-card shadow-none">
       <CardHeader className="gap-2">
-        <CardTitle>Closed Won Opportunities</CardTitle>
-        <CardDescription>
-          Current-period closed won opportunities for {payload.category}. Sort by key columns and
-          paginate through the current result set.
-        </CardDescription>
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-2">
+            <CardTitle>Closed Won Opportunities</CardTitle>
+            <CardDescription>
+              Current-period closed won opportunities for {payload.category}. Sort by key columns
+              and paginate through the current result set.
+            </CardDescription>
+          </div>
+          <TileBackendSheet
+            title="Closed Won Opportunities"
+            trace={payload.backendTrace}
+            triggerClassName="group-hover:opacity-100"
+          />
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {totalRows === 0 ? (

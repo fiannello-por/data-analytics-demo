@@ -19,6 +19,7 @@ import {
   getDashboardV2Runtime,
   normalizeDashboardV2ExecutionOptions,
 } from '@/lib/server/v2/semantic-runtime';
+import { buildTileBackendTrace } from '@/lib/server/v2/tile-backend-trace';
 import {
   getSemanticNumber,
   getSemanticOptionalString,
@@ -45,9 +46,17 @@ export async function getDashboardV2ClosedWonOpportunities(
   const execution = normalizeDashboardV2ExecutionOptions(options);
 
   const loadRows = async () => {
-    const result = await runtime.runQuery(
-      buildClosedWonQuery(input.activeCategory, input.filters, input.dateRange),
+    const semanticRequest = buildClosedWonQuery(
+      input.activeCategory,
+      input.filters,
+      input.dateRange,
     );
+    const result = await runtime.runQuery(semanticRequest);
+    const backendTrace = await buildTileBackendTrace({
+      kind: 'single',
+      includes: ['Closed Won Opportunities'],
+      executions: [{ label: 'Current window', semanticRequest, result }],
+    });
 
     return {
       data: {
@@ -78,6 +87,7 @@ export async function getDashboardV2ClosedWonOpportunities(
           users: formatMetricValue(getSemanticNumber(row, 'users'), 'number'),
           acv: formatMetricValue(getSemanticNumber(row, 'acv'), 'currency'),
         })),
+        backendTrace,
       },
       meta: {
         source: 'lightdash' as const,
@@ -92,7 +102,7 @@ export async function getDashboardV2ClosedWonOpportunities(
     return loadRows();
   }
 
-  return unstable_cache(loadRows, ['dashboard-v2-closed-won', buildCacheKey(input)], {
+  return unstable_cache(loadRows, ['v2-trace-links-2', 'dashboard-v2-closed-won', buildCacheKey(input)], {
     revalidate: 60,
     tags: ['dashboard-v2-closed-won'],
   })();

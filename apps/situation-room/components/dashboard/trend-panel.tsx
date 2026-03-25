@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { TileBackendSheet } from '@/components/dashboard/tile-backend-sheet';
 import type { TileTrendPayload } from '@/lib/dashboard/contracts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendChart } from '@/components/trend-chart';
@@ -27,7 +28,7 @@ export function TrendPanel({
     displayPreviousWindowLabel ?? trend?.previousWindowLabel ?? 'Previous period';
 
   return (
-    <Card aria-busy={isLoading} className="h-full ring-0 shadow-none">
+    <Card aria-busy={isLoading} className="group h-full ring-0 shadow-none">
       <CardHeader className="gap-2 pb-3">
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1">
@@ -36,9 +37,18 @@ export function TrendPanel({
               Weekly trend
             </p>
           </div>
-          {isLoading ? (
-            <span className="pt-0.5 text-xs text-muted-foreground">Refreshing…</span>
-          ) : null}
+          <div className="flex items-center gap-2">
+            {trend ? (
+              <TileBackendSheet
+                title={label}
+                trace={trend.backendTrace}
+                triggerClassName="group-hover:opacity-100"
+              />
+            ) : null}
+            {isLoading ? (
+              <span className="pt-0.5 text-xs text-muted-foreground">Refreshing…</span>
+            ) : null}
+          </div>
         </div>
         <CardDescription className="text-xs leading-5 text-foreground/80">
           {formatTrendRangeLabel(currentWindowLabel)}

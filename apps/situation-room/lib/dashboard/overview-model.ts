@@ -1,8 +1,12 @@
 import type { Category, TileFormatType } from '@/lib/dashboard/catalog';
-import type { CategorySnapshotPayload, CategorySnapshotRow } from '@/lib/dashboard/contracts';
+import type {
+  CategorySnapshotPayload,
+  CategorySnapshotRow,
+  TileBackendTrace,
+} from '@/lib/dashboard/contracts';
 import { getMetricCopy } from '@/lib/dashboard/metric-copy';
 
-type OverviewMetric = {
+export type OverviewMetric = {
   tileId: string;
   label: string;
   value: string;
@@ -12,6 +16,7 @@ type OverviewMetric = {
   formatType: TileFormatType;
   description: string;
   calculation: string;
+  backendTrace?: TileBackendTrace;
 };
 
 type OverviewSectionA = {
@@ -135,6 +140,7 @@ function toMetric(row: CategorySnapshotRow | undefined): OverviewMetric | null {
     previousValue: row.previousValue,
     delta: row.pctChange,
     formatType: row.formatType,
+    backendTrace: row.backendTrace,
   };
 }
 

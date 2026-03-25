@@ -18,6 +18,7 @@ import {
   getDashboardV2Runtime,
   normalizeDashboardV2ExecutionOptions,
 } from '@/lib/server/v2/semantic-runtime';
+import { buildTileBackendTrace } from '@/lib/server/v2/tile-backend-trace';
 import { getSemanticNumber } from '@/lib/server/v2/semantic-values';
 
 type CategorySnapshotState = Pick<
@@ -62,32 +63,37 @@ export async function getDashboardV2CategorySnapshot(
     const groups = getSnapshotGroups(input.activeCategory);
     const groupResults = await Promise.all(
       groups.map(async (group) => {
+        const currentRequest = buildSnapshotGroupQuery(
+          input.activeCategory,
+          input.filters,
+          input.dateRange,
+          group,
+        );
+        const previousRequest = buildSnapshotGroupQuery(
+          input.activeCategory,
+          input.filters,
+          input.previousDateRange,
+          group,
+        );
         const [current, previous] = await Promise.all([
-          runTimedQuery(
-            runtime,
-            buildSnapshotGroupQuery(
-              input.activeCategory,
-              input.filters,
-              input.dateRange,
-              group,
-            ),
-          ),
-          runTimedQuery(
-            runtime,
-            buildSnapshotGroupQuery(
-              input.activeCategory,
-              input.filters,
-              input.previousDateRange,
-              group,
-            ),
-          ),
+          runTimedQuery(runtime, currentRequest),
+          runTimedQuery(runtime, previousRequest),
         ]);
 
-        return { group, current, previous };
+        const backendTrace = await buildTileBackendTrace({
+          kind: 'composite',
+          includes: group.tiles.map((tile) => tile.label),
+          executions: [
+            { label: 'Current window', semanticRequest: currentRequest, result: current },
+            { label: 'Previous window', semanticRequest: previousRequest, result: previous },
+          ],
+        });
+
+        return { group, current, previous, backendTrace };
       }),
     );
 
-    const rows = groupResults.flatMap(({ group, current, previous }) =>
+    const rows = groupResults.flatMap(({ group, current, previous, backendTrace }) =>
       group.tiles.map((tile) => {
         const currentRow = current.rows[0];
         const previousRow = previous.rows[0];
@@ -102,6 +108,7 @@ export async function getDashboardV2CategorySnapshot(
           currentValue: formatMetricValue(currentValue, tile.formatType),
           previousValue: formatMetricValue(previousValue, tile.formatType),
           pctChange: formatPctChange(currentValue, previousValue),
+          backendTrace,
           durationMs: current.totalDurationMs + previous.totalDurationMs,
         };
       }),
@@ -144,7 +151,7 @@ export async function getDashboardV2CategorySnapshot(
 
   return unstable_cache(
     loadSnapshot,
-    ['dashboard-v2-category-snapshot', buildCacheKey(input)],
+    ['v2-trace-links-2', 'dashboard-v2-category-snapshot', buildCacheKey(input)],
     {
       revalidate: 60,
       tags: ['dashboard-v2-category-snapshot'],

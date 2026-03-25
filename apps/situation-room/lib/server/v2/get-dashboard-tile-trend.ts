@@ -14,6 +14,7 @@ import {
   getDashboardV2Runtime,
   normalizeDashboardV2ExecutionOptions,
 } from '@/lib/server/v2/semantic-runtime';
+import { buildTileBackendTrace } from '@/lib/server/v2/tile-backend-trace';
 import { getSemanticNumber, getSemanticString } from '@/lib/server/v2/semantic-values';
 
 type TileTrendState = Pick<
@@ -37,23 +38,21 @@ export async function getDashboardV2TileTrend(
   }
 
   const loadTrend = async () => {
+    const currentRequest = buildTrendQuery(
+      input.activeCategory,
+      input.selectedTileId,
+      input.filters,
+      input.dateRange,
+    );
+    const previousRequest = buildTrendQuery(
+      input.activeCategory,
+      input.selectedTileId,
+      input.filters,
+      input.previousDateRange,
+    );
     const [current, previous] = await Promise.all([
-      runtime.runQuery(
-        buildTrendQuery(
-          input.activeCategory,
-          input.selectedTileId,
-          input.filters,
-          input.dateRange,
-        ),
-      ),
-      runtime.runQuery(
-        buildTrendQuery(
-          input.activeCategory,
-          input.selectedTileId,
-          input.filters,
-          input.previousDateRange,
-        ),
-      ),
+      runtime.runQuery(currentRequest),
+      runtime.runQuery(previousRequest),
     ]);
     const bucketField = Object.keys(current.rows[0] ?? {}).find((field) =>
       field.endsWith('_week'),
@@ -68,6 +67,15 @@ export async function getDashboardV2TileTrend(
     const currentRows = current.rows;
     const previousRows = previous.rows;
     const length = Math.max(currentRows.length, previousRows.length);
+
+    const backendTrace = await buildTileBackendTrace({
+      kind: 'single',
+      includes: [tile.label],
+      executions: [
+        { label: 'Current window', semanticRequest: currentRequest, result: current },
+        { label: 'Previous window', semanticRequest: previousRequest, result: previous },
+      ],
+    });
 
     return {
       data: {
@@ -88,6 +96,7 @@ export async function getDashboardV2TileTrend(
             previousValue: getSemanticNumber(previousRow, measureField),
           };
         }),
+        backendTrace,
       },
       meta: {
         source: 'lightdash' as const,
@@ -106,6 +115,7 @@ export async function getDashboardV2TileTrend(
   return unstable_cache(
     loadTrend,
     [
+      'v2-trace-links-2',
       'dashboard-v2-tile-trend',
       serializeDashboardStateKey({
         activeCategory: input.activeCategory,

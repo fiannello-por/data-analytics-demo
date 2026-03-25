@@ -4,6 +4,7 @@ import type {
   GlobalFilterKey,
   TileFormatType,
 } from '@/lib/dashboard/catalog';
+import type { SemanticQueryRequest } from '@por/analytics-adapter';
 
 export type DateRange = {
   startDate: string;
@@ -30,10 +31,30 @@ export type DashboardTileMetadata = {
   formatType: TileFormatType;
 };
 
+export type TileBackendExecution = {
+  label: string;
+  semanticRequest: SemanticQueryRequest;
+  compiledSql: string;
+  exploreUrl?: string;
+};
+
+export type TileBackendTrace = {
+  kind: 'single' | 'composite';
+  model: string;
+  includes: string[];
+  compiledAt: string;
+  cacheStatus?: 'hit' | 'miss';
+  sqlRunnerUrl?: string;
+  githubModelUrl?: string;
+  semanticYamlSnippet: string;
+  executions: TileBackendExecution[];
+};
+
 export type CategorySnapshotRow = DashboardTileMetadata & {
   currentValue: string;
   previousValue: string;
   pctChange: string;
+  backendTrace?: TileBackendTrace;
 };
 
 export type TileTiming = {
@@ -72,6 +93,7 @@ export type TileTrendPayload = {
   currentWindowLabel: string;
   previousWindowLabel: string;
   points: TileTrendPoint[];
+  backendTrace?: TileBackendTrace;
 };
 
 export type ClosedWonOpportunityRow = {
@@ -101,6 +123,7 @@ export type ClosedWonOpportunitiesPayload = {
   currentWindowLabel: string;
   lastRefreshedAt: string;
   rows: ClosedWonOpportunityRow[];
+  backendTrace?: TileBackendTrace;
 };
 
 export type FilterDictionaryOption = {
