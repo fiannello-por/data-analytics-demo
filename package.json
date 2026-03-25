@@ -16,6 +16,8 @@
     "suite:build": "pnpm --filter @point-of-rental/analytics-suite build",
     "suite:dev": "pnpm --filter @point-of-rental/analytics-suite dev",
     "suite:test": "pnpm --filter @point-of-rental/analytics-suite test",
+    "dashboard-layout:test": "pnpm --filter @por/dashboard-layout test",
+    "dashboard-layout:typecheck": "pnpm --filter @por/dashboard-layout typecheck",
     "dbt:build": "uv run dbt build --project-dir dbt --profiles-dir dbt",
     "dbt:parse": "uv run dbt parse --project-dir dbt --profiles-dir dbt",
     "pdr:build": "pnpm --filter @point-of-rental/pdr build",
