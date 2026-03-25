@@ -81,4 +81,16 @@ describe("DashboardSplit", () => {
     expect(html).toContain("flex:0 0 auto");
     expect(html).toContain("flex:1 1 0%");
   });
+
+  it("applies the requested split direction", () => {
+    const html = renderToStaticMarkup(
+      <DashboardSplit
+        direction="column"
+        leading={<div>Leading content</div>}
+        trailing={<div>Trailing content</div>}
+      />,
+    );
+
+    expect(html).toContain("flex-direction:column");
+  });
 });

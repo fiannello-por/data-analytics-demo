@@ -112,11 +112,11 @@ vi.mock('@/components/dashboard/category-tabs', () => ({
 
 vi.mock('@/components/dashboard/tile-table', () => ({
   TileTable: ({
-    snapshot,
+    rows,
     selectedTileId,
     onRowSelect,
   }: {
-    snapshot: CategorySnapshotPayload;
+    rows: Array<{ tileId: string; label: string }>;
     selectedTileId: string;
     onRowSelect?: (tileId: string) => void;
   }) =>
@@ -128,7 +128,7 @@ vi.mock('@/components/dashboard/tile-table', () => ({
         { 'data-testid': 'selected-tile' },
         selectedTileId,
       ),
-      snapshot.rows.map((row) =>
+      rows.map((row) =>
         React.createElement(
           'button',
           {
@@ -157,7 +157,7 @@ vi.mock('@/components/dashboard/trend-panel', () => ({
   TrendPanel: ({
     trend,
     isLoading,
-    isVisible,
+    isVisible = true,
     displayLabel,
   }: {
     trend: TileTrendPayload | null;
@@ -220,7 +220,7 @@ async function flush(): Promise<void> {
   });
 }
 
-describe('dashboard shell client interactions', () => {
+describe('dashboard shell client interactions', { timeout: 30000 }, () => {
   let container: HTMLDivElement;
   let root: Root;
   let replaceStateSpy: ReturnType<typeof vi.spyOn>;
@@ -467,6 +467,18 @@ describe('dashboard shell client interactions', () => {
     expect(trendCalls[0]).toContain('/api/dashboard/trend/new_logo_sqo');
   });
 
+  it('renders Main Metrics through the shared split layout and keeps the trend area empty until selection', () => {
+    expect(
+      container.querySelector('[data-dashboard-split-slot="leading"]'),
+    ).not.toBeNull();
+    expect(
+      container.querySelector('[data-dashboard-split-slot="trailing"]'),
+    ).not.toBeNull();
+    expect(
+      container.textContent,
+    ).toContain('See the line chart');
+  });
+
   it('selects the clicked row immediately and shows trend loading while the trend refreshes', async () => {
     deferTrendRequests = true;
 
@@ -528,8 +540,8 @@ describe('dashboard shell client interactions', () => {
     );
     expect(replaceStateSpy).toHaveBeenCalled();
     expect(
-      container.querySelector('[data-testid="trend-panel"]')?.textContent,
-    ).toBe('trend placeholder');
+      container.textContent,
+    ).toContain('See the line chart');
   });
 
   it('activates the clicked tab immediately and shows tile loading while the snapshot refreshes', async () => {

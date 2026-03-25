@@ -25,6 +25,7 @@ export type TileErrorStateProps = TileStateProps;
 export type DashboardSplitProps = {
   leading: ReactNode;
   trailing: ReactNode;
+  direction?: CSSProperties["flexDirection"];
   gap?: number | string;
   align?: CSSProperties["alignItems"];
   style?: CSSProperties;

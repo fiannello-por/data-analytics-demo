@@ -13,6 +13,7 @@ function toGapValue(gap: number | string | undefined, fallback: string) {
 export function DashboardSplit({
   leading,
   trailing,
+  direction = "row",
   gap = "1rem",
   align = "stretch",
   style,
@@ -21,6 +22,7 @@ export function DashboardSplit({
     <div
       style={{
         display: "flex",
+        flexDirection: direction,
         alignItems: align,
         gap: toGapValue(gap, "1rem"),
         minWidth: 0,
