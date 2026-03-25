@@ -550,3 +550,26 @@ git commit -m "test: verify dashboard spec pilot migration"
 - Do not move unrelated dashboard sections into the new system until the `Main Metrics + selected trend` pilot is stable.
 - Prefer adapting current Situation Room data shapes to the shared contracts rather than rewriting semantic runtime logic.
 - If a shared package starts absorbing Situation Room-specific assumptions, stop and move that logic back into the app adapter layer.
+
+## Execution Outcome
+
+Completed on `codex/v2-dashboard-spec-migration`:
+
+- Task 1: scaffolded `dashboard-spec`, `dashboard-layout`, and `dashboard-visualization-recharts`
+- Task 2: added shared tile contracts, validation, normalization, and renderer key helpers
+- Task 3: added shared tile chrome/state shells and split/grid/stack layout primitives
+- Task 4: added the reusable Recharts registry and first renderers
+- Task 5: added Situation Room `v2` binding adapters for `mainMetricsSnapshot` and `selectedMetricTrend`
+- Task 6: migrated the `Main Metrics + selected trend` pilot slice to the new declarative pipeline
+- Task 7: added end-to-end assertions and verified the pilot across packages, app tests, typechecks, and production build
+
+Observed deviation:
+
+- the pilot keeps app-local adapters around shared renderers/layout so Situation Room can preserve current traceability affordances and richer panel framing while the shared contracts remain stable
+
+Next migration targets:
+
+- overview scorecards
+- closed won table
+- remaining trend-capable tiles
+- consolidation/removal of superseded app-local composition wrappers

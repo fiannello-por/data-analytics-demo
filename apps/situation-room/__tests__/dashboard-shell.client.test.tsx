@@ -190,8 +190,10 @@ vi.mock('@/components/dashboard/closed-won-opportunities-table', () => ({
       'div',
       { 'data-testid': 'closed-won-table-skeleton' },
       'closed won loading',
-    ),
+  ),
 }));
+
+vi.unmock('@/components/dashboard/dashboard-shell');
 
 const snapshotCalls: string[] = [];
 const trendCalls: string[] = [];

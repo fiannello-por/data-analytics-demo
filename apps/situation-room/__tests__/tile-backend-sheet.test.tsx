@@ -80,6 +80,8 @@ describe('TileBackendSheet', () => {
 
     expect(document.body.textContent).toContain('Bookings $');
     expect(document.body.textContent).toContain('Composite tile');
+    expect(document.body.textContent).toContain('Fields');
+    expect(document.body.textContent).toContain('bookings_amount');
     expect(document.body.textContent).toContain('Semantic query');
     expect(document.body.textContent).toContain('SQL');
     expect(document.body.textContent).toContain('Current window');

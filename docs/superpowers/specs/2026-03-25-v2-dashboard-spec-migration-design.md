@@ -256,3 +256,14 @@ Mitigation:
 ## Recommendation
 
 Proceed with the migration on a single branch using this spec as the source of truth, then write an implementation plan and execute in phases beginning with the `Main Metrics + selected trend` pilot slice.
+
+## Implementation Status
+
+As of 2026-03-25, the pilot slice is implemented on `codex/v2-dashboard-spec-migration`:
+
+- shared packages exist for spec contracts, layout primitives, and a Recharts-backed visualization registry
+- Situation Room `v2` exposes app-local binding adapters for `mainMetricsSnapshot` and `selectedMetricTrend`
+- `Main Metrics + selected trend` now runs through a declarative spec, a shared split layout primitive, and shared chart renderer wiring
+- traceability remains outside the shared core and continues to work on the migrated pilot
+
+The current deviation from the target architecture is deliberate: the pilot still uses app-local adapters around the shared visualization/runtime boundary so Situation Room can preserve its tuned traceability and interaction affordances while the reusable contracts settle.
