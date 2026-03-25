@@ -25,13 +25,89 @@ import {
 } from '@/lib/trend-chart-model';
 import { toStableDomId } from '@/lib/stable-dom-id';
 
+type TrendChartDatum = ReturnType<typeof buildTrendChartData>[number];
+
+function getNotablePointIndexes(
+  data: TrendChartDatum[],
+  key: 'current' | 'previous',
+) {
+  const numericPoints = data
+    .map((point, index) => ({ index, value: point[key] }))
+    .filter((point): point is { index: number; value: number } => point.value != null && !Number.isNaN(point.value));
+
+  if (numericPoints.length === 0) {
+    return new Set<number>();
+  }
+
+  const maxPoint = numericPoints.reduce((best, point) => (point.value > best.value ? point : best));
+  const minPoint = numericPoints.reduce((best, point) => (point.value < best.value ? point : best));
+  const lastPoint = numericPoints.at(-1) ?? numericPoints[0];
+
+  return new Set([maxPoint.index, minPoint.index, lastPoint.index]);
+}
+
+function renderTrendValueLabel({
+  index,
+  value,
+  x,
+  y,
+  keyName,
+  notableIndexes,
+  formatType,
+  lastIndex,
+}: {
+  index?: number;
+  value?: number | string;
+  x?: number;
+  y?: number;
+  keyName: 'current' | 'previous';
+  notableIndexes: Set<number>;
+  formatType: ReturnType<typeof getTrendFormatType>;
+  lastIndex: number;
+}) {
+  if (
+    index == null ||
+    !notableIndexes.has(index) ||
+    typeof x !== 'number' ||
+    typeof y !== 'number' ||
+    typeof value !== 'number'
+  ) {
+    return <g />;
+  }
+
+  const dy = keyName === 'current' ? -12 : 18;
+  const isLastPoint = index === lastIndex;
+
+  return (
+    <text
+      x={isLastPoint ? x - 6 : x}
+      y={y + dy}
+      textAnchor={isLastPoint ? 'end' : 'middle'}
+      className="fill-muted-foreground"
+      style={{ fontSize: 11, fontWeight: 500 }}
+    >
+      {formatTrendAxisValue(value, formatType)}
+    </text>
+  );
+}
+
 export function TrendChart({ trend }: { trend: TileTrendPayload }) {
   const data = React.useMemo(() => buildTrendChartData(trend), [trend]);
   const formatType = React.useMemo(() => getTrendFormatType(trend), [trend]);
   const yAxisWidth = React.useMemo(() => getTrendAxisWidth(trend), [trend]);
+  const lastDataIndex = Math.max(data.length - 1, 0);
+  const currentNotableIndexes = React.useMemo(
+    () => getNotablePointIndexes(data, 'current'),
+    [data],
+  );
+  const previousNotableIndexes = React.useMemo(
+    () => getNotablePointIndexes(data, 'previous'),
+    [data],
+  );
+  const xAxisFieldLabel = trend.xAxisFieldLabel ?? 'Date';
 
   return (
-    <div className="flex h-full min-h-[19rem] flex-col gap-3">
+    <div className="flex aspect-[1.52/1] min-h-[18rem] w-full max-h-[min(30rem,50vh)] flex-col justify-end gap-3">
       <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-muted-foreground">
         <div className="inline-flex items-center gap-2">
           <span
@@ -52,7 +128,7 @@ export function TrendChart({ trend }: { trend: TileTrendPayload }) {
       <ChartContainer
         id={`trend-chart-${toStableDomId(trend.category)}-${toStableDomId(trend.tileId)}`}
         config={TREND_CHART_CONFIG}
-        className="aspect-auto h-full min-h-0 flex-1 w-full"
+        className="min-h-0 h-full w-full flex-1 !aspect-auto justify-stretch"
       >
         <LineChart
           accessibilityLayer
@@ -60,8 +136,8 @@ export function TrendChart({ trend }: { trend: TileTrendPayload }) {
           margin={{
             top: 10,
             left: 10,
-            right: 18,
-            bottom: 8,
+            right: 4,
+            bottom: 14,
           }}
         >
           <CartesianGrid
@@ -103,6 +179,18 @@ export function TrendChart({ trend }: { trend: TileTrendPayload }) {
             strokeWidth={1.5}
             strokeOpacity={0.68}
             dot={false}
+            label={(props) =>
+              renderTrendValueLabel({
+                index: props.index,
+                value: props.value as number | string | undefined,
+                x: props.x,
+                y: props.y,
+                keyName: 'previous',
+                notableIndexes: previousNotableIndexes,
+                formatType,
+                lastIndex: lastDataIndex,
+              })
+            }
             activeDot={{
               r: 5,
               fill: 'var(--color-previous)',
@@ -116,6 +204,18 @@ export function TrendChart({ trend }: { trend: TileTrendPayload }) {
             stroke="var(--color-current)"
             strokeWidth={3}
             dot={false}
+            label={(props) =>
+              renderTrendValueLabel({
+                index: props.index,
+                value: props.value as number | string | undefined,
+                x: props.x,
+                y: props.y,
+                keyName: 'current',
+                notableIndexes: currentNotableIndexes,
+                formatType,
+                lastIndex: lastDataIndex,
+              })
+            }
             activeDot={{
               r: 5,
               fill: 'var(--color-current)',
@@ -125,6 +225,7 @@ export function TrendChart({ trend }: { trend: TileTrendPayload }) {
           />
         </LineChart>
       </ChartContainer>
+      <p className="text-center text-[11px] leading-5 text-muted-foreground">{xAxisFieldLabel}</p>
     </div>
   );
 }

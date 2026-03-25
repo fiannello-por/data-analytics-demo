@@ -81,6 +81,7 @@ describe('TrendChart', () => {
     tileId: 'new_logo_bookings_amount',
     label: 'Bookings $',
     grain: 'weekly',
+    xAxisFieldLabel: 'Close Date',
     currentWindowLabel: 'Jan 1, 2026 - Mar 31, 2026',
     previousWindowLabel: 'Jan 1, 2025 - Mar 31, 2025',
     points: [
@@ -119,6 +120,7 @@ describe('TrendChart', () => {
 
     expect(container.textContent).toContain('Current period');
     expect(container.textContent).toContain('Previous year');
+    expect(container.textContent).toContain('Close Date');
 
     const currentLine = lineProps.find((line) => line.dataKey === 'current');
     const previousLine = lineProps.find((line) => line.dataKey === 'previous');
@@ -129,6 +131,8 @@ describe('TrendChart', () => {
     expect(previousLine?.strokeWidth).toBe(1.5);
     expect(previousLine?.strokeDasharray).toBeUndefined();
     expect(previousLine?.strokeOpacity).toBe(0.68);
+    expect(typeof previousLine?.label).toBe('function');
+    expect(typeof currentLine?.label).toBe('function');
 
     const xAxis = axisProps.find((axis) => axis.type === 'x');
     const yAxis = axisProps.find((axis) => axis.type === 'y');
@@ -165,12 +169,6 @@ describe('TrendChart', () => {
     expect(
       (tooltip?.valueFormatter as (value: number) => React.ReactNode)(12432),
     ).toBe('$12,432');
-    expect(
-      container.querySelector('[data-testid="chart-container"]')?.getAttribute('class'),
-    ).toContain('aspect-auto');
-    expect(
-      container.querySelector('[data-testid="chart-container"]')?.getAttribute('class'),
-    ).toContain('h-full');
     expect(
       container.querySelector('[data-testid="chart-container"]')?.getAttribute('class'),
     ).toContain('flex-1');

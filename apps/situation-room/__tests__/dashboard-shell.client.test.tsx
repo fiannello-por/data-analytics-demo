@@ -149,16 +149,18 @@ vi.mock('@/components/dashboard/trend-panel', () => ({
   TrendPanel: ({
     trend,
     isLoading,
+    isVisible,
     displayLabel,
   }: {
-    trend: TileTrendPayload;
+    trend: TileTrendPayload | null;
     isLoading?: boolean;
+    isVisible?: boolean;
     displayLabel?: string;
   }) =>
     React.createElement(
       'div',
       { 'data-testid': 'trend-panel' },
-      `${displayLabel ?? trend.label}${isLoading ? ' refreshing' : ''}`,
+      isVisible ? `${displayLabel ?? trend?.label}${isLoading ? ' refreshing' : ''}` : 'trend placeholder',
     ),
 }));
 
@@ -251,6 +253,7 @@ describe('dashboard shell client interactions', () => {
     tileId: 'new_logo_sql',
     label: 'SQL',
     grain: 'weekly',
+    xAxisFieldLabel: 'Created Date',
     currentWindowLabel: 'Jan 1, 2026 - Mar 31, 2026',
     previousWindowLabel: 'Jan 1, 2025 - Mar 31, 2025',
     points: [],
@@ -280,6 +283,7 @@ describe('dashboard shell client interactions', () => {
     tileId: 'total_bookings_amount',
     label: 'Bookings $',
     grain: 'weekly',
+    xAxisFieldLabel: 'Close Date',
     currentWindowLabel: 'Jan 1, 2026 - Mar 31, 2026',
     previousWindowLabel: 'Jan 1, 2025 - Mar 31, 2025',
     points: [],
@@ -452,7 +456,7 @@ describe('dashboard shell client interactions', () => {
       container.querySelector('[data-testid="selected-tile"]')?.textContent;
 
     expect(rowButton).not.toBeNull();
-    expect(selectedTile()).toBe('new_logo_sql');
+    expect(selectedTile()).toBe('');
 
     await act(async () => {
       rowButton!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
@@ -496,6 +500,9 @@ describe('dashboard shell client interactions', () => {
     );
     expect(trendCalls[0]).toContain('/api/dashboard/trend/total_bookings_amount');
     expect(replaceStateSpy).toHaveBeenCalled();
+    expect(container.querySelector('[data-testid="trend-panel"]')?.textContent).toBe(
+      'trend placeholder',
+    );
   });
 
   it('activates the clicked tab immediately and shows tile loading while the snapshot refreshes', async () => {

@@ -9,6 +9,7 @@ import {
   FileJson2Icon,
   InfoIcon,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -35,14 +36,80 @@ function TileKindBadge({ kind }: { kind: TileBackendTrace['kind'] }) {
   );
 }
 
+type SemanticFieldKind = 'measure' | 'dimension' | 'filter';
+
+type SemanticFieldChip = {
+  kind: SemanticFieldKind;
+  name: string;
+};
+
 function MetadataItem({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="grid items-center grid-cols-[max-content_minmax(0,1fr)] gap-3 px-4 py-2.5">
+    <div className="grid min-h-14 items-center grid-cols-[max-content_minmax(0,1fr)] gap-3 px-4 py-2.5">
       <p className="pr-1 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
         {label}
       </p>
       <div className="min-w-0 text-sm leading-5 text-foreground">{children}</div>
     </div>
+  );
+}
+
+function collectSemanticFields(trace: TileBackendTrace): SemanticFieldChip[] {
+  const seen = new Set<string>();
+  const fields: SemanticFieldChip[] = [];
+
+  function addField(kind: SemanticFieldKind, name: string | undefined) {
+    if (!name) {
+      return;
+    }
+
+    const key = `${kind}:${name}`;
+    if (seen.has(key)) {
+      return;
+    }
+
+    seen.add(key);
+    fields.push({ kind, name });
+  }
+
+  for (const execution of trace.executions) {
+    for (const measure of execution.semanticRequest.measures ?? []) {
+      addField('measure', measure);
+    }
+
+    for (const dimension of execution.semanticRequest.dimensions ?? []) {
+      addField('dimension', dimension);
+    }
+
+    for (const filter of execution.semanticRequest.filters ?? []) {
+      addField('filter', filter.field);
+    }
+
+    for (const sort of execution.semanticRequest.sorts ?? []) {
+      addField('dimension', sort.field);
+    }
+  }
+
+  return fields;
+}
+
+function FieldBadge({ field }: { field: SemanticFieldChip }) {
+  const styles: Record<SemanticFieldKind, string> = {
+    measure:
+      'border-emerald-500/20 bg-emerald-500/10 text-emerald-100 hover:bg-emerald-500/15',
+    dimension:
+      'border-sky-500/20 bg-sky-500/10 text-sky-100 hover:bg-sky-500/15',
+    filter:
+      'border-amber-500/20 bg-amber-500/10 text-amber-100 hover:bg-amber-500/15',
+  };
+
+  return (
+    <Badge
+      variant="outline"
+      className={cn('rounded-md px-1.5 py-0.5 text-[11px] font-medium', styles[field.kind])}
+    >
+      {field.name}
+    </Badge>
   );
 }
 
@@ -71,6 +138,7 @@ function CopyButton({
 
     await navigator.clipboard.writeText(value);
     setCopied(true);
+    toast.success('Code copied');
     if (timeoutRef.current) {
       window.clearTimeout(timeoutRef.current);
     }
@@ -394,7 +462,8 @@ function ExecutionsSummary({ executions }: { executions: TileBackendTrace['execu
 }
 
 function MetadataSection({ trace }: { trace: TileBackendTrace }) {
-  const leftColumn = [
+  const fields = collectSemanticFields(trace);
+  const items = [
     {
       label: 'Model',
       value: (
@@ -408,21 +477,6 @@ function MetadataSection({ trace }: { trace: TileBackendTrace }) {
       value: <span>{formatCacheStatus(trace.cacheStatus)}</span>,
     },
     {
-      label: 'Includes',
-      value: (
-        <div className="flex flex-wrap gap-1.5">
-          {trace.includes.map((item) => (
-            <Badge key={item} variant="secondary" className="rounded-md px-1.5 py-0.5">
-              {item}
-            </Badge>
-          ))}
-        </div>
-      ),
-    },
-  ];
-
-  const rightColumn = [
-    {
       label: 'Compiled at',
       value: <span>{new Date(trace.compiledAt).toLocaleString()}</span>,
     },
@@ -431,27 +485,39 @@ function MetadataSection({ trace }: { trace: TileBackendTrace }) {
       value: <span>{trace.kind === 'composite' ? 'Composite' : 'Single'}</span>,
     },
     {
+      label: 'Fields',
+      value: (
+        <div className="flex flex-wrap gap-1.5">
+          {fields.map((field) => (
+            <FieldBadge key={`${field.kind}:${field.name}`} field={field} />
+          ))}
+        </div>
+      ),
+    },
+    {
       label: 'Executions',
       value: <ExecutionsSummary executions={trace.executions} />,
     },
   ];
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border/45 bg-card/30 md:grid md:grid-cols-2 md:divide-x md:divide-border/25">
-      <div className="divide-y divide-border/25">
-        {leftColumn.map((item) => (
-          <MetadataItem key={item.label} label={item.label}>
-            {item.value}
-          </MetadataItem>
-        ))}
-      </div>
-      <div className="divide-y divide-border/25 border-t border-border/25 md:border-t-0">
-        {rightColumn.map((item) => (
-          <MetadataItem key={item.label} label={item.label}>
-            {item.value}
-          </MetadataItem>
-        ))}
-      </div>
+    <div className="overflow-hidden rounded-lg border border-border/45 bg-card/30 md:grid md:grid-cols-2">
+      {items.map((item, index) => {
+        const isRightColumn = index % 2 === 1;
+        const isLowerRow = index >= 2;
+
+        return (
+          <div
+            key={item.label}
+            className={cn(
+              isRightColumn && 'md:border-l md:border-border/25',
+              isLowerRow && 'border-t border-border/25',
+            )}
+          >
+            <MetadataItem label={item.label}>{item.value}</MetadataItem>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -749,7 +815,7 @@ export function TileBackendSheet({
             size="icon-sm"
             aria-label="Open tile backend trace"
             className={cn(
-              'cursor-pointer rounded-md border border-transparent text-muted-foreground opacity-0 transition hover:bg-muted/60 hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100',
+              'cursor-pointer rounded-md border border-transparent bg-background/0 text-muted-foreground/80 opacity-0 shadow-none transition-all duration-150 group-hover:border-border/40 group-hover:bg-background/70 group-hover:text-foreground/80 group-hover:opacity-100 hover:border-border/80 hover:bg-background hover:text-foreground hover:shadow-sm focus-visible:border-ring focus-visible:bg-background focus-visible:text-foreground focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring/35 active:translate-y-0',
               triggerClassName,
             )}
             {...triggerProps}

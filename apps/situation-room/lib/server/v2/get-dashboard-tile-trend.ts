@@ -14,8 +14,12 @@ import {
   getDashboardV2Runtime,
   normalizeDashboardV2ExecutionOptions,
 } from '@/lib/server/v2/semantic-runtime';
-import { buildTileBackendTrace } from '@/lib/server/v2/tile-backend-trace';
+import {
+  buildTileBackendTrace,
+  resolveSemanticDimensionLabel,
+} from '@/lib/server/v2/tile-backend-trace';
 import { getSemanticNumber, getSemanticString } from '@/lib/server/v2/semantic-values';
+import { getSemanticTileSpec } from '@/lib/dashboard-v2/semantic-registry';
 
 type TileTrendState = Pick<
   DashboardState,
@@ -38,6 +42,7 @@ export async function getDashboardV2TileTrend(
   }
 
   const loadTrend = async () => {
+    const semanticTile = getSemanticTileSpec(input.selectedTileId);
     const currentRequest = buildTrendQuery(
       input.activeCategory,
       input.selectedTileId,
@@ -76,6 +81,9 @@ export async function getDashboardV2TileTrend(
         { label: 'Previous window', semanticRequest: previousRequest, result: previous },
       ],
     });
+    const xAxisFieldLabel =
+      (await resolveSemanticDimensionLabel(currentRequest.model, semanticTile.dateDimension)) ??
+      semanticTile.dateDimension;
 
     return {
       data: {
@@ -83,6 +91,7 @@ export async function getDashboardV2TileTrend(
         tileId: tile.tileId,
         label: tile.label,
         grain: input.trendGrain,
+        xAxisFieldLabel,
         currentWindowLabel: formatDateRange(input.dateRange),
         previousWindowLabel: formatDateRange(input.previousDateRange),
         points: Array.from({ length }).map((_, index) => {
@@ -115,7 +124,8 @@ export async function getDashboardV2TileTrend(
   return unstable_cache(
     loadTrend,
     [
-      'v2-trace-links-2',
+      'v2-trace-links-3',
+      'v2-trend-axis-label-1',
       'dashboard-v2-tile-trend',
       serializeDashboardStateKey({
         activeCategory: input.activeCategory,

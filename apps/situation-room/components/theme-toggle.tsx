@@ -19,13 +19,11 @@ export function ThemeToggle() {
     <Button
       type="button"
       variant="outline"
-      size="sm"
+      size="icon-sm"
       aria-label="Toggle color theme"
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
-      className="gap-1.5"
     >
-      {isDark ? <SunIcon data-icon="inline-start" /> : <MoonStarIcon data-icon="inline-start" />}
-      <span>{isDark ? 'Light' : 'Dark'}</span>
+      {isDark ? <SunIcon /> : <MoonStarIcon />}
     </Button>
   );
 }

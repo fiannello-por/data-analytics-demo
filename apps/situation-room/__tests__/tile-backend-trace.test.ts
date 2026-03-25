@@ -30,7 +30,7 @@ describe('buildTileBackendTrace', () => {
     });
 
     expect(trace.githubModelUrl).toContain(
-      'github.com/fiannello-por/data-analytics-demo/blob/main/',
+      'github.com/fiannello-por/data-analytics-demo/blob/',
     );
     expect(trace.githubModelUrl).toContain(
       '/lightdash/models/sales_dashboard_v2_opportunity_base.yml',

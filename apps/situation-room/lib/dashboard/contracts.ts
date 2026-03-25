@@ -90,6 +90,7 @@ export type TileTrendPayload = {
   tileId: string;
   label: string;
   grain: DashboardTrendGrain;
+  xAxisFieldLabel?: string;
   currentWindowLabel: string;
   previousWindowLabel: string;
   points: TileTrendPoint[];

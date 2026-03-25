@@ -102,7 +102,7 @@ export async function getDashboardV2ClosedWonOpportunities(
     return loadRows();
   }
 
-  return unstable_cache(loadRows, ['v2-trace-links-2', 'dashboard-v2-closed-won', buildCacheKey(input)], {
+  return unstable_cache(loadRows, ['v2-trace-links-3', 'dashboard-v2-closed-won', buildCacheKey(input)], {
     revalidate: 60,
     tags: ['dashboard-v2-closed-won'],
   })();

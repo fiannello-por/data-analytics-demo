@@ -24,6 +24,7 @@ describe('trend chart model', () => {
       tileId: 'new_logo_sql',
       label: 'SQL',
       grain: 'weekly',
+      xAxisFieldLabel: 'Created Date',
       currentWindowLabel: 'Jan 1, 2026 - Mar 31, 2026',
       previousWindowLabel: 'Jan 1, 2025 - Mar 31, 2025',
       points: [
@@ -76,6 +77,7 @@ describe('trend chart model', () => {
       tileId: 'new_logo_avg_age',
       label: 'Avg Age',
       grain: 'weekly',
+      xAxisFieldLabel: 'Close Date',
       currentWindowLabel: 'Jan 1, 2026 - Mar 31, 2026',
       previousWindowLabel: 'Jan 1, 2025 - Mar 31, 2025',
       points: [

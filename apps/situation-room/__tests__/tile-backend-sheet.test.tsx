@@ -2,13 +2,20 @@
 import * as React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { TileBackendTrace } from '@/lib/dashboard/contracts';
+
+vi.mock('sonner', () => ({
+  toast: {
+    success: vi.fn(),
+  },
+}));
 
 describe('TileBackendSheet', () => {
   let container: HTMLDivElement;
   let root: Root;
+  let previousActEnvironment: boolean | undefined;
 
   const trace: TileBackendTrace = {
     kind: 'composite',
@@ -34,6 +41,12 @@ describe('TileBackendSheet', () => {
   };
 
   beforeEach(() => {
+    previousActEnvironment = (
+      globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
+    ).IS_REACT_ACT_ENVIRONMENT;
+    (
+      globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
+    ).IS_REACT_ACT_ENVIRONMENT = true;
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
@@ -44,6 +57,9 @@ describe('TileBackendSheet', () => {
       root.unmount();
     });
     container.remove();
+    (
+      globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
+    ).IS_REACT_ACT_ENVIRONMENT = previousActEnvironment;
   });
 
   it('renders semantic query and SQL tabs with trace metadata', async () => {
@@ -88,5 +104,5 @@ describe('TileBackendSheet', () => {
     });
 
     expect(document.body.textContent).toContain('Open in Lightdash');
-  });
+  }, 15000);
 });

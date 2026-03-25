@@ -151,7 +151,7 @@ export async function getDashboardV2CategorySnapshot(
 
   return unstable_cache(
     loadSnapshot,
-    ['v2-trace-links-2', 'dashboard-v2-category-snapshot', buildCacheKey(input)],
+    ['v2-trace-links-3', 'dashboard-v2-category-snapshot', buildCacheKey(input)],
     {
       revalidate: 60,
       tags: ['dashboard-v2-category-snapshot'],

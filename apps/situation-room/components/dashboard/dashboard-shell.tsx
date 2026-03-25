@@ -27,7 +27,7 @@ import {
 } from '@/lib/dashboard/query-inputs';
 import { derivePreviousYearRange, formatDateRange } from '@/lib/dashboard/date-range';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -35,14 +35,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
 import { DashboardFilters } from '@/components/dashboard/dashboard-filters';
 import { CategoryTabs } from '@/components/dashboard/category-tabs';
 import {
@@ -55,13 +47,6 @@ import { TileTable, TileTableSkeleton } from '@/components/dashboard/tile-table'
 import { TrendPanel } from '@/components/dashboard/trend-panel';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { buildOverviewBoard } from '@/lib/dashboard/overview-model';
-import {
-  BellRing,
-  Braces,
-  ExternalLink,
-  LayoutPanelTop,
-  Sparkles,
-} from 'lucide-react';
 
 type DashboardShellProps = {
   initialState: DashboardState;
@@ -123,9 +108,6 @@ function getClosedWonCategory(activeCategory: DashboardState['activeCategory']):
   return isCategory(activeCategory) ? activeCategory : 'Total';
 }
 
-const ARCHITECTURE_EXPLAINER_URL =
-  process.env.NEXT_PUBLIC_ARCHITECTURE_EXPLAINER_URL ?? 'http://localhost:3200';
-
 export function DashboardShell({
   initialState,
   initialSnapshot,
@@ -155,6 +137,7 @@ export function DashboardShell({
   const [isTrendLoading, setTrendLoading] = React.useState(false);
   const [isClosedWonLoading, setClosedWonLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [revealedTrendCategory, setRevealedTrendCategory] = React.useState<Category | null>(null);
   const refreshRequestIdRef = React.useRef(0);
   const isMountedRef = React.useRef(true);
 
@@ -340,6 +323,7 @@ export function DashboardShell({
 
   function handleCategoryChange(category: DashboardState['activeCategory']) {
     const nextState = setDashboardActiveCategory(state, category);
+    setRevealedTrendCategory(null);
     const shouldLoadOverview = isOverviewTab(category) && !hasFullSnapshotCache(snapshotByCategory);
     const shouldLoadSnapshot = isCategory(category) && !snapshotByCategory[category];
 
@@ -360,6 +344,12 @@ export function DashboardShell({
     if (!isCategory(state.activeCategory)) {
       return;
     }
+    setRevealedTrendCategory(state.activeCategory);
+
+    if (state.selectedTileId === tileId && trend?.tileId === tileId) {
+      return;
+    }
+
     const nextState = setDashboardSelectedTile(state, tileId);
     applyStateChange(nextState, {
       overview: false,
@@ -455,6 +445,7 @@ export function DashboardShell({
       ? findTileDefinition(detailCategory, state.selectedTileId)?.label
       : undefined) ?? trend?.label ?? 'Metric trend';
   const displayPreviousWindowLabel = formatDateRange(state.previousDateRange);
+  const showTrendPanel = revealedTrendCategory === detailCategory;
   const lastRefreshedAt = isOverviewTab(state.activeCategory)
     ? overviewBoard?.lastRefreshedAt ??
       overviewSnapshots[0]?.lastRefreshedAt ??
@@ -474,87 +465,13 @@ export function DashboardShell({
                   Sales Performance Dashboard
                 </h1>
                 <p className="max-w-3xl text-sm text-muted-foreground">
-                  Fixed tabs, curated metric rows, and a selected-metric trend panel
-                  backed by direct BigQuery reads for the baseline architecture.
+                  Track bookings, pacing, conversion, deal quality, pipeline creation,
+                  and closed won performance across each booking category.
                 </p>
               </div>
             </div>
             <div className="shrink-0">
               <div className="flex items-center gap-2">
-                <Sheet>
-                  <SheetTrigger
-                    render={
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        aria-label="Open dashboard tools"
-                      />
-                    }
-                  >
-                    <Sparkles className="size-4" />
-                    Meta tools
-                  </SheetTrigger>
-                  <SheetContent side="right">
-                    <SheetHeader>
-                      <SheetTitle>Dashboard tools</SheetTitle>
-                      <SheetDescription>
-                        Meta-level tools around the dashboard experience. Start with
-                        architecture visibility now, then expand into semantic layer
-                        exploration, alerts, and performance reporting.
-                      </SheetDescription>
-                    </SheetHeader>
-
-                    <div className="grid gap-3">
-                      <Card className="border-primary/30 bg-primary/6">
-                        <CardHeader className="gap-2">
-                          <div className="flex items-center gap-2 text-sm font-medium">
-                            <LayoutPanelTop className="size-4 text-primary" />
-                            Architecture diagram
-                          </div>
-                          <CardDescription>
-                            Open the explainer app to inspect components, request flow,
-                            timing, and lineage from UI to BigQuery.
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <a
-                            href={ARCHITECTURE_EXPLAINER_URL}
-                            target="_blank"
-                            rel="noreferrer"
-                            className={buttonVariants({ size: 'sm' })}
-                          >
-                            Open architecture app
-                            <ExternalLink className="size-3.5" />
-                          </a>
-                        </CardContent>
-                      </Card>
-
-                      <Card className="bg-card/70">
-                        <CardHeader className="gap-2">
-                          <div className="flex items-center gap-2 text-sm font-medium">
-                            <Braces className="size-4 text-muted-foreground" />
-                            Semantic layer explorer
-                          </div>
-                          <CardDescription>
-                            Reserved for the future semantic-layer comparison surface.
-                          </CardDescription>
-                        </CardHeader>
-                      </Card>
-
-                      <Card className="bg-card/70">
-                        <CardHeader className="gap-2">
-                          <div className="flex items-center gap-2 text-sm font-medium">
-                            <BellRing className="size-4 text-muted-foreground" />
-                            Alert policies
-                          </div>
-                          <CardDescription>
-                            Reserved for operational alerts and ownership routing.
-                          </CardDescription>
-                        </CardHeader>
-                      </Card>
-                    </div>
-                  </SheetContent>
-                </Sheet>
                 <ThemeToggle />
               </div>
             </div>
@@ -593,40 +510,49 @@ export function DashboardShell({
             )
           ) : (
             <div className="flex flex-col gap-6">
-              <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-                <Card
-                  aria-busy={isSnapshotLoading}
-                  data-testid="snapshot-card"
-                  className="ring-0 shadow-none"
-                >
-                  <CardHeader>
-                    <CardTitle>{displayCategory}</CardTitle>
-                    <CardDescription>
-                      Current period vs previous-year equivalent.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
+              <Card
+                aria-busy={isSnapshotLoading || (showTrendPanel && isTrendLoading)}
+                data-testid="snapshot-card"
+                className="ring-0 shadow-none"
+              >
+                <CardHeader>
+                  <CardTitle>Main Metrics</CardTitle>
+                  <CardDescription>
+                    Current period vs previous-year equivalent.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(22rem,0.95fr)]">
+                  <div className="min-w-0">
                     {isSnapshotLoading || !activeSnapshot ? (
                       <TileTableSkeleton category={detailCategory} />
                     ) : (
                       <TileTable
                         snapshot={activeSnapshot}
-                        selectedTileId={state.selectedTileId}
+                        selectedTileId={showTrendPanel ? state.selectedTileId : ''}
                         onRowSelect={handleTileSelect}
                       />
                     )}
-                  </CardContent>
-                </Card>
-                <TrendPanel
-                  trend={trend}
-                  isLoading={isTrendLoading}
-                  displayLabel={isTrendLoading ? displayTileLabel : undefined}
-                  displayCurrentWindowLabel={isTrendLoading ? displayWindowLabel : undefined}
-                  displayPreviousWindowLabel={
-                    isTrendLoading ? displayPreviousWindowLabel : undefined
-                  }
-                />
-              </div>
+                  </div>
+                  <div className="flex min-w-0 xl:border-l xl:border-border/45 xl:pl-6">
+                    <TrendPanel
+                      trend={showTrendPanel ? trend : null}
+                      isLoading={showTrendPanel ? isTrendLoading : false}
+                      isVisible={showTrendPanel}
+                      displayLabel={
+                        showTrendPanel && isTrendLoading ? displayTileLabel : undefined
+                      }
+                      displayCurrentWindowLabel={
+                        showTrendPanel && isTrendLoading ? displayWindowLabel : undefined
+                      }
+                      displayPreviousWindowLabel={
+                        showTrendPanel && isTrendLoading
+                          ? displayPreviousWindowLabel
+                          : undefined
+                      }
+                    />
+                  </div>
+                </CardContent>
+              </Card>
               {isClosedWonLoading || !closedWonOpportunities ? (
                 <ClosedWonOpportunitiesTableSkeleton />
               ) : (

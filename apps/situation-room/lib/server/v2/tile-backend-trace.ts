@@ -208,6 +208,13 @@ function resolveGithubBranch() {
 }
 
 function getGithubContext() {
+  const vercelEnv = process.env.VERCEL_ENV;
+  const canUsePersistentCache = vercelEnv === 'production' || vercelEnv === 'preview';
+
+  if (!canUsePersistentCache) {
+    cachedGithubContext = undefined;
+  }
+
   if (cachedGithubContext !== undefined) {
     return cachedGithubContext;
   }
@@ -246,7 +253,7 @@ function buildGithubModelUrl(fileName: string) {
     return undefined;
   }
 
-  return `https://github.com/${context.owner}/${context.repo}/blob/${encodeURIComponent(context.branch)}/lightdash/models/${fileName}`;
+  return `https://github.com/${context.owner}/${context.repo}/blob/${context.branch}/lightdash/models/${fileName}`;
 }
 
 function normalizeFieldName(field: string): string {
@@ -384,6 +391,20 @@ function collectMeasureNames(requests: SemanticQueryRequest[]) {
 
 export async function buildSemanticYamlSnippet(request: SemanticQueryRequest): Promise<string> {
   return buildCombinedSemanticYamlSnippet([request]);
+}
+
+export async function resolveSemanticDimensionLabel(
+  modelName: string,
+  dimensionName: string,
+): Promise<string | undefined> {
+  const models = await loadLightdashModels();
+  const modelSource = models.get(modelName);
+
+  if (!modelSource) {
+    return undefined;
+  }
+
+  return modelSource.model.dimensions?.find((dimension) => dimension.name === dimensionName)?.label;
 }
 
 export async function buildCombinedSemanticYamlSnippet(

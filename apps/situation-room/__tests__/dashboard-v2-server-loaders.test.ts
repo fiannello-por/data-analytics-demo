@@ -216,6 +216,7 @@ describe('dashboard v2 server loaders', { timeout: 20000 }, () => {
       kind: 'single',
       model: 'sales_dashboard_v2_opportunity_base',
     });
+    expect(trend.data.xAxisFieldLabel).toBe('Close Date');
     expect(trend.data.backendTrace?.executions).toHaveLength(2);
     expect(trend.data.backendTrace?.executions[0]?.compiledSql).toBe('select current trend');
 
