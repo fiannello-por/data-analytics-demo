@@ -39,7 +39,9 @@ jobs:
               - 'src/**'
               - 'tests/**'
               - 'apps/**'
+              - 'packages/dashboard-spec/**'
               - 'packages/dashboard-layout/**'
+              - 'packages/dashboard-visualization-recharts/**'
               - 'pyproject.toml'
               - 'uv.lock'
               - 'package.json'
@@ -179,11 +181,23 @@ jobs:
       - name: Typecheck changelog site
         run: pnpm --filter @point-of-rental/changelog-site typecheck
 
+      - name: Typecheck dashboard spec package
+        run: pnpm dashboard-spec:typecheck
+
+      - name: Test dashboard spec package
+        run: pnpm dashboard-spec:test
+
       - name: Typecheck dashboard layout package
         run: pnpm dashboard-layout:typecheck
 
       - name: Test dashboard layout package
         run: pnpm dashboard-layout:test
+
+      - name: Typecheck dashboard visualization recharts package
+        run: pnpm dashboard-visualization-recharts:typecheck
+
+      - name: Test dashboard visualization recharts package
+        run: pnpm dashboard-visualization-recharts:test
 
   build-changelog:
     needs: changes

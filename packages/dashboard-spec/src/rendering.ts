@@ -28,15 +28,30 @@ export type VisualizationRendererSpecMap = {
 
 export type VisualizationRendererKey = keyof VisualizationRendererSpecMap;
 
+export type VisualizationRendererDataRow = Record<string, unknown>;
+
+export interface VisualizationRendererProps<
+  TSpec extends VisualizationTileSpec = VisualizationTileSpec,
+  TRow extends VisualizationRendererDataRow = VisualizationRendererDataRow,
+> {
+  spec: TSpec;
+  rows: TRow[];
+}
+
 export type VisualizationRenderer<
   TSpec extends VisualizationTileSpec = VisualizationTileSpec,
+  TRow extends VisualizationRendererDataRow = VisualizationRendererDataRow,
   TResult = unknown,
-> = (spec: TSpec) => TResult;
+> = (props: VisualizationRendererProps<TSpec, TRow>) => TResult;
 
-export interface RendererRegistry<TResult = unknown> {
+export interface RendererRegistry<
+  TRow extends VisualizationRendererDataRow = VisualizationRendererDataRow,
+  TResult = unknown,
+> {
   visualizations: Partial<{
     [K in VisualizationRendererKey]: VisualizationRenderer<
       VisualizationRendererSpecMap[K],
+      TRow,
       TResult
     >;
   }>;

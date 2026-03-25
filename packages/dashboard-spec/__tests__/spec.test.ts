@@ -228,51 +228,73 @@ describe('tile spec contracts', () => {
   });
 
   it('allows type-safe registration of specialized visualization renderers', () => {
-    const metricRenderer: VisualizationRenderer<MetricTileSpec, string> = (spec) =>
-      spec.visualization.valueField;
-    const tableRenderer: VisualizationRenderer<TableTileSpec, number> = (spec) =>
-      spec.visualization.columns.length;
+    const metricRenderer: VisualizationRenderer<
+      MetricTileSpec,
+      { value: string },
+      string
+    > = ({ spec, rows }) => `${spec.visualization.valueField}:${rows[0]?.value ?? ''}`;
+    const tableRenderer: VisualizationRenderer<
+      TableTileSpec,
+      { accountName: string },
+      number
+    > = ({ spec, rows }) => spec.visualization.columns.length + rows.length;
 
-    const metricRegistry: RendererRegistry<string> = {
+    const metricRegistry: RendererRegistry<{ value: string }, string> = {
       visualizations: {
         'metric.headline': metricRenderer,
       },
     };
-    const tableRegistry: RendererRegistry<number> = {
+    const tableRegistry: RendererRegistry<{ accountName: string }, number> = {
       visualizations: {
         'table.standard': tableRenderer,
       },
     };
 
-    expect(metricRegistry.visualizations['metric.headline']?.({
-      id: 'bookings_total',
-      kind: 'metric',
-      title: 'Bookings $',
-      description: 'Booked revenue total for the selected period.',
-      data: { kind: 'binding', key: 'bookingsTotal' },
-      visualization: {
-        type: 'metric',
-        valueField: 'value',
-      },
-    })).toBe('value');
-    expect(tableRegistry.visualizations['table.standard']?.({
-      id: 'top_accounts',
-      kind: 'table',
-      title: 'Top Accounts',
-      description: 'Accounts ranked by bookings.',
-      data: { kind: 'binding', key: 'topAccounts' },
-      visualization: {
-        type: 'table',
-        columns: [{ field: 'accountName', label: 'Account' }],
-      },
-    })).toBe(1);
+    expect(
+      metricRegistry.visualizations['metric.headline']?.({
+        spec: {
+          id: 'bookings_total',
+          kind: 'metric',
+          title: 'Bookings $',
+          description: 'Booked revenue total for the selected period.',
+          data: { kind: 'binding', key: 'bookingsTotal' },
+          visualization: {
+            type: 'metric',
+            valueField: 'value',
+          },
+        },
+        rows: [{ value: '123' }],
+      }),
+    ).toBe('value:123');
+    expect(
+      tableRegistry.visualizations['table.standard']?.({
+        spec: {
+          id: 'top_accounts',
+          kind: 'table',
+          title: 'Top Accounts',
+          description: 'Accounts ranked by bookings.',
+          data: { kind: 'binding', key: 'topAccounts' },
+          visualization: {
+            type: 'table',
+            columns: [{ field: 'accountName', label: 'Account' }],
+          },
+        },
+        rows: [{ accountName: 'Acme' }],
+      }),
+    ).toBe(2);
 
     expectTypeOf(metricRegistry.visualizations['metric.headline']).toEqualTypeOf<
-      VisualizationRenderer<MetricTileSpec, string> | undefined
+      VisualizationRenderer<MetricTileSpec, { value: string }, string> | undefined
     >();
     expectTypeOf(tableRegistry.visualizations['table.standard']).toEqualTypeOf<
-      VisualizationRenderer<TableTileSpec, number> | undefined
+      VisualizationRenderer<TableTileSpec, { accountName: string }, number> | undefined
     >();
+    expectTypeOf<
+      Parameters<NonNullable<typeof metricRegistry.visualizations['metric.headline']>>[0]
+    >().toEqualTypeOf<{
+      spec: MetricTileSpec;
+      rows: { value: string }[];
+    }>();
   });
 
   it('does not create visualization renderer keys for composite tiles', () => {
