@@ -1,9 +1,9 @@
-"use client"
+'use client';
 
-import * as React from "react"
-import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip"
+import * as React from 'react';
+import { Tooltip as TooltipPrimitive } from '@base-ui/react/tooltip';
 
-import { cn } from "@/lib/utils"
+import { cn } from '@/lib/utils';
 
 function TooltipProvider({
   delay = 0,
@@ -15,22 +15,22 @@ function TooltipProvider({
       delay={delay}
       {...props}
     />
-  )
+  );
 }
 
 function Tooltip({ ...props }: TooltipPrimitive.Root.Props) {
-  return <TooltipPrimitive.Root data-slot="tooltip" {...props} />
+  return <TooltipPrimitive.Root data-slot="tooltip" {...props} />;
 }
 
 function TooltipTrigger({ ...props }: TooltipPrimitive.Trigger.Props) {
-  return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />
+  return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />;
 }
 
 function TooltipContent({
   className,
-  side = "top",
+  side = 'top',
   sideOffset = 4,
-  align = "center",
+  align = 'center',
   alignOffset = 0,
   arrowOffset = 0,
   children,
@@ -38,9 +38,9 @@ function TooltipContent({
 }: TooltipPrimitive.Popup.Props &
   Pick<
     TooltipPrimitive.Positioner.Props,
-    "align" | "alignOffset" | "side" | "sideOffset"
+    'align' | 'alignOffset' | 'side' | 'sideOffset'
   > & {
-    arrowOffset?: number
+    arrowOffset?: number;
   }) {
   return (
     <TooltipPrimitive.Portal>
@@ -54,8 +54,8 @@ function TooltipContent({
         <TooltipPrimitive.Popup
           data-slot="tooltip-content"
           className={cn(
-            "z-50 inline-flex w-fit max-w-xs origin-(--transform-origin) items-center gap-1.5 rounded-md bg-foreground px-3 py-1.5 text-xs text-background shadow-lg shadow-black/10 outline outline-border/50 transition-[transform,scale,opacity] duration-200 ease-out has-data-[slot=kbd]:pr-1.5 data-starting-style:scale-96 data-starting-style:opacity-0 data-ending-style:scale-96 data-ending-style:opacity-0 data-[side=bottom]:data-starting-style:-translate-y-1 data-[side=inline-end]:data-starting-style:-translate-x-1 data-[side=inline-start]:data-starting-style:translate-x-1 data-[side=left]:data-starting-style:translate-x-1 data-[side=right]:data-starting-style:-translate-x-1 data-[side=top]:data-starting-style:translate-y-1 data-instant:transition-none motion-reduce:transition-none **:data-[slot=kbd]:relative **:data-[slot=kbd]:isolate **:data-[slot=kbd]:z-50 **:data-[slot=kbd]:rounded-sm",
-            className
+            'z-50 inline-flex w-fit max-w-xs origin-(--transform-origin) items-center gap-1.5 rounded-md bg-foreground px-3 py-1.5 text-xs text-background shadow-lg shadow-black/10 outline outline-border/50 transition-[transform,scale,opacity] duration-200 ease-out has-data-[slot=kbd]:pr-1.5 data-starting-style:scale-96 data-starting-style:opacity-0 data-ending-style:scale-96 data-ending-style:opacity-0 data-[side=bottom]:data-starting-style:-translate-y-1 data-[side=inline-end]:data-starting-style:-translate-x-1 data-[side=inline-start]:data-starting-style:translate-x-1 data-[side=left]:data-starting-style:translate-x-1 data-[side=right]:data-starting-style:-translate-x-1 data-[side=top]:data-starting-style:translate-y-1 data-instant:transition-none motion-reduce:transition-none **:data-[slot=kbd]:relative **:data-[slot=kbd]:isolate **:data-[slot=kbd]:z-50 **:data-[slot=kbd]:rounded-sm',
+            className,
           )}
           {...props}
         >
@@ -64,19 +64,19 @@ function TooltipContent({
             className="z-50 flex size-2.5 rounded-[2px] bg-foreground fill-foreground data-[side=bottom]:-top-1 data-[side=inline-end]:-left-1 data-[side=inline-start]:-right-1 data-[side=left]:-right-1 data-[side=right]:-left-1 data-[side=top]:-bottom-1"
             style={(state) => {
               const axis =
-                state.side === "top" || state.side === "bottom"
+                state.side === 'top' || state.side === 'bottom'
                   ? `translateX(${arrowOffset}px)`
-                  : `translateY(${arrowOffset}px)`
+                  : `translateY(${arrowOffset}px)`;
 
               return {
                 transform: `${axis} rotate(45deg)`,
-              }
+              };
             }}
           />
         </TooltipPrimitive.Popup>
       </TooltipPrimitive.Positioner>
     </TooltipPrimitive.Portal>
-  )
+  );
 }
 
-export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider };

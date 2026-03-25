@@ -12,7 +12,11 @@ const dashboardShellMock = vi.fn();
 vi.mock('server-only', () => ({}));
 
 vi.mock('@/components/dashboard/closed-won-opportunities-table', () => ({
-  ClosedWonOpportunitiesTable: ({ payload }: { payload: { category: string } }) =>
+  ClosedWonOpportunitiesTable: ({
+    payload,
+  }: {
+    payload: { category: string };
+  }) =>
     React.createElement(
       'div',
       { 'data-testid': 'closed-won-table' },
@@ -36,7 +40,8 @@ vi.mock('@/lib/server/v2/get-dashboard-category-snapshot', () => ({
 }));
 
 vi.mock('@/lib/server/v2/get-dashboard-closed-won-opportunities', () => ({
-  getDashboardV2ClosedWonOpportunities: getDashboardV2ClosedWonOpportunitiesMock,
+  getDashboardV2ClosedWonOpportunities:
+    getDashboardV2ClosedWonOpportunitiesMock,
 }));
 
 vi.mock('@/lib/server/v2/get-dashboard-overview-board', () => ({
@@ -112,13 +117,15 @@ describe('dashboard v2 page', { timeout: 20000 }, () => {
       meta: { source: 'lightdash', queryCount: 1, bytesProcessed: 128 },
     });
 
-    getDashboardV2FilterDictionaryMock.mockImplementation(async (key: string) => ({
-      data: {
-        filterKey: key,
-        options: [{ value: 'Enterprise', label: 'Enterprise', sortOrder: 1 }],
-      },
-      meta: { source: 'lightdash', queryCount: 1, bytesProcessed: 10 },
-    }));
+    getDashboardV2FilterDictionaryMock.mockImplementation(
+      async (key: string) => ({
+        data: {
+          filterKey: key,
+          options: [{ value: 'Enterprise', label: 'Enterprise', sortOrder: 1 }],
+        },
+        meta: { source: 'lightdash', queryCount: 1, bytesProcessed: 10 },
+      }),
+    );
 
     const { default: DashboardPageV2 } = await import('@/app/v2/page');
     const html = renderToStaticMarkup(await DashboardPageV2({}));

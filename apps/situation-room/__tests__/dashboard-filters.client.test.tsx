@@ -41,10 +41,7 @@ vi.mock('@/components/ui/input', () => ({
 }));
 
 vi.mock('@/components/ui/badge', () => ({
-  Badge: ({
-    children,
-    ...props
-  }: React.HTMLAttributes<HTMLSpanElement>) =>
+  Badge: ({ children, ...props }: React.HTMLAttributes<HTMLSpanElement>) =>
     React.createElement('span', props, children),
 }));
 
@@ -68,7 +65,9 @@ vi.mock('@/components/ui/collapsible', () => {
       defaultOpen?: boolean;
       onOpenChange?: (open: boolean) => void;
     }) => {
-      const [internalOpen, setInternalOpen] = React.useState(defaultOpen ?? false);
+      const [internalOpen, setInternalOpen] = React.useState(
+        defaultOpen ?? false,
+      );
       const isControlled = open !== undefined;
       const resolvedOpen = isControlled ? open : internalOpen;
 
@@ -255,7 +254,9 @@ describe('dashboard filters', () => {
 
   it('shows a data freshness label in the controls summary', () => {
     expect(container.textContent).toContain('Updated 5 min ago');
-    expect(container.textContent).toContain('Last updated at Mar 31, 2026, 12:00 PM UTC');
+    expect(container.textContent).toContain(
+      'Last updated at Mar 31, 2026, 12:00 PM UTC',
+    );
   });
 
   it('keeps multi-select choices local until apply and lets users reopen to change selections', async () => {
@@ -329,7 +330,8 @@ describe('dashboard filters', () => {
       'input[aria-label="Search Division values"]',
     ) as HTMLInputElement | null;
     expect(searchInput).not.toBeNull();
-    const divisionPopoverCandidate = searchInput!.parentElement?.parentElement?.parentElement as HTMLElement | null;
+    const divisionPopoverCandidate = searchInput!.parentElement?.parentElement
+      ?.parentElement as HTMLElement | null;
     expect(divisionPopoverCandidate).not.toBeNull();
     const divisionPopover = divisionPopoverCandidate!;
 
@@ -384,8 +386,12 @@ describe('dashboard filters', () => {
   });
 
   it('starts expanded and lets the header collapse and reopen the global controls', async () => {
-    expect(container.textContent).toContain('Prior period: 2025-01-01 to 2025-03-31');
-    expect(container.textContent).toContain('Current period: Jan 1, 2026 - Mar 31, 2026');
+    expect(container.textContent).toContain(
+      'Prior period: 2025-01-01 to 2025-03-31',
+    );
+    expect(container.textContent).toContain(
+      'Current period: Jan 1, 2026 - Mar 31, 2026',
+    );
     expect(
       container.querySelector('button[aria-label="Date range filter"]'),
     ).not.toBeNull();
@@ -404,7 +410,9 @@ describe('dashboard filters', () => {
     });
 
     expect(toggleButton?.getAttribute('aria-expanded')).toBe('false');
-    expect(container.textContent).toContain('Prior period: 2025-01-01 to 2025-03-31');
+    expect(container.textContent).toContain(
+      'Prior period: 2025-01-01 to 2025-03-31',
+    );
     expect(
       container.querySelector('button[aria-label="Date range filter"]'),
     ).toBeNull();
@@ -417,7 +425,9 @@ describe('dashboard filters', () => {
     });
 
     expect(toggleButton?.getAttribute('aria-expanded')).toBe('true');
-    expect(container.textContent).toContain('Prior period: 2025-01-01 to 2025-03-31');
+    expect(container.textContent).toContain(
+      'Prior period: 2025-01-01 to 2025-03-31',
+    );
     expect(
       container.querySelector('button[aria-label="Date range filter"]'),
     ).not.toBeNull();

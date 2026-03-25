@@ -185,12 +185,20 @@ describe('overview model', () => {
     expect(board.categoryCards[0].sectionA.hero.value).toBe('$125K');
     expect(board.categoryCards[0].sectionA.hero.fullValue).toBe('$125,000');
     expect(board.categoryCards[0].sectionA.hero.previousValue).toBe('$100,000');
-    expect(board.categoryCards[0].sectionA.hero.description).toContain('Total booked revenue');
-    expect(board.categoryCards[0].sectionA.hero.calculation).toContain('booked ACV');
+    expect(board.categoryCards[0].sectionA.hero.description).toContain(
+      'Total booked revenue',
+    );
+    expect(board.categoryCards[0].sectionA.hero.calculation).toContain(
+      'booked ACV',
+    );
     expect(board.categoryCards[0].sectionA.support?.value).toBe('5.4K');
     expect(board.categoryCards[0].sectionB.metrics[1]?.value).toBe('18.4%');
     expect(board.categoryCards[0].sectionC.metrics[0]?.value).toBe('12.3K');
-    expect(board.categoryCards[0].supportRow.metrics.find((metric) => metric.label === 'SDR Points')?.value).toBe('5.4K');
+    expect(
+      board.categoryCards[0].supportRow.metrics.find(
+        (metric) => metric.label === 'SDR Points',
+      )?.value,
+    ).toBe('5.4K');
     expect(board.totalCard.hero.value).toBe('$400K');
     expect(board.totalCard.secondaryMetrics[1]?.value).toBe('$90K');
   });

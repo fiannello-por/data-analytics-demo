@@ -7,7 +7,8 @@ import { TrendPanel } from '@/components/dashboard/trend-panel';
 import type { TileTrendPayload } from '@/lib/dashboard/contracts';
 
 vi.mock('@/components/trend-chart', () => ({
-  TrendChart: () => React.createElement('div', { 'data-testid': 'trend-chart' }, 'chart'),
+  TrendChart: () =>
+    React.createElement('div', { 'data-testid': 'trend-chart' }, 'chart'),
 }));
 
 describe('TrendPanel', () => {
@@ -46,9 +47,13 @@ describe('TrendPanel', () => {
     expect(container.textContent).toContain('SQL');
     expect(container.textContent).toContain('Weekly trend');
     expect(container.textContent).toContain('Jan 1, 2026 to Mar 31, 2026');
-    expect(container.textContent).toContain('Compared with Jan 1, 2025 to Mar 31, 2025');
+    expect(container.textContent).toContain(
+      'Compared with Jan 1, 2025 to Mar 31, 2025',
+    );
     expect(container.textContent).not.toContain('weekly');
-    expect(container.querySelector('[data-testid="trend-chart"]')).not.toBeNull();
+    expect(
+      container.querySelector('[data-testid="trend-chart"]'),
+    ).not.toBeNull();
   });
 
   it('renders an instructional empty state before a metric is selected', async () => {

@@ -72,8 +72,18 @@ export const TILE_CATALOG = {
       sortOrder: 8,
       formatType: 'number',
     },
-    { tileId: 'new_logo_sql', label: 'SQL', sortOrder: 9, formatType: 'number' },
-    { tileId: 'new_logo_sqo', label: 'SQO', sortOrder: 10, formatType: 'number' },
+    {
+      tileId: 'new_logo_sql',
+      label: 'SQL',
+      sortOrder: 9,
+      formatType: 'number',
+    },
+    {
+      tileId: 'new_logo_sqo',
+      label: 'SQO',
+      sortOrder: 10,
+      formatType: 'number',
+    },
     {
       tileId: 'new_logo_gate_1_complete',
       label: 'Gate 1 Complete',
@@ -142,8 +152,18 @@ export const TILE_CATALOG = {
       sortOrder: 8,
       formatType: 'number',
     },
-    { tileId: 'expansion_sql', label: 'SQL', sortOrder: 9, formatType: 'number' },
-    { tileId: 'expansion_sqo', label: 'SQO', sortOrder: 10, formatType: 'number' },
+    {
+      tileId: 'expansion_sql',
+      label: 'SQL',
+      sortOrder: 9,
+      formatType: 'number',
+    },
+    {
+      tileId: 'expansion_sqo',
+      label: 'SQO',
+      sortOrder: 10,
+      formatType: 'number',
+    },
   ],
   Migration: [
     {
@@ -194,9 +214,24 @@ export const TILE_CATALOG = {
       sortOrder: 8,
       formatType: 'number',
     },
-    { tileId: 'migration_sql', label: 'SQL', sortOrder: 9, formatType: 'number' },
-    { tileId: 'migration_sqo', label: 'SQO', sortOrder: 10, formatType: 'number' },
-    { tileId: 'migration_sal', label: 'SAL', sortOrder: 11, formatType: 'number' },
+    {
+      tileId: 'migration_sql',
+      label: 'SQL',
+      sortOrder: 9,
+      formatType: 'number',
+    },
+    {
+      tileId: 'migration_sqo',
+      label: 'SQO',
+      sortOrder: 10,
+      formatType: 'number',
+    },
+    {
+      tileId: 'migration_sal',
+      label: 'SAL',
+      sortOrder: 11,
+      formatType: 'number',
+    },
     {
       tileId: 'migration_avg_users',
       label: 'Avg Users',
@@ -316,7 +351,9 @@ export function isDashboardTab(value: string): value is DashboardTab {
   return isOverviewTab(value) || isCategory(value);
 }
 
-export function getCategoryTiles(category: Category): readonly TileDefinition[] {
+export function getCategoryTiles(
+  category: Category,
+): readonly TileDefinition[] {
   return TILE_CATALOG[category];
 }
 

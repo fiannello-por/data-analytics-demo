@@ -1,5 +1,12 @@
 import * as React from 'react';
-import { ArrowDown, ArrowRight, Boxes, Database, Layers3, Workflow } from 'lucide-react';
+import {
+  ArrowDown,
+  ArrowRight,
+  Boxes,
+  Database,
+  Layers3,
+  Workflow,
+} from 'lucide-react';
 
 import {
   semanticRuntimeStages,
@@ -85,7 +92,9 @@ function RuntimeStageCard({
       <h3 className="mt-2 text-[19px] font-semibold tracking-[-0.02em] text-foreground">
         {title}
       </h3>
-      <p className="mt-3 text-sm leading-6 text-muted-foreground">{description}</p>
+      <p className="mt-3 text-sm leading-6 text-muted-foreground">
+        {description}
+      </p>
       {!isLast ? (
         <div className="pointer-events-none absolute -right-4 top-1/2 hidden -translate-y-1/2 items-center lg:flex">
           <div className="h-px w-8 bg-border/80" />
@@ -152,14 +161,14 @@ export function SemanticSystemMap() {
           <div className="relative">
             <div className="pointer-events-none absolute left-10 right-10 top-1/2 hidden h-px -translate-y-1/2 bg-border/50 lg:block" />
             <div className="grid gap-4 lg:grid-cols-3">
-            {semanticRuntimeStages.map((stage, index) => (
-              <RuntimeStageCard
-                key={stage.id}
-                title={stage.title}
-                description={stage.description}
-                isLast={index === semanticRuntimeStages.length - 1}
-              />
-            ))}
+              {semanticRuntimeStages.map((stage, index) => (
+                <RuntimeStageCard
+                  key={stage.id}
+                  title={stage.title}
+                  description={stage.description}
+                  isLast={index === semanticRuntimeStages.length - 1}
+                />
+              ))}
             </div>
           </div>
         </div>

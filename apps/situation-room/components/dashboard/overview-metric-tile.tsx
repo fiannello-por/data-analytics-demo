@@ -7,12 +7,11 @@ import type { OverviewMetric } from '@/lib/dashboard/overview-model';
 import { cn } from '@/lib/utils';
 
 function Delta({ value }: { value: string }) {
-  const tone =
-    value.startsWith('+')
-      ? 'text-positive'
-      : value.startsWith('-')
-        ? 'text-negative'
-        : 'text-muted-foreground';
+  const tone = value.startsWith('+')
+    ? 'text-positive'
+    : value.startsWith('-')
+      ? 'text-negative'
+      : 'text-muted-foreground';
 
   return <span className={cn('text-xs font-medium', tone)}>{value}</span>;
 }
@@ -45,15 +44,22 @@ export function OverviewMetricTile({
         description={metric.description}
         calculation={metric.calculation}
         labelContent={
-          <p className={cn('text-xs text-muted-foreground', labelClassName)}>{metric.label}</p>
+          <p className={cn('text-xs text-muted-foreground', labelClassName)}>
+            {metric.label}
+          </p>
         }
         triggerClassName={cn(
           'flex w-fit items-baseline gap-2 text-left outline-none',
           triggerClassName,
         )}
-        contentClassName={cn('w-fit max-w-[24rem] rounded-lg px-3 py-2', contentClassName)}
+        contentClassName={cn(
+          'w-fit max-w-[24rem] rounded-lg px-3 py-2',
+          contentClassName,
+        )}
       >
-        <p className={cn('font-semibold text-foreground', valueClassName)}>{metric.value}</p>
+        <p className={cn('font-semibold text-foreground', valueClassName)}>
+          {metric.value}
+        </p>
         <Delta value={metric.delta} />
       </OverviewMetricTooltip>
     </div>

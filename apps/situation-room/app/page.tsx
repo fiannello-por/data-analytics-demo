@@ -1,7 +1,12 @@
 import * as React from 'react';
 import type { Metadata } from 'next';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
-import { CATEGORY_ORDER, GLOBAL_FILTER_KEYS, isCategory, isOverviewTab } from '@/lib/dashboard/catalog';
+import {
+  CATEGORY_ORDER,
+  GLOBAL_FILTER_KEYS,
+  isCategory,
+  isOverviewTab,
+} from '@/lib/dashboard/catalog';
 import { parseDashboardSearchParams } from '@/lib/dashboard/query-inputs';
 import { getDashboardCategorySnapshot } from '@/lib/server/get-dashboard-category-snapshot';
 import { getDashboardClosedWonOpportunities } from '@/lib/server/get-dashboard-closed-won-opportunities';
@@ -11,7 +16,8 @@ import { getDashboardTileTrend } from '@/lib/server/get-dashboard-tile-trend';
 
 export const metadata: Metadata = {
   title: 'Sales Performance Dashboard',
-  description: 'Executive sales performance dashboard for category scorecards and closed won detail.',
+  description:
+    'Executive sales performance dashboard for category scorecards and closed won detail.',
 };
 
 type SearchParamsInput =
@@ -69,7 +75,9 @@ export default async function DashboardPage({
           previousDateRange: initialState.previousDateRange,
         })
       ).data
-    : initialOverviewBoard?.snapshots.find((snapshot) => snapshot.category === CATEGORY_ORDER[0]) ?? null;
+    : (initialOverviewBoard?.snapshots.find(
+        (snapshot) => snapshot.category === CATEGORY_ORDER[0],
+      ) ?? null);
   const initialTrend = isCategory(initialState.activeCategory)
     ? (
         await getDashboardTileTrend({
@@ -83,17 +91,18 @@ export default async function DashboardPage({
       ).data
     : null;
   const initialClosedWonOpportunities =
-    isCategory(initialState.activeCategory) || isOverviewTab(initialState.activeCategory)
-    ? (
-        await getDashboardClosedWonOpportunities({
-          activeCategory: isCategory(initialState.activeCategory)
-            ? initialState.activeCategory
-            : 'Total',
-          filters: initialState.filters,
-          dateRange: initialState.dateRange,
-        })
-      ).data
-    : null;
+    isCategory(initialState.activeCategory) ||
+    isOverviewTab(initialState.activeCategory)
+      ? (
+          await getDashboardClosedWonOpportunities({
+            activeCategory: isCategory(initialState.activeCategory)
+              ? initialState.activeCategory
+              : 'Total',
+            filters: initialState.filters,
+            dateRange: initialState.dateRange,
+          })
+        ).data
+      : null;
   const dictionaries = await Promise.all(
     GLOBAL_FILTER_KEYS.map(async (key) => [
       key,

@@ -1,5 +1,8 @@
 import type { ChartConfig } from '@/components/ui/chart';
-import { findTileDefinition, type TileFormatType } from '@/lib/dashboard/catalog';
+import {
+  findTileDefinition,
+  type TileFormatType,
+} from '@/lib/dashboard/catalog';
 import { parseIsoDate } from '@/lib/dashboard/date-range';
 import type { TileTrendPayload } from '@/lib/dashboard/contracts';
 
@@ -45,7 +48,9 @@ export function formatTrendAxisLabel(value: string): string {
 }
 
 export function getTrendFormatType(trend: TileTrendPayload): TileFormatType {
-  return findTileDefinition(trend.category, trend.tileId)?.formatType ?? 'number';
+  return (
+    findTileDefinition(trend.category, trend.tileId)?.formatType ?? 'number'
+  );
 }
 
 export function formatTrendTooltipValue(
@@ -145,7 +150,9 @@ export function getTrendAxisWidth(
     .map((value) => formatTrendAxisValue(value, formatType));
 
   const longestLabelWidth = Math.max(
-    ...((labels.length > 0 ? labels : [formatTrendAxisValue(0, formatType)]).map(measureText)),
+    ...(labels.length > 0 ? labels : [formatTrendAxisValue(0, formatType)]).map(
+      measureText,
+    ),
   );
 
   return Math.ceil(longestLabelWidth + 16);

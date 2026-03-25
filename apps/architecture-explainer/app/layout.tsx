@@ -5,7 +5,8 @@ import './global.css';
 
 export const metadata: Metadata = {
   title: 'Sales Performance Dashboard Architecture Explainer',
-  description: 'Interactive architecture explorer for the Sales Performance Dashboard',
+  description:
+    'Interactive architecture explorer for the Sales Performance Dashboard',
 };
 
 export default function RootLayout({

@@ -611,12 +611,7 @@ type ScorecardFilters = {
 Response shape:
 
 ```ts
-type Category =
-  | 'New Logo'
-  | 'Expansion'
-  | 'Migration'
-  | 'Renewal'
-  | 'Total';
+type Category = 'New Logo' | 'Expansion' | 'Migration' | 'Renewal' | 'Total';
 
 type ScorecardRow = {
   sortOrder: number;

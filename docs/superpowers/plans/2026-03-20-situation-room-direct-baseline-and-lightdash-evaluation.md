@@ -110,6 +110,7 @@ implementation does not proceed against contradictory instructions.
 ## Task 0: Record The Approved dbt Exception
 
 **Files:**
+
 - Modify: `AGENTS.md`
 
 - [ ] **Step 1: Add a short exception note for Situation Room**
@@ -133,6 +134,7 @@ git commit -m "docs: record situation room dbt exception"
 ## Task 1: Add Canonical Contracts And Filter Normalization
 
 **Files:**
+
 - Create: `apps/situation-room/lib/contracts.ts`
 - Create: `apps/situation-room/lib/filter-normalization.ts`
 - Test: `apps/situation-room/__tests__/contracts.test.ts`
@@ -172,7 +174,9 @@ describe('contracts', () => {
       Owner: [],
     };
 
-    expect(summarizeFilters(filters)).toEqual([{ key: 'Division', values: ['North'] }]);
+    expect(summarizeFilters(filters)).toEqual([
+      { key: 'Division', values: ['North'] },
+    ]);
   });
 
   it('applies the default date range when missing', () => {
@@ -197,9 +201,9 @@ describe('filter normalization', () => {
   });
 
   it('drops blank and duplicate values', () => {
-    expect(
-      normalizeFilters({ Owner: [' ', 'Alice', 'Alice'] }),
-    ).toEqual({ Owner: ['Alice'] });
+    expect(normalizeFilters({ Owner: [' ', 'Alice', 'Alice'] })).toEqual({
+      Owner: ['Alice'],
+    });
   });
 });
 ```
@@ -270,8 +274,12 @@ export type ScorecardReportPayload = {
   categories: CategoryData[];
 };
 
-export function withDefaultDateRange(filters: ScorecardFilters): ScorecardFilters {
-  return filters.DateRange?.length ? filters : { ...filters, DateRange: [...DEFAULT_DATE_RANGE] };
+export function withDefaultDateRange(
+  filters: ScorecardFilters,
+): ScorecardFilters {
+  return filters.DateRange?.length
+    ? filters
+    : { ...filters, DateRange: [...DEFAULT_DATE_RANGE] };
 }
 
 export function summarizeFilters(filters: ScorecardFilters) {
@@ -287,10 +295,15 @@ import type { ScorecardFilters } from '@/lib/contracts';
 
 export function normalizeFilters(filters: ScorecardFilters): ScorecardFilters {
   const entries = Object.entries(filters)
-    .map(([key, values]) => [
-      key,
-      [...new Set((values ?? []).map((v) => v.trim()).filter(Boolean))].sort(),
-    ] as const)
+    .map(
+      ([key, values]) =>
+        [
+          key,
+          [
+            ...new Set((values ?? []).map((v) => v.trim()).filter(Boolean)),
+          ].sort(),
+        ] as const,
+    )
     .filter(([, values]) => values.length > 0)
     .sort(([a], [b]) => a.localeCompare(b));
 
@@ -322,6 +335,7 @@ git commit -m "feat(situation-room): add canonical report contracts"
 ## Task 2: Scaffold dbt Core And App-Serving Models
 
 **Files:**
+
 - Modify: `AGENTS.md`
 - Modify: `pyproject.toml`
 - Modify: `package.json`
@@ -563,6 +577,7 @@ git commit -m "feat(dbt): add situation room serving models"
 ## Task 3: Add BigQuery Adapter And SQL Builders
 
 **Files:**
+
 - Modify: `apps/situation-room/package.json`
 - Create: `apps/situation-room/.env.local.example`
 - Create: `apps/situation-room/lib/env.server.ts`
@@ -681,10 +696,7 @@ export function getBigQueryClient() {
 
 ```ts
 // apps/situation-room/lib/data-adapters/types.ts
-import type {
-  ScorecardFilters,
-  ScorecardReportPayload,
-} from '@/lib/contracts';
+import type { ScorecardFilters, ScorecardReportPayload } from '@/lib/contracts';
 
 export type AdapterMeta = {
   source: 'bigquery' | 'lightdash';
@@ -698,7 +710,9 @@ export type AdapterResult<T> = {
 };
 
 export interface ScorecardDataAdapter {
-  getScorecardReport(filters: ScorecardFilters): Promise<AdapterResult<ScorecardReportPayload>>;
+  getScorecardReport(
+    filters: ScorecardFilters,
+  ): Promise<AdapterResult<ScorecardReportPayload>>;
   getFilterDictionary(key: string): Promise<
     AdapterResult<{
       key: string;
@@ -779,16 +793,27 @@ export function buildFilterDictionaryQuery(filterKey: string) {
 
 ```ts
 // apps/situation-room/lib/data-adapters/bigquery-adapter.ts
-import type { CategoryData, ScorecardFilters, ScorecardReportPayload } from '@/lib/contracts';
+import type {
+  CategoryData,
+  ScorecardFilters,
+  ScorecardReportPayload,
+} from '@/lib/contracts';
 import { CATEGORY_ORDER, withDefaultDateRange } from '@/lib/contracts';
 import { getBigQueryClient } from '@/lib/bigquery/client';
-import { buildFilterDictionaryQuery, buildScorecardReportQuery } from '@/lib/bigquery/sql';
-import type { AdapterResult, ScorecardDataAdapter } from '@/lib/data-adapters/types';
+import {
+  buildFilterDictionaryQuery,
+  buildScorecardReportQuery,
+} from '@/lib/bigquery/sql';
+import type {
+  AdapterResult,
+  ScorecardDataAdapter,
+} from '@/lib/data-adapters/types';
 
 type QueryClient = {
-  queryRows: (query: { sql: string; params: Record<string, unknown> }) => Promise<
-    { rows: Record<string, unknown>[]; bytesProcessed?: number }
-  >;
+  queryRows: (query: {
+    sql: string;
+    params: Record<string, unknown>;
+  }) => Promise<{ rows: Record<string, unknown>[]; bytesProcessed?: number }>;
 };
 
 export class BigQueryAdapter implements ScorecardDataAdapter {
@@ -805,13 +830,17 @@ export class BigQueryAdapter implements ScorecardDataAdapter {
         const [metadata] = await job.getMetadata();
         return {
           rows: rows as Record<string, unknown>[],
-          bytesProcessed: Number(metadata.statistics?.query?.totalBytesProcessed ?? 0),
+          bytesProcessed: Number(
+            metadata.statistics?.query?.totalBytesProcessed ?? 0,
+          ),
         };
       },
     },
   ) {}
 
-  async getScorecardReport(filters: ScorecardFilters): Promise<AdapterResult<ScorecardReportPayload>> {
+  async getScorecardReport(
+    filters: ScorecardFilters,
+  ): Promise<AdapterResult<ScorecardReportPayload>> {
     const appliedFilters = withDefaultDateRange(filters);
     const query = buildScorecardReportQuery(appliedFilters);
     const { rows, bytesProcessed } = await this.client.queryRows(query);
@@ -892,6 +921,7 @@ git commit -m "feat(situation-room): add BigQuery data adapter"
 ## Task 4: Add Cached Canonical Loaders And GET Endpoints
 
 **Files:**
+
 - Create: `apps/situation-room/lib/data-adapters/index.ts`
 - Create: `apps/situation-room/lib/server/get-scorecard-report.ts`
 - Create: `apps/situation-room/lib/server/get-filter-dictionary.ts`
@@ -921,7 +951,9 @@ vi.mock('@/lib/data-adapters', () => ({
 
 describe('server loaders', () => {
   it('delegates report requests through the canonical loader', async () => {
-    await expect(getScorecardReport({ Division: ['Rental'] })).resolves.toMatchObject({
+    await expect(
+      getScorecardReport({ Division: ['Rental'] }),
+    ).resolves.toMatchObject({
       data: { categories: [] },
       meta: { source: 'bigquery', queryCount: 1 },
     });
@@ -1002,7 +1034,10 @@ export async function GET(request: NextRequest) {
   const adapterResult = await getScorecardReport(filters);
   const response = NextResponse.json(adapterResult.data);
   response.headers.set('Server-Timing', `adapter;dur=0`);
-  response.headers.set('x-situation-room-query-count', String(adapterResult.meta.queryCount));
+  response.headers.set(
+    'x-situation-room-query-count',
+    String(adapterResult.meta.queryCount),
+  );
   if (adapterResult.meta.bytesProcessed != null) {
     response.headers.set(
       'x-situation-room-bytes-processed',
@@ -1026,7 +1061,10 @@ export async function GET(
   const { key } = await params;
   const adapterResult = await getFilterDictionary(key);
   const response = NextResponse.json(adapterResult.data);
-  response.headers.set('x-situation-room-query-count', String(adapterResult.meta.queryCount));
+  response.headers.set(
+    'x-situation-room-query-count',
+    String(adapterResult.meta.queryCount),
+  );
   if (adapterResult.meta.bytesProcessed != null) {
     response.headers.set(
       'x-situation-room-bytes-processed',
@@ -1059,6 +1097,7 @@ git commit -m "feat(situation-room): add cached report loaders"
 ## Task 5: Refactor The App To Server-First Loading
 
 **Files:**
+
 - Modify: `apps/situation-room/app/page.tsx`
 - Modify: `apps/situation-room/components/report-content.tsx`
 - Modify: `apps/situation-room/hooks/use-scorecard-query.ts`
@@ -1072,9 +1111,9 @@ import { serializeFilterCacheKey } from '@/lib/filter-normalization';
 
 describe('report refresh path', () => {
   it('uses normalized GET params instead of POSTing opaque JSON', () => {
-    expect(
-      serializeFilterCacheKey({ Region: ['South', 'North'] }),
-    ).toBe(serializeFilterCacheKey({ Region: ['North', 'South'] }));
+    expect(serializeFilterCacheKey({ Region: ['South', 'North'] })).toBe(
+      serializeFilterCacheKey({ Region: ['North', 'South'] }),
+    );
   });
 });
 ```
@@ -1121,7 +1160,10 @@ export function ReportContent({
   initialData: ScorecardReportPayload;
 }) {
   const { activeFilters, activeCount, setFilter, clearAll } = useFilters();
-  const { data, isLoading, error } = useScorecardQuery(activeFilters, initialData);
+  const { data, isLoading, error } = useScorecardQuery(
+    activeFilters,
+    initialData,
+  );
   // existing rendering stays mostly unchanged
 }
 ```
@@ -1142,6 +1184,7 @@ export function useScorecardQuery(
 - [ ] **Step 4: Run the app test/build commands**
 
 Run:
+
 - `pnpm --filter @point-of-rental/situation-room typecheck`
 - `pnpm --filter @point-of-rental/situation-room build`
 
@@ -1160,6 +1203,7 @@ git commit -m "feat(situation-room): make report load server-first"
 ## Task 6: Make Filter Dictionaries Instant
 
 **Files:**
+
 - Modify: `apps/situation-room/components/filter-rail.tsx`
 - Modify: `apps/situation-room/hooks/use-filters.ts`
 - Create: `apps/situation-room/lib/server/get-filter-dictionary.ts` (already created in Task 4; extend here)
@@ -1190,15 +1234,19 @@ Expected: FAIL until `getFilterDictionary()` and the UI wiring exist
 
 ```tsx
 // apps/situation-room/components/filter-rail.tsx
-const [options, setOptions] = useState<Record<string, FilterDictionaryOption[]>>({});
+const [options, setOptions] = useState<
+  Record<string, FilterDictionaryOption[]>
+>({});
 
 useEffect(() => {
   void Promise.all(
-    FILTER_DEFINITIONS.filter((filter) => filter.type === 'string').map(async (filter) => {
-      const res = await fetch(`/api/filter-dictionaries/${filter.key}`);
-      const payload = await res.json();
-      return [filter.key, payload.options] as const;
-    }),
+    FILTER_DEFINITIONS.filter((filter) => filter.type === 'string').map(
+      async (filter) => {
+        const res = await fetch(`/api/filter-dictionaries/${filter.key}`);
+        const payload = await res.json();
+        return [filter.key, payload.options] as const;
+      },
+    ),
   ).then((entries) => setOptions(Object.fromEntries(entries)));
 }, []);
 ```
@@ -1212,6 +1260,7 @@ Keep the UX rule:
 - [ ] **Step 4: Run app checks**
 
 Run:
+
 - `pnpm --filter @point-of-rental/situation-room typecheck`
 - `pnpm --filter @point-of-rental/situation-room build`
 
@@ -1229,6 +1278,7 @@ git commit -m "feat(situation-room): serve cached filter dictionaries"
 ## Task 7: Add Benchmark Script And Root Commands
 
 **Files:**
+
 - Create: `apps/situation-room/scripts/benchmark-report.mjs`
 - Modify: `apps/situation-room/package.json`
 - Modify: `package.json`
@@ -1275,14 +1325,18 @@ async function measure(label, path, iterations = 20) {
     warmP50Ms: percentile(warmTimings, 0.5),
     warmP95Ms: percentile(warmTimings, 0.95),
     avgBytesProcessed: bytesProcessed.length
-      ? bytesProcessed.reduce((sum, value) => sum + value, 0) / bytesProcessed.length
+      ? bytesProcessed.reduce((sum, value) => sum + value, 0) /
+        bytesProcessed.length
       : null,
   };
 }
 
 const results = [
   await measure('default-report', '/api/report'),
-  await measure('report-filter-change', '/api/report?Division=Rental&Region=North'),
+  await measure(
+    'report-filter-change',
+    '/api/report?Division=Rental&Region=North',
+  ),
   await measure('division-dictionary', '/api/filter-dictionaries/Division'),
 ];
 
@@ -1314,18 +1368,21 @@ console.log(JSON.stringify(results, null, 2));
 - [ ] **Step 3: Run the benchmark script locally**
 
 Run:
+
 - `SITUATION_ROOM_BACKEND=bigquery pnpm sr:dev`
 - `pnpm sr:benchmark`
 
 Expected: JSON timing output with separate `coldMs`, `warmP50Ms`, and `warmP95Ms`
 
 Important:
+
 - start the app from a fresh process before each benchmark mode
 - the benchmark script treats the first request as the cold path and the remaining iterations as the warm distribution
 
 - [ ] **Step 4: Record the phase-1 baseline in the implementation notes**
 
 Capture:
+
 - cold report ms
 - warm report p50 / p95
 - filtered report cold / warm p95
@@ -1344,6 +1401,7 @@ git commit -m "chore(situation-room): add benchmark workflow"
 ## Task 8: Add Phase-2 Lightdash Adapter And Toggle
 
 **Files:**
+
 - Create: `lightdash/models/scorecard_report_rows.yml`
 - Create: `lightdash/models/scorecard_filter_dictionary.yml`
 - Create: `apps/situation-room/lib/data-adapters/lightdash-adapter.ts`
@@ -1410,7 +1468,10 @@ metrics:
 ```ts
 // apps/situation-room/lib/data-adapters/lightdash-adapter.ts
 import type { ScorecardDataAdapter } from '@/lib/data-adapters/types';
-import { executeAppFacingQuery, executeDictionaryQuery } from '@/lib/lightdash-client';
+import {
+  executeAppFacingQuery,
+  executeDictionaryQuery,
+} from '@/lib/lightdash-client';
 
 export class LightdashAdapter implements ScorecardDataAdapter {
   async getScorecardReport(filters) {
@@ -1457,6 +1518,7 @@ Use one Lightdash query for the report payload. Do not reintroduce per-category 
 - [ ] **Step 4: Run Lightdash validation and adapter tests**
 
 Run:
+
 - `pnpm lightdash:lint`
 - `pnpm --filter @point-of-rental/situation-room test -- lightdash-adapter`
 
@@ -1477,11 +1539,13 @@ git commit -m "feat(situation-room): add Lightdash adapter path"
 ## Task 9: Run The Apples-To-Apples Benchmark And Make The Backend Decision
 
 **Files:**
+
 - Create: `docs/superpowers/benchmarks/2026-03-20-situation-room-backend-comparison.md`
 
 - [ ] **Step 1: Benchmark the direct BigQuery adapter**
 
 Important:
+
 - stop any existing app server
 - start a fresh app process so the first request really measures the cold path
 
@@ -1493,6 +1557,7 @@ pnpm sr:benchmark
 ```
 
 Capture:
+
 - cold report ms
 - warm report p95
 - dictionary cold / warm p95
@@ -1501,6 +1566,7 @@ Capture:
 - [ ] **Step 2: Benchmark the Lightdash adapter**
 
 Important:
+
 - stop the BigQuery-mode app server
 - start a fresh Lightdash-mode app process so the first request really measures the cold path
 
@@ -1512,6 +1578,7 @@ pnpm sr:benchmark
 ```
 
 Capture:
+
 - cold report ms
 - warm report p95
 - dictionary cold / warm p95

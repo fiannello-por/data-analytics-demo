@@ -27,7 +27,9 @@ export function getVisibleNodesForPipeline(
 
   const pipeline =
     pipelineFilter in PIPELINE_FILTER_MAP
-      ? PIPELINE_FILTER_MAP[pipelineFilter as Exclude<ArchitecturePipelineFilter, 'All'>]
+      ? PIPELINE_FILTER_MAP[
+          pipelineFilter as Exclude<ArchitecturePipelineFilter, 'All'>
+        ]
       : (pipelineFilter as ArchitecturePipeline);
 
   return manifest.nodes.filter((node) => node.pipelines.includes(pipeline));

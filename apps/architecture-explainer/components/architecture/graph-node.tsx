@@ -3,9 +3,7 @@
 import * as React from 'react';
 import { Handle, Position, type NodeProps } from 'reactflow';
 import type { ArchitectureNode } from '@/lib/architecture/contracts';
-import {
-  ARCHITECTURE_STAGE_TONE,
-} from '@/lib/architecture/presentation';
+import { ARCHITECTURE_STAGE_TONE } from '@/lib/architecture/presentation';
 import { cn } from '@/lib/utils';
 
 type GraphNodeData = {
@@ -26,7 +24,11 @@ export function GraphNode({ data }: NodeProps<GraphNodeData>) {
           : 'hover:border-border',
       )}
     >
-      <Handle type="target" position={Position.Left} className="!border-0 !bg-primary/60" />
+      <Handle
+        type="target"
+        position={Position.Left}
+        className="!border-0 !bg-primary/60"
+      />
       <div className="space-y-2.5">
         <div className="space-y-1.5">
           <p className="text-[15px] font-semibold leading-snug tracking-tight text-foreground">
@@ -37,7 +39,11 @@ export function GraphNode({ data }: NodeProps<GraphNodeData>) {
           </p>
         </div>
       </div>
-      <Handle type="source" position={Position.Right} className="!border-0 !bg-primary/60" />
+      <Handle
+        type="source"
+        position={Position.Right}
+        className="!border-0 !bg-primary/60"
+      />
     </div>
   );
 }

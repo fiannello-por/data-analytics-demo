@@ -62,9 +62,7 @@ function StringFilterInput({
   onSetFilter,
 }: StringFilterInputProps) {
   const committedValue = formatCommaSeparatedValues(values);
-  const [inputValue, setInputValue] = useState(() =>
-    committedValue,
-  );
+  const [inputValue, setInputValue] = useState(() => committedValue);
 
   useEffect(() => {
     setInputValue(committedValue);
@@ -81,7 +79,9 @@ function StringFilterInput({
         className="h-8 px-3 text-xs rounded-md border border-border bg-surface text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-1 focus:ring-accent-brand w-[140px]"
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
-        onBlur={() => onSetFilter(keyName, parseCommaSeparatedValues(inputValue))}
+        onBlur={() =>
+          onSetFilter(keyName, parseCommaSeparatedValues(inputValue))
+        }
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
             e.currentTarget.blur();
@@ -90,7 +90,10 @@ function StringFilterInput({
       />
       <datalist id={datalistId}>
         {options.map((option) => (
-          <option key={`${option.sortOrder}-${option.value}`} value={option.value} />
+          <option
+            key={`${option.sortOrder}-${option.value}`}
+            value={option.value}
+          />
         ))}
       </datalist>
     </div>
@@ -103,7 +106,8 @@ export function FilterRail({
   onSetFilter,
   onClearAll,
 }: FilterRailProps) {
-  const [filterDictionaries, setFilterDictionaries] = useState<FilterDictionaryMap>({});
+  const [filterDictionaries, setFilterDictionaries] =
+    useState<FilterDictionaryMap>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -150,7 +154,9 @@ export function FilterRail({
 
       {activeCount > 0 && (
         <div className="flex flex-wrap gap-2 mb-3">
-          {FILTER_DEFINITIONS.filter((f) => (activeFilters[f.key] ?? []).length > 0).map((f) => (
+          {FILTER_DEFINITIONS.filter(
+            (f) => (activeFilters[f.key] ?? []).length > 0,
+          ).map((f) => (
             <FilterChip
               key={f.key}
               label={f.label}

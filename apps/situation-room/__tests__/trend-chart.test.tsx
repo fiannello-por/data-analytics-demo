@@ -7,9 +7,9 @@ import { TrendChart } from '@/components/trend-chart';
 import type { TileTrendPayload } from '@/lib/dashboard/contracts';
 
 vi.mock('@/lib/trend-chart-model', async () => {
-  const actual = await vi.importActual<typeof import('@/lib/trend-chart-model')>(
-    '@/lib/trend-chart-model',
-  );
+  const actual = await vi.importActual<
+    typeof import('@/lib/trend-chart-model')
+  >('@/lib/trend-chart-model');
 
   return {
     ...actual,
@@ -18,7 +18,8 @@ vi.mock('@/lib/trend-chart-model', async () => {
 });
 
 const lineProps: Array<Record<string, unknown>> = [];
-const axisProps: Array<{ type: 'x' | 'y'; props: Record<string, unknown> }> = [];
+const axisProps: Array<{ type: 'x' | 'y'; props: Record<string, unknown> }> =
+  [];
 const tooltipProps: Array<Record<string, unknown>> = [];
 const chartTooltipProps: Array<Record<string, unknown>> = [];
 const gridProps: Array<Record<string, unknown>> = [];
@@ -27,13 +28,22 @@ const chartContainerProps: Array<Record<string, unknown>> = [];
 vi.mock('recharts', () => ({
   CartesianGrid: (props: Record<string, unknown>) => {
     gridProps.push(props);
-    return React.createElement('div', { 'data-testid': 'cartesian-grid', ...props });
+    return React.createElement('div', {
+      'data-testid': 'cartesian-grid',
+      ...props,
+    });
   },
   LineChart: ({ children, ...props }: { children: React.ReactNode }) =>
-    React.createElement('div', { 'data-testid': 'line-chart', ...props }, children),
+    React.createElement(
+      'div',
+      { 'data-testid': 'line-chart', ...props },
+      children,
+    ),
   Line: (props: Record<string, unknown>) => {
     lineProps.push(props);
-    return React.createElement('div', { 'data-testid': `line-${String(props.dataKey)}` });
+    return React.createElement('div', {
+      'data-testid': `line-${String(props.dataKey)}`,
+    });
   },
   XAxis: (props: Record<string, unknown>) => {
     axisProps.push({ type: 'x', props });
@@ -56,7 +66,11 @@ vi.mock('@/components/ui/chart', () => ({
     id?: string;
   }) => {
     chartContainerProps.push({ className, id });
-    return React.createElement('div', { 'data-testid': 'chart-container', className, id }, children);
+    return React.createElement(
+      'div',
+      { 'data-testid': 'chart-container', className, id },
+      children,
+    );
   },
   ChartTooltip: (props: Record<string, unknown>) => {
     chartTooltipProps.push(props);
@@ -68,7 +82,9 @@ vi.mock('@/components/ui/chart', () => ({
   },
   ChartTooltipContent: (props: Record<string, unknown>) => {
     tooltipProps.push(props);
-    return React.createElement('div', { 'data-testid': 'chart-tooltip-content' });
+    return React.createElement('div', {
+      'data-testid': 'chart-tooltip-content',
+    });
   },
 }));
 
@@ -124,7 +140,10 @@ describe('TrendChart', () => {
 
     const currentLine = lineProps.find((line) => line.dataKey === 'current');
     const previousLine = lineProps.find((line) => line.dataKey === 'previous');
-    expect(lineProps.map((line) => line.dataKey)).toEqual(['previous', 'current']);
+    expect(lineProps.map((line) => line.dataKey)).toEqual([
+      'previous',
+      'current',
+    ]);
     expect(currentLine?.type).toBe('monotone');
     expect(previousLine?.type).toBe('monotone');
     expect(currentLine?.strokeWidth).toBe(3);
@@ -137,7 +156,9 @@ describe('TrendChart', () => {
     const xAxis = axisProps.find((axis) => axis.type === 'x');
     const yAxis = axisProps.find((axis) => axis.type === 'y');
     expect(typeof xAxis?.props.tickFormatter).toBe('function');
-    expect((xAxis?.props.tickFormatter as (value: string) => string)('Jan 05')).toBe('Jan 5');
+    expect(
+      (xAxis?.props.tickFormatter as (value: string) => string)('Jan 05'),
+    ).toBe('Jan 5');
     expect(xAxis?.props.tickLine).toEqual(
       expect.objectContaining({ stroke: 'var(--border)', strokeWidth: 1 }),
     );
@@ -146,7 +167,9 @@ describe('TrendChart', () => {
       expect.objectContaining({ stroke: 'var(--border)', strokeWidth: 1 }),
     );
     expect(typeof yAxis?.props.tickFormatter).toBe('function');
-    expect((yAxis?.props.tickFormatter as (value: number) => string)(12432)).toBe('$12.4K');
+    expect(
+      (yAxis?.props.tickFormatter as (value: number) => string)(12432),
+    ).toBe('$12.4K');
     expect(yAxis?.props.width).toBe(52);
     expect(yAxis?.props.tickLine).toEqual(
       expect.objectContaining({ stroke: 'var(--border)', strokeWidth: 1 }),
@@ -163,14 +186,22 @@ describe('TrendChart', () => {
         strokeWidth: 1,
       }),
     );
-    const tooltip = tooltipProps.at(-1) ?? (chartTooltipProps.at(-1)?.content as { props?: Record<string, unknown> } | undefined)?.props;
+    const tooltip =
+      tooltipProps.at(-1) ??
+      (
+        chartTooltipProps.at(-1)?.content as
+          | { props?: Record<string, unknown> }
+          | undefined
+      )?.props;
     expect(tooltip?.formatter).toBeUndefined();
     expect(typeof tooltip?.valueFormatter).toBe('function');
     expect(
       (tooltip?.valueFormatter as (value: number) => React.ReactNode)(12432),
     ).toBe('$12,432');
     expect(
-      container.querySelector('[data-testid="chart-container"]')?.getAttribute('class'),
+      container
+        .querySelector('[data-testid="chart-container"]')
+        ?.getAttribute('class'),
     ).toContain('flex-1');
     expect(chartContainerProps.at(-1)?.id).toBe(
       'trend-chart-new-logo-new-logo-bookings-amount',

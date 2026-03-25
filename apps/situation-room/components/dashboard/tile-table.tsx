@@ -51,7 +51,9 @@ export function TileTable({
           {snapshot.rows.map((row) => (
             <TableRow
               key={row.tileId}
-              data-state={row.tileId === selectedTileId ? 'selected' : undefined}
+              data-state={
+                row.tileId === selectedTileId ? 'selected' : undefined
+              }
               className={
                 onRowSelect
                   ? 'group cursor-pointer transition-colors hover:bg-muted/50'
@@ -59,7 +61,9 @@ export function TileTable({
               }
               role={onRowSelect ? 'button' : undefined}
               tabIndex={onRowSelect ? 0 : undefined}
-              aria-label={onRowSelect ? `Select trend for ${row.label}` : undefined}
+              aria-label={
+                onRowSelect ? `Select trend for ${row.label}` : undefined
+              }
               onClick={onRowSelect ? () => onRowSelect(row.tileId) : undefined}
               onKeyDown={
                 onRowSelect
@@ -84,7 +88,11 @@ export function TileTable({
               </TableCell>
               <TableCell>{row.currentValue}</TableCell>
               <TableCell>{row.previousValue}</TableCell>
-              <TableCell className={cn(changeCellStyles[parseChange(row.pctChange).direction])}>
+              <TableCell
+                className={cn(
+                  changeCellStyles[parseChange(row.pctChange).direction],
+                )}
+              >
                 {row.pctChange}
               </TableCell>
               <TableCell className="w-8 pr-3 text-right">

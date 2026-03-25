@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { buildDivisionFilterOptionsQuery, buildProbeSummaryQuery } from '@/lib/bigquery/probe';
+import {
+  buildDivisionFilterOptionsQuery,
+  buildProbeSummaryQuery,
+} from '@/lib/bigquery/probe';
 import {
   getProbePing,
   getProbeDivisionFilterOptions,
@@ -150,7 +153,9 @@ describe('architecture probe loaders', () => {
 
     expect(queryRows).toHaveBeenCalledWith(
       expect.objectContaining({
-        sql: expect.stringContaining('`demo-project.custom_dataset.scorecard_daily`'),
+        sql: expect.stringContaining(
+          '`demo-project.custom_dataset.scorecard_daily`',
+        ),
       }),
       { cacheMode: 'off' },
     );
@@ -253,9 +258,7 @@ describe('architecture probe loaders', () => {
     );
     expect(result.payload).toMatchObject({
       source: 'bigquery',
-      tileTimings: [
-        { tileId: 'new_logo_bookings_amount', durationMs: 12.34 },
-      ],
+      tileTimings: [{ tileId: 'new_logo_bookings_amount', durationMs: 12.34 }],
     });
   });
 

@@ -1,15 +1,19 @@
 import { describe, expect, it } from 'vitest';
 
-import { createSuiteBudgetTracker, suiteBudgetPolicies } from '@/lib/suite/budgets';
+import {
+  createSuiteBudgetTracker,
+  suiteBudgetPolicies,
+} from '@/lib/suite/budgets';
 import { dashboardModules } from '@/lib/suite/modules';
 
 describe('suite dashboard budget policies', () => {
   it('declares a budget policy for every dashboard module', () => {
-    expect(dashboardModules.map((module) => module.budgetPolicy.dashboardId)).toEqual([
-      'sales-performance',
-      'pipeline-health',
-    ]);
-    expect(suiteBudgetPolicies['sales-performance'].maxQueryCount).toBeGreaterThan(0);
+    expect(
+      dashboardModules.map((module) => module.budgetPolicy.dashboardId),
+    ).toEqual(['sales-performance', 'pipeline-health']);
+    expect(
+      suiteBudgetPolicies['sales-performance'].maxQueryCount,
+    ).toBeGreaterThan(0);
   });
 
   it('produces soft isolation states from shared runtime telemetry', () => {

@@ -1,11 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { FILTER_DEFINITIONS } from '@/lib/filters';
-import {
-  loadFilterDictionaries,
-} from '@/components/filter-rail';
-import {
-  parseCommaSeparatedValues,
-} from '@/hooks/use-filters';
+import { loadFilterDictionaries } from '@/components/filter-rail';
+import { parseCommaSeparatedValues } from '@/hooks/use-filters';
 
 describe('loadFilterDictionaries', () => {
   it('preloads string filter dictionaries once in filter definition order', async () => {

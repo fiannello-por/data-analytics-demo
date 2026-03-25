@@ -115,9 +115,7 @@ describe('probe routes', { timeout: 10000 }, () => {
         key: 'Division',
         refreshedAt: '2026-03-21T00:00:00.000Z',
         optionCount: 1,
-        options: [
-          { value: 'Enterprise', label: 'Enterprise', sortOrder: 1 },
-        ],
+        options: [{ value: 'Enterprise', label: 'Enterprise', sortOrder: 1 }],
       },
       meta: {
         source: 'bigquery',
@@ -127,24 +125,26 @@ describe('probe routes', { timeout: 10000 }, () => {
       },
     });
 
-    const { GET } = await import(
-      '../app/api/probe/filter-options/[key]/route'
-    );
+    const { GET } = await import('../app/api/probe/filter-options/[key]/route');
     const response = await GET(
-      new Request('http://localhost/api/probe/filter-options/Division?cache=off'),
+      new Request(
+        'http://localhost/api/probe/filter-options/Division?cache=off',
+      ),
       { params: Promise.resolve({ key: 'Division' }) },
     );
 
-    expect(getProbeDivisionFilterOptionsMock).toHaveBeenCalledWith('Division', undefined, {
-      cacheMode: 'off',
-    });
+    expect(getProbeDivisionFilterOptionsMock).toHaveBeenCalledWith(
+      'Division',
+      undefined,
+      {
+        cacheMode: 'off',
+      },
+    );
     expect(await response.json()).toEqual({
       key: 'Division',
       refreshedAt: '2026-03-21T00:00:00.000Z',
       optionCount: 1,
-      options: [
-        { value: 'Enterprise', label: 'Enterprise', sortOrder: 1 },
-      ],
+      options: [{ value: 'Enterprise', label: 'Enterprise', sortOrder: 1 }],
     });
     expect(response.headers.get('x-situation-room-source')).toBe('bigquery');
     expect(response.headers.get('x-situation-room-query-count')).toBe('1');

@@ -13,9 +13,9 @@ export type ProbeResponseMeta = {
   cacheMode: ProbeCacheMode;
 };
 
-export function getProbeExecutionOptionsFromRequest(
-  request: Request,
-): { cacheMode: ProbeCacheMode } {
+export function getProbeExecutionOptionsFromRequest(request: Request): {
+  cacheMode: ProbeCacheMode;
+} {
   const url = new URL(request.url);
 
   return {
@@ -33,10 +33,7 @@ export function applyProbeHeaders(
   startedAt: number,
 ) {
   response.headers.set('x-situation-room-source', meta.source);
-  response.headers.set(
-    'x-situation-room-query-count',
-    String(meta.queryCount),
-  );
+  response.headers.set('x-situation-room-query-count', String(meta.queryCount));
   response.headers.set('x-situation-room-cache-mode', meta.cacheMode);
 
   if (meta.bytesProcessed != null) {

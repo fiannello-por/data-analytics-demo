@@ -24,7 +24,13 @@ import type {
 } from '@/lib/dashboard/contracts';
 import { TileBackendSheet } from '@/components/dashboard/tile-backend-sheet';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
@@ -119,9 +125,14 @@ function getColumns(): Array<ColumnDef<ClosedWonOpportunityRow>> {
   return [
     {
       accessorKey: 'accountName',
-      header: ({ column }) => <SortableHeader column={column} title="Account" />,
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Account" />
+      ),
       cell: ({ row }) => (
-        <OpportunityLink href={row.original.accountLink} label={row.original.accountName} />
+        <OpportunityLink
+          href={row.original.accountLink}
+          label={row.original.accountName}
+        />
       ),
       meta: {
         headClassName: 'min-w-40',
@@ -130,9 +141,14 @@ function getColumns(): Array<ColumnDef<ClosedWonOpportunityRow>> {
     },
     {
       accessorKey: 'opportunityName',
-      header: ({ column }) => <SortableHeader column={column} title="Opportunity" />,
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Opportunity" />
+      ),
       cell: ({ row }) => (
-        <OpportunityLink href={row.original.opportunityLink} label={row.original.opportunityName} />
+        <OpportunityLink
+          href={row.original.opportunityLink}
+          label={row.original.opportunityName}
+        />
       ),
       meta: {
         headClassName: 'min-w-44',
@@ -141,76 +157,123 @@ function getColumns(): Array<ColumnDef<ClosedWonOpportunityRow>> {
     },
     {
       accessorKey: 'closeDate',
-      header: ({ column }) => <SortableHeader column={column} title="Close Date" />,
-      meta: { headClassName: 'min-w-28', cellClassName: 'min-w-28' } satisfies ColumnMeta,
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Close Date" />
+      ),
+      meta: {
+        headClassName: 'min-w-28',
+        cellClassName: 'min-w-28',
+      } satisfies ColumnMeta,
     },
     {
       accessorKey: 'createdDate',
-      header: ({ column }) => <SortableHeader column={column} title="Created Date" />,
-      meta: { headClassName: 'min-w-28', cellClassName: 'min-w-28' } satisfies ColumnMeta,
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Created Date" />
+      ),
+      meta: {
+        headClassName: 'min-w-28',
+        cellClassName: 'min-w-28',
+      } satisfies ColumnMeta,
     },
     {
       accessorKey: 'division',
       header: 'Division',
       enableSorting: false,
-      meta: { headClassName: 'min-w-24', cellClassName: 'min-w-24' } satisfies ColumnMeta,
+      meta: {
+        headClassName: 'min-w-24',
+        cellClassName: 'min-w-24',
+      } satisfies ColumnMeta,
     },
     {
       accessorKey: 'type',
       header: 'Type',
       enableSorting: false,
-      meta: { headClassName: 'min-w-20', cellClassName: 'min-w-20' } satisfies ColumnMeta,
+      meta: {
+        headClassName: 'min-w-20',
+        cellClassName: 'min-w-20',
+      } satisfies ColumnMeta,
     },
     {
       accessorKey: 'productFamily',
       header: 'Product',
       enableSorting: false,
-      meta: { headClassName: 'min-w-28', cellClassName: 'min-w-28' } satisfies ColumnMeta,
+      meta: {
+        headClassName: 'min-w-28',
+        cellClassName: 'min-w-28',
+      } satisfies ColumnMeta,
     },
     {
       accessorKey: 'bookingPlanOppType2025',
       header: 'Booking Plan Opp Type 2025',
       enableSorting: false,
-      meta: { headClassName: 'min-w-44', cellClassName: 'min-w-44' } satisfies ColumnMeta,
+      meta: {
+        headClassName: 'min-w-44',
+        cellClassName: 'min-w-44',
+      } satisfies ColumnMeta,
     },
     {
       accessorKey: 'owner',
       header: ({ column }) => <SortableHeader column={column} title="Owner" />,
-      meta: { headClassName: 'min-w-28', cellClassName: 'min-w-28' } satisfies ColumnMeta,
+      meta: {
+        headClassName: 'min-w-28',
+        cellClassName: 'min-w-28',
+      } satisfies ColumnMeta,
     },
     {
       accessorKey: 'sdr',
       header: 'SDR',
       enableSorting: false,
-      meta: { headClassName: 'min-w-20', cellClassName: 'min-w-20' } satisfies ColumnMeta,
+      meta: {
+        headClassName: 'min-w-20',
+        cellClassName: 'min-w-20',
+      } satisfies ColumnMeta,
     },
     {
       accessorKey: 'oppRecordType',
       header: 'POR / R360',
       enableSorting: false,
-      meta: { headClassName: 'min-w-24', cellClassName: 'min-w-24' } satisfies ColumnMeta,
+      meta: {
+        headClassName: 'min-w-24',
+        cellClassName: 'min-w-24',
+      } satisfies ColumnMeta,
     },
     {
       accessorKey: 'age',
       header: 'Age',
       enableSorting: false,
-      meta: { headClassName: 'min-w-20', cellClassName: 'min-w-20' } satisfies ColumnMeta,
+      meta: {
+        headClassName: 'min-w-20',
+        cellClassName: 'min-w-20',
+      } satisfies ColumnMeta,
     },
     {
       accessorKey: 'se',
       header: 'SE',
       enableSorting: false,
-      meta: { headClassName: 'min-w-20', cellClassName: 'min-w-20' } satisfies ColumnMeta,
+      meta: {
+        headClassName: 'min-w-20',
+        cellClassName: 'min-w-20',
+      } satisfies ColumnMeta,
     },
     {
       accessorKey: 'quarter',
-      header: ({ column }) => <SortableHeader column={column} title="Quarter" />,
-      meta: { headClassName: 'min-w-24', cellClassName: 'min-w-24' } satisfies ColumnMeta,
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Quarter" />
+      ),
+      meta: {
+        headClassName: 'min-w-24',
+        cellClassName: 'min-w-24',
+      } satisfies ColumnMeta,
     },
     {
       accessorKey: 'contractStartDate',
-      header: ({ column }) => <SortableHeader column={column} title="Contract Start Date" />,
-      meta: { headClassName: 'min-w-36', cellClassName: 'min-w-36' } satisfies ColumnMeta,
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Contract Start Date" />
+      ),
+      meta: {
+        headClassName: 'min-w-36',
+        cellClassName: 'min-w-36',
+      } satisfies ColumnMeta,
     },
     {
       accessorKey: 'users',
@@ -218,7 +281,8 @@ function getColumns(): Array<ColumnDef<ClosedWonOpportunityRow>> {
         <SortableHeader column={column} title="Users" className="justify-end" />
       ),
       sortingFn: (rowA, rowB, columnId) =>
-        parseInteger(String(rowA.getValue(columnId))) - parseInteger(String(rowB.getValue(columnId))),
+        parseInteger(String(rowA.getValue(columnId))) -
+        parseInteger(String(rowB.getValue(columnId))),
       meta: {
         headClassName: 'min-w-20 text-right',
         cellClassName: 'min-w-20 text-right tabular-nums text-foreground',
@@ -234,7 +298,8 @@ function getColumns(): Array<ColumnDef<ClosedWonOpportunityRow>> {
         parseCurrency(String(rowB.getValue(columnId))),
       meta: {
         headClassName: 'min-w-24 text-right',
-        cellClassName: 'min-w-24 text-right font-medium tabular-nums text-foreground',
+        cellClassName:
+          'min-w-24 text-right font-medium tabular-nums text-foreground',
       } satisfies ColumnMeta,
     },
   ];
@@ -246,7 +311,9 @@ export function ClosedWonOpportunitiesTable({
   payload: ClosedWonOpportunitiesPayload;
 }) {
   const columns = React.useMemo(() => getColumns(), []);
-  const [sorting, setSorting] = React.useState<SortingState>([{ id: 'acv', desc: true }]);
+  const [sorting, setSorting] = React.useState<SortingState>([
+    { id: 'acv', desc: true },
+  ]);
   const [pagination, setPagination] = React.useState<PaginationState>({
     pageIndex: 0,
     pageSize: DEFAULT_PAGE_SIZE,
@@ -266,7 +333,8 @@ export function ClosedWonOpportunitiesTable({
   const totalRows = payload.rows.length;
   const { pageIndex, pageSize } = table.getState().pagination;
   const startRow = totalRows === 0 ? 0 : pageIndex * pageSize + 1;
-  const endRow = totalRows === 0 ? 0 : Math.min((pageIndex + 1) * pageSize, totalRows);
+  const endRow =
+    totalRows === 0 ? 0 : Math.min((pageIndex + 1) * pageSize, totalRows);
 
   return (
     <Card className="group border-border/70 bg-card shadow-none">
@@ -275,8 +343,8 @@ export function ClosedWonOpportunitiesTable({
           <div className="space-y-2">
             <CardTitle>Closed Won Opportunities</CardTitle>
             <CardDescription>
-              Current-period closed won opportunities for {payload.category}. Sort by key columns
-              and paginate through the current result set.
+              Current-period closed won opportunities for {payload.category}.
+              Sort by key columns and paginate through the current result set.
             </CardDescription>
           </div>
           <TileBackendSheet
@@ -289,7 +357,8 @@ export function ClosedWonOpportunitiesTable({
       <CardContent className="space-y-4">
         {totalRows === 0 ? (
           <div className="rounded-md border border-dashed border-border/70 bg-background/50 px-4 py-8 text-sm text-muted-foreground">
-            No closed won opportunities for the selected filters and current period.
+            No closed won opportunities for the selected filters and current
+            period.
           </div>
         ) : (
           <>
@@ -297,9 +366,14 @@ export function ClosedWonOpportunitiesTable({
               <Table>
                 <TableHeader className="[&_tr]:border-border/80">
                   {table.getHeaderGroups().map((headerGroup) => (
-                    <TableRow key={headerGroup.id} className="bg-muted/30 hover:bg-muted/30">
+                    <TableRow
+                      key={headerGroup.id}
+                      className="bg-muted/30 hover:bg-muted/30"
+                    >
                       {headerGroup.headers.map((header) => {
-                        const meta = header.column.columnDef.meta as ColumnMeta | undefined;
+                        const meta = header.column.columnDef.meta as
+                          | ColumnMeta
+                          | undefined;
 
                         return (
                           <TableHead
@@ -311,7 +385,10 @@ export function ClosedWonOpportunitiesTable({
                           >
                             {header.isPlaceholder
                               ? null
-                              : flexRender(header.column.columnDef.header, header.getContext())}
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext(),
+                                )}
                           </TableHead>
                         );
                       })}
@@ -320,16 +397,27 @@ export function ClosedWonOpportunitiesTable({
                 </TableHeader>
                 <TableBody className="text-muted-foreground">
                   {table.getRowModel().rows.map((row) => (
-                    <TableRow key={row.id} className="border-border/60 hover:bg-muted/20">
+                    <TableRow
+                      key={row.id}
+                      className="border-border/60 hover:bg-muted/20"
+                    >
                       {row.getVisibleCells().map((cell) => {
-                        const meta = cell.column.columnDef.meta as ColumnMeta | undefined;
+                        const meta = cell.column.columnDef.meta as
+                          | ColumnMeta
+                          | undefined;
 
                         return (
                           <TableCell
                             key={cell.id}
-                            className={cn('py-3 align-top', meta?.cellClassName)}
+                            className={cn(
+                              'py-3 align-top',
+                              meta?.cellClassName,
+                            )}
                           >
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )}
                           </TableCell>
                         );
                       })}
@@ -382,7 +470,9 @@ export function ClosedWonOpportunitiesTableSkeleton() {
     <Card className="border-border/70 bg-card shadow-none">
       <CardHeader>
         <CardTitle>Closed Won Opportunities</CardTitle>
-        <CardDescription>Loading current-period closed won opportunities.</CardDescription>
+        <CardDescription>
+          Loading current-period closed won opportunities.
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="overflow-hidden rounded-md border border-border/70 bg-background/60">

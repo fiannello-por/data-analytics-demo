@@ -1,8 +1,5 @@
 import { getValidatedDateRangeMode } from '@/lib/bigquery/sql';
-import {
-  FILTER_KEYS,
-  type ScorecardFilters,
-} from '@/lib/contracts';
+import { FILTER_KEYS, type ScorecardFilters } from '@/lib/contracts';
 import { parseFilterParams } from '@/lib/filters';
 
 export type ReportRequestSearchParams = Record<
@@ -32,7 +29,9 @@ export function collectReportRequestSearchParams(
       continue;
     }
 
-    collected[key] = Array.isArray(current) ? [...current, value] : [current, value];
+    collected[key] = Array.isArray(current)
+      ? [...current, value]
+      : [current, value];
   }
 
   return collected;

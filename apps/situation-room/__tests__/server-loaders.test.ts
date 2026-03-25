@@ -51,9 +51,8 @@ describe('server loaders', () => {
 
     getScorecardReportMock.mockResolvedValueOnce(result);
 
-    const { getScorecardReport } = await import(
-      '@/lib/server/get-scorecard-report'
-    );
+    const { getScorecardReport } =
+      await import('@/lib/server/get-scorecard-report');
 
     const response = await getScorecardReport({
       Division: ['Enterprise'],
@@ -97,9 +96,8 @@ describe('server loaders', () => {
 
     getFilterDictionaryMock.mockResolvedValueOnce(result);
 
-    const { getFilterDictionary } = await import(
-      '@/lib/server/get-filter-dictionary'
-    );
+    const { getFilterDictionary } =
+      await import('@/lib/server/get-filter-dictionary');
 
     const response = await getFilterDictionary('Division');
 
@@ -168,9 +166,7 @@ describe('server loaders', () => {
     const { GET } = await import('../app/api/report/route');
 
     await expect(
-      GET(
-        new NextRequest('http://localhost/api/report?Division=Enterprise'),
-      ),
+      GET(new NextRequest('http://localhost/api/report?Division=Enterprise')),
     ).rejects.toThrow('loader failed');
   });
 
@@ -187,9 +183,7 @@ describe('server loaders', () => {
       },
     };
 
-    const dictionaryLoader = await import(
-      '@/lib/server/get-filter-dictionary'
-    );
+    const dictionaryLoader = await import('@/lib/server/get-filter-dictionary');
     vi.spyOn(dictionaryLoader, 'getFilterDictionary').mockResolvedValueOnce(
       adapterResult,
     );
@@ -199,8 +193,8 @@ describe('server loaders', () => {
     const response = await GET(
       new NextRequest('http://localhost/api/filter-dictionaries/Division'),
       {
-      params: Promise.resolve({ key: 'Division' }),
-    },
+        params: Promise.resolve({ key: 'Division' }),
+      },
     );
 
     expect(dictionaryLoader.getFilterDictionary).toHaveBeenCalledWith(
@@ -266,14 +260,13 @@ describe('server loaders', () => {
   it('rejects unsupported report date ranges with a 400', async () => {
     const { GET } = await import('../app/api/report/route');
     const response = await GET(
-      new NextRequest(
-        'http://localhost/api/report?DateRange=last_30_days',
-      ),
+      new NextRequest('http://localhost/api/report?DateRange=last_30_days'),
     );
 
     expect(response.status).toBe(400);
     expect(await response.json()).toEqual({
-      error: 'Unsupported DateRange filter: last_30_days. Only current_year is supported.',
+      error:
+        'Unsupported DateRange filter: last_30_days. Only current_year is supported.',
     });
   });
 

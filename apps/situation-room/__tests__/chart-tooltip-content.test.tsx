@@ -43,29 +43,28 @@ describe('ChartTooltipContent', () => {
 
     await act(async () => {
       root.render(
-        React.createElement(
-          ChartContainer,
-          {
-            config,
-            children: React.createElement(ChartTooltipContent, {
-              active: true,
-              indicator: 'line',
-              payload: [
-                {
-                  dataKey: 'previous',
-                  name: 'previous',
-                  value: 9,
-                  color: 'var(--chart-2)',
-                  payload: { fill: 'var(--chart-2)' },
-                },
-              ],
-            }),
-          },
-        ),
+        React.createElement(ChartContainer, {
+          config,
+          children: React.createElement(ChartTooltipContent, {
+            active: true,
+            indicator: 'line',
+            payload: [
+              {
+                dataKey: 'previous',
+                name: 'previous',
+                value: 9,
+                color: 'var(--chart-2)',
+                payload: { fill: 'var(--chart-2)' },
+              },
+            ],
+          }),
+        }),
       );
     });
 
-    const layoutRow = container.querySelector('.grid.grid-cols-\\[minmax\\(0\\2c 1fr\\)_auto\\]');
+    const layoutRow = container.querySelector(
+      '.grid.grid-cols-\\[minmax\\(0\\2c 1fr\\)_auto\\]',
+    );
     expect(layoutRow).not.toBeNull();
     expect(layoutRow?.getAttribute('class')).toContain('gap-x-4');
   });

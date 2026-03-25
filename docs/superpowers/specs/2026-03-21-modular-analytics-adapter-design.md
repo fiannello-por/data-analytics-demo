@@ -37,7 +37,7 @@ layer** beneath it: a generic, cross-app semantic layer client.
 
 ### Two-layer architecture
 
-```
+```text
 ┌──────────────────────────────────────────────────────┐
 │  App-level adapters (per app, report-specific)       │
 │  e.g. ScorecardDataAdapter                           │
@@ -75,7 +75,7 @@ from the roadmap works exactly as planned.
 
 Three components with one swappable boundary:
 
-```
+```text
 ┌─────────────┐     ┌───────────────────────┐     ┌──────────┐
 │  Next.js    │────▶│  analytics-adapter     │────▶│ BigQuery  │
 │  apps       │     │  (shared workspace pkg)│     │ (fixed)   │
@@ -143,14 +143,23 @@ interface Filter {
 }
 
 type FilterOperator =
-  | 'equals' | 'notEquals'
-  | 'contains' | 'notContains'
-  | 'greaterThan' | 'lessThan'
+  | 'equals'
+  | 'notEquals'
+  | 'contains'
+  | 'notContains'
+  | 'greaterThan'
+  | 'lessThan'
   | 'between'
-  | 'currentYear' | 'currentMonth' | 'currentWeek'
-  | 'pastYears' | 'pastMonths' | 'pastDays'
-  | 'isTrue' | 'isFalse'
-  | 'isNull' | 'isNotNull';
+  | 'currentYear'
+  | 'currentMonth'
+  | 'currentWeek'
+  | 'pastYears'
+  | 'pastMonths'
+  | 'pastDays'
+  | 'isTrue'
+  | 'isFalse'
+  | 'isNull'
+  | 'isNotNull';
 
 interface Sort {
   field: string;
@@ -169,10 +178,13 @@ interface QueryResult {
   };
 }
 
-type Row = Record<string, {
-  raw: unknown;
-  formatted: string;
-}>;
+type Row = Record<
+  string,
+  {
+    raw: unknown;
+    formatted: string;
+  }
+>;
 ```
 
 ### Design decisions
@@ -270,7 +282,7 @@ extension.
 
 ## 6. Package Structure
 
-```
+```text
 packages/
   analytics-adapter/
     src/
@@ -357,7 +369,12 @@ The adapter throws typed errors for uniform handling:
 class SemanticLayerError extends Error {
   constructor(
     message: string,
-    public code: 'CONNECTION' | 'QUERY' | 'TIMEOUT' | 'AUTH' | 'MODEL_NOT_FOUND',
+    public code:
+      | 'CONNECTION'
+      | 'QUERY'
+      | 'TIMEOUT'
+      | 'AUTH'
+      | 'MODEL_NOT_FOUND',
   ) {
     super(message);
   }

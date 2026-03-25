@@ -1,4 +1,7 @@
-import type { DashboardBudgetObservation, DashboardBudgetReport } from '@por/analytics-adapter';
+import type {
+  DashboardBudgetObservation,
+  DashboardBudgetReport,
+} from '@por/analytics-adapter';
 import { createSuiteBudgetTracker } from '@/lib/suite/budgets';
 
 const seededObservations: Record<string, DashboardBudgetObservation[]> = {

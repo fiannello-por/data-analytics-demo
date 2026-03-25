@@ -26,8 +26,8 @@ export default async function Page() {
             </div>
           </div>
           <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground xl:justify-self-end">
-            Interactive system map for understanding how UI refreshes turn into BigQuery
-            queries, transformations, and rendered results.
+            Interactive system map for understanding how UI refreshes turn into
+            BigQuery queries, transformations, and rendered results.
           </p>
         </header>
 

@@ -57,16 +57,12 @@ export const sampleArchitectureReport: ArchitectureProbeReport =
       {
         nodeId: 'bigquery-warehouse',
         durationMs: 194,
-        breakdown: [
-          { label: 'BigQuery', durationMs: 194 },
-        ],
+        breakdown: [{ label: 'BigQuery', durationMs: 194 }],
       },
       {
         nodeId: 'response-mapper',
         durationMs: 37,
-        breakdown: [
-          { label: 'transform', durationMs: 37 },
-        ],
+        breakdown: [{ label: 'transform', durationMs: 37 }],
       },
     ],
   });

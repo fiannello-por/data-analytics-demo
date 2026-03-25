@@ -44,7 +44,8 @@ function filterToLightdashRule(
   filter: SemanticFilter,
   index: number,
 ): LightdashFilterRule {
-  const operator = filter.operator === 'between' ? 'inBetween' : filter.operator;
+  const operator =
+    filter.operator === 'between' ? 'inBetween' : filter.operator;
 
   return {
     id: `f${index}`,
@@ -66,10 +67,11 @@ function normalizeCompiledQueryPayload(data: unknown): string {
     typeof data === 'object' &&
     data !== null &&
     'results' in data &&
-    typeof (data as { results?: { query?: unknown; sql?: unknown } }).results ===
-      'object'
+    typeof (data as { results?: { query?: unknown; sql?: unknown } })
+      .results === 'object'
   ) {
-    const results = (data as { results: { query?: unknown; sql?: unknown } }).results;
+    const results = (data as { results: { query?: unknown; sql?: unknown } })
+      .results;
     if (typeof results.query === 'string') {
       return results.query;
     }
@@ -78,7 +80,9 @@ function normalizeCompiledQueryPayload(data: unknown): string {
     }
   }
 
-  throw new Error('Lightdash compileQuery response did not include compiled SQL.');
+  throw new Error(
+    'Lightdash compileQuery response did not include compiled SQL.',
+  );
 }
 
 function normalizeCatalogPayload(
@@ -121,7 +125,7 @@ function normalizeCatalogPayload(
         fieldType,
         description:
           typeof (field as { description?: unknown }).description === 'string'
-            ? ((field as { description: string }).description)
+            ? (field as { description: string }).description
             : undefined,
       } satisfies SemanticCatalogEntry;
     })
@@ -149,8 +153,14 @@ export function createLightdashProvider(
         sortToLightdashSort(request.model, sort),
       );
       const aliases = Object.fromEntries([
-        ...measures.map((fieldId, index) => [fieldId, request.measures?.[index] ?? fieldId]),
-        ...dimensions.map((fieldId, index) => [fieldId, request.dimensions?.[index] ?? fieldId]),
+        ...measures.map((fieldId, index) => [
+          fieldId,
+          request.measures?.[index] ?? fieldId,
+        ]),
+        ...dimensions.map((fieldId, index) => [
+          fieldId,
+          request.dimensions?.[index] ?? fieldId,
+        ]),
       ]);
 
       const filters = {
@@ -194,7 +204,9 @@ export function createLightdashProvider(
       };
     },
 
-    async getCatalogEntries(request: CatalogRequest): Promise<SemanticCatalogEntry[]> {
+    async getCatalogEntries(
+      request: CatalogRequest,
+    ): Promise<SemanticCatalogEntry[]> {
       const response = await fetchImpl(
         `${baseUrl}/api/v1/projects/${config.projectUuid}/dataCatalog/${request.model}/metadata`,
         {

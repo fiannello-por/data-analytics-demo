@@ -44,7 +44,9 @@ export type DashboardUrlFactory = {
 };
 
 function normalizeFilterValues(values: string[]): string[] {
-  return [...new Set(values.map((value) => value.trim()).filter(Boolean))].sort();
+  return [
+    ...new Set(values.map((value) => value.trim()).filter(Boolean)),
+  ].sort();
 }
 
 export function normalizeDashboardFilters(
@@ -127,7 +129,10 @@ function parseFilters(searchParams: URLSearchParams): DashboardFilters {
 }
 
 export function serializeDashboardSnapshotSearchParams(
-  input: Pick<DashboardStateKeyInput, 'activeCategory' | 'dateRange' | 'filters'>,
+  input: Pick<
+    DashboardStateKeyInput,
+    'activeCategory' | 'dateRange' | 'filters'
+  >,
 ): URLSearchParams {
   const state = {
     activeCategory: input.activeCategory,
@@ -153,11 +158,11 @@ export function serializeDashboardStateSearchParams(
   input: DashboardStateKeyInput,
 ): URLSearchParams {
   const searchParams = serializeDashboardSnapshotSearchParams(input);
-  const selectedTileId = input.selectedTileId ?? (
-    isCategory(input.activeCategory)
+  const selectedTileId =
+    input.selectedTileId ??
+    (isCategory(input.activeCategory)
       ? getDefaultTileId(input.activeCategory)
-      : getDefaultTileId(CATEGORY_ORDER[0])
-  );
+      : getDefaultTileId(CATEGORY_ORDER[0]));
 
   if (selectedTileId) {
     searchParams.set('tileId', selectedTileId);
@@ -166,7 +171,9 @@ export function serializeDashboardStateSearchParams(
   return searchParams;
 }
 
-export function buildDashboardUrlFactory(basePath = '/api/dashboard'): DashboardUrlFactory {
+export function buildDashboardUrlFactory(
+  basePath = '/api/dashboard',
+): DashboardUrlFactory {
   return {
     buildCategoryUrl(
       input: DashboardStateKeyInput & { activeCategory: Category },
@@ -268,19 +275,19 @@ export function parseDashboardSearchParams(
   searchParams: URLSearchParams,
 ): DashboardState {
   const activeCategoryParam = searchParams.get('category');
-  const activeCategory = activeCategoryParam && isDashboardTab(activeCategoryParam)
-    ? activeCategoryParam
-    : OVERVIEW_TAB;
+  const activeCategory =
+    activeCategoryParam && isDashboardTab(activeCategoryParam)
+      ? activeCategoryParam
+      : OVERVIEW_TAB;
   const dateRange = parseDateRange(searchParams);
   const requestedTileId = searchParams.get('tileId')?.trim();
-  const selectedTileId =
-    isCategory(activeCategory)
-      ? requestedTileId && findTileDefinition(activeCategory, requestedTileId)
-        ? requestedTileId
-        : getDefaultTileId(activeCategory)
-      : requestedTileId && findCategoryForTileId(requestedTileId)
-        ? requestedTileId
-        : getDefaultTileId(CATEGORY_ORDER[0]);
+  const selectedTileId = isCategory(activeCategory)
+    ? requestedTileId && findTileDefinition(activeCategory, requestedTileId)
+      ? requestedTileId
+      : getDefaultTileId(activeCategory)
+    : requestedTileId && findCategoryForTileId(requestedTileId)
+      ? requestedTileId
+      : getDefaultTileId(CATEGORY_ORDER[0]);
 
   return {
     activeCategory,
@@ -298,11 +305,11 @@ export function serializeDashboardStateKey(
   const dateRange = input.dateRange ?? getCurrentYearRange();
   return JSON.stringify({
     activeCategory: input.activeCategory,
-    selectedTileId: input.selectedTileId ?? (
-      isCategory(input.activeCategory)
+    selectedTileId:
+      input.selectedTileId ??
+      (isCategory(input.activeCategory)
         ? getDefaultTileId(input.activeCategory)
-        : getDefaultTileId(CATEGORY_ORDER[0])
-    ),
+        : getDefaultTileId(CATEGORY_ORDER[0])),
     dateRange,
     filters: normalizeDashboardFilters(input.filters ?? {}),
   });

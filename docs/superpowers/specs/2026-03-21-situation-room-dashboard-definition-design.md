@@ -4,6 +4,7 @@ Date: 2026-03-21
 Status: Draft
 Related issue: `#38`
 Related designs:
+
 - `2026-03-19-scorecard-situation-room-report-design.md`
 - `2026-03-20-situation-room-data-backend-roadmap-design.md`
 

@@ -6,7 +6,11 @@ import { getCategoryTiles, type Category } from '@/lib/dashboard/catalog';
 import { formatDateRange } from '@/lib/dashboard/date-range';
 import { serializeDashboardStateKey } from '@/lib/dashboard/query-inputs';
 import type { ProbeExecutionOptions } from '@/lib/probe-cache-mode';
-import type { CategorySnapshotPayload, DashboardState, TileTiming } from '@/lib/dashboard/contracts';
+import type {
+  CategorySnapshotPayload,
+  DashboardState,
+  TileTiming,
+} from '@/lib/dashboard/contracts';
 import {
   defaultDashboardQueryClient,
   formatMetricValue,
@@ -136,8 +140,12 @@ export async function getDashboardCategorySnapshot(
     return loadSnapshot();
   }
 
-  return unstable_cache(loadSnapshot, ['dashboard-category-snapshot', buildCacheKey(input)], {
-    revalidate: 60,
-    tags: ['dashboard-category-snapshot'],
-  })();
+  return unstable_cache(
+    loadSnapshot,
+    ['dashboard-category-snapshot', buildCacheKey(input)],
+    {
+      revalidate: 60,
+      tags: ['dashboard-category-snapshot'],
+    },
+  )();
 }

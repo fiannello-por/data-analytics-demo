@@ -15,19 +15,26 @@ describe('architecture selectors', () => {
   });
 
   it('returns direct dependencies and consumers for a focused node', () => {
-    const result = getFocusedNeighborhood(architectureManifest, 'data-api-layer');
+    const result = getFocusedNeighborhood(
+      architectureManifest,
+      'data-api-layer',
+    );
 
     expect(result.nodeIds).toContain('request-planner');
     expect(result.nodeIds).toContain('metric-query-layer');
   });
 
   it('filters edges down to the selected node set', () => {
-    const nodeIds = new Set(['request-planner', 'data-api-layer', 'metric-query-layer']);
+    const nodeIds = new Set([
+      'request-planner',
+      'data-api-layer',
+      'metric-query-layer',
+    ]);
 
     const edges = getVisibleEdgesForNodeSet(architectureManifest, nodeIds);
 
-    expect(edges.every((edge) => nodeIds.has(edge.from) && nodeIds.has(edge.to))).toBe(
-      true,
-    );
+    expect(
+      edges.every((edge) => nodeIds.has(edge.from) && nodeIds.has(edge.to)),
+    ).toBe(true);
   });
 });

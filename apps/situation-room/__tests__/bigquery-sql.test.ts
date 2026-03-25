@@ -29,10 +29,14 @@ describe('buildScorecardReportQuery', () => {
   it('scopes to current-year rows and selects only the latest report snapshot', () => {
     const query = buildScorecardReportQuery(normalizeFilters({}));
 
-    expect(query.sql).toContain('report_date >= DATE_TRUNC(CURRENT_DATE(), YEAR)');
+    expect(query.sql).toContain(
+      'report_date >= DATE_TRUNC(CURRENT_DATE(), YEAR)',
+    );
     expect(query.sql).toContain('with scoped_rows as');
     expect(query.sql).toContain('max(report_date) as latest_report_date');
-    expect(query.sql).toContain('where report_date = (select latest_report_date from latest_snapshot)');
+    expect(query.sql).toContain(
+      'where report_date = (select latest_report_date from latest_snapshot)',
+    );
     expect(query.sql).toContain('scorecard_report_rows');
     expect(query.params).toEqual({});
   });

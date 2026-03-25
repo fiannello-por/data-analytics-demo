@@ -318,13 +318,13 @@ metrics:
 
   expansion_sql_count:
     type: count_distinct
-    sql: 'CASE WHEN ${TABLE}.expansion_opp AND ${TABLE}.opp_record_type = ''POR'' THEN ${TABLE}.opportunity_id ELSE NULL END'
+    sql: "CASE WHEN ${TABLE}.expansion_opp AND ${TABLE}.opp_record_type = 'POR' THEN ${TABLE}.opportunity_id ELSE NULL END"
     label: 'Expansion SQL'
     description: 'Expansion SQL count using the POR-scoped definition.'
 
   migration_sql_count:
     type: count_distinct
-    sql: 'CASE WHEN ${TABLE}.migration_opp AND ${TABLE}.opp_record_type = ''POR'' THEN ${TABLE}.opportunity_id ELSE NULL END'
+    sql: "CASE WHEN ${TABLE}.migration_opp AND ${TABLE}.opp_record_type = 'POR' THEN ${TABLE}.opportunity_id ELSE NULL END"
     label: 'Migration SQL'
     description: 'Migration SQL count using the POR-scoped definition.'
 
@@ -336,19 +336,19 @@ metrics:
 
   sqo_count:
     type: count_distinct
-    sql: 'CASE WHEN ${TABLE}.accepted AND ${TABLE}.opp_record_type = ''POR'' THEN ${TABLE}.opportunity_id ELSE NULL END'
+    sql: "CASE WHEN ${TABLE}.accepted AND ${TABLE}.opp_record_type = 'POR' THEN ${TABLE}.opportunity_id ELSE NULL END"
     label: 'SQO'
     description: 'POR-scoped SQO count for New Logo style reporting.'
 
   expansion_sqo_count:
     type: count_distinct
-    sql: 'CASE WHEN ${TABLE}.expansion_opp AND ${TABLE}.expansion_qualified AND ${TABLE}.opp_record_type = ''POR'' AND ${TABLE}.acv >= 0 THEN ${TABLE}.opportunity_id ELSE NULL END'
+    sql: "CASE WHEN ${TABLE}.expansion_opp AND ${TABLE}.expansion_qualified AND ${TABLE}.opp_record_type = 'POR' AND ${TABLE}.acv >= 0 THEN ${TABLE}.opportunity_id ELSE NULL END"
     label: 'Expansion SQO'
     description: 'Expansion SQO count using the expansion-qualified workflow.'
 
   migration_sqo_count:
     type: count_distinct
-    sql: 'CASE WHEN ${TABLE}.migration_opp AND ${TABLE}.expansion_qualified AND ${TABLE}.opp_record_type = ''POR'' THEN ${TABLE}.opportunity_id ELSE NULL END'
+    sql: "CASE WHEN ${TABLE}.migration_opp AND ${TABLE}.expansion_qualified AND ${TABLE}.opp_record_type = 'POR' THEN ${TABLE}.opportunity_id ELSE NULL END"
     label: 'Migration SQO'
     description: 'Migration SQO count using the migration-qualified workflow.'
 
@@ -374,7 +374,7 @@ metrics:
 
   migration_sal_count:
     type: count_distinct
-    sql: 'CASE WHEN ${TABLE}.migration_opp AND ${TABLE}.opp_record_type = ''POR'' AND ${TABLE}.expansion_submitted THEN ${TABLE}.opportunity_id ELSE NULL END'
+    sql: "CASE WHEN ${TABLE}.migration_opp AND ${TABLE}.opp_record_type = 'POR' AND ${TABLE}.expansion_submitted THEN ${TABLE}.opportunity_id ELSE NULL END"
     label: 'SAL'
     description: 'Migration SAL count driven by submitted migration opportunities.'
 

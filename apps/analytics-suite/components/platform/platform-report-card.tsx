@@ -17,10 +17,7 @@ type PlatformReportCardProps = {
   report: DashboardBudgetReport;
 };
 
-export function PlatformReportCard({
-  title,
-  report,
-}: PlatformReportCardProps) {
+export function PlatformReportCard({ title, report }: PlatformReportCardProps) {
   const cacheHitRate = getCacheHitRate(report);
 
   return (
@@ -29,7 +26,7 @@ export function PlatformReportCard({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <CardDescription className="text-sm font-medium uppercase tracking-[0.22em]">
-            {title}
+              {title}
             </CardDescription>
             <CardTitle className="mt-2 text-2xl">
               {report.status === 'healthy'
@@ -39,7 +36,9 @@ export function PlatformReportCard({
                   : 'Degrade'}
             </CardTitle>
           </div>
-          <Badge variant={report.status === 'healthy' ? 'outline' : 'secondary'}>
+          <Badge
+            variant={report.status === 'healthy' ? 'outline' : 'secondary'}
+          >
             {report.status}
           </Badge>
         </div>

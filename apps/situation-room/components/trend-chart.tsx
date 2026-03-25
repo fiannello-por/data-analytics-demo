@@ -1,13 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import {
-  CartesianGrid,
-  Line,
-  LineChart,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts';
 import type { TileTrendPayload } from '@/lib/dashboard/contracts';
 import {
   ChartContainer,
@@ -33,14 +27,21 @@ function getNotablePointIndexes(
 ) {
   const numericPoints = data
     .map((point, index) => ({ index, value: point[key] }))
-    .filter((point): point is { index: number; value: number } => point.value != null && !Number.isNaN(point.value));
+    .filter(
+      (point): point is { index: number; value: number } =>
+        point.value != null && !Number.isNaN(point.value),
+    );
 
   if (numericPoints.length === 0) {
     return new Set<number>();
   }
 
-  const maxPoint = numericPoints.reduce((best, point) => (point.value > best.value ? point : best));
-  const minPoint = numericPoints.reduce((best, point) => (point.value < best.value ? point : best));
+  const maxPoint = numericPoints.reduce((best, point) =>
+    point.value > best.value ? point : best,
+  );
+  const minPoint = numericPoints.reduce((best, point) =>
+    point.value < best.value ? point : best,
+  );
   const lastPoint = numericPoints.at(-1) ?? numericPoints[0];
 
   return new Set([maxPoint.index, minPoint.index, lastPoint.index]);
@@ -161,14 +162,18 @@ export function TrendChart({ trend }: { trend: TileTrendPayload }) {
             axisLine={{ stroke: 'var(--border)', strokeWidth: 1 }}
             tickMargin={12}
             width={yAxisWidth}
-            tickFormatter={(value: number) => formatTrendAxisValue(value, formatType)}
+            tickFormatter={(value: number) =>
+              formatTrendAxisValue(value, formatType)
+            }
           />
           <ChartTooltip
             cursor={false}
             content={
               <ChartTooltipContent
                 indicator="line"
-                valueFormatter={(value) => formatTrendTooltipValue(value, formatType)}
+                valueFormatter={(value) =>
+                  formatTrendTooltipValue(value, formatType)
+                }
               />
             }
           />
@@ -225,7 +230,9 @@ export function TrendChart({ trend }: { trend: TileTrendPayload }) {
           />
         </LineChart>
       </ChartContainer>
-      <p className="text-center text-[11px] leading-5 text-muted-foreground">{xAxisFieldLabel}</p>
+      <p className="text-center text-[11px] leading-5 text-muted-foreground">
+        {xAxisFieldLabel}
+      </p>
     </div>
   );
 }

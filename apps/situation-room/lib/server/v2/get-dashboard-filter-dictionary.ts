@@ -4,9 +4,7 @@ import { unstable_cache } from 'next/cache';
 import type { GlobalFilterKey } from '@/lib/dashboard/catalog';
 import type { FilterDictionaryPayload } from '@/lib/dashboard/contracts';
 import type { ProbeExecutionOptions } from '@/lib/probe-cache-mode';
-import {
-  type DashboardLoaderResult,
-} from '@/lib/server/dashboard-query-runtime';
+import { type DashboardLoaderResult } from '@/lib/server/dashboard-query-runtime';
 import { buildFilterDictionaryQuery } from '@/lib/dashboard-v2/semantic-registry';
 import {
   getDashboardV2Runtime,
@@ -48,8 +46,12 @@ export async function getDashboardV2FilterDictionary(
     return loadDictionary();
   }
 
-  return unstable_cache(loadDictionary, ['dashboard-v2-filter-dictionary', key], {
-    revalidate: 900,
-    tags: ['dashboard-v2-filter-dictionary'],
-  })();
+  return unstable_cache(
+    loadDictionary,
+    ['dashboard-v2-filter-dictionary', key],
+    {
+      revalidate: 900,
+      tags: ['dashboard-v2-filter-dictionary'],
+    },
+  )();
 }

@@ -63,6 +63,7 @@
 ## Task 1: Extend The Dashboard State Model For Overview
 
 **Files:**
+
 - Modify: `apps/situation-room/lib/dashboard/catalog.ts`
 - Modify: `apps/situation-room/lib/dashboard/contracts.ts`
 - Modify: `apps/situation-room/lib/dashboard/query-inputs.ts`
@@ -158,6 +159,7 @@ git commit -m "feat: add overview dashboard tab model"
 ## Task 2: Add The Overview Board Loader
 
 **Files:**
+
 - Create: `apps/situation-room/lib/server/get-dashboard-overview-board.ts`
 - Create: `apps/situation-room/app/api/dashboard/overview/route.ts`
 - Modify: `apps/situation-room/app/page.tsx`
@@ -236,6 +238,7 @@ git commit -m "feat: add overview board loader"
 ## Task 3: Build The Overview Data Transformer
 
 **Files:**
+
 - Create: `apps/situation-room/lib/dashboard/overview-model.ts`
 - Test: `apps/situation-room/__tests__/overview-model.test.ts`
 
@@ -249,11 +252,9 @@ describe('overview model', () => {
   it('maps non-total categories into sections A, B, and C', () => {
     const board = buildOverviewBoard(fixtures);
 
-    expect(board.categoryCards[0].sections.map((section) => section.id)).toEqual([
-      'section-a',
-      'section-b',
-      'section-c',
-    ]);
+    expect(
+      board.categoryCards[0].sections.map((section) => section.id),
+    ).toEqual(['section-a', 'section-b', 'section-c']);
   });
 
   it('creates a separate total summary card', () => {
@@ -315,6 +316,7 @@ git commit -m "feat: add overview scorecard transformer"
 ## Task 4: Render The Overview Scorecards
 
 **Files:**
+
 - Create: `apps/situation-room/components/dashboard/scorecard-section.tsx`
 - Create: `apps/situation-room/components/dashboard/category-scorecard.tsx`
 - Create: `apps/situation-room/components/dashboard/total-scorecard.tsx`
@@ -383,6 +385,7 @@ git commit -m "feat: add overview scorecard components"
 ## Task 5: Wire Overview Into The Shell With Snapshot Cache
 
 **Files:**
+
 - Create: `apps/situation-room/components/dashboard/overview-skeleton.tsx`
 - Modify: `apps/situation-room/components/dashboard/dashboard-shell.tsx`
 - Modify: `apps/situation-room/components/dashboard/category-tabs.tsx`
@@ -423,13 +426,18 @@ Expected: FAIL because overview caching and loading behavior do not exist yet.
 
 ```tsx
 // apps/situation-room/components/dashboard/dashboard-shell.tsx
-const snapshotByCategory = buildSnapshotCache(initialOverviewBoard, initialSnapshot);
+const snapshotByCategory = buildSnapshotCache(
+  initialOverviewBoard,
+  initialSnapshot,
+);
 
 if (isOverviewTab(activeTab)) {
   return isSnapshotLoading ? (
     <OverviewSkeleton />
   ) : (
-    <OverviewTab board={buildOverviewBoard(Object.values(snapshotByCategory))} />
+    <OverviewTab
+      board={buildOverviewBoard(Object.values(snapshotByCategory))}
+    />
   );
 }
 ```
@@ -455,6 +463,7 @@ git commit -m "feat: add overview shell caching"
 ## Task 6: Finalize The Tab Integration
 
 **Files:**
+
 - Modify: `apps/situation-room/components/dashboard/dashboard-shell.tsx`
 - Modify: `apps/situation-room/__tests__/dashboard-page.test.tsx`
 - Modify: `apps/situation-room/__tests__/dashboard-shell.client.test.tsx`
@@ -517,6 +526,7 @@ git commit -m "feat: finalize overview tab integration"
 ## Task 7: Final Verification And Cleanup
 
 **Files:**
+
 - Modify: `apps/situation-room/components/dashboard/*` (only if polish is needed after tests)
 
 - [ ] **Step 1: Run the focused dashboard test suite**

@@ -90,6 +90,7 @@
 ## Task 1: Scaffold The New Explainer App
 
 **Files:**
+
 - Create: `apps/architecture-explainer/package.json`
 - Create: `apps/architecture-explainer/components.json`
 - Create: `apps/architecture-explainer/app/layout.tsx`
@@ -177,6 +178,7 @@ git commit -m "feat: scaffold architecture explainer app"
 ## Task 2: Define The Explicit Architecture Model
 
 **Files:**
+
 - Create: `apps/architecture-explainer/lib/architecture/contracts.ts`
 - Create: `apps/architecture-explainer/lib/architecture/manifest.ts`
 - Create: `apps/architecture-explainer/lib/architecture/report.ts`
@@ -232,18 +234,63 @@ export type ArchitectureNodeKind =
 export const architectureManifest = {
   systemId: 'sales-performance-dashboard',
   nodes: [
-    { id: 'dashboard-shell', kind: 'ui', title: 'DashboardShell', pipeline: 'snapshot' },
-    { id: 'category-route', kind: 'api-route', title: '/api/dashboard/category/[category]', pipeline: 'snapshot' },
-    { id: 'get-dashboard-category-snapshot', kind: 'server-loader', title: 'getDashboardCategorySnapshot', pipeline: 'snapshot' },
-    { id: 'build-category-snapshot-query', kind: 'sql-builder', title: 'buildCategorySnapshotQuery', pipeline: 'snapshot' },
-    { id: 'bigquery', kind: 'bigquery', title: 'BigQuery', pipeline: 'snapshot' }
+    {
+      id: 'dashboard-shell',
+      kind: 'ui',
+      title: 'DashboardShell',
+      pipeline: 'snapshot',
+    },
+    {
+      id: 'category-route',
+      kind: 'api-route',
+      title: '/api/dashboard/category/[category]',
+      pipeline: 'snapshot',
+    },
+    {
+      id: 'get-dashboard-category-snapshot',
+      kind: 'server-loader',
+      title: 'getDashboardCategorySnapshot',
+      pipeline: 'snapshot',
+    },
+    {
+      id: 'build-category-snapshot-query',
+      kind: 'sql-builder',
+      title: 'buildCategorySnapshotQuery',
+      pipeline: 'snapshot',
+    },
+    {
+      id: 'bigquery',
+      kind: 'bigquery',
+      title: 'BigQuery',
+      pipeline: 'snapshot',
+    },
   ],
   edges: [
-    { from: 'dashboard-shell', to: 'category-route', type: 'trigger', label: 'refresh' },
-    { from: 'category-route', to: 'get-dashboard-category-snapshot', type: 'trigger', label: 'load' },
-    { from: 'get-dashboard-category-snapshot', to: 'build-category-snapshot-query', type: 'data', label: 'query input' },
-    { from: 'build-category-snapshot-query', to: 'bigquery', type: 'data', label: 'sql' }
-  ]
+    {
+      from: 'dashboard-shell',
+      to: 'category-route',
+      type: 'trigger',
+      label: 'refresh',
+    },
+    {
+      from: 'category-route',
+      to: 'get-dashboard-category-snapshot',
+      type: 'trigger',
+      label: 'load',
+    },
+    {
+      from: 'get-dashboard-category-snapshot',
+      to: 'build-category-snapshot-query',
+      type: 'data',
+      label: 'query input',
+    },
+    {
+      from: 'build-category-snapshot-query',
+      to: 'bigquery',
+      type: 'data',
+      label: 'sql',
+    },
+  ],
 } as const;
 ```
 
@@ -268,6 +315,7 @@ git commit -m "feat: add architecture manifest and report model"
 ## Task 3: Build Graph Filtering And Neighborhood Focus
 
 **Files:**
+
 - Create: `apps/architecture-explainer/lib/architecture/selectors.ts`
 - Create: `apps/architecture-explainer/__tests__/selectors.test.ts`
 
@@ -275,7 +323,10 @@ git commit -m "feat: add architecture manifest and report model"
 
 ```ts
 import { describe, expect, it } from 'vitest';
-import { getFocusedNeighborhood, getVisibleNodesForPipeline } from '@/lib/architecture/selectors';
+import {
+  getFocusedNeighborhood,
+  getVisibleNodesForPipeline,
+} from '@/lib/architecture/selectors';
 import { architectureManifest } from '@/lib/architecture/manifest';
 
 describe('architecture selectors', () => {
@@ -285,7 +336,10 @@ describe('architecture selectors', () => {
   });
 
   it('returns direct dependencies and consumers for a focused node', () => {
-    const result = getFocusedNeighborhood(architectureManifest, 'get-dashboard-category-snapshot');
+    const result = getFocusedNeighborhood(
+      architectureManifest,
+      'get-dashboard-category-snapshot',
+    );
     expect(result.nodeIds).toContain('category-route');
     expect(result.nodeIds).toContain('build-category-snapshot-query');
   });
@@ -339,6 +393,7 @@ git commit -m "feat: add graph filtering and focus selectors"
 ## Task 4: Build The Graph-First UI With React Flow
 
 **Files:**
+
 - Create: `apps/architecture-explainer/components/architecture/graph-canvas.tsx`
 - Create: `apps/architecture-explainer/components/architecture/graph-node.tsx`
 - Create: `apps/architecture-explainer/components/architecture/pipeline-filter-bar.tsx`
@@ -396,6 +451,7 @@ git commit -m "feat: add architecture graph canvas"
 ## Task 5: Build The Inspector, Timing Waterfall, And Read Path For Comments
 
 **Files:**
+
 - Create: `apps/architecture-explainer/components/architecture/inspector.tsx`
 - Create: `apps/architecture-explainer/components/architecture/timing-waterfall.tsx`
 - Create: `apps/architecture-explainer/components/architecture/comments-panel.tsx`
@@ -460,6 +516,7 @@ git commit -m "feat: add architecture inspector and timing waterfall"
 ## Task 6: Add Google Auth And Firestore-Backed Comments
 
 **Files:**
+
 - Create: `apps/architecture-explainer/lib/env.server.ts`
 - Create: `apps/architecture-explainer/lib/auth.ts`
 - Create: `apps/architecture-explainer/lib/comments/firestore.ts`
@@ -476,7 +533,9 @@ import { describe, expect, it } from 'vitest';
 
 describe('comments route', () => {
   it('rejects comment creation when the user is unauthenticated', async () => {
-    const response = await POST(new Request('http://localhost/api/comments', { method: 'POST' }));
+    const response = await POST(
+      new Request('http://localhost/api/comments', { method: 'POST' }),
+    );
     expect(response.status).toBe(401);
   });
 });
@@ -506,7 +565,8 @@ export const authOptions = {
 // apps/architecture-explainer/app/api/comments/route.ts
 export async function POST(request: Request) {
   const session = await auth();
-  if (!session?.user?.email) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session?.user?.email)
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
   const body = await request.json();
   const comment = await createNodeComment({
@@ -543,6 +603,7 @@ git commit -m "feat: add authenticated node comments"
 ## Task 7: Connect Timing Reports To Existing Situation Room Probes
 
 **Files:**
+
 - Modify: `apps/situation-room/lib/server/architecture-probes.ts`
 - Modify: `apps/situation-room/lib/analytics-lab.ts`
 - Modify: `apps/architecture-explainer/lib/architecture/report.ts`
@@ -558,7 +619,11 @@ import { buildArchitectureReport } from '@/lib/architecture/report';
 describe('architecture report', () => {
   it('maps current probe outputs to architecture node timings', () => {
     const report = buildArchitectureReport(sampleProbeRun);
-    expect(report.nodes.some((node) => node.nodeId === 'get-dashboard-category-snapshot')).toBe(true);
+    expect(
+      report.nodes.some(
+        (node) => node.nodeId === 'get-dashboard-category-snapshot',
+      ),
+    ).toBe(true);
   });
 });
 ```
@@ -601,6 +666,7 @@ git commit -m "feat: connect explainer to architecture probe timings"
 ## Task 8: Add The Dashboard Metadata Side Panel And App Link
 
 **Files:**
+
 - Modify: `apps/situation-room/components/dashboard/dashboard-shell.tsx`
 - Create or Modify: `apps/situation-room/components/ui/sheet.tsx`
 - Modify: `apps/situation-room/__tests__/dashboard-page.test.tsx`
@@ -652,6 +718,7 @@ git commit -m "feat: add architecture app entry from dashboard"
 ## Task 9: Final Verification And Developer Ergonomics
 
 **Files:**
+
 - Modify: `package.json`
 - Modify: `apps/architecture-explainer/package.json`
 - Test: `apps/architecture-explainer/__tests__/page.test.tsx`

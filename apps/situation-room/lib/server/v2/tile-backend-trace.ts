@@ -3,8 +3,15 @@ import fsSync from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { stringify, parse } from 'yaml';
-import type { SemanticFilter, SemanticQueryRequest, SemanticQueryResult } from '@por/analytics-adapter';
-import type { TileBackendExecution, TileBackendTrace } from '@/lib/dashboard/contracts';
+import type {
+  SemanticFilter,
+  SemanticQueryRequest,
+  SemanticQueryResult,
+} from '@por/analytics-adapter';
+import type {
+  TileBackendExecution,
+  TileBackendTrace,
+} from '@/lib/dashboard/contracts';
 
 type LightdashDimension = {
   name: string;
@@ -56,7 +63,8 @@ type LightdashMetricFilterRule = {
   values?: Array<string | number | boolean | null>;
 };
 
-let cachedModelsPromise: Promise<Map<string, LightdashModelSource>> | null = null;
+let cachedModelsPromise: Promise<Map<string, LightdashModelSource>> | null =
+  null;
 let cachedGithubContext:
   | {
       owner: string;
@@ -103,7 +111,9 @@ function getLightdashModelsDir() {
     } catch {}
   }
 
-  throw new Error('Unable to locate lightdash/models directory from situation-room.');
+  throw new Error(
+    'Unable to locate lightdash/models directory from situation-room.',
+  );
 }
 
 function getWorkspaceRoot() {
@@ -126,7 +136,9 @@ function getWorkspaceRoot() {
   return process.cwd();
 }
 
-async function loadLightdashModels(): Promise<Map<string, LightdashModelSource>> {
+async function loadLightdashModels(): Promise<
+  Map<string, LightdashModelSource>
+> {
   if (!cachedModelsPromise) {
     cachedModelsPromise = (async () => {
       const modelsDir = getLightdashModelsDir();
@@ -135,7 +147,10 @@ async function loadLightdashModels(): Promise<Map<string, LightdashModelSource>>
         files
           .filter((file) => file.endsWith('.yml') || file.endsWith('.yaml'))
           .map(async (file) => {
-            const content = await fs.readFile(path.join(modelsDir, file), 'utf8');
+            const content = await fs.readFile(
+              path.join(modelsDir, file),
+              'utf8',
+            );
             const parsed = parse(content) as LightdashModelFile;
             return [parsed.name, { fileName: file, model: parsed }] as const;
           }),
@@ -170,7 +185,9 @@ function parseGithubRemote(remoteUrl: string | undefined) {
     return undefined;
   }
 
-  const httpsMatch = remoteUrl.match(/github\.com\/([^/]+)\/([^/]+?)(?:\.git)?$/);
+  const httpsMatch = remoteUrl.match(
+    /github\.com\/([^/]+)\/([^/]+?)(?:\.git)?$/,
+  );
   if (httpsMatch) {
     return { owner: httpsMatch[1], repo: httpsMatch[2] };
   }
@@ -209,7 +226,8 @@ function resolveGithubBranch() {
 
 function getGithubContext() {
   const vercelEnv = process.env.VERCEL_ENV;
-  const canUsePersistentCache = vercelEnv === 'production' || vercelEnv === 'preview';
+  const canUsePersistentCache =
+    vercelEnv === 'production' || vercelEnv === 'preview';
 
   if (!canUsePersistentCache) {
     cachedGithubContext = undefined;
@@ -275,7 +293,8 @@ function filterToLightdashRule(
   filter: SemanticFilter,
   index: number,
 ): LightdashMetricFilterRule {
-  const operator = filter.operator === 'between' ? 'inBetween' : filter.operator;
+  const operator =
+    filter.operator === 'between' ? 'inBetween' : filter.operator;
 
   return {
     id: `f${index}`,
@@ -288,8 +307,12 @@ function filterToLightdashRule(
 function buildMetricQuery(request: SemanticQueryRequest) {
   return {
     exploreName: request.model,
-    dimensions: (request.dimensions ?? []).map((field) => buildFieldId(request.model, field)),
-    metrics: (request.measures ?? []).map((field) => buildFieldId(request.model, field)),
+    dimensions: (request.dimensions ?? []).map((field) =>
+      buildFieldId(request.model, field),
+    ),
+    metrics: (request.measures ?? []).map((field) =>
+      buildFieldId(request.model, field),
+    ),
     filters: {
       dimensions: {
         id: 'root',
@@ -345,8 +368,12 @@ function buildExploreUrl(request: SemanticQueryRequest): string | undefined {
     chartConfig: buildChartConfig(request),
     tableConfig: {
       columnOrder: [
-        ...(request.dimensions ?? []).map((field) => buildFieldId(request.model, field)),
-        ...(request.measures ?? []).map((field) => buildFieldId(request.model, field)),
+        ...(request.dimensions ?? []).map((field) =>
+          buildFieldId(request.model, field),
+        ),
+        ...(request.measures ?? []).map((field) =>
+          buildFieldId(request.model, field),
+        ),
       ],
     },
   };
@@ -389,7 +416,9 @@ function collectMeasureNames(requests: SemanticQueryRequest[]) {
   return [...names];
 }
 
-export async function buildSemanticYamlSnippet(request: SemanticQueryRequest): Promise<string> {
+export async function buildSemanticYamlSnippet(
+  request: SemanticQueryRequest,
+): Promise<string> {
   return buildCombinedSemanticYamlSnippet([request]);
 }
 
@@ -404,7 +433,9 @@ export async function resolveSemanticDimensionLabel(
     return undefined;
   }
 
-  return modelSource.model.dimensions?.find((dimension) => dimension.name === dimensionName)?.label;
+  return modelSource.model.dimensions?.find(
+    (dimension) => dimension.name === dimensionName,
+  )?.label;
 }
 
 export async function buildCombinedSemanticYamlSnippet(
@@ -412,14 +443,18 @@ export async function buildCombinedSemanticYamlSnippet(
 ): Promise<string> {
   const [primaryRequest] = requests;
   if (!primaryRequest) {
-    throw new Error('Cannot build semantic YAML snippet without a semantic request.');
+    throw new Error(
+      'Cannot build semantic YAML snippet without a semantic request.',
+    );
   }
 
   const models = await loadLightdashModels();
   const modelSource = models.get(primaryRequest.model);
 
   if (!modelSource) {
-    throw new Error(`Unable to find Lightdash model source for "${primaryRequest.model}".`);
+    throw new Error(
+      `Unable to find Lightdash model source for "${primaryRequest.model}".`,
+    );
   }
   const { model } = modelSource;
 
@@ -450,7 +485,9 @@ export async function buildCombinedSemanticYamlSnippet(
   }).trim();
 }
 
-function resolveCacheStatus(executions: BackendTraceExecutionInput[]): TileBackendTrace['cacheStatus'] {
+function resolveCacheStatus(
+  executions: BackendTraceExecutionInput[],
+): TileBackendTrace['cacheStatus'] {
   const statuses = executions
     .map((execution) => execution.result.meta.cacheStatus)
     .filter((status): status is 'hit' | 'miss' => Boolean(status));
@@ -473,7 +510,9 @@ export async function buildTileBackendTrace({
 }): Promise<TileBackendTrace> {
   const [primary] = executions;
   if (!primary) {
-    throw new Error('Cannot build tile backend trace without at least one execution.');
+    throw new Error(
+      'Cannot build tile backend trace without at least one execution.',
+    );
   }
 
   const semanticYamlSnippet = await buildCombinedSemanticYamlSnippet(
@@ -489,7 +528,9 @@ export async function buildTileBackendTrace({
     compiledAt: new Date().toISOString(),
     cacheStatus: resolveCacheStatus(executions),
     sqlRunnerUrl: getLightdashSqlRunnerUrl(),
-    githubModelUrl: modelSource ? buildGithubModelUrl(modelSource.fileName) : undefined,
+    githubModelUrl: modelSource
+      ? buildGithubModelUrl(modelSource.fileName)
+      : undefined,
     semanticYamlSnippet,
     executions: executions.map(
       (execution): TileBackendExecution => ({

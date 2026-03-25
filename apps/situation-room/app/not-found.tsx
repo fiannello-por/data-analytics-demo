@@ -10,7 +10,9 @@ export default function NotFoundPage() {
           <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
             Situation Room
           </p>
-          <h1 className="text-3xl font-semibold tracking-tight">Page not found</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">
+            Page not found
+          </h1>
           <p className="text-sm text-muted-foreground">
             The page you requested does not exist in this workspace.
           </p>

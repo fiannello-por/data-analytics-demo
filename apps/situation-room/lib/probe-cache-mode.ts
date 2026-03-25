@@ -21,9 +21,7 @@ export function parseProbeCacheMode(
     return 'auto';
   }
 
-  if (
-    PROBE_CACHE_MODES.includes(value as ProbeCacheMode)
-  ) {
+  if (PROBE_CACHE_MODES.includes(value as ProbeCacheMode)) {
     return value as ProbeCacheMode;
   }
 

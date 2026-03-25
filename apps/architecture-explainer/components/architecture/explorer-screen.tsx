@@ -21,10 +21,20 @@ import { Card, CardContent } from '@/components/ui/card';
 function getDefaultNodeIdForFilter(
   visibleNodes: ArchitectureManifest['nodes'],
 ) {
-  const preferredStageOrder = ['api', 'query', 'warehouse', 'client', 'dashboard', 'render'];
+  const preferredStageOrder = [
+    'api',
+    'query',
+    'warehouse',
+    'client',
+    'dashboard',
+    'render',
+  ];
 
   const orderedNodes = [...visibleNodes].sort((left, right) => {
-    return preferredStageOrder.indexOf(left.stage) - preferredStageOrder.indexOf(right.stage);
+    return (
+      preferredStageOrder.indexOf(left.stage) -
+      preferredStageOrder.indexOf(right.stage)
+    );
   });
 
   return orderedNodes[0]?.id ?? null;
@@ -39,9 +49,13 @@ export function ArchitectureExplorerScreen({
 }) {
   const [pipelineFilter, setPipelineFilter] =
     React.useState<ArchitecturePipelineFilter>('All');
-  const [selectedNodeId, setSelectedNodeId] = React.useState<string | null>(() => {
-    return getDefaultNodeIdForFilter(getVisibleNodesForPipeline(manifest, 'All'));
-  });
+  const [selectedNodeId, setSelectedNodeId] = React.useState<string | null>(
+    () => {
+      return getDefaultNodeIdForFilter(
+        getVisibleNodesForPipeline(manifest, 'All'),
+      );
+    },
+  );
   const [focusMode, setFocusMode] = React.useState(false);
 
   const visibleNodes = React.useMemo(
@@ -50,7 +64,10 @@ export function ArchitectureExplorerScreen({
   );
 
   React.useEffect(() => {
-    if (!selectedNodeId || !visibleNodes.some((node) => node.id === selectedNodeId)) {
+    if (
+      !selectedNodeId ||
+      !visibleNodes.some((node) => node.id === selectedNodeId)
+    ) {
       setSelectedNodeId(getDefaultNodeIdForFilter(visibleNodes));
       setFocusMode(false);
     }
@@ -60,7 +77,9 @@ export function ArchitectureExplorerScreen({
     setPipelineFilter(nextFilter);
     setFocusMode(false);
     setSelectedNodeId(
-      getDefaultNodeIdForFilter(getVisibleNodesForPipeline(manifest, nextFilter)),
+      getDefaultNodeIdForFilter(
+        getVisibleNodesForPipeline(manifest, nextFilter),
+      ),
     );
   }
 
@@ -77,7 +96,9 @@ export function ArchitectureExplorerScreen({
         nodeIds: focusedIds,
         edgeIds: new Set(
           focused.edges
-            .filter((edge) => focusedIds.has(edge.from) && focusedIds.has(edge.to))
+            .filter(
+              (edge) => focusedIds.has(edge.from) && focusedIds.has(edge.to),
+            )
             .map((edge) => `${edge.from}:${edge.to}`),
         ),
       };
@@ -96,7 +117,9 @@ export function ArchitectureExplorerScreen({
   const selectedNode =
     visibleNodes.find((node) => node.id === selectedNodeId) ?? null;
 
-  const selectedTiming = selectedNodeId ? getNodeTiming(report, selectedNodeId) : null;
+  const selectedTiming = selectedNodeId
+    ? getNodeTiming(report, selectedNodeId)
+    : null;
   const capturedAtLabel = `${new Date(report.capturedAt)
     .toISOString()
     .slice(0, 16)
@@ -109,17 +132,20 @@ export function ArchitectureExplorerScreen({
           <div className="space-y-2">
             <p className="text-sm font-medium text-foreground">System graph</p>
             <p className="max-w-4xl text-sm leading-relaxed text-muted-foreground">
-              Trace each dashboard component from user interaction to SQL generation,
-              BigQuery execution, response shaping, and render output. Use pipeline
-              filters to simplify the graph or focus a single node to inspect direct
-              dependencies.
+              Trace each dashboard component from user interaction to SQL
+              generation, BigQuery execution, response shaping, and render
+              output. Use pipeline filters to simplify the graph or focus a
+              single node to inspect direct dependencies.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2 xl:justify-end">
             <Badge variant="outline">Run {report.runId}</Badge>
             <Badge variant="outline">Captured {capturedAtLabel}</Badge>
           </div>
-          <PipelineFilterBar value={pipelineFilter} onValueChange={handlePipelineChange} />
+          <PipelineFilterBar
+            value={pipelineFilter}
+            onValueChange={handlePipelineChange}
+          />
         </CardContent>
       </Card>
 

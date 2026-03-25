@@ -13,7 +13,8 @@ vi.mock('@/lib/server/v2/get-dashboard-category-snapshot', () => ({
 }));
 
 vi.mock('@/lib/server/v2/get-dashboard-closed-won-opportunities', () => ({
-  getDashboardV2ClosedWonOpportunities: getDashboardV2ClosedWonOpportunitiesMock,
+  getDashboardV2ClosedWonOpportunities:
+    getDashboardV2ClosedWonOpportunitiesMock,
 }));
 
 vi.mock('@/lib/server/v2/get-dashboard-tile-trend', () => ({
@@ -47,7 +48,8 @@ describe('dashboard v2 routes', () => {
       },
     });
 
-    const { GET } = await import('../app/api/dashboard-v2/category/[category]/route');
+    const { GET } =
+      await import('../app/api/dashboard-v2/category/[category]/route');
     const response = await GET(
       new NextRequest(
         'http://localhost/api/dashboard-v2/category/New%20Logo?Division=Enterprise&cache=off',
@@ -81,9 +83,8 @@ describe('dashboard v2 routes', () => {
       },
     });
 
-    const { GET } = await import(
-      '../app/api/dashboard-v2/filter-dictionaries/[key]/route'
-    );
+    const { GET } =
+      await import('../app/api/dashboard-v2/filter-dictionaries/[key]/route');
     const response = await GET(
       new NextRequest(
         'http://localhost/api/dashboard-v2/filter-dictionaries/Division?cache=off',

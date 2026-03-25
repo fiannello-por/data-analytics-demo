@@ -61,11 +61,7 @@ function mapRow(row: QueryRow): ScorecardRow {
     sortOrder: requireNumberField(row, 'sort_order', 'scorecard row'),
     metricName: requireStringField(row, 'metric_name', 'scorecard row'),
     currentPeriod: requireStringField(row, 'current_period', 'scorecard row'),
-    previousPeriod: requireStringField(
-      row,
-      'previous_period',
-      'scorecard row',
-    ),
+    previousPeriod: requireStringField(row, 'previous_period', 'scorecard row'),
     pctChange: requireStringField(row, 'pct_change', 'scorecard row'),
   };
 }
@@ -138,9 +134,7 @@ function requireCategory(row: QueryRow): string {
 export class BigQueryAdapter implements ScorecardDataAdapter {
   constructor(private readonly client: QueryClient = defaultQueryClient) {}
 
-  async getScorecardReport(
-    filters: ScorecardFilters,
-  ): Promise<
+  async getScorecardReport(filters: ScorecardFilters): Promise<
     AdapterResult<{
       reportTitle: string;
       reportPeriodLabel: string;

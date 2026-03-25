@@ -28,9 +28,9 @@ export default function HomePage() {
               Shared shell, local analytical intent
             </CardTitle>
             <CardDescription>
-              Every dashboard below plugs into the same semantic runtime and suite
-              shell, but keeps its own registry, mapper notes, and performance
-              policy.
+              Every dashboard below plugs into the same semantic runtime and
+              suite shell, but keeps its own registry, mapper notes, and
+              performance policy.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-2.5">
@@ -42,8 +42,14 @@ export default function HomePage() {
                 >
                   <CardHeader className="gap-2">
                     <div className="flex items-center gap-2.5">
-                      <CardTitle className="text-[15px]">{module.title}</CardTitle>
-                      <Badge variant={module.status === 'active' ? 'secondary' : 'outline'}>
+                      <CardTitle className="text-[15px]">
+                        {module.title}
+                      </CardTitle>
+                      <Badge
+                        variant={
+                          module.status === 'active' ? 'secondary' : 'outline'
+                        }
+                      >
                         {module.status}
                       </Badge>
                     </div>
@@ -61,7 +67,9 @@ export default function HomePage() {
                     </div>
                     <Link
                       href={module.href}
-                      className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
+                      className={cn(
+                        buttonVariants({ variant: 'outline', size: 'sm' }),
+                      )}
                     >
                       Open module
                       <ArrowRight data-icon="inline-end" className="size-4" />
@@ -97,11 +105,13 @@ export default function HomePage() {
                 <CardDescription className="text-[11px] font-medium uppercase tracking-[0.18em]">
                   Query model
                 </CardDescription>
-                <CardTitle className="text-[15px]">Semantic-first dashboards</CardTitle>
+                <CardTitle className="text-[15px]">
+                  Semantic-first dashboards
+                </CardTitle>
                 <CardDescription>
-                  Each dashboard module declares semantic intent locally instead of
-                  scattering measures and dimensions through route handlers and UI
-                  components.
+                  Each dashboard module declares semantic intent locally instead
+                  of scattering measures and dimensions through route handlers
+                  and UI components.
                 </CardDescription>
               </div>
             </CardHeader>
@@ -113,7 +123,9 @@ export default function HomePage() {
                 <CardDescription className="text-[11px] font-medium uppercase tracking-[0.18em]">
                   Policy
                 </CardDescription>
-                <CardTitle className="text-[15px]">Platform controls live</CardTitle>
+                <CardTitle className="text-[15px]">
+                  Platform controls live
+                </CardTitle>
                 <CardDescription>
                   Caching, deduplication, and dashboard budgets now exist in the
                   shared runtime. The next layer is a richer semantic-system

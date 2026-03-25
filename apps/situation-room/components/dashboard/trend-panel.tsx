@@ -27,7 +27,9 @@ export function TrendPanel({
   const currentWindowLabel =
     displayCurrentWindowLabel ?? trend?.currentWindowLabel ?? 'Current period';
   const previousWindowLabel =
-    displayPreviousWindowLabel ?? trend?.previousWindowLabel ?? 'Previous period';
+    displayPreviousWindowLabel ??
+    trend?.previousWindowLabel ??
+    'Previous period';
 
   if (!isVisible) {
     return (
@@ -35,8 +37,8 @@ export function TrendPanel({
         <div className="mx-auto max-w-sm space-y-2">
           <CardTitle className="text-base">See the line chart</CardTitle>
           <CardDescription className="text-sm leading-6">
-            Click any metric in the table to inspect its evolution over time and compare the
-            current period with the previous year.
+            Click any metric in the table to inspect its evolution over time and
+            compare the current period with the previous year.
           </CardDescription>
         </div>
       </section>
@@ -54,13 +56,12 @@ export function TrendPanel({
         </div>
         <div className="flex items-center gap-2">
           {trend ? (
-            <TileBackendSheet
-              title={label}
-              trace={trend.backendTrace}
-            />
+            <TileBackendSheet title={label} trace={trend.backendTrace} />
           ) : null}
           {isLoading ? (
-            <span className="pt-0.5 text-xs text-muted-foreground">Refreshing…</span>
+            <span className="pt-0.5 text-xs text-muted-foreground">
+              Refreshing…
+            </span>
           ) : null}
         </div>
       </div>

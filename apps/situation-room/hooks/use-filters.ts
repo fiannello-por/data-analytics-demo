@@ -3,10 +3,7 @@
 import { useQueryStates, parseAsString } from 'nuqs';
 import { useCallback, useMemo } from 'react';
 import { normalizeFilters } from '@/lib/filter-normalization';
-import {
-  type FilterKey,
-  type ScorecardFilters,
-} from '@/lib/contracts';
+import { type FilterKey, type ScorecardFilters } from '@/lib/contracts';
 import { FILTER_DEFINITIONS, parseFilterParams } from '@/lib/filters';
 
 const filterParsers = Object.fromEntries(
@@ -43,7 +40,9 @@ export function useFilters() {
 
   const setFilter = useCallback(
     (key: FilterKey, values: string[]) => {
-      const normalized = normalizeFilters({ [key]: values } as ScorecardFilters);
+      const normalized = normalizeFilters({
+        [key]: values,
+      } as ScorecardFilters);
       const nextValue = normalized[key]?.join(',') ?? '';
 
       setParams({ [key]: nextValue } as FilterUrlState);

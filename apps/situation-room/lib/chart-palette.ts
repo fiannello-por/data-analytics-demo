@@ -8,7 +8,8 @@ export const CHART_PALETTE_FALLBACK = [
 ] as const;
 
 export function resolveChartColor(index: number): string {
-  const fallback = CHART_PALETTE_FALLBACK[index - 1] ?? CHART_PALETTE_FALLBACK[0];
+  const fallback =
+    CHART_PALETTE_FALLBACK[index - 1] ?? CHART_PALETTE_FALLBACK[0];
 
   if (typeof window === 'undefined') {
     return fallback;

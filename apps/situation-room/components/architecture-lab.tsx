@@ -116,7 +116,11 @@ function extractSamples(
       },
     ];
 
-    for (let index = 0; index < value.length && samples.length < 2; index += 1) {
+    for (
+      let index = 0;
+      index < value.length && samples.length < 2;
+      index += 1
+    ) {
       samples.push(
         ...extractSamples(value[index], `${prefix}[${index}]`).slice(
           0,
@@ -273,13 +277,7 @@ function getStatusBadgeVariant(status: ProbeState['status']) {
   return 'outline' as const;
 }
 
-function MetricCard({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
+function MetricCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-border-subtle bg-surface px-3 py-2">
       <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-tertiary">
@@ -324,17 +322,19 @@ async function executeProbeRequest(
       bodyBytes,
       source: response.headers.get('x-situation-room-source'),
       cacheMode:
-        (response.headers.get('x-situation-room-cache-mode') as ProbeCacheMode | null) ??
-        cacheMode,
+        (response.headers.get(
+          'x-situation-room-cache-mode',
+        ) as ProbeCacheMode | null) ?? cacheMode,
       queryCount: parseNumericHeader(
         response.headers.get('x-situation-room-query-count'),
       ),
       bytesProcessed: parseNumericHeader(
         response.headers.get('x-situation-room-bytes-processed'),
       ),
-      tileTimings: parseOptionalJsonArray<{ tileId: string; durationMs: number }>(
-        response.headers.get('x-situation-room-tile-timings'),
-      ) ?? undefined,
+      tileTimings:
+        parseOptionalJsonArray<{ tileId: string; durationMs: number }>(
+          response.headers.get('x-situation-room-tile-timings'),
+        ) ?? undefined,
       loadedAt: new Date().toISOString(),
       samples: extractSamples(parsed).slice(0, 2),
       preview: formatPreview(parsed),
@@ -575,7 +575,9 @@ export function ArchitectureLab({ sourceLabel }: { sourceLabel: string }) {
     [sourceLabel],
   );
   const activeCacheMode = React.useMemo(
-    () => LAB_CACHE_MODES.find((option) => option.id === cacheMode) ?? LAB_CACHE_MODES[0],
+    () =>
+      LAB_CACHE_MODES.find((option) => option.id === cacheMode) ??
+      LAB_CACHE_MODES[0],
     [cacheMode],
   );
 
@@ -764,7 +766,9 @@ export function ArchitectureLab({ sourceLabel }: { sourceLabel: string }) {
               <Card size="sm">
                 <CardHeader>
                   <CardTitle>Active backend</CardTitle>
-                  <CardDescription>Current request path under test.</CardDescription>
+                  <CardDescription>
+                    Current request path under test.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm font-medium">{activeBackend.label}</p>
@@ -784,7 +788,9 @@ export function ArchitectureLab({ sourceLabel }: { sourceLabel: string }) {
               <Card size="sm">
                 <CardHeader>
                   <CardTitle>Latest benchmark</CardTitle>
-                  <CardDescription>Last in-page suite execution.</CardDescription>
+                  <CardDescription>
+                    Last in-page suite execution.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm font-medium">
@@ -839,13 +845,17 @@ export function ArchitectureLab({ sourceLabel }: { sourceLabel: string }) {
                   <TableBody>
                     {LAB_PROBES.map((probe) => (
                       <TableRow key={probe.id}>
-                        <TableCell className="font-medium">{probe.label}</TableCell>
+                        <TableCell className="font-medium">
+                          {probe.label}
+                        </TableCell>
                         <TableCell className="whitespace-normal text-muted-foreground">
                           {probe.purpose}
                         </TableCell>
                         <TableCell>{probe.endpoint}</TableCell>
                         <TableCell>
-                          <Badge variant={probe.benchmark ? 'secondary' : 'outline'}>
+                          <Badge
+                            variant={probe.benchmark ? 'secondary' : 'outline'}
+                          >
                             {probe.benchmark ? 'Included' : 'Excluded'}
                           </Badge>
                         </TableCell>
@@ -866,10 +876,22 @@ export function ArchitectureLab({ sourceLabel }: { sourceLabel: string }) {
               </CardHeader>
               <CardContent>
                 <ol className="flex list-decimal flex-col gap-2 pl-5 text-sm text-muted-foreground">
-                  <li>Start with manual probe runs to inspect one request path at a time.</li>
-                  <li>Use the benchmark suite to compare cold and warm behavior over the same probe set.</li>
-                  <li>Watch query count and bytes processed before concluding that a backend is fast.</li>
-                  <li>Add future adapters behind the same probes instead of redesigning the UI.</li>
+                  <li>
+                    Start with manual probe runs to inspect one request path at
+                    a time.
+                  </li>
+                  <li>
+                    Use the benchmark suite to compare cold and warm behavior
+                    over the same probe set.
+                  </li>
+                  <li>
+                    Watch query count and bytes processed before concluding that
+                    a backend is fast.
+                  </li>
+                  <li>
+                    Add future adapters behind the same probes instead of
+                    redesigning the UI.
+                  </li>
                 </ol>
               </CardContent>
             </Card>
@@ -975,8 +997,8 @@ export function ArchitectureLab({ sourceLabel }: { sourceLabel: string }) {
                     <CircleAlertIcon />
                     <AlertTitle>No benchmark run yet</AlertTitle>
                     <AlertDescription>
-                      Run the suite to populate cold and warm timing rows for the
-                      current backend.
+                      Run the suite to populate cold and warm timing rows for
+                      the current backend.
                     </AlertDescription>
                   </Alert>
                 ) : null}
@@ -1009,7 +1031,9 @@ export function ArchitectureLab({ sourceLabel }: { sourceLabel: string }) {
                             <TableCell>
                               {formatCacheMode(result.cacheMode)}
                             </TableCell>
-                            <TableCell>{formatDuration(result.coldMs ?? undefined)}</TableCell>
+                            <TableCell>
+                              {formatDuration(result.coldMs ?? undefined)}
+                            </TableCell>
                             <TableCell>
                               {formatDuration(result.warmP50Ms ?? undefined)}
                             </TableCell>
@@ -1098,7 +1122,9 @@ export function ArchitectureLab({ sourceLabel }: { sourceLabel: string }) {
                   <TableBody>
                     {TIMING_BREAKDOWN.map((item) => (
                       <TableRow key={item.metric}>
-                        <TableCell className="font-medium">{item.metric}</TableCell>
+                        <TableCell className="font-medium">
+                          {item.metric}
+                        </TableCell>
                         <TableCell className="whitespace-normal text-muted-foreground">
                           {item.explanation}
                         </TableCell>
@@ -1125,8 +1151,8 @@ export function ArchitectureLab({ sourceLabel }: { sourceLabel: string }) {
               <CardHeader>
                 <CardTitle>Backend adapters</CardTitle>
                 <CardDescription>
-                  The UI should stay constant while the adapter behind each probe
-                  changes.
+                  The UI should stay constant while the adapter behind each
+                  probe changes.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -1160,9 +1186,9 @@ export function ArchitectureLab({ sourceLabel }: { sourceLabel: string }) {
                         <Badge variant="outline">planned</Badge>
                       </TableCell>
                       <TableCell className="whitespace-normal text-muted-foreground">
-                        Future adapter for Lightdash or another governed backend.
-                        It should implement the same probes so latency can be
-                        compared directly against the baseline.
+                        Future adapter for Lightdash or another governed
+                        backend. It should implement the same probes so latency
+                        can be compared directly against the baseline.
                       </TableCell>
                     </TableRow>
                   </TableBody>

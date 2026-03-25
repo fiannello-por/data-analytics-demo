@@ -35,7 +35,8 @@ export function getCatalogFields(
 ): SemanticCatalogEntry[] {
   return entries.filter(
     (entry) =>
-      entry.model === model && (fieldType == null || entry.fieldType === fieldType),
+      entry.model === model &&
+      (fieldType == null || entry.fieldType === fieldType),
   );
 }
 
