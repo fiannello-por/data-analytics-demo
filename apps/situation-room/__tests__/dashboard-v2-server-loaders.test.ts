@@ -84,6 +84,20 @@ describe('dashboard v2 server loaders', { timeout: 20000 }, () => {
       label: 'Current window',
       compiledSql: 'select 1',
     });
+    expect(result.data.specBindings?.mainMetricsSnapshot.rows[0]).toEqual({
+      tileId: 'new_logo_bookings_amount',
+      label: 'Bookings $',
+      currentValue: '$100',
+      previousValue: '$80',
+      pctChange: '+25%',
+    });
+    expect(
+      result.data.specBindings?.mainMetricsSnapshot.traces
+        .new_logo_bookings_amount,
+    ).toMatchObject({
+      kind: 'composite',
+      model: 'sales_dashboard_v2_opportunity_base',
+    });
     expect(result.data.rows).toHaveLength(13);
     expect(result.meta.source).toBe('lightdash');
     expect(result.meta.queryCount).toBeGreaterThan(1);
@@ -239,6 +253,19 @@ describe('dashboard v2 server loaders', { timeout: 20000 }, () => {
     expect(trend.data.backendTrace?.executions[0]?.compiledSql).toBe(
       'select current trend',
     );
+    expect(trend.data.specBindings?.selectedMetricTrend).toEqual({
+      status: 'ready',
+      xAxisLabel: 'Close Date',
+      rows: [
+        {
+          bucketKey: '0',
+          bucketLabel: '2026-01-05',
+          currentValue: 100,
+          previousValue: 80,
+        },
+      ],
+      trace: trend.data.backendTrace,
+    });
 
     const closedWon = await getDashboardV2ClosedWonOpportunities(
       {

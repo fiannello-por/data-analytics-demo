@@ -4,6 +4,7 @@ import type {
   GlobalFilterKey,
   TileFormatType,
 } from '@/lib/dashboard/catalog';
+import type { DashboardSpecBindingDataMap } from '@/lib/dashboard-v2/spec-data-shapes';
 import type { SemanticQueryRequest } from '@por/analytics-adapter';
 
 export type DateRange = {
@@ -50,6 +51,17 @@ export type TileBackendTrace = {
   executions: TileBackendExecution[];
 };
 
+export type DashboardSpecBindingKey = keyof DashboardSpecBindingDataMap;
+
+export type DashboardSpecBindingOutputMap = {
+  mainMetricsSnapshot: DashboardSpecBindingDataMap['mainMetricsSnapshot'] & {
+    traces: Record<string, TileBackendTrace | undefined>;
+  };
+  selectedMetricTrend: DashboardSpecBindingDataMap['selectedMetricTrend'] & {
+    trace?: TileBackendTrace;
+  };
+};
+
 export type CategorySnapshotRow = DashboardTileMetadata & {
   currentValue: string;
   previousValue: string;
@@ -69,6 +81,7 @@ export type CategorySnapshotPayload = {
   lastRefreshedAt: string;
   rows: CategorySnapshotRow[];
   tileTimings: TileTiming[];
+  specBindings?: Pick<DashboardSpecBindingOutputMap, 'mainMetricsSnapshot'>;
 };
 
 export type OverviewBoardPayload = {
@@ -95,6 +108,7 @@ export type TileTrendPayload = {
   previousWindowLabel: string;
   points: TileTrendPoint[];
   backendTrace?: TileBackendTrace;
+  specBindings?: Pick<DashboardSpecBindingOutputMap, 'selectedMetricTrend'>;
 };
 
 export type ClosedWonOpportunityRow = {

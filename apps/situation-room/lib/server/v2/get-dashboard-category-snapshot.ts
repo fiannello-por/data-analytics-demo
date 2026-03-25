@@ -21,6 +21,7 @@ import {
   nowIsoString,
   type DashboardLoaderResult,
 } from '@/lib/server/dashboard-query-runtime';
+import { buildMainMetricsSnapshotBinding } from '@/lib/dashboard-v2/spec-builders';
 import {
   getDashboardV2Runtime,
   normalizeDashboardV2ExecutionOptions,
@@ -135,16 +136,23 @@ export async function getDashboardV2CategorySnapshot(
       durationMs: row.durationMs,
     }));
 
+    const data = {
+      category: input.activeCategory,
+      currentWindowLabel: formatDateRange(input.dateRange),
+      previousWindowLabel: formatDateRange(input.previousDateRange),
+      lastRefreshedAt: nowIsoString(),
+      rows: rows
+        .map(({ durationMs: _durationMs, ...row }) => row)
+        .sort((left, right) => left.sortOrder - right.sortOrder),
+      tileTimings,
+    };
+
     return {
       data: {
-        category: input.activeCategory,
-        currentWindowLabel: formatDateRange(input.dateRange),
-        previousWindowLabel: formatDateRange(input.previousDateRange),
-        lastRefreshedAt: nowIsoString(),
-        rows: rows
-          .map(({ durationMs: _durationMs, ...row }) => row)
-          .sort((left, right) => left.sortOrder - right.sortOrder),
-        tileTimings,
+        ...data,
+        specBindings: {
+          mainMetricsSnapshot: buildMainMetricsSnapshotBinding(data),
+        },
       },
       meta: {
         source: 'lightdash' as const,
