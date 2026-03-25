@@ -1,0 +1,601 @@
+// @vitest-environment jsdom
+import * as React from 'react';
+import { act } from 'react';
+import { createRoot, type Root } from 'react-dom/client';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type {
+  CategorySnapshotPayload,
+  ClosedWonOpportunitiesPayload,
+  DashboardState,
+  FilterDictionaryPayload,
+  TileTrendPayload,
+} from '@/lib/dashboard/contracts';
+
+vi.mock('@/components/ui/alert', () => ({
+  Alert: ({ children }: { children: React.ReactNode }) =>
+    React.createElement('div', { 'data-slot': 'alert' }, children),
+  AlertDescription: ({ children }: { children: React.ReactNode }) =>
+    React.createElement('div', { 'data-slot': 'alert-description' }, children),
+  AlertTitle: ({ children }: { children: React.ReactNode }) =>
+    React.createElement('div', { 'data-slot': 'alert-title' }, children),
+}));
+
+vi.mock('@/components/ui/badge', () => ({
+  Badge: ({ children }: { children: React.ReactNode }) =>
+    React.createElement('span', { 'data-slot': 'badge' }, children),
+}));
+
+vi.mock('@/components/ui/card', () => ({
+  Card: ({ children }: { children: React.ReactNode }) =>
+    React.createElement('section', { 'data-slot': 'card' }, children),
+  CardContent: ({ children }: { children: React.ReactNode }) =>
+    React.createElement('div', { 'data-slot': 'card-content' }, children),
+  CardDescription: ({ children }: { children: React.ReactNode }) =>
+    React.createElement('p', { 'data-slot': 'card-description' }, children),
+  CardHeader: ({ children }: { children: React.ReactNode }) =>
+    React.createElement('header', { 'data-slot': 'card-header' }, children),
+  CardTitle: ({ children }: { children: React.ReactNode }) =>
+    React.createElement('h2', { 'data-slot': 'card-title' }, children),
+}));
+
+vi.mock('@/components/dashboard/dashboard-filters', () => ({
+  DashboardFilters: ({
+    onFilterValueAdd,
+    onFilterValueRemove,
+  }: {
+    onFilterValueAdd: (key: string, value: string) => void;
+    onFilterValueRemove: (key: string, value: string) => void;
+  }) =>
+    React.createElement(
+      'div',
+      { 'data-testid': 'filters' },
+      React.createElement(
+        'button',
+        {
+          type: 'button',
+          onClick: () => onFilterValueAdd('Division', 'Enterprise'),
+          'data-testid': 'add-filter',
+        },
+        'Add filter',
+      ),
+      React.createElement(
+        'button',
+        {
+          type: 'button',
+          onClick: () => onFilterValueRemove('Division', 'Enterprise'),
+          'data-testid': 'remove-filter',
+        },
+        'Remove filter',
+      ),
+    ),
+}));
+
+vi.mock('@/components/dashboard/category-tabs', () => ({
+  CategoryTabs: ({
+    activeCategory,
+    onValueChange,
+    children,
+  }: {
+    activeCategory: DashboardState['activeCategory'];
+    onValueChange?: (category: DashboardState['activeCategory']) => void;
+    children: React.ReactNode;
+  }) =>
+    React.createElement(
+      'div',
+      { 'data-testid': 'category-tabs' },
+      React.createElement('span', { 'data-testid': 'active-category' }, activeCategory),
+      React.createElement(
+        'button',
+        {
+          type: 'button',
+          onClick: () => onValueChange?.('Total'),
+          'data-testid': 'select-total',
+        },
+        'Total',
+      ),
+      React.createElement(
+        'button',
+        {
+          type: 'button',
+          onClick: () => onValueChange?.('New Logo'),
+          'data-testid': 'select-new-logo',
+        },
+        'New Logo',
+      ),
+      children,
+    ),
+}));
+
+vi.mock('@/components/dashboard/tile-table', () => ({
+  TileTable: ({
+    snapshot,
+    selectedTileId,
+    onRowSelect,
+  }: {
+    snapshot: CategorySnapshotPayload;
+    selectedTileId: string;
+    onRowSelect?: (tileId: string) => void;
+  }) =>
+    React.createElement(
+      'div',
+      { 'data-testid': 'tile-table' },
+      React.createElement('span', { 'data-testid': 'selected-tile' }, selectedTileId),
+      snapshot.rows.map((row) =>
+        React.createElement(
+          'button',
+          {
+            key: row.tileId,
+            type: 'button',
+            onClick: () => onRowSelect?.(row.tileId),
+            'data-testid': `row-${row.tileId}`,
+          },
+          row.label,
+        ),
+      ),
+    ),
+  TileTableSkeleton: ({
+    category,
+  }: {
+    category: DashboardState['activeCategory'];
+  }) =>
+    React.createElement(
+      'div',
+      { 'data-testid': 'tile-table-skeleton' },
+      `${category} loading`,
+    ),
+}));
+
+vi.mock('@/components/dashboard/trend-panel', () => ({
+  TrendPanel: ({
+    trend,
+    isLoading,
+    isVisible,
+    displayLabel,
+  }: {
+    trend: TileTrendPayload | null;
+    isLoading?: boolean;
+    isVisible?: boolean;
+    displayLabel?: string;
+  }) =>
+    React.createElement(
+      'div',
+      { 'data-testid': 'trend-panel' },
+      isVisible ? `${displayLabel ?? trend?.label}${isLoading ? ' refreshing' : ''}` : 'trend placeholder',
+    ),
+}));
+
+vi.mock('@/components/dashboard/closed-won-opportunities-table', () => ({
+  ClosedWonOpportunitiesTable: ({
+    payload,
+  }: {
+    payload: ClosedWonOpportunitiesPayload;
+  }) =>
+    React.createElement(
+      'div',
+      { 'data-testid': 'closed-won-table' },
+      `${payload.category} closed won`,
+    ),
+  ClosedWonOpportunitiesTableSkeleton: () =>
+    React.createElement('div', { 'data-testid': 'closed-won-table-skeleton' }, 'closed won loading'),
+}));
+
+const snapshotCalls: string[] = [];
+const trendCalls: string[] = [];
+const closedWonCalls: string[] = [];
+let failSnapshotRequests = false;
+let deferSnapshotRequests = false;
+let deferredSnapshotResolvers: Array<() => void> = [];
+let failTrendRequests = false;
+let deferTrendRequests = false;
+let deferredTrendResolvers: Array<() => void> = [];
+let failClosedWonRequests = false;
+let deferClosedWonRequests = false;
+let deferredClosedWonResolvers: Array<() => void> = [];
+
+function jsonResponse(body: unknown): Response {
+  return {
+    ok: true,
+    json: async () => body,
+  } as Response;
+}
+
+async function flush(): Promise<void> {
+  await act(async () => {
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+}
+
+describe('dashboard shell client interactions', () => {
+  let container: HTMLDivElement;
+  let root: Root;
+  let replaceStateSpy: ReturnType<typeof vi.spyOn>;
+
+  const initialState: DashboardState = {
+    activeCategory: 'New Logo',
+    selectedTileId: 'new_logo_sql',
+    filters: {},
+    dateRange: { startDate: '2026-01-01', endDate: '2026-03-31' },
+    previousDateRange: { startDate: '2025-01-01', endDate: '2025-03-31' },
+    trendGrain: 'weekly',
+  };
+
+  const initialSnapshot: CategorySnapshotPayload = {
+    category: 'New Logo',
+    currentWindowLabel: 'Jan 1, 2026 - Mar 31, 2026',
+    previousWindowLabel: 'Jan 1, 2025 - Mar 31, 2025',
+    lastRefreshedAt: '2026-03-22T00:00:00.000Z',
+    rows: [
+      {
+        tileId: 'new_logo_sql',
+        label: 'SQL',
+        sortOrder: 1,
+        formatType: 'number',
+        currentValue: '10',
+        previousValue: '8',
+        pctChange: '+25%',
+      },
+      {
+        tileId: 'new_logo_sqo',
+        label: 'SQO',
+        sortOrder: 2,
+        formatType: 'number',
+        currentValue: '6',
+        previousValue: '4',
+        pctChange: '+50%',
+      },
+    ],
+    tileTimings: [],
+  };
+
+  const initialTrend: TileTrendPayload = {
+    category: 'New Logo',
+    tileId: 'new_logo_sql',
+    label: 'SQL',
+    grain: 'weekly',
+    xAxisFieldLabel: 'Created Date',
+    currentWindowLabel: 'Jan 1, 2026 - Mar 31, 2026',
+    previousWindowLabel: 'Jan 1, 2025 - Mar 31, 2025',
+    points: [],
+  };
+
+  const totalSnapshot: CategorySnapshotPayload = {
+    category: 'Total',
+    currentWindowLabel: 'Jan 1, 2026 - Mar 31, 2026',
+    previousWindowLabel: 'Jan 1, 2025 - Mar 31, 2025',
+    lastRefreshedAt: '2026-03-22T00:00:00.000Z',
+    rows: [
+      {
+        tileId: 'total_bookings_amount',
+        label: 'Bookings $',
+        sortOrder: 1,
+        formatType: 'currency',
+        currentValue: '$100',
+        previousValue: '$80',
+        pctChange: '+25%',
+      },
+    ],
+    tileTimings: [],
+  };
+
+  const totalTrend: TileTrendPayload = {
+    category: 'Total',
+    tileId: 'total_bookings_amount',
+    label: 'Bookings $',
+    grain: 'weekly',
+    xAxisFieldLabel: 'Close Date',
+    currentWindowLabel: 'Jan 1, 2026 - Mar 31, 2026',
+    previousWindowLabel: 'Jan 1, 2025 - Mar 31, 2025',
+    points: [],
+  };
+
+  const closedWonPayload: ClosedWonOpportunitiesPayload = {
+    category: 'New Logo',
+    currentWindowLabel: 'Jan 1, 2026 - Mar 31, 2026',
+    lastRefreshedAt: '2026-03-22T00:00:00.000Z',
+    rows: [],
+  };
+
+  const totalClosedWonPayload: ClosedWonOpportunitiesPayload = {
+    category: 'Total',
+    currentWindowLabel: 'Jan 1, 2026 - Mar 31, 2026',
+    lastRefreshedAt: '2026-03-22T00:00:00.000Z',
+    rows: [],
+  };
+
+  const dictionaries: Record<string, FilterDictionaryPayload> = {
+    Division: {
+      filterKey: 'Division',
+      options: [{ value: 'Enterprise', label: 'Enterprise', sortOrder: 1 }],
+    } as FilterDictionaryPayload,
+  } as Record<string, FilterDictionaryPayload>;
+
+  const overviewBoard = {
+    currentWindowLabel: 'Jan 1, 2026 - Mar 31, 2026',
+    previousWindowLabel: 'Jan 1, 2025 - Mar 31, 2025',
+    lastRefreshedAt: '2026-03-22T00:00:00.000Z',
+    snapshots: [
+      initialSnapshot,
+      { ...initialSnapshot, category: 'Expansion' as const },
+      { ...initialSnapshot, category: 'Migration' as const },
+      { ...initialSnapshot, category: 'Renewal' as const },
+      totalSnapshot,
+    ],
+  };
+
+  beforeEach(async () => {
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    snapshotCalls.length = 0;
+    trendCalls.length = 0;
+    closedWonCalls.length = 0;
+    failSnapshotRequests = false;
+    deferSnapshotRequests = false;
+    deferredSnapshotResolvers = [];
+    failTrendRequests = false;
+    deferTrendRequests = false;
+    deferredTrendResolvers = [];
+    failClosedWonRequests = false;
+    deferClosedWonRequests = false;
+    deferredClosedWonResolvers = [];
+    vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
+    replaceStateSpy = vi.spyOn(window.history, 'replaceState').mockImplementation(() => {});
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.startsWith('/api/dashboard/category/')) {
+          snapshotCalls.push(url);
+          if (deferSnapshotRequests) {
+            await new Promise<void>((resolve) => {
+              deferredSnapshotResolvers.push(resolve);
+            });
+          }
+          if (failSnapshotRequests) {
+            return {
+              ok: false,
+              status: 500,
+              json: async () => ({ error: 'boom' }),
+            } as Response;
+          }
+          if (url.includes('/api/dashboard/category/Total')) {
+            return jsonResponse(totalSnapshot);
+          }
+          return jsonResponse(initialSnapshot);
+        }
+
+        if (url.startsWith('/api/dashboard/trend/')) {
+          trendCalls.push(url);
+          if (deferTrendRequests) {
+            await new Promise<void>((resolve) => {
+              deferredTrendResolvers.push(resolve);
+            });
+          }
+          if (failTrendRequests) {
+            return {
+              ok: false,
+              status: 500,
+              json: async () => ({ error: 'boom' }),
+            } as Response;
+          }
+          if (url.includes('/api/dashboard/trend/total_bookings_amount')) {
+            return jsonResponse(totalTrend);
+          }
+          return jsonResponse(initialTrend);
+        }
+
+        if (url.startsWith('/api/dashboard/closed-won/')) {
+          closedWonCalls.push(url);
+          if (deferClosedWonRequests) {
+            await new Promise<void>((resolve) => {
+              deferredClosedWonResolvers.push(resolve);
+            });
+          }
+          if (failClosedWonRequests) {
+            return {
+              ok: false,
+              status: 500,
+              json: async () => ({ error: 'boom' }),
+            } as Response;
+          }
+          if (url.includes('/api/dashboard/closed-won/Total')) {
+            return jsonResponse(totalClosedWonPayload);
+          }
+          return jsonResponse(closedWonPayload);
+        }
+
+        throw new Error(`Unexpected fetch: ${url}`);
+      }),
+    );
+
+    const { DashboardShell } = await import('@/components/dashboard/dashboard-shell');
+    root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        React.createElement(DashboardShell, {
+          initialState,
+          initialSnapshot,
+          initialTrend,
+          initialDictionaries: dictionaries,
+          renderedAt: '2026-03-31T12:05:00.000Z',
+        }),
+      );
+    });
+  });
+
+  afterEach(async () => {
+    await act(async () => {
+      root?.unmount();
+    });
+    replaceStateSpy.mockRestore();
+    vi.unstubAllGlobals();
+    container.remove();
+  });
+
+  it('refreshes only the trend endpoint when a row is selected', async () => {
+    const rowButton = container.querySelector('[data-testid="row-new_logo_sqo"]');
+    expect(rowButton).not.toBeNull();
+
+    await act(async () => {
+      rowButton!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    await flush();
+
+    expect(snapshotCalls).toHaveLength(0);
+    expect(trendCalls).toHaveLength(1);
+    expect(trendCalls[0]).toContain('/api/dashboard/trend/new_logo_sqo');
+  });
+
+  it('selects the clicked row immediately and shows trend loading while the trend refreshes', async () => {
+    deferTrendRequests = true;
+
+    const rowButton = container.querySelector('[data-testid="row-new_logo_sqo"]');
+    const selectedTile = () =>
+      container.querySelector('[data-testid="selected-tile"]')?.textContent;
+
+    expect(rowButton).not.toBeNull();
+    expect(selectedTile()).toBe('');
+
+    await act(async () => {
+      rowButton!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(selectedTile()).toBe('new_logo_sqo');
+    expect(container.querySelector('[data-testid="trend-panel"]')?.textContent).toContain(
+      'SQO refreshing',
+    );
+    expect(trendCalls).toHaveLength(1);
+
+    await act(async () => {
+      deferredTrendResolvers.forEach((resolve) => resolve());
+      deferredTrendResolvers = [];
+    });
+
+    await flush();
+
+    expect(container.querySelector('[data-testid="trend-panel"]')?.textContent).toBe('SQL');
+  });
+
+  it('defaults to the first tile and refreshes both endpoints when the category changes', async () => {
+    const categoryButton = container.querySelector('[data-testid="select-total"]');
+    expect(categoryButton).not.toBeNull();
+
+    await act(async () => {
+      categoryButton!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    await flush();
+
+    expect(snapshotCalls).toHaveLength(1);
+    expect(snapshotCalls[0]).toBe(
+      '/api/dashboard/category/Total?category=Total&startDate=2026-01-01&endDate=2026-03-31',
+    );
+    expect(trendCalls).toHaveLength(1);
+    expect(closedWonCalls).toHaveLength(1);
+    expect(closedWonCalls[0]).toBe(
+      '/api/dashboard/closed-won/Total?category=Total&startDate=2026-01-01&endDate=2026-03-31',
+    );
+    expect(trendCalls[0]).toContain('/api/dashboard/trend/total_bookings_amount');
+    expect(replaceStateSpy).toHaveBeenCalled();
+    expect(container.querySelector('[data-testid="trend-panel"]')?.textContent).toBe(
+      'trend placeholder',
+    );
+  });
+
+  it('activates the clicked tab immediately and shows tile loading while the snapshot refreshes', async () => {
+    deferSnapshotRequests = true;
+
+    const categoryButton = container.querySelector('[data-testid="select-total"]');
+    const activeCategory = () =>
+      container.querySelector('[data-testid="active-category"]')?.textContent;
+
+    expect(categoryButton).not.toBeNull();
+
+    await act(async () => {
+      categoryButton!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(activeCategory()).toBe('Total');
+    expect(container.textContent).toContain('Total loading');
+    expect(snapshotCalls).toHaveLength(1);
+    expect(trendCalls).toHaveLength(1);
+    expect(closedWonCalls).toHaveLength(1);
+
+    await act(async () => {
+      deferredSnapshotResolvers.forEach((resolve) => resolve());
+      deferredSnapshotResolvers = [];
+      deferredClosedWonResolvers.forEach((resolve) => resolve());
+      deferredClosedWonResolvers = [];
+    });
+
+    await flush();
+
+    expect(container.querySelector('[data-testid="tile-table-skeleton"]')).toBeNull();
+  });
+
+  it('keeps the current state and URL when a category refresh fails', async () => {
+    failSnapshotRequests = true;
+
+    const categoryButton = container.querySelector('[data-testid="select-total"]');
+    const activeCategory = () =>
+      container.querySelector('[data-testid="active-category"]')?.textContent;
+
+    expect(categoryButton).not.toBeNull();
+    expect(activeCategory()).toBe('New Logo');
+
+    await act(async () => {
+      categoryButton!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    await flush();
+
+    expect(snapshotCalls).toHaveLength(1);
+    expect(trendCalls).toHaveLength(1);
+    expect(closedWonCalls).toHaveLength(1);
+    expect(activeCategory()).toBe('New Logo');
+    expect(replaceStateSpy).toHaveBeenCalledTimes(2);
+    expect(container.textContent).toContain('Dashboard refresh failed');
+  });
+
+  it('reuses cached category snapshots after overview preload and only fetches trend on category click', async () => {
+    const { DashboardShell } = await import('@/components/dashboard/dashboard-shell');
+
+    await act(async () => {
+      root.render(
+        React.createElement(DashboardShell, {
+          initialState: {
+            ...initialState,
+            activeCategory: 'Overview',
+          },
+          initialSnapshot: null,
+          initialTrend: null,
+          initialOverviewBoard: overviewBoard,
+          initialDictionaries: dictionaries,
+          renderedAt: '2026-03-31T12:05:00.000Z',
+        }),
+      );
+    });
+
+    snapshotCalls.length = 0;
+    trendCalls.length = 0;
+    closedWonCalls.length = 0;
+
+    const categoryButton = container.querySelector('[data-testid="select-new-logo"]');
+    expect(categoryButton).not.toBeNull();
+
+    await act(async () => {
+      categoryButton!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    await flush();
+
+    expect(snapshotCalls).toHaveLength(0);
+    expect(trendCalls).toHaveLength(1);
+    expect(closedWonCalls).toHaveLength(1);
+    expect(trendCalls[0]).toContain('/api/dashboard/trend/new_logo_bookings_amount');
+  });
+});

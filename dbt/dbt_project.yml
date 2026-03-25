@@ -1,0 +1,11 @@
+name: situation_room
+version: 1.0.0
+config-version: 2
+profile: situation_room
+
+model-paths: ["models"]
+
+models:
+  situation_room:
+    app_serving:
+      +materialized: table

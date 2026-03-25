@@ -1,158 +1,231 @@
 'use client';
 
-import { useMemo } from 'react';
+import * as React from 'react';
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Tooltip,
-  Legend,
-  Filler,
-} from 'chart.js';
-import { Bar } from 'react-chartjs-2';
-import type { CategoryData } from '@/lib/types';
+  CartesianGrid,
+  Line,
+  LineChart,
+  XAxis,
+  YAxis,
+} from 'recharts';
+import type { TileTrendPayload } from '@/lib/dashboard/contracts';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart';
+import {
+  TREND_CHART_CONFIG,
+  buildTrendChartData,
+  formatTrendAxisLabel,
+  formatTrendAxisValue,
+  formatTrendTooltipValue,
+  getTrendFormatType,
+  getTrendAxisWidth,
+} from '@/lib/trend-chart-model';
+import { toStableDomId } from '@/lib/stable-dom-id';
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Tooltip,
-  Legend,
-  Filler,
-);
+type TrendChartDatum = ReturnType<typeof buildTrendChartData>[number];
 
-function useCssVar(name: string): string {
-  if (typeof document === 'undefined') return '';
-  return getComputedStyle(document.documentElement)
-    .getPropertyValue(name)
-    .trim();
+function getNotablePointIndexes(
+  data: TrendChartDatum[],
+  key: 'current' | 'previous',
+) {
+  const numericPoints = data
+    .map((point, index) => ({ index, value: point[key] }))
+    .filter((point): point is { index: number; value: number } => point.value != null && !Number.isNaN(point.value));
+
+  if (numericPoints.length === 0) {
+    return new Set<number>();
+  }
+
+  const maxPoint = numericPoints.reduce((best, point) => (point.value > best.value ? point : best));
+  const minPoint = numericPoints.reduce((best, point) => (point.value < best.value ? point : best));
+  const lastPoint = numericPoints.at(-1) ?? numericPoints[0];
+
+  return new Set([maxPoint.index, minPoint.index, lastPoint.index]);
 }
 
-interface TrendChartProps {
-  data: CategoryData[];
-  metricIndex: number;
-}
+function renderTrendValueLabel({
+  index,
+  value,
+  x,
+  y,
+  keyName,
+  notableIndexes,
+  formatType,
+  lastIndex,
+}: {
+  index?: number;
+  value?: number | string;
+  x?: number;
+  y?: number;
+  keyName: 'current' | 'previous';
+  notableIndexes: Set<number>;
+  formatType: ReturnType<typeof getTrendFormatType>;
+  lastIndex: number;
+}) {
+  if (
+    index == null ||
+    !notableIndexes.has(index) ||
+    typeof x !== 'number' ||
+    typeof y !== 'number' ||
+    typeof value !== 'number'
+  ) {
+    return <g />;
+  }
 
-export function TrendChart({ data, metricIndex }: TrendChartProps) {
-  const accent = useCssVar('--accent-brand');
-  const border = useCssVar('--border-subtle');
-  const borderSubtle = useCssVar('--border-subtle');
-  const textSecondary = useCssVar('--text-secondary');
-  const textTertiary = useCssVar('--text-tertiary');
-  const surfaceElevated = useCssVar('--surface-elevated');
-  const textPrimary = useCssVar('--text-primary');
-
-  const categories = data.filter((d) => d.category !== 'Total');
-
-  const labels = categories.map((d) => d.category);
-  const currentValues = categories.map((d) => {
-    const row = d.rows[metricIndex];
-    if (!row) return 0;
-    const cleaned = row.currentPeriod.replace(/[$,K%]/g, '');
-    return parseFloat(cleaned) || 0;
-  });
-  const previousValues = categories.map((d) => {
-    const row = d.rows[metricIndex];
-    if (!row) return 0;
-    const cleaned = row.previousPeriod.replace(/[$,K%]/g, '');
-    return parseFloat(cleaned) || 0;
-  });
-
-  const chartData = useMemo(
-    () => ({
-      labels,
-      datasets: [
-        {
-          label: 'Current YTD',
-          data: currentValues,
-          backgroundColor: accent || '#1e40af',
-          borderRadius: 4,
-          barPercentage: 0.35,
-          categoryPercentage: 0.7,
-        },
-        {
-          label: 'Prior YTD',
-          data: previousValues,
-          backgroundColor: border || '#e5e7eb',
-          borderRadius: 4,
-          barPercentage: 0.35,
-          categoryPercentage: 0.7,
-        },
-      ],
-    }),
-    [labels, currentValues, previousValues, accent, border],
-  );
-
-  const options = useMemo(
-    () => ({
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          display: true,
-          position: 'top' as const,
-          align: 'end' as const,
-          labels: {
-            usePointStyle: true,
-            pointStyle: 'rectRounded',
-            padding: 16,
-            font: { size: 11, family: 'Inter, sans-serif' },
-            color: textSecondary || '#6b7280',
-          },
-        },
-        tooltip: {
-          backgroundColor: surfaceElevated || '#f8f9fa',
-          titleColor: textPrimary || '#111827',
-          bodyColor: textSecondary || '#6b7280',
-          borderColor: border || '#e5e7eb',
-          borderWidth: 1,
-          padding: 12,
-          cornerRadius: 8,
-          titleFont: {
-            size: 12,
-            weight: 'bold' as const,
-            family: 'Inter, sans-serif',
-          },
-          bodyFont: { size: 11, family: 'Inter, sans-serif' },
-        },
-      },
-      scales: {
-        x: {
-          grid: { display: false },
-          ticks: {
-            font: { size: 11, family: 'Inter, sans-serif' },
-            color: textTertiary || '#9ca3af',
-          },
-          border: { display: false },
-        },
-        y: {
-          grid: { color: borderSubtle || '#f0f0f0' },
-          ticks: {
-            font: { size: 11, family: 'Inter, sans-serif' },
-            color: textTertiary || '#9ca3af',
-          },
-          border: { display: false },
-        },
-      },
-    }),
-    [
-      textSecondary,
-      textTertiary,
-      textPrimary,
-      surfaceElevated,
-      border,
-      borderSubtle,
-    ],
-  );
+  const dy = keyName === 'current' ? -12 : 18;
+  const isLastPoint = index === lastIndex;
 
   return (
-    <div className="h-[240px] w-full">
-      <Bar data={chartData} options={options} />
+    <text
+      x={isLastPoint ? x - 6 : x}
+      y={y + dy}
+      textAnchor={isLastPoint ? 'end' : 'middle'}
+      className="fill-muted-foreground"
+      style={{ fontSize: 11, fontWeight: 500 }}
+    >
+      {formatTrendAxisValue(value, formatType)}
+    </text>
+  );
+}
+
+export function TrendChart({ trend }: { trend: TileTrendPayload }) {
+  const data = React.useMemo(() => buildTrendChartData(trend), [trend]);
+  const formatType = React.useMemo(() => getTrendFormatType(trend), [trend]);
+  const yAxisWidth = React.useMemo(() => getTrendAxisWidth(trend), [trend]);
+  const lastDataIndex = Math.max(data.length - 1, 0);
+  const currentNotableIndexes = React.useMemo(
+    () => getNotablePointIndexes(data, 'current'),
+    [data],
+  );
+  const previousNotableIndexes = React.useMemo(
+    () => getNotablePointIndexes(data, 'previous'),
+    [data],
+  );
+  const xAxisFieldLabel = trend.xAxisFieldLabel ?? 'Date';
+
+  return (
+    <div className="flex aspect-[1.52/1] min-h-[18rem] w-full max-h-[min(30rem,50vh)] flex-col justify-end gap-3">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-muted-foreground">
+        <div className="inline-flex items-center gap-2">
+          <span
+            className="h-0.5 w-6 rounded-full"
+            style={{ backgroundColor: 'var(--chart-1)' }}
+          />
+          <span>{TREND_CHART_CONFIG.current.label}</span>
+        </div>
+        <div className="inline-flex items-center gap-2">
+          <span
+            className="h-0.5 w-6 rounded-full opacity-75"
+            style={{ backgroundColor: 'var(--chart-2)' }}
+          />
+          <span>{TREND_CHART_CONFIG.previous.label}</span>
+        </div>
+      </div>
+
+      <ChartContainer
+        id={`trend-chart-${toStableDomId(trend.category)}-${toStableDomId(trend.tileId)}`}
+        config={TREND_CHART_CONFIG}
+        className="min-h-0 h-full w-full flex-1 !aspect-auto justify-stretch"
+      >
+        <LineChart
+          accessibilityLayer
+          data={data}
+          margin={{
+            top: 10,
+            left: 10,
+            right: 4,
+            bottom: 14,
+          }}
+        >
+          <CartesianGrid
+            vertical={false}
+            stroke="var(--border)"
+            strokeWidth={1}
+            strokeDasharray="2 4"
+          />
+          <XAxis
+            dataKey="bucketLabel"
+            tickLine={{ stroke: 'var(--border)', strokeWidth: 1 }}
+            tickSize={6}
+            axisLine={{ stroke: 'var(--border)', strokeWidth: 1 }}
+            tickMargin={12}
+            minTickGap={24}
+            tickFormatter={formatTrendAxisLabel}
+          />
+          <YAxis
+            tickLine={{ stroke: 'var(--border)', strokeWidth: 1 }}
+            tickSize={6}
+            axisLine={{ stroke: 'var(--border)', strokeWidth: 1 }}
+            tickMargin={12}
+            width={yAxisWidth}
+            tickFormatter={(value: number) => formatTrendAxisValue(value, formatType)}
+          />
+          <ChartTooltip
+            cursor={false}
+            content={
+              <ChartTooltipContent
+                indicator="line"
+                valueFormatter={(value) => formatTrendTooltipValue(value, formatType)}
+              />
+            }
+          />
+          <Line
+            dataKey="previous"
+            type="monotone"
+            stroke="var(--color-previous)"
+            strokeWidth={1.5}
+            strokeOpacity={0.68}
+            dot={false}
+            label={(props) =>
+              renderTrendValueLabel({
+                index: props.index,
+                value: props.value as number | string | undefined,
+                x: props.x,
+                y: props.y,
+                keyName: 'previous',
+                notableIndexes: previousNotableIndexes,
+                formatType,
+                lastIndex: lastDataIndex,
+              })
+            }
+            activeDot={{
+              r: 5,
+              fill: 'var(--color-previous)',
+              stroke: 'var(--background)',
+              strokeWidth: 2,
+            }}
+          />
+          <Line
+            dataKey="current"
+            type="monotone"
+            stroke="var(--color-current)"
+            strokeWidth={3}
+            dot={false}
+            label={(props) =>
+              renderTrendValueLabel({
+                index: props.index,
+                value: props.value as number | string | undefined,
+                x: props.x,
+                y: props.y,
+                keyName: 'current',
+                notableIndexes: currentNotableIndexes,
+                formatType,
+                lastIndex: lastDataIndex,
+              })
+            }
+            activeDot={{
+              r: 5,
+              fill: 'var(--color-current)',
+              stroke: 'var(--background)',
+              strokeWidth: 2,
+            }}
+          />
+        </LineChart>
+      </ChartContainer>
+      <p className="text-center text-[11px] leading-5 text-muted-foreground">{xAxisFieldLabel}</p>
     </div>
   );
 }
