@@ -12,6 +12,11 @@ import {
   type SortingState,
 } from '@tanstack/react-table';
 import {
+  normalizeTileSpec,
+  validateTileSpec,
+  type TableTileSpec,
+} from '@por/dashboard-spec';
+import {
   ArrowDownIcon,
   ArrowUpDownIcon,
   ArrowUpIcon,
@@ -41,6 +46,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
+import { closedWonOpportunitiesTableSpec } from '@/lib/dashboard-v2/specs/closed-won-table';
 
 const DEFAULT_PAGE_SIZE = 10;
 
@@ -48,6 +54,22 @@ type ColumnMeta = {
   headClassName?: string;
   cellClassName?: string;
 };
+
+const closedWonTableValidation = validateTileSpec(closedWonOpportunitiesTableSpec);
+
+if (!closedWonTableValidation.ok) {
+  throw new Error(
+    `Invalid closed won table spec: ${closedWonTableValidation.errors.join(', ')}`,
+  );
+}
+
+const normalizedClosedWonTableSpec = normalizeTileSpec(
+  closedWonOpportunitiesTableSpec,
+);
+
+if (normalizedClosedWonTableSpec.kind !== 'table') {
+  throw new Error('Closed won table spec must normalize to a table tile.');
+}
 
 function OpportunityLink({
   href,
@@ -121,188 +143,150 @@ function SortableHeader({
   );
 }
 
-function getColumns(): Array<ColumnDef<ClosedWonOpportunityRow>> {
-  return [
-    {
-      accessorKey: 'accountName',
-      header: ({ column }) => (
-        <SortableHeader column={column} title="Account" />
-      ),
-      cell: ({ row }) => (
-        <OpportunityLink
-          href={row.original.accountLink}
-          label={row.original.accountName}
-        />
-      ),
-      meta: {
-        headClassName: 'min-w-40',
-        cellClassName: 'min-w-40 text-foreground',
-      } satisfies ColumnMeta,
-    },
-    {
-      accessorKey: 'opportunityName',
-      header: ({ column }) => (
-        <SortableHeader column={column} title="Opportunity" />
-      ),
-      cell: ({ row }) => (
-        <OpportunityLink
-          href={row.original.opportunityLink}
-          label={row.original.opportunityName}
-        />
-      ),
-      meta: {
-        headClassName: 'min-w-44',
-        cellClassName: 'min-w-44 text-foreground',
-      } satisfies ColumnMeta,
-    },
-    {
-      accessorKey: 'closeDate',
-      header: ({ column }) => (
-        <SortableHeader column={column} title="Close Date" />
-      ),
-      meta: {
-        headClassName: 'min-w-28',
-        cellClassName: 'min-w-28',
-      } satisfies ColumnMeta,
-    },
-    {
-      accessorKey: 'createdDate',
-      header: ({ column }) => (
-        <SortableHeader column={column} title="Created Date" />
-      ),
-      meta: {
-        headClassName: 'min-w-28',
-        cellClassName: 'min-w-28',
-      } satisfies ColumnMeta,
-    },
-    {
-      accessorKey: 'division',
-      header: 'Division',
-      enableSorting: false,
-      meta: {
-        headClassName: 'min-w-24',
-        cellClassName: 'min-w-24',
-      } satisfies ColumnMeta,
-    },
-    {
-      accessorKey: 'type',
-      header: 'Type',
-      enableSorting: false,
-      meta: {
-        headClassName: 'min-w-20',
-        cellClassName: 'min-w-20',
-      } satisfies ColumnMeta,
-    },
-    {
-      accessorKey: 'productFamily',
-      header: 'Product',
-      enableSorting: false,
-      meta: {
-        headClassName: 'min-w-28',
-        cellClassName: 'min-w-28',
-      } satisfies ColumnMeta,
-    },
-    {
-      accessorKey: 'bookingPlanOppType2025',
-      header: 'Booking Plan Opp Type 2025',
-      enableSorting: false,
-      meta: {
-        headClassName: 'min-w-44',
-        cellClassName: 'min-w-44',
-      } satisfies ColumnMeta,
-    },
-    {
-      accessorKey: 'owner',
-      header: ({ column }) => <SortableHeader column={column} title="Owner" />,
-      meta: {
-        headClassName: 'min-w-28',
-        cellClassName: 'min-w-28',
-      } satisfies ColumnMeta,
-    },
-    {
-      accessorKey: 'sdr',
-      header: 'SDR',
-      enableSorting: false,
-      meta: {
-        headClassName: 'min-w-20',
-        cellClassName: 'min-w-20',
-      } satisfies ColumnMeta,
-    },
-    {
-      accessorKey: 'oppRecordType',
-      header: 'POR / R360',
-      enableSorting: false,
-      meta: {
-        headClassName: 'min-w-24',
-        cellClassName: 'min-w-24',
-      } satisfies ColumnMeta,
-    },
-    {
-      accessorKey: 'age',
-      header: 'Age',
-      enableSorting: false,
-      meta: {
-        headClassName: 'min-w-20',
-        cellClassName: 'min-w-20',
-      } satisfies ColumnMeta,
-    },
-    {
-      accessorKey: 'se',
-      header: 'SE',
-      enableSorting: false,
-      meta: {
-        headClassName: 'min-w-20',
-        cellClassName: 'min-w-20',
-      } satisfies ColumnMeta,
-    },
-    {
-      accessorKey: 'quarter',
-      header: ({ column }) => (
-        <SortableHeader column={column} title="Quarter" />
-      ),
-      meta: {
-        headClassName: 'min-w-24',
-        cellClassName: 'min-w-24',
-      } satisfies ColumnMeta,
-    },
-    {
-      accessorKey: 'contractStartDate',
-      header: ({ column }) => (
-        <SortableHeader column={column} title="Contract Start Date" />
-      ),
-      meta: {
-        headClassName: 'min-w-36',
-        cellClassName: 'min-w-36',
-      } satisfies ColumnMeta,
-    },
-    {
-      accessorKey: 'users',
-      header: ({ column }) => (
-        <SortableHeader column={column} title="Users" className="justify-end" />
-      ),
-      sortingFn: (rowA, rowB, columnId) =>
-        parseInteger(String(rowA.getValue(columnId))) -
-        parseInteger(String(rowB.getValue(columnId))),
-      meta: {
-        headClassName: 'min-w-20 text-right',
-        cellClassName: 'min-w-20 text-right tabular-nums text-foreground',
-      } satisfies ColumnMeta,
-    },
-    {
-      accessorKey: 'acv',
-      header: ({ column }) => (
-        <SortableHeader column={column} title="ACV $" className="justify-end" />
-      ),
-      sortingFn: (rowA, rowB, columnId) =>
-        parseCurrency(String(rowA.getValue(columnId))) -
-        parseCurrency(String(rowB.getValue(columnId))),
-      meta: {
-        headClassName: 'min-w-24 text-right',
-        cellClassName:
-          'min-w-24 text-right font-medium tabular-nums text-foreground',
-      } satisfies ColumnMeta,
-    },
-  ];
+type ColumnConfig = {
+  enableSorting?: boolean;
+  headerClassName?: string;
+  headClassName?: string;
+  cellClassName?: string;
+  cell?: ColumnDef<ClosedWonOpportunityRow>['cell'];
+  sortingFn?: ColumnDef<ClosedWonOpportunityRow>['sortingFn'];
+};
+
+type ClosedWonTableColumnSpec =
+  TableTileSpec['visualization']['columns'][number];
+
+const columnConfigByField: Partial<
+  Record<keyof ClosedWonOpportunityRow, ColumnConfig>
+> = {
+  accountName: {
+    headClassName: 'min-w-40',
+    cellClassName: 'min-w-40 text-foreground',
+    cell: ({ row }) => (
+      <OpportunityLink
+        href={row.original.accountLink}
+        label={row.original.accountName}
+      />
+    ),
+  },
+  opportunityName: {
+    headClassName: 'min-w-44',
+    cellClassName: 'min-w-44 text-foreground',
+    cell: ({ row }) => (
+      <OpportunityLink
+        href={row.original.opportunityLink}
+        label={row.original.opportunityName}
+      />
+    ),
+  },
+  closeDate: {
+    headClassName: 'min-w-28',
+    cellClassName: 'min-w-28',
+  },
+  createdDate: {
+    headClassName: 'min-w-28',
+    cellClassName: 'min-w-28',
+  },
+  division: {
+    enableSorting: false,
+    headClassName: 'min-w-24',
+    cellClassName: 'min-w-24',
+  },
+  type: {
+    enableSorting: false,
+    headClassName: 'min-w-20',
+    cellClassName: 'min-w-20',
+  },
+  productFamily: {
+    enableSorting: false,
+    headClassName: 'min-w-28',
+    cellClassName: 'min-w-28',
+  },
+  bookingPlanOppType2025: {
+    enableSorting: false,
+    headClassName: 'min-w-44',
+    cellClassName: 'min-w-44',
+  },
+  owner: {
+    headClassName: 'min-w-28',
+    cellClassName: 'min-w-28',
+  },
+  sdr: {
+    enableSorting: false,
+    headClassName: 'min-w-20',
+    cellClassName: 'min-w-20',
+  },
+  oppRecordType: {
+    enableSorting: false,
+    headClassName: 'min-w-24',
+    cellClassName: 'min-w-24',
+  },
+  age: {
+    enableSorting: false,
+    headClassName: 'min-w-20',
+    cellClassName: 'min-w-20',
+  },
+  se: {
+    enableSorting: false,
+    headClassName: 'min-w-20',
+    cellClassName: 'min-w-20',
+  },
+  quarter: {
+    headClassName: 'min-w-24',
+    cellClassName: 'min-w-24',
+  },
+  contractStartDate: {
+    headClassName: 'min-w-36',
+    cellClassName: 'min-w-36',
+  },
+  users: {
+    headerClassName: 'justify-end',
+    headClassName: 'min-w-20 text-right',
+    cellClassName: 'min-w-20 text-right tabular-nums text-foreground',
+    sortingFn: (rowA, rowB, columnId) =>
+      parseInteger(String(rowA.getValue(columnId))) -
+      parseInteger(String(rowB.getValue(columnId))),
+  },
+  acv: {
+    headerClassName: 'justify-end',
+    headClassName: 'min-w-24 text-right',
+    cellClassName:
+      'min-w-24 text-right font-medium tabular-nums text-foreground',
+    sortingFn: (rowA, rowB, columnId) =>
+      parseCurrency(String(rowA.getValue(columnId))) -
+      parseCurrency(String(rowB.getValue(columnId))),
+  },
+};
+
+function buildColumn(
+  column: ClosedWonTableColumnSpec,
+): ColumnDef<ClosedWonOpportunityRow> {
+  const field = column.field as keyof ClosedWonOpportunityRow;
+  const config = columnConfigByField[field];
+  const enableSorting = config?.enableSorting ?? true;
+
+  return {
+    accessorKey: field,
+    header: enableSorting
+      ? ({ column: tanstackColumn }) => (
+          <SortableHeader
+            column={tanstackColumn}
+            title={column.label}
+            className={config?.headerClassName}
+          />
+        )
+      : column.label,
+    enableSorting,
+    ...(config?.cell ? { cell: config.cell } : {}),
+    ...(config?.sortingFn ? { sortingFn: config.sortingFn } : {}),
+    meta: {
+      headClassName: config?.headClassName,
+      cellClassName: config?.cellClassName,
+    } satisfies ColumnMeta,
+  };
+}
+
+function getColumns(spec: TableTileSpec): Array<ColumnDef<ClosedWonOpportunityRow>> {
+  return spec.visualization.columns.map(buildColumn);
 }
 
 export function ClosedWonOpportunitiesTable({
@@ -310,7 +294,10 @@ export function ClosedWonOpportunitiesTable({
 }: {
   payload: ClosedWonOpportunitiesPayload;
 }) {
-  const columns = React.useMemo(() => getColumns(), []);
+  const columns = React.useMemo(
+    () => getColumns(normalizedClosedWonTableSpec as TableTileSpec),
+    [],
+  );
   const [sorting, setSorting] = React.useState<SortingState>([
     { id: 'acv', desc: true },
   ]);
@@ -341,14 +328,14 @@ export function ClosedWonOpportunitiesTable({
       <CardHeader className="gap-2">
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-2">
-            <CardTitle>Closed Won Opportunities</CardTitle>
+            <CardTitle>{normalizedClosedWonTableSpec.title}</CardTitle>
             <CardDescription>
-              Current-period closed won opportunities for {payload.category}.
+              {normalizedClosedWonTableSpec.description} for {payload.category}.
               Sort by key columns and paginate through the current result set.
             </CardDescription>
           </div>
           <TileBackendSheet
-            title="Closed Won Opportunities"
+            title={normalizedClosedWonTableSpec.title}
             trace={payload.backendTrace}
             triggerClassName="group-hover:opacity-100"
           />
