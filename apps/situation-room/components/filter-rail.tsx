@@ -1,14 +1,103 @@
 'use client';
 
+import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import type { FilterKey, ScorecardFilters } from '@/lib/contracts';
 import { FILTER_DEFINITIONS } from '@/lib/filters';
-import { FilterDropdown } from './filter-dropdown';
+import type { FilterDictionaryPayload } from '@/lib/data-adapters/types';
+import {
+  formatCommaSeparatedValues,
+  parseCommaSeparatedValues,
+} from '@/hooks/use-filters';
+import { FilterChip } from './filter-chip';
+
+type FilterDictionaryOption = FilterDictionaryPayload['options'][number];
+type FilterDictionaryMap = Partial<Record<FilterKey, FilterDictionaryOption[]>>;
+
+const STRING_FILTER_DEFINITIONS = FILTER_DEFINITIONS.filter(
+  (filter) => filter.type === 'string',
+);
+
+export async function loadFilterDictionaries(
+  fetchImpl: typeof fetch = fetch,
+): Promise<FilterDictionaryMap> {
+  const entries = await Promise.all(
+    STRING_FILTER_DEFINITIONS.map(async (filter) => {
+      const response = await fetchImpl(
+        `/api/filter-dictionaries/${encodeURIComponent(filter.key)}`,
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to load filter dictionary for ${filter.key}.`);
+      }
+
+      const payload = (await response.json()) as FilterDictionaryPayload;
+      return [filter.key, payload.options] as const;
+    }),
+  );
+
+  return Object.fromEntries(entries) as FilterDictionaryMap;
+}
 
 interface FilterRailProps {
-  activeFilters: Record<string, string[]>;
+  activeFilters: ScorecardFilters;
   activeCount: number;
-  onSetFilter: (key: string, values: string[]) => void;
+  onSetFilter: (key: FilterKey, values: string[]) => void;
   onClearAll: () => void;
+}
+
+interface StringFilterInputProps {
+  keyName: FilterKey;
+  label: string;
+  values: string[];
+  options: FilterDictionaryOption[];
+  onSetFilter: (key: FilterKey, values: string[]) => void;
+}
+
+function StringFilterInput({
+  keyName,
+  label,
+  values,
+  options,
+  onSetFilter,
+}: StringFilterInputProps) {
+  const committedValue = formatCommaSeparatedValues(values);
+  const [inputValue, setInputValue] = useState(() => committedValue);
+
+  useEffect(() => {
+    setInputValue(committedValue);
+  }, [committedValue]);
+
+  const datalistId = useMemo(() => `filter-dictionary-${keyName}`, [keyName]);
+
+  return (
+    <div className="relative">
+      <input
+        type="text"
+        list={datalistId}
+        placeholder={label}
+        className="h-8 px-3 text-xs rounded-md border border-border bg-surface text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-1 focus:ring-accent-brand w-[140px]"
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        onBlur={() =>
+          onSetFilter(keyName, parseCommaSeparatedValues(inputValue))
+        }
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.currentTarget.blur();
+          }
+        }}
+      />
+      <datalist id={datalistId}>
+        {options.map((option) => (
+          <option
+            key={`${option.sortOrder}-${option.value}`}
+            value={option.value}
+          />
+        ))}
+      </datalist>
+    </div>
+  );
 }
 
 export function FilterRail({
@@ -17,14 +106,37 @@ export function FilterRail({
   onSetFilter,
   onClearAll,
 }: FilterRailProps) {
+  const [filterDictionaries, setFilterDictionaries] =
+    useState<FilterDictionaryMap>({});
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void loadFilterDictionaries()
+      .then((loaded) => {
+        if (!cancelled) {
+          setFilterDictionaries(loaded);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setFilterDictionaries({});
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
-    <div className="py-4">
+    <div className="py-4 border-b border-border-subtle">
       <div className="flex items-center justify-between mb-3">
-        <p className="heading-overline">
+        <p className="text-xs font-medium uppercase tracking-[0.15em] text-text-tertiary">
           Filters
           {activeCount > 0 && (
-            <span className="ml-2 inline-flex items-center justify-center rounded-full bg-filter-badge-bg text-filter-badge-text text-[10px] font-bold px-1.5 py-0.5 min-w-[18px]">
-              {activeCount}
+            <span className="ml-2 text-accent-brand font-semibold">
+              {activeCount} active
             </span>
           )}
         </p>
@@ -33,20 +145,37 @@ export function FilterRail({
             variant="ghost"
             size="sm"
             onClick={onClearAll}
-            className="text-xs text-text-secondary hover:text-text-primary hover:bg-interactive-ghost-hover"
+            className="text-xs text-text-secondary hover:text-text-primary"
           >
             Clear all
           </Button>
         )}
       </div>
 
+      {activeCount > 0 && (
+        <div className="flex flex-wrap gap-2 mb-3">
+          {FILTER_DEFINITIONS.filter(
+            (f) => (activeFilters[f.key] ?? []).length > 0,
+          ).map((f) => (
+            <FilterChip
+              key={f.key}
+              label={f.label}
+              values={activeFilters[f.key] ?? []}
+              onRemove={() => onSetFilter(f.key, [])}
+            />
+          ))}
+        </div>
+      )}
+
       <div className="flex flex-wrap gap-2">
-        {FILTER_DEFINITIONS.map((f) => (
-          <FilterDropdown
+        {STRING_FILTER_DEFINITIONS.map((f) => (
+          <StringFilterInput
             key={f.key}
-            definition={f}
+            keyName={f.key}
+            label={f.label}
             values={activeFilters[f.key] ?? []}
-            onSetValues={(vals) => onSetFilter(f.key, vals)}
+            options={filterDictionaries[f.key] ?? []}
+            onSetFilter={onSetFilter}
           />
         ))}
       </div>
