@@ -28,7 +28,8 @@ export function getSemanticString(
   row: SemanticRow | undefined,
   field: string,
 ): string {
-  const value = row?.[field]?.raw;
+  const cell = row?.[field];
+  const value = cell?.raw;
 
   if (typeof value === 'string') {
     return value;
@@ -40,6 +41,10 @@ export function getSemanticString(
 
   if (value == null) {
     return '';
+  }
+
+  if (typeof cell?.formatted === 'string' && cell.formatted.length > 0) {
+    return cell.formatted;
   }
 
   return String(value);

@@ -285,4 +285,94 @@ describe('dashboard v2 server loaders', { timeout: 20000 }, () => {
     });
     expect(closedWon.data.backendTrace?.executions).toHaveLength(1);
   });
+
+  it('uses formatted semantic bucket labels when raw date values are objects', async () => {
+    const runtime = {
+      getCatalogEntries: vi.fn(),
+      runQuery: vi
+        .fn()
+        .mockResolvedValueOnce({
+          rows: [
+            {
+              close_date_week: {
+                raw: { value: '2026-01-05' },
+                formatted: '2026-01-05',
+              },
+              bookings_count: { raw: 20, formatted: '20' },
+            },
+            {
+              close_date_week: {
+                raw: { value: '2026-01-12' },
+                formatted: '2026-01-12',
+              },
+              bookings_count: { raw: 19, formatted: '19' },
+            },
+          ],
+          meta: {
+            source: 'lightdash' as const,
+            model: 'sales_dashboard_v2_opportunity_base',
+            queryCount: 1,
+            compiledSql: 'select current trend',
+            compileDurationMs: 1,
+            executionDurationMs: 2,
+            bytesProcessed: 64,
+          },
+        })
+        .mockResolvedValueOnce({
+          rows: [
+            {
+              close_date_week: {
+                raw: { value: '2025-01-06' },
+                formatted: '2025-01-06',
+              },
+              bookings_count: { raw: 11, formatted: '11' },
+            },
+            {
+              close_date_week: {
+                raw: { value: '2025-01-13' },
+                formatted: '2025-01-13',
+              },
+              bookings_count: { raw: 12, formatted: '12' },
+            },
+          ],
+          meta: {
+            source: 'lightdash' as const,
+            model: 'sales_dashboard_v2_opportunity_base',
+            queryCount: 1,
+            compiledSql: 'select previous trend',
+            compileDurationMs: 1,
+            executionDurationMs: 2,
+            bytesProcessed: 64,
+          },
+        }),
+    } as Parameters<
+      (typeof import('@/lib/server/v2/get-dashboard-tile-trend'))['getDashboardV2TileTrend']
+    >[1];
+
+    const { getDashboardV2TileTrend } =
+      await import('@/lib/server/v2/get-dashboard-tile-trend');
+
+    const result = await getDashboardV2TileTrend(
+      {
+        activeCategory: 'Expansion',
+        selectedTileId: 'expansion_bookings_count',
+        filters: {},
+        dateRange: { startDate: '2026-01-01', endDate: '2026-03-31' },
+        previousDateRange: { startDate: '2025-01-01', endDate: '2025-03-31' },
+        trendGrain: 'weekly',
+      },
+      runtime,
+      { cacheMode: 'off' },
+    );
+
+    expect(result.data.points.map((point) => point.bucketLabel)).toEqual([
+      '2026-01-05',
+      '2026-01-12',
+    ]);
+    expect(
+      result.data.specBindings?.selectedMetricTrend.rows.map(
+        (point) => point.bucketLabel,
+      ),
+    ).toEqual(['2026-01-05', '2026-01-12']);
+  });
 });

@@ -108,7 +108,7 @@ export function TrendChart({ trend }: { trend: TileTrendPayload }) {
   const xAxisFieldLabel = trend.xAxisFieldLabel ?? 'Date';
 
   return (
-    <div className="flex aspect-[1.52/1] min-h-[18rem] w-full max-h-[min(30rem,50vh)] flex-col justify-end gap-3">
+    <div className="flex h-full w-full min-w-0 flex-1 flex-col gap-4">
       <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-muted-foreground">
         <div className="inline-flex items-center gap-2">
           <span
@@ -126,113 +126,121 @@ export function TrendChart({ trend }: { trend: TileTrendPayload }) {
         </div>
       </div>
 
-      <ChartContainer
-        id={`trend-chart-${toStableDomId(trend.category)}-${toStableDomId(trend.tileId)}`}
-        config={TREND_CHART_CONFIG}
-        className="min-h-0 h-full w-full flex-1 !aspect-auto justify-stretch"
-      >
-        <LineChart
-          accessibilityLayer
-          data={data}
-          margin={{
-            top: 10,
-            left: 10,
-            right: 4,
-            bottom: 14,
-          }}
+      <div className="min-h-[18rem] w-full min-w-0 flex-1">
+        <ChartContainer
+          id={`trend-chart-${toStableDomId(trend.category)}-${toStableDomId(trend.tileId)}`}
+          config={TREND_CHART_CONFIG}
+          className="h-full w-full min-w-0"
         >
-          <CartesianGrid
-            vertical={false}
-            stroke="var(--border)"
-            strokeWidth={1}
-            strokeDasharray="2 4"
-          />
-          <XAxis
-            dataKey="bucketLabel"
-            tickLine={{ stroke: 'var(--border)', strokeWidth: 1 }}
-            tickSize={6}
-            axisLine={{ stroke: 'var(--border)', strokeWidth: 1 }}
-            tickMargin={12}
-            minTickGap={24}
-            tickFormatter={formatTrendAxisLabel}
-          />
-          <YAxis
-            tickLine={{ stroke: 'var(--border)', strokeWidth: 1 }}
-            tickSize={6}
-            axisLine={{ stroke: 'var(--border)', strokeWidth: 1 }}
-            tickMargin={12}
-            width={yAxisWidth}
-            tickFormatter={(value: number) =>
-              formatTrendAxisValue(value, formatType)
-            }
-          />
-          <ChartTooltip
-            cursor={false}
-            content={
-              <ChartTooltipContent
-                indicator="line"
-                valueFormatter={(value) =>
-                  formatTrendTooltipValue(value, formatType)
-                }
-              />
-            }
-          />
-          <Line
-            dataKey="previous"
-            type="monotone"
-            stroke="var(--color-previous)"
-            strokeWidth={1.5}
-            strokeOpacity={0.68}
-            dot={false}
-            label={(props) =>
-              renderTrendValueLabel({
-                index: props.index,
-                value: props.value as number | string | undefined,
-                x: props.x,
-                y: props.y,
-                keyName: 'previous',
-                notableIndexes: previousNotableIndexes,
-                formatType,
-                lastIndex: lastDataIndex,
-              })
-            }
-            activeDot={{
-              r: 5,
-              fill: 'var(--color-previous)',
-              stroke: 'var(--background)',
-              strokeWidth: 2,
+          <LineChart
+            accessibilityLayer
+            data={data}
+            margin={{
+              top: 10,
+              left: 10,
+              right: 4,
+              bottom: 14,
             }}
-          />
-          <Line
-            dataKey="current"
-            type="monotone"
-            stroke="var(--color-current)"
-            strokeWidth={3}
-            dot={false}
-            label={(props) =>
-              renderTrendValueLabel({
-                index: props.index,
-                value: props.value as number | string | undefined,
-                x: props.x,
-                y: props.y,
-                keyName: 'current',
-                notableIndexes: currentNotableIndexes,
-                formatType,
-                lastIndex: lastDataIndex,
-              })
-            }
-            activeDot={{
-              r: 5,
-              fill: 'var(--color-current)',
-              stroke: 'var(--background)',
-              strokeWidth: 2,
-            }}
-          />
-        </LineChart>
-      </ChartContainer>
-      <p className="text-center text-[11px] leading-5 text-muted-foreground">
-        {xAxisFieldLabel}
-      </p>
+          >
+            <CartesianGrid
+              vertical={false}
+              stroke="var(--border)"
+              strokeWidth={1}
+              strokeDasharray="2 4"
+            />
+            <XAxis
+              dataKey="bucketLabel"
+              label={{
+                value: xAxisFieldLabel,
+                position: 'insideBottom',
+                offset: -4,
+                style: {
+                  fill: 'var(--muted-foreground)',
+                  fontSize: 11,
+                },
+              }}
+              tickLine={{ stroke: 'var(--border)', strokeWidth: 1 }}
+              tickSize={6}
+              axisLine={{ stroke: 'var(--border)', strokeWidth: 1 }}
+              tickMargin={12}
+              minTickGap={24}
+              tickFormatter={formatTrendAxisLabel}
+            />
+            <YAxis
+              tickLine={{ stroke: 'var(--border)', strokeWidth: 1 }}
+              tickSize={6}
+              axisLine={{ stroke: 'var(--border)', strokeWidth: 1 }}
+              tickMargin={12}
+              width={yAxisWidth}
+              tickFormatter={(value: number) =>
+                formatTrendAxisValue(value, formatType)
+              }
+            />
+            <ChartTooltip
+              cursor={false}
+              content={
+                <ChartTooltipContent
+                  indicator="line"
+                  valueFormatter={(value) =>
+                    formatTrendTooltipValue(value, formatType)
+                  }
+                />
+              }
+            />
+            <Line
+              dataKey="previous"
+              type="monotone"
+              stroke="var(--color-previous)"
+              strokeWidth={1.5}
+              strokeOpacity={0.68}
+              dot={false}
+              label={(props) =>
+                renderTrendValueLabel({
+                  index: props.index,
+                  value: props.value as number | string | undefined,
+                  x: props.x,
+                  y: props.y,
+                  keyName: 'previous',
+                  notableIndexes: previousNotableIndexes,
+                  formatType,
+                  lastIndex: lastDataIndex,
+                })
+              }
+              activeDot={{
+                r: 5,
+                fill: 'var(--color-previous)',
+                stroke: 'var(--background)',
+                strokeWidth: 2,
+              }}
+            />
+            <Line
+              dataKey="current"
+              type="monotone"
+              stroke="var(--color-current)"
+              strokeWidth={3}
+              dot={false}
+              label={(props) =>
+                renderTrendValueLabel({
+                  index: props.index,
+                  value: props.value as number | string | undefined,
+                  x: props.x,
+                  y: props.y,
+                  keyName: 'current',
+                  notableIndexes: currentNotableIndexes,
+                  formatType,
+                  lastIndex: lastDataIndex,
+                })
+              }
+              activeDot={{
+                r: 5,
+                fill: 'var(--color-current)',
+                stroke: 'var(--background)',
+                strokeWidth: 2,
+              }}
+            />
+          </LineChart>
+        </ChartContainer>
+      </div>
     </div>
   );
 }

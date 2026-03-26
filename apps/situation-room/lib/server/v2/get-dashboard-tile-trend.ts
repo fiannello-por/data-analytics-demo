@@ -164,6 +164,7 @@ export async function getDashboardV2TileTrend(
     [
       'v2-trace-links-3',
       'v2-trend-axis-label-1',
+      'v2-temporal-format-1',
       'dashboard-v2-tile-trend',
       serializeDashboardStateKey({
         activeCategory: input.activeCategory,

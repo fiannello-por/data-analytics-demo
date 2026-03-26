@@ -40,6 +40,23 @@ function formatValue(value: unknown): string {
     return value.toISOString();
   }
 
+  if (typeof value === 'object') {
+    const temporalValue = Reflect.get(value, 'value');
+    const constructorName =
+      (value as { constructor?: { name?: string } }).constructor?.name ?? '';
+
+    if (
+      typeof temporalValue === 'string' &&
+      (constructorName === 'BigQueryDate' ||
+        constructorName === 'BigQueryDatetime' ||
+        constructorName === 'BigQueryTimestamp' ||
+        constructorName === 'BigQueryTime' ||
+        Object.keys(value as Record<string, unknown>).length === 1)
+    ) {
+      return temporalValue;
+    }
+  }
+
   return String(value);
 }
 

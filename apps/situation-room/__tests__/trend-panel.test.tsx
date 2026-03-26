@@ -63,6 +63,30 @@ describe('TrendPanel', () => {
     expect(
       container.querySelector('[data-testid="trend-chart"]'),
     ).not.toBeNull();
+
+    expect(container.firstElementChild?.getAttribute('class')).toContain(
+      'w-full',
+    );
+    expect(container.firstElementChild?.getAttribute('class')).toContain(
+      'flex-1',
+    );
+    expect(container.firstElementChild?.getAttribute('class')).toContain(
+      'min-w-0',
+    );
+    expect(container.firstElementChild?.getAttribute('class')).not.toContain(
+      'justify-end',
+    );
+    expect(container.innerHTML).toContain('border-t');
+    expect(
+      container
+        .querySelector('[data-testid="trend-chart"]')
+        ?.parentElement?.getAttribute('class'),
+    ).toContain('min-h-[18rem]');
+    expect(
+      container
+        .querySelector('[data-testid="trend-chart"]')
+        ?.parentElement?.getAttribute('class'),
+    ).toContain('flex-1');
   });
 
   it('renders nothing when the shared layout owns the empty state', async () => {

@@ -4,9 +4,6 @@ import * as React from 'react';
 import {
   DashboardSplit,
 } from '@por/dashboard-layout';
-import {
-  type VisualizationRenderer,
-} from '@por/dashboard-spec';
 import { CardDescription, CardTitle } from '@/components/ui/card';
 import { TileTable, TileTableSkeleton } from '@/components/dashboard/tile-table';
 import { TrendPanel } from '@/components/dashboard/trend-panel';
@@ -16,7 +13,6 @@ import type {
 } from '@/lib/dashboard/contracts';
 import { getDashboardSpecBinding } from '@/lib/dashboard-v2/spec-bindings';
 import {
-  getDashboardVisualizationRenderer,
   resolveDashboardTileSpec,
 } from '@/lib/dashboard-v2/spec-runtime';
 import { mainMetricsCompositeSpec } from '@/lib/dashboard-v2/specs/main-metrics';
@@ -67,15 +63,6 @@ if (
 }
 
 const resolvedMainMetricsTableSpec = mainMetricsTableSpec;
-const resolvedSelectedMetricTrendSpec = selectedMetricTrendSpec;
-const selectedMetricTrendRenderer =
-  getDashboardVisualizationRenderer(resolvedSelectedMetricTrendSpec) as
-    | VisualizationRenderer<
-        typeof resolvedSelectedMetricTrendSpec,
-        SelectedMetricTrendBindingData['rows'][number],
-        React.ReactNode
-      >
-    | undefined;
 const mainMetricsSplitDirection =
   'type' in normalizedMainMetricsCompositeSpec.layout &&
   normalizedMainMetricsCompositeSpec.layout.type === 'split' &&
@@ -150,13 +137,6 @@ export function MainMetricsSpecRenderer({
 }: MainMetricsSpecRendererProps) {
   const snapshotBinding = resolveSnapshotBinding(snapshot);
   const trendBinding = showTrend ? resolveTrendBinding(trend) : null;
-  const trendChartContent =
-    trendBinding != null && selectedMetricTrendRenderer != null
-      ? selectedMetricTrendRenderer({
-          spec: resolvedSelectedMetricTrendSpec,
-          rows: trendBinding.rows,
-        })
-      : null;
 
   return (
     <DashboardSplit
@@ -178,7 +158,7 @@ export function MainMetricsSpecRenderer({
         </div>
       }
       trailing={
-        <div className="flex min-w-0 xl:border-l xl:border-border/45 xl:pl-6">
+        <div className="flex h-full min-w-0 self-stretch xl:border-l xl:border-border/45 xl:pl-6">
           {showTrend && (isTrendLoading || trendBinding != null || trend != null) ? (
             <TrendPanel
               trend={trend}
@@ -187,7 +167,6 @@ export function MainMetricsSpecRenderer({
               tileId={selectedTileId}
               trace={trendBinding?.trace}
               grain={trend?.grain}
-              chartContent={trendChartContent}
               isLoading={isTrendLoading}
               displayLabel={displayTrendLabel}
               displayCurrentWindowLabel={displayCurrentWindowLabel}
