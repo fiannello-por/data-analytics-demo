@@ -19,16 +19,17 @@ describe('analytics suite homepage registry', () => {
     expect(markup).toContain('Rows per page');
     expect(markup).toContain('Previous');
     expect(markup).toContain('Next');
+    expect(markup).not.toContain('Suite pattern in progress');
   });
 
   it('maps status labels to the correct dashboard rows', () => {
     const markup = renderToStaticMarkup(React.createElement(HomePage));
 
     expect(markup).toMatch(
-      /<tr[^>]*>[\s\S]*?Sales Performance[\s\S]*?href="\/dashboards\/sales-performance"[\s\S]*?Live[\s\S]*?<\/tr>/,
+      /<tr[^>]*>[\s\S]*?href="\/dashboards\/sales-performance"[\s\S]*?Sales Performance[\s\S]*?Live[\s\S]*?<\/tr>/,
     );
     expect(markup).toMatch(
-      /<tr[^>]*>[\s\S]*?Pipeline Health[\s\S]*?href="\/dashboards\/pipeline-health"[\s\S]*?WIP[\s\S]*?<\/tr>/,
+      /<tr[^>]*>[\s\S]*?href="\/dashboards\/pipeline-health"[\s\S]*?Pipeline Health[\s\S]*?WIP[\s\S]*?<\/tr>/,
     );
   });
 
