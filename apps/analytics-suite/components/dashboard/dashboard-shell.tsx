@@ -195,6 +195,28 @@ export function DashboardShell({
     };
   }, [closedWonPrefetchUrls]);
 
+  React.useEffect(() => {
+    if (closedWonOpportunities) {
+      return;
+    }
+
+    const detailCategory = isCategory(state.activeCategory)
+      ? state.activeCategory
+      : CATEGORY_ORDER[0];
+
+    void refreshDashboard(
+      state,
+      {
+        overview: false,
+        snapshot: false,
+        trend: false,
+        closedWon: true,
+        detailCategory,
+        closedWonCategory: getClosedWonCategory(state.activeCategory),
+      },
+    );
+  }, [closedWonOpportunities, state]);
+
   function updateUrl(nextState: DashboardState) {
     if (typeof window === 'undefined') return;
 

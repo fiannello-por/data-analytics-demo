@@ -3,7 +3,6 @@ import { describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 const getDashboardV2CategorySnapshotMock = vi.fn();
-const getDashboardV2ClosedWonOpportunitiesMock = vi.fn();
 const getDashboardV2OverviewBoardMock = vi.fn();
 const getDashboardV2TileTrendMock = vi.fn();
 const getDashboardV2FilterDictionaryMock = vi.fn();
@@ -24,10 +23,6 @@ vi.mock('@/components/dashboard/dashboard-shell', () => ({
 
 vi.mock('@/lib/server/v2/get-dashboard-category-snapshot', () => ({
   getDashboardV2CategorySnapshot: getDashboardV2CategorySnapshotMock,
-}));
-
-vi.mock('@/lib/server/v2/get-dashboard-closed-won-opportunities', () => ({
-  getDashboardV2ClosedWonOpportunities: getDashboardV2ClosedWonOpportunitiesMock,
 }));
 
 vi.mock('@/lib/server/v2/get-dashboard-overview-board', () => ({
@@ -93,16 +88,6 @@ describe('sales performance dashboard page', { timeout: 20000 }, () => {
       meta: { source: 'lightdash', queryCount: 20, bytesProcessed: 2048 },
     });
 
-    getDashboardV2ClosedWonOpportunitiesMock.mockResolvedValue({
-      data: {
-        category: 'Total',
-        currentWindowLabel: 'Jan 1, 2026 - Mar 23, 2026',
-        lastRefreshedAt: '2026-03-24T00:00:00.000Z',
-        rows: [],
-      },
-      meta: { source: 'lightdash', queryCount: 1, bytesProcessed: 128 },
-    });
-
     getDashboardV2FilterDictionaryMock.mockImplementation(async (key: string) => ({
       data: {
         filterKey: key,
@@ -126,9 +111,7 @@ describe('sales performance dashboard page', { timeout: 20000 }, () => {
         initialOverviewBoard: expect.objectContaining({
           snapshots: expect.any(Array),
         }),
-        initialClosedWonOpportunities: expect.objectContaining({
-          category: 'Total',
-        }),
+        initialClosedWonOpportunities: null,
       }),
     );
   });
