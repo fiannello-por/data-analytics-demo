@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { DashboardModule } from '@/lib/suite/contracts';
 import { dashboardModules } from '@/lib/suite/modules';
 import {
   HomepageMetadataError,
@@ -28,17 +29,17 @@ describe('homepage metadata', () => {
 
   it('throws a named error when metadata is missing', () => {
     const module = dashboardModules[0];
-    const originalMetadata = homepageModuleMetadata[module.id];
+    const moduleId = 'missing-dashboard';
+    const missingMetadataModule = {
+      ...module,
+      id: moduleId,
+    } as DashboardModule;
 
-    delete homepageModuleMetadata[module.id];
-
-    try {
-      expect(() => getHomepageModuleRow(module)).toThrow(HomepageMetadataError);
-      expect(() => getHomepageModuleRow(module)).toThrow(
-        `Missing homepage metadata for dashboard module id: ${module.id}`,
-      );
-    } finally {
-      homepageModuleMetadata[module.id] = originalMetadata;
-    }
+    expect(() => getHomepageModuleRow(missingMetadataModule)).toThrow(
+      HomepageMetadataError,
+    );
+    expect(() => getHomepageModuleRow(missingMetadataModule)).toThrow(
+      `Missing homepage metadata for dashboard module id: ${moduleId}`,
+    );
   });
 });
