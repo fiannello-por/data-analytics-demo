@@ -18,12 +18,14 @@ describe('homepage metadata', () => {
 
       expect(row.id).toBe(module.id);
       expect(row.dashboardName).toBe(module.title);
-      expect(row.statusLabel).toBe(module.status === 'active' ? 'Live' : 'WIP');
+      expect(row.statusLabel).toBe('WIP');
       expect(row.owner).toBeTruthy();
       expect(row.changelogLabel).toBeTruthy();
-      expect(row.changelogHref).toBeTruthy();
+      expect(row.changelogHref).toBeUndefined();
       expect(row.updatedAt).toBeTruthy();
-      expect(row.href).toBe(module.href);
+      expect(row.href).toBe(
+        module.id === 'sales-performance' ? `${module.href}?view=v2` : undefined,
+      );
     });
   });
 

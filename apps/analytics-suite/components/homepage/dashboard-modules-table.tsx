@@ -7,18 +7,27 @@ import {
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
-  getSortedRowModel,
   useReactTable,
-  type SortingState,
 } from '@tanstack/react-table';
-import { ArrowUpDown, ExternalLink, FileText, MoreHorizontal } from 'lucide-react';
+import {
+  ChevronDown,
+  ChevronsLeft,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsRight,
+  CircleCheck,
+  ExternalLink,
+  FileText,
+  Loader,
+  MoreHorizontal,
+} from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { buttonVariants } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -28,8 +37,6 @@ import {
   Pagination,
   PaginationContent,
   PaginationItem,
-  PaginationNext,
-  PaginationPrevious,
 } from '@/components/ui/pagination';
 import {
   Table,
@@ -39,7 +46,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import type { BadgeProps } from '@/components/ui/badge';
 import type { HomepageModuleRow } from '@/lib/suite/homepage-metadata';
 import { cn } from '@/lib/utils';
 
@@ -47,76 +53,65 @@ type DashboardModulesTableProps = {
   rows: HomepageModuleRow[];
 };
 
-function SortableColumnHeader({
-  label,
-  canSort,
-  isSorted,
-  onToggle,
-}: {
-  label: string;
-  canSort: boolean;
-  isSorted: false | 'asc' | 'desc';
-  onToggle: () => void;
-}) {
-  if (!canSort) {
-    return <span>{label}</span>;
-  }
-
-  return (
-    <button
-      type="button"
-      className={cn(
-        buttonVariants({ variant: 'ghost', size: 'sm' }),
-        'h-auto px-0 text-left font-medium hover:bg-transparent',
-      )}
-      onClick={onToggle}
-    >
-      <span>{label}</span>
-      <ArrowUpDown
-        className={cn(
-          'size-3.5 text-muted-foreground transition-transform',
-          isSorted === 'desc' && 'rotate-180',
-        )}
-      />
-    </button>
-  );
-}
-
-function getStatusVariant(
-  statusLabel: HomepageModuleRow['statusLabel'],
-): BadgeProps['variant'] {
-  return statusLabel === 'Live' ? 'success' : 'warning';
-}
-
 function DashboardRowActions({ row }: { row: HomepageModuleRow }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), 'size-8')}
+        render={
+          <button
+            type="button"
+            className={cn(
+              buttonVariants({ variant: 'ghost', size: 'icon' }),
+              'size-7 cursor-pointer rounded-[5px] border border-white/0 bg-transparent text-white/60 hover:border-white/10 hover:bg-white/[0.04] hover:text-white aria-expanded:border-white/10 aria-expanded:bg-white/[0.04] aria-expanded:text-white data-[popup-open]:border-white/10 data-[popup-open]:bg-white/[0.04] data-[popup-open]:text-white',
+            )}
+          >
+            <MoreHorizontal className="size-3.5" />
+          </button>
+        }
         aria-label={`Open actions for ${row.dashboardName}`}
+      />
+      <DropdownMenuContent
+        align="end"
+        className="w-48 rounded-[9px] border border-white/10 bg-[#111111] p-1 text-white shadow-2xl"
       >
-        <MoreHorizontal className="size-4" />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuLabel>{row.dashboardName}</DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>{row.dashboardName}</DropdownMenuLabel>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem
-          nativeButton={false}
-          render={<Link href={row.href} />}
-        >
-          <ExternalLink className="size-4" />
-          Open dashboard
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          disabled={!row.changelogHref}
-          nativeButton={false}
-          render={
-            row.changelogHref ? <Link href={row.changelogHref} /> : <div />
-          }
-        >
-          <FileText className="size-4" />
-          Open changelog
-        </DropdownMenuItem>
+        <DropdownMenuGroup>
+          <DropdownMenuItem
+            disabled={!row.href}
+            nativeButton={false}
+            render={
+              row.href ? (
+                <Link href={row.href} target="_blank" rel="noreferrer" />
+              ) : (
+                <div />
+              )
+            }
+          >
+            <ExternalLink className="size-4" />
+            Open dashboard
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            disabled={!row.changelogHref}
+            nativeButton={false}
+            render={
+              row.changelogHref ? (
+                <Link
+                  href={row.changelogHref}
+                  target="_blank"
+                  rel="noreferrer"
+                />
+              ) : (
+                <div />
+              )
+            }
+          >
+            <FileText className="size-4" />
+            Open changelog
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -125,82 +120,70 @@ function DashboardRowActions({ row }: { row: HomepageModuleRow }) {
 const columns: ColumnDef<HomepageModuleRow>[] = [
   {
     accessorKey: 'dashboardName',
-    header: ({ column }) => (
-      <SortableColumnHeader
-        label="Dashboard name"
-        canSort={column.getCanSort()}
-        isSorted={column.getIsSorted()}
-        onToggle={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-      />
-    ),
-    cell: ({ row }) => (
-      <div className="flex flex-col gap-1">
-        <Link href={row.original.href} className="font-medium text-foreground">
+    header: () => <span>Dashboard name</span>,
+    cell: ({ row }) =>
+      row.original.href ? (
+        <Link
+          href={row.original.href}
+          target="_blank"
+          rel="noreferrer"
+          className="cursor-pointer text-[14px] font-semibold tracking-[-0.01em] text-white transition-colors hover:text-white/88 hover:underline"
+        >
           {row.original.dashboardName}
         </Link>
-      </div>
-    ),
+      ) : (
+        <span className="text-[14px] font-semibold tracking-[-0.01em] text-white">
+          {row.original.dashboardName}
+        </span>
+      ),
   },
   {
     accessorKey: 'owner',
-    header: ({ column }) => (
-      <SortableColumnHeader
-        label="Owner"
-        canSort={column.getCanSort()}
-        isSorted={column.getIsSorted()}
-        onToggle={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-      />
-    ),
-    cell: ({ row }) => row.original.owner,
+    header: () => <span>Owner</span>,
+    cell: ({ row }) => <span className="text-white/82">{row.original.owner}</span>,
   },
   {
     accessorKey: 'updatedAt',
-    header: ({ column }) => (
-      <SortableColumnHeader
-        label="Updated at"
-        canSort={column.getCanSort()}
-        isSorted={column.getIsSorted()}
-        onToggle={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-      />
-    ),
-    cell: ({ row }) => (
-      <time dateTime={row.original.updatedAt}>{row.original.updatedAt}</time>
-    ),
+    header: () => <span>Updated at</span>,
+    cell: ({ row }) =>
+      (
+        <span className="text-white/64">
+          {new Intl.DateTimeFormat('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          }).format(new Date(row.original.updatedAt))}
+        </span>
+      ),
   },
   {
     accessorKey: 'changelogLabel',
-    header: ({ column }) => (
-      <SortableColumnHeader
-        label="Changelog"
-        canSort={column.getCanSort()}
-        isSorted={column.getIsSorted()}
-        onToggle={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-      />
-    ),
+    header: () => <span>Changelog</span>,
     cell: ({ row }) =>
       row.original.changelogHref ? (
         <Link
           href={row.original.changelogHref}
-          className="text-sm font-medium text-primary"
+          className="text-[13px] font-medium text-white/74 transition-colors hover:text-white"
         >
           {row.original.changelogLabel}
         </Link>
       ) : (
-        <span className="text-muted-foreground">{row.original.changelogLabel}</span>
+        <span className="text-white/44">{row.original.changelogLabel}</span>
       ),
   },
   {
     accessorKey: 'statusLabel',
-    header: ({ column }) => (
-      <SortableColumnHeader
-        label="Status"
-        canSort={column.getCanSort()}
-        isSorted={column.getIsSorted()}
-        onToggle={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-      />
-    ),
+    header: () => <span>Status</span>,
     cell: ({ row }) => (
-      <Badge variant={getStatusVariant(row.original.statusLabel)}>
+      <Badge
+        variant="outline"
+        className="inline-flex h-6 items-center gap-1.5 rounded-[999px] border-white/10 bg-transparent px-2 py-0 text-[11px] font-medium text-white/78"
+      >
+        {row.original.statusLabel === 'Live' ? (
+          <CircleCheck className="size-3 fill-emerald-400 text-[#0b0b0b]" />
+        ) : (
+          <Loader className="size-3 text-white/56" />
+        )}
         {row.original.statusLabel}
       </Badge>
     ),
@@ -218,23 +201,19 @@ const columns: ColumnDef<HomepageModuleRow>[] = [
 ];
 
 export function DashboardModulesTable({ rows }: DashboardModulesTableProps) {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
-    pageSize: 5,
+    pageSize: 10,
   });
 
   const table = useReactTable({
     data: rows,
     columns,
     state: {
-      sorting,
       pagination,
     },
-    onSortingChange: setSorting,
     onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
 
@@ -242,83 +221,122 @@ export function DashboardModulesTable({ rows }: DashboardModulesTableProps) {
   const currentPage = table.getState().pagination.pageIndex + 1;
 
   return (
-    <Card className="overflow-hidden bg-card">
-      <CardContent className="px-0 py-0">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    className={cn(
-                      header.column.id === 'actions' && 'w-16 text-right',
-                      'px-4',
-                    )}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id}>
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell
-                    key={cell.id}
-                    className={cn(
-                      cell.column.id === 'actions' && 'text-right',
-                      'px-4 py-3',
-                    )}
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+    <div className="overflow-hidden rounded-[12px] border border-white/10 bg-[#0b0b0b] shadow-[0_24px_80px_rgba(0,0,0,0.38)]">
+      <Table className="table-fixed text-[13px] text-white/88">
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow
+              key={headerGroup.id}
+              className="border-white/10 bg-[#242424] hover:bg-[#242424]"
+            >
+              {headerGroup.headers.map((header) => (
+                <TableHead
+                  key={header.id}
+                  className={cn(
+                    header.column.id === 'dashboardName' && 'w-[32%]',
+                    header.column.id === 'owner' && 'w-[20%]',
+                    header.column.id === 'updatedAt' && 'w-[16%]',
+                    header.column.id === 'changelog' && 'w-[12%]',
+                    header.column.id === 'statusLabel' && 'w-[14%]',
+                    header.column.id === 'actions' && 'w-16 text-right',
+                    'h-11 px-5 text-[14px] font-medium tracking-[-0.01em] text-white/92',
+                  )}
+                >
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
+                </TableHead>
+              ))}
+            </TableRow>
+          ))}
+        </TableHeader>
+        <TableBody>
+          {table.getRowModel().rows.map((row) => (
+            <TableRow
+              key={row.id}
+              className="border-white/10 bg-transparent hover:bg-white/[0.05]"
+            >
+              {row.getVisibleCells().map((cell) => (
+                <TableCell
+                  key={cell.id}
+                  className={cn(
+                    cell.column.id === 'actions' && 'text-right',
+                    'h-12 px-5 py-0 text-white/88',
+                  )}
+                >
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </TableCell>
+              ))}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
 
-        <div className="flex flex-col gap-3 border-t border-border/70 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">Rows per page</span>
+      <div className="flex flex-col gap-3 border-t border-white/10 px-5 py-3.5 sm:flex-row sm:items-center sm:justify-end sm:gap-5">
+        <div className="flex items-center gap-3 text-[13px] text-white/58">
+          <span>Rows per page</span>
+          <div className="inline-flex h-7 items-center gap-2 rounded-[7px] border border-white/10 bg-white/[0.04] px-2.5 text-white/88">
             <span>{table.getState().pagination.pageSize}</span>
-          </div>
-
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <p className="text-sm text-muted-foreground">
-              Page {currentPage} of {pageCount}
-            </p>
-            <Pagination className="mx-0 w-auto justify-start">
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious
-                    type="button"
-                    variant="outline"
-                    onClick={() => table.previousPage()}
-                    disabled={!table.getCanPreviousPage()}
-                  />
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationNext
-                    type="button"
-                    variant="outline"
-                    onClick={() => table.nextPage()}
-                    disabled={!table.getCanNextPage()}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
+            <ChevronDown className="size-3.5 text-white/45" />
           </div>
         </div>
-      </CardContent>
-    </Card>
+
+        <p className="text-[13px] text-white/58">
+          Page {currentPage} of {pageCount}
+        </p>
+
+        <Pagination className="mx-0 w-auto justify-start">
+          <PaginationContent className="gap-2">
+            <PaginationItem>
+              <button
+                type="button"
+                aria-label="First page"
+                className="flex size-8 items-center justify-center rounded-[7px] border border-white/10 bg-white/[0.04] text-white/55 transition-colors hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-40"
+                onClick={() => table.setPageIndex(0)}
+                disabled={!table.getCanPreviousPage()}
+              >
+                <ChevronsLeft className="size-3.5" />
+              </button>
+            </PaginationItem>
+            <PaginationItem>
+              <button
+                type="button"
+                aria-label="Previous"
+                className="flex size-8 items-center justify-center rounded-[7px] border border-white/10 bg-white/[0.04] text-white/55 transition-colors hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-40"
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}
+              >
+                <ChevronLeft className="size-3.5" />
+              </button>
+            </PaginationItem>
+            <PaginationItem>
+              <button
+                type="button"
+                aria-label="Next"
+                className="flex size-8 items-center justify-center rounded-[7px] border border-white/10 bg-white/[0.04] text-white/55 transition-colors hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-40"
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}
+              >
+                <ChevronRight className="size-3.5" />
+              </button>
+            </PaginationItem>
+            <PaginationItem>
+              <button
+                type="button"
+                aria-label="Last page"
+                className="flex size-8 items-center justify-center rounded-[7px] border border-white/10 bg-white/[0.04] text-white/55 transition-colors hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-40"
+                onClick={() => table.setPageIndex(pageCount - 1)}
+                disabled={!table.getCanNextPage()}
+              >
+                <ChevronsRight className="size-3.5" />
+              </button>
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
+    </div>
   );
 }

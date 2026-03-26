@@ -1,30 +1,25 @@
 import * as React from 'react';
 
 import { DashboardModulesTable } from '@/components/homepage/dashboard-modules-table';
-import { SuiteShell } from '@/components/suite-shell';
-import { getHomepageModuleRow } from '@/lib/suite/homepage-metadata';
+import {
+  getHomepageModuleRow,
+  homepageDummyRows,
+} from '@/lib/suite/homepage-metadata';
 import { dashboardModules } from '@/lib/suite/modules';
 
 export default function HomePage() {
-  const rows = dashboardModules.map(getHomepageModuleRow);
+  const rows = [...dashboardModules.map(getHomepageModuleRow), ...homepageDummyRows];
 
   return (
-    <SuiteShell headerVariant="compact">
-      <section className="space-y-4">
-        <div className="space-y-1.5">
-          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-            Homepage registry
-          </p>
-          <h1 className="font-heading text-2xl font-medium">Dashboard registry</h1>
-          <p className="max-w-3xl text-sm text-muted-foreground">
-            Shared suite navigation stays in the shell. Ownership, release state,
-            and changelog access live here so teams can scan the active dashboard
-            surface quickly.
-          </p>
-        </div>
-
+    <main className="min-h-screen bg-[#050505] px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mx-auto flex w-full max-w-[1120px] flex-col gap-8">
+        <header className="space-y-2 py-12 text-center sm:py-20">
+          <h1 className="text-[58px] font-semibold tracking-[-0.05em] text-white sm:text-[72px]">
+            Ligthdash as a Semantic Layer POC
+          </h1>
+        </header>
         <DashboardModulesTable rows={rows} />
-      </section>
-    </SuiteShell>
+      </div>
+    </main>
   );
 }
