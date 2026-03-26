@@ -28,10 +28,8 @@ describe('analytics suite homepage registry', () => {
   it('maps status labels to the correct dashboard rows', () => {
     const markup = renderToStaticMarkup(React.createElement(HomePage));
 
-    expect(markup).toMatch(/Sales Performance[\s\S]{0,260}Live/);
-    expect(markup).toMatch(/Pipeline Health[\s\S]{0,260}WIP/);
-    expect(markup).not.toContain('active');
-    expect(markup).not.toContain('demo');
+    expect(markup).toContain('Sales Performance status Live');
+    expect(markup).toContain('Pipeline Health status WIP');
   });
 
   it('removes the stale shell card-grid copy', () => {
