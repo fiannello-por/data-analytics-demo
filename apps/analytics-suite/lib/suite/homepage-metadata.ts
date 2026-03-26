@@ -1,11 +1,8 @@
 import type { DashboardModule } from '@/lib/suite/contracts';
-import { pipelineHealthModule } from '@/dashboards/pipeline-health/module';
-import { salesPerformanceModule } from '@/dashboards/sales-performance/module';
+import { dashboardModules } from '@/lib/suite/modules';
 
 export type HomepageModuleStatus = 'Live' | 'WIP';
-type DashboardModuleId =
-  | typeof salesPerformanceModule.id
-  | typeof pipelineHealthModule.id;
+type DashboardModuleId = (typeof dashboardModules)[number]['id'];
 
 const homepageModuleStatusLabels: Record<
   DashboardModule['status'],
@@ -22,6 +19,13 @@ export type HomepageModuleMeta = {
   changelogHref?: string;
 };
 
+export class HomepageMetadataError extends Error {
+  constructor(moduleId: string) {
+    super(`Missing homepage metadata for dashboard module id: ${moduleId}`);
+    this.name = 'HomepageMetadataError';
+  }
+}
+
 export type HomepageModuleRow = {
   id: DashboardModule['id'];
   dashboardName: DashboardModule['title'];
@@ -33,8 +37,7 @@ export type HomepageModuleRow = {
   href: DashboardModule['href'];
 };
 
-export const homepageModuleMetadata: Record<DashboardModuleId, HomepageModuleMeta> =
-  {
+export const homepageModuleMetadata = {
   'sales-performance': {
     owner: 'Revenue Analytics',
     updatedAt: '2026-03-18',
@@ -47,20 +50,20 @@ export const homepageModuleMetadata: Record<DashboardModuleId, HomepageModuleMet
     changelogLabel: 'Changelog',
     changelogHref: '/dashboards/pipeline-health/changelog',
   },
-};
+} satisfies Record<DashboardModuleId, HomepageModuleMeta>;
 
-function getHomepageModuleMetadata(moduleId: DashboardModuleId): HomepageModuleMeta {
+function getHomepageModuleMetadata(moduleId: DashboardModule['id']): HomepageModuleMeta {
   const metadata = homepageModuleMetadata[moduleId];
 
   if (!metadata) {
-    throw new Error(`Missing homepage metadata for dashboard module id: ${moduleId}`);
+    throw new HomepageMetadataError(moduleId);
   }
 
   return metadata;
 }
 
 export function getHomepageModuleRow(module: DashboardModule): HomepageModuleRow {
-  const metadata = getHomepageModuleMetadata(module.id as DashboardModuleId);
+  const metadata = getHomepageModuleMetadata(module.id);
 
   return {
     id: module.id,
