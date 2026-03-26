@@ -258,4 +258,60 @@ describe('dashboard v2 server loaders', { timeout: 20000 }, () => {
     });
     expect(closedWon.data.backendTrace?.executions).toHaveLength(1);
   });
+
+  it('returns an empty trend instead of throwing when both windows have no rows', async () => {
+    const runtime = {
+      getCatalogEntries: vi.fn(),
+      runQuery: vi
+        .fn()
+        .mockResolvedValueOnce({
+          rows: [],
+          meta: {
+            source: 'lightdash' as const,
+            model: 'sales_dashboard_v2_opportunity_base',
+            queryCount: 1,
+            compiledSql: 'select current empty trend',
+            compileDurationMs: 1,
+            executionDurationMs: 2,
+            bytesProcessed: 64,
+            cacheStatus: 'miss' as const,
+          },
+        })
+        .mockResolvedValueOnce({
+          rows: [],
+          meta: {
+            source: 'lightdash' as const,
+            model: 'sales_dashboard_v2_opportunity_base',
+            queryCount: 1,
+            compiledSql: 'select previous empty trend',
+            compileDurationMs: 1,
+            executionDurationMs: 2,
+            bytesProcessed: 64,
+            cacheStatus: 'miss' as const,
+          },
+        }),
+    } as Parameters<
+      (typeof import('@/lib/server/v2/get-dashboard-tile-trend'))['getDashboardV2TileTrend']
+    >[1];
+
+    const { getDashboardV2TileTrend } =
+      await import('@/lib/server/v2/get-dashboard-tile-trend');
+
+    const trend = await getDashboardV2TileTrend(
+      {
+        activeCategory: 'New Logo',
+        selectedTileId: 'new_logo_bookings_amount',
+        filters: { Owner: ['Abu-Bakarr Turay'] },
+        dateRange: { startDate: '2026-01-01', endDate: '2026-03-26' },
+        previousDateRange: { startDate: '2025-01-01', endDate: '2025-03-26' },
+        trendGrain: 'weekly',
+      },
+      runtime,
+      { cacheMode: 'off' },
+    );
+
+    expect(trend.data.points).toEqual([]);
+    expect(trend.data.xAxisFieldLabel).toBe('Close Date');
+    expect(trend.data.backendTrace?.executions).toHaveLength(2);
+  });
 });
