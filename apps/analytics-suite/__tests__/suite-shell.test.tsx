@@ -8,7 +8,7 @@ describe('analytics suite homepage registry', () => {
   it('renders a real table surface with actionable dashboard rows', () => {
     const markup = renderToStaticMarkup(React.createElement(HomePage));
 
-    expect(markup).toMatch(/registry/i);
+    expect(markup).toContain('Dashboard registry');
     expect(markup).toContain('<table');
     expect(markup).toContain('Dashboard name');
     expect(markup).toContain('Owner');
@@ -19,6 +19,7 @@ describe('analytics suite homepage registry', () => {
     expect(markup).toContain('Pipeline Health');
     expect(markup).toContain('href="/dashboards/sales-performance"');
     expect(markup).toContain('href="/dashboards/pipeline-health"');
+    expect(markup).toContain('Open actions for Sales Performance');
     expect(markup).toContain('Rows per page');
     expect(markup).toContain('Previous');
     expect(markup).toContain('Next');
