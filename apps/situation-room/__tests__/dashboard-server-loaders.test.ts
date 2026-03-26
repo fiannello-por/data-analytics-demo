@@ -38,9 +38,8 @@ describe('dashboard server loaders', () => {
       };
     });
 
-    const { getDashboardCategorySnapshot } = await import(
-      '@/lib/server/get-dashboard-category-snapshot'
-    );
+    const { getDashboardCategorySnapshot } =
+      await import('@/lib/server/get-dashboard-category-snapshot');
 
     const result = await getDashboardCategorySnapshot(
       {
@@ -61,7 +60,9 @@ describe('dashboard server loaders', () => {
         tags: ['dashboard-category-snapshot'],
       }),
     );
-    expect(queryRows).toHaveBeenCalledTimes(getCategoryTiles('New Logo').length);
+    expect(queryRows).toHaveBeenCalledTimes(
+      getCategoryTiles('New Logo').length,
+    );
     expect(result.data.rows[0]?.tileId).toBe('new_logo_bookings_amount');
     expect(result.data.rows).toHaveLength(13);
     expect(result.data.tileTimings).toHaveLength(13);
@@ -84,9 +85,8 @@ describe('dashboard server loaders', () => {
       bytesProcessed: 10,
     });
 
-    const { getDashboardCategorySnapshot } = await import(
-      '@/lib/server/get-dashboard-category-snapshot'
-    );
+    const { getDashboardCategorySnapshot } =
+      await import('@/lib/server/get-dashboard-category-snapshot');
 
     await getDashboardCategorySnapshot(
       {
@@ -135,9 +135,8 @@ describe('dashboard server loaders', () => {
       bytesProcessed: 10,
     });
 
-    const { getDashboardCategorySnapshot } = await import(
-      '@/lib/server/get-dashboard-category-snapshot'
-    );
+    const { getDashboardCategorySnapshot } =
+      await import('@/lib/server/get-dashboard-category-snapshot');
 
     const result = await getDashboardCategorySnapshot(
       {
@@ -171,9 +170,8 @@ describe('dashboard server loaders', () => {
       bytesProcessed: 45,
     });
 
-    const { getDashboardTileTrend } = await import(
-      '@/lib/server/get-dashboard-tile-trend'
-    );
+    const { getDashboardTileTrend } =
+      await import('@/lib/server/get-dashboard-tile-trend');
 
     const result = await getDashboardTileTrend(
       {
@@ -217,9 +215,8 @@ describe('dashboard server loaders', () => {
       bytesProcessed: 7,
     });
 
-    const { getDashboardFilterDictionary } = await import(
-      '@/lib/server/get-dashboard-filter-dictionary'
-    );
+    const { getDashboardFilterDictionary } =
+      await import('@/lib/server/get-dashboard-filter-dictionary');
 
     const result = await getDashboardFilterDictionary('Division', {
       queryRows,
@@ -272,9 +269,8 @@ describe('dashboard server loaders', () => {
       bytesProcessed: 33,
     });
 
-    const { getDashboardClosedWonOpportunities } = await import(
-      '@/lib/server/get-dashboard-closed-won-opportunities'
-    );
+    const { getDashboardClosedWonOpportunities } =
+      await import('@/lib/server/get-dashboard-closed-won-opportunities');
 
     const result = await getDashboardClosedWonOpportunities(
       {
@@ -318,9 +314,8 @@ describe('dashboard server loaders', () => {
       bytesProcessed: 10,
     });
 
-    const { getDashboardCategorySnapshot } = await import(
-      '@/lib/server/get-dashboard-category-snapshot'
-    );
+    const { getDashboardCategorySnapshot } =
+      await import('@/lib/server/get-dashboard-category-snapshot');
 
     await getDashboardCategorySnapshot(
       {

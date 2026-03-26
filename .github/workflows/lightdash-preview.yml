@@ -95,9 +95,13 @@ jobs:
       - name: Install Lightdash CLI
         run: npm install -g "@lightdash/cli@$(cat .lightdash-version)"
 
+      - name: Reset existing preview project
+        run: |
+          lightdash stop-preview --name "$LIGHTDASH_PREVIEW_NAME" || true
+
       - name: Create or update preview project
         run: |
-          lightdash start-preview --name "$LIGHTDASH_PREVIEW_NAME"
+          lightdash start-preview --name "$LIGHTDASH_PREVIEW_NAME" --skip-copy-content
           lightdash deploy --no-warehouse-credentials
           lightdash upload --force
 

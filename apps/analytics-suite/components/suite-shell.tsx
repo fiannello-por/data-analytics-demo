@@ -45,8 +45,9 @@ export function SuiteShell({
                     </CardTitle>
                     <CardDescription className="max-w-2xl">
                       One internal suite shell, many dashboard modules. Each
-                      dashboard keeps its own semantic registry while the runtime,
-                      semantic contracts, and future tooling stay shared.
+                      dashboard keeps its own semantic registry while the
+                      runtime, semantic contracts, and future tooling stay
+                      shared.
                     </CardDescription>
                   </div>
                 </div>
@@ -63,7 +64,6 @@ export function SuiteShell({
                   </p>
                 </div>
               </div>
-
             </CardHeader>
             <CardContent className="flex flex-col gap-3 pt-0">
               <Separator className="bg-border" />
@@ -73,7 +73,8 @@ export function SuiteShell({
                     href="/platform"
                     className={cn(
                       buttonVariants({
-                        variant: activeSection === 'platform' ? 'secondary' : 'ghost',
+                        variant:
+                          activeSection === 'platform' ? 'secondary' : 'ghost',
                         size: 'sm',
                       }),
                     )}

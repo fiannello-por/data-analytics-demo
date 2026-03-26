@@ -1,7 +1,9 @@
 import type { SemanticQueryRequest, SemanticQueryResult } from './types';
 
 export type SemanticResultCache = {
-  get(key: string): Promise<SemanticQueryResult | undefined> | SemanticQueryResult | undefined;
+  get(
+    key: string,
+  ): Promise<SemanticQueryResult | undefined> | SemanticQueryResult | undefined;
   set(key: string, value: SemanticQueryResult): Promise<void> | void;
 };
 

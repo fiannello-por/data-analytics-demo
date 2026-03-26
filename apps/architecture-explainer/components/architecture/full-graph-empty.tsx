@@ -15,8 +15,8 @@ export function FullGraphEmpty() {
       </CardHeader>
       <CardContent>
         <p className="text-sm text-muted-foreground">
-          Select a node in the graph to inspect what it does, what it depends on,
-          and how much time it contributes to the dashboard refresh path.
+          Select a node in the graph to inspect what it does, what it depends
+          on, and how much time it contributes to the dashboard refresh path.
         </p>
       </CardContent>
     </Card>

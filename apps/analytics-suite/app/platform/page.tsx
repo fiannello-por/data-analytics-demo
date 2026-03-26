@@ -29,9 +29,9 @@ export default async function PlatformPage() {
               Shared runtime health across dashboards
             </CardTitle>
             <CardDescription className="mt-1 max-w-3xl">
-            The suite reports budget posture, cache effectiveness, and cost-shaped
-            telemetry per dashboard so a noisy module does not become invisible
-            inside the shared platform.
+              The suite reports budget posture, cache effectiveness, and
+              cost-shaped telemetry per dashboard so a noisy module does not
+              become invisible inside the shared platform.
             </CardDescription>
           </CardHeader>
         </Card>
@@ -40,7 +40,9 @@ export default async function PlatformPage() {
           {reports.map((report) => (
             <PlatformReportCard
               key={report.policy.dashboardId}
-              title={titles[report.policy.dashboardId] ?? report.policy.dashboardId}
+              title={
+                titles[report.policy.dashboardId] ?? report.policy.dashboardId
+              }
               report={report}
             />
           ))}

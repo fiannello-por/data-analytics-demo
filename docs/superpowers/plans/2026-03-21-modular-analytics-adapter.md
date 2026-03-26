@@ -16,56 +16,57 @@
 
 ### New: `packages/analytics-adapter/`
 
-| File | Responsibility |
-|------|----------------|
-| `src/index.ts` | Public exports: `createClient`, all types, `SemanticLayerError` |
-| `src/interface.ts` | `SemanticLayerClient` interface, `MetricQuery`, `QueryResult`, `Row`, `Filter`, `FilterOperator`, `Sort` types |
-| `src/error.ts` | `SemanticLayerError` class with typed error codes |
-| `src/factory.ts` | `createClient(config)` factory function |
-| `src/providers/lightdash.ts` | `LightdashProvider` implementing `SemanticLayerClient` — field translation, filter translation, HTTP query, polling, response normalization |
-| `__tests__/interface.test.ts` | Type contract tests |
-| `__tests__/lightdash-provider.test.ts` | Lightdash provider tests with mocked `fetch` |
-| `__tests__/factory.test.ts` | Factory tests |
-| `package.json` | `@por/analytics-adapter`, private workspace package |
-| `tsconfig.json` | ESNext, strict, `noEmit: true` |
-| `vitest.config.ts` | Node environment |
+| File                                   | Responsibility                                                                                                                              |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/index.ts`                         | Public exports: `createClient`, all types, `SemanticLayerError`                                                                             |
+| `src/interface.ts`                     | `SemanticLayerClient` interface, `MetricQuery`, `QueryResult`, `Row`, `Filter`, `FilterOperator`, `Sort` types                              |
+| `src/error.ts`                         | `SemanticLayerError` class with typed error codes                                                                                           |
+| `src/factory.ts`                       | `createClient(config)` factory function                                                                                                     |
+| `src/providers/lightdash.ts`           | `LightdashProvider` implementing `SemanticLayerClient` — field translation, filter translation, HTTP query, polling, response normalization |
+| `__tests__/interface.test.ts`          | Type contract tests                                                                                                                         |
+| `__tests__/lightdash-provider.test.ts` | Lightdash provider tests with mocked `fetch`                                                                                                |
+| `__tests__/factory.test.ts`            | Factory tests                                                                                                                               |
+| `package.json`                         | `@por/analytics-adapter`, private workspace package                                                                                         |
+| `tsconfig.json`                        | ESNext, strict, `noEmit: true`                                                                                                              |
+| `vitest.config.ts`                     | Node environment                                                                                                                            |
 
 ### New: Situation Room app-level adapter
 
-| File | Responsibility |
-|------|----------------|
+| File                                                         | Responsibility                                                                              |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
 | `apps/situation-room/lib/data-adapters/lightdash-adapter.ts` | `LightdashScorecardAdapter` implementing `ScorecardDataAdapter` using `SemanticLayerClient` |
-| `apps/situation-room/__tests__/lightdash-adapter.test.ts` | Tests for the app-level Lightdash adapter |
+| `apps/situation-room/__tests__/lightdash-adapter.test.ts`    | Tests for the app-level Lightdash adapter                                                   |
 
 ### Modified
 
-| File | Change |
-|------|--------|
-| `pnpm-workspace.yaml` | Add `packages/*` |
-| `apps/situation-room/package.json` | Add `@por/analytics-adapter` workspace dep |
-| `apps/situation-room/lib/data-adapters/index.ts` | Update factory to support `SITUATION_ROOM_BACKEND=lightdash` |
-| `apps/situation-room/components/category-section.tsx` | Rewrite import from `@/lib/types` → `@/lib/contracts` |
-| `apps/situation-room/components/executive-snapshot.tsx` | Rewrite import from `@/lib/types` → `@/lib/contracts` |
-| `apps/situation-room/components/trend-chart.tsx` | Rewrite import from `@/lib/types` → `@/lib/contracts` |
-| `apps/situation-room/components/metric-row.tsx` | Rewrite import from `@/lib/types` → `@/lib/contracts` |
+| File                                                    | Change                                                       |
+| ------------------------------------------------------- | ------------------------------------------------------------ |
+| `pnpm-workspace.yaml`                                   | Add `packages/*`                                             |
+| `apps/situation-room/package.json`                      | Add `@por/analytics-adapter` workspace dep                   |
+| `apps/situation-room/lib/data-adapters/index.ts`        | Update factory to support `SITUATION_ROOM_BACKEND=lightdash` |
+| `apps/situation-room/components/category-section.tsx`   | Rewrite import from `@/lib/types` → `@/lib/contracts`        |
+| `apps/situation-room/components/executive-snapshot.tsx` | Rewrite import from `@/lib/types` → `@/lib/contracts`        |
+| `apps/situation-room/components/trend-chart.tsx`        | Rewrite import from `@/lib/types` → `@/lib/contracts`        |
+| `apps/situation-room/components/metric-row.tsx`         | Rewrite import from `@/lib/types` → `@/lib/contracts`        |
 
 ### Deleted
 
-| File | Reason |
-|------|--------|
-| `apps/situation-room/lib/lightdash-client.ts` | Replaced by `LightdashProvider` in adapter package |
-| `apps/situation-room/lib/queries.ts` | Filter field map & query building move into provider |
-| `apps/situation-room/lib/scorecard-parser.ts` | Response normalization moves into provider |
-| `apps/situation-room/lib/types.ts` | Legacy duplicates of types in `contracts.ts` + `LightdashFilterRule` |
-| `apps/situation-room/app/api/lightdash/route.ts` | Old Lightdash route, replaced by `app/api/report/route.ts` |
-| `apps/situation-room/__tests__/queries.test.ts` | Tests for deleted `queries.ts` |
-| `apps/situation-room/__tests__/scorecard-parser.test.ts` | Tests for deleted `scorecard-parser.ts` |
+| File                                                     | Reason                                                               |
+| -------------------------------------------------------- | -------------------------------------------------------------------- |
+| `apps/situation-room/lib/lightdash-client.ts`            | Replaced by `LightdashProvider` in adapter package                   |
+| `apps/situation-room/lib/queries.ts`                     | Filter field map & query building move into provider                 |
+| `apps/situation-room/lib/scorecard-parser.ts`            | Response normalization moves into provider                           |
+| `apps/situation-room/lib/types.ts`                       | Legacy duplicates of types in `contracts.ts` + `LightdashFilterRule` |
+| `apps/situation-room/app/api/lightdash/route.ts`         | Old Lightdash route, replaced by `app/api/report/route.ts`           |
+| `apps/situation-room/__tests__/queries.test.ts`          | Tests for deleted `queries.ts`                                       |
+| `apps/situation-room/__tests__/scorecard-parser.test.ts` | Tests for deleted `scorecard-parser.ts`                              |
 
 ---
 
 ## Task 1: Scaffold the analytics-adapter package
 
 **Files:**
+
 - Create: `packages/analytics-adapter/package.json`
 - Create: `packages/analytics-adapter/tsconfig.json`
 - Create: `packages/analytics-adapter/vitest.config.ts`
@@ -166,6 +167,7 @@ git commit -m "chore: scaffold analytics-adapter workspace package"
 ## Task 2: Define the generic interface and error types
 
 **Files:**
+
 - Create: `packages/analytics-adapter/src/interface.ts`
 - Create: `packages/analytics-adapter/src/error.ts`
 - Create: `packages/analytics-adapter/__tests__/interface.test.ts`
@@ -345,10 +347,7 @@ export type {
   Sort,
 } from './interface';
 
-export {
-  SemanticLayerError,
-  type SemanticLayerErrorCode,
-} from './error';
+export { SemanticLayerError, type SemanticLayerErrorCode } from './error';
 ```
 
 - [ ] **Step 6: Run tests**
@@ -368,6 +367,7 @@ git commit -m "feat(analytics-adapter): define SemanticLayerClient interface and
 ## Task 3: Implement the Lightdash provider
 
 **Files:**
+
 - Create: `packages/analytics-adapter/src/providers/lightdash.ts`
 - Create: `packages/analytics-adapter/__tests__/lightdash-provider.test.ts`
 - Modify: `packages/analytics-adapter/src/index.ts`
@@ -388,7 +388,14 @@ const BASE_CONFIG = {
   projectUuid: 'test-project-uuid',
 };
 
-function mockFetchSequence(responses: Array<{ ok: boolean; json: () => unknown; status?: number; text?: () => string }>) {
+function mockFetchSequence(
+  responses: Array<{
+    ok: boolean;
+    json: () => unknown;
+    status?: number;
+    text?: () => string;
+  }>,
+) {
   const fetchMock = vi.fn();
   for (const res of responses) {
     fetchMock.mockResolvedValueOnce({
@@ -455,8 +462,12 @@ describe('LightdashProvider', () => {
     expect(postBody.query.metrics).toEqual(['my_model_revenue']);
     expect(postBody.query.dimensions).toEqual(['my_model_stage']);
     expect(postBody.query.filters.dimensions.and[0].operator).toBe('equals');
-    expect(postBody.query.filters.dimensions.and[0].target.fieldId).toBe('my_model_stage');
-    expect(postBody.query.sorts).toEqual([{ fieldId: 'my_model_revenue', descending: true }]);
+    expect(postBody.query.filters.dimensions.and[0].target.fieldId).toBe(
+      'my_model_stage',
+    );
+    expect(postBody.query.sorts).toEqual([
+      { fieldId: 'my_model_revenue', descending: true },
+    ]);
     expect(postBody.query.limit).toBe(10);
 
     // Verify normalized response (explore prefix stripped)
@@ -849,7 +860,10 @@ export class LightdashProvider implements SemanticLayerClient {
 
     for (const [key, cell] of Object.entries(row)) {
       const field = key.startsWith(prefix) ? key.slice(prefix.length) : key;
-      normalized[field] = { raw: cell.value.raw, formatted: cell.value.formatted };
+      normalized[field] = {
+        raw: cell.value.raw,
+        formatted: cell.value.formatted,
+      };
     }
 
     return normalized;
@@ -869,7 +883,10 @@ export class LightdashProvider implements SemanticLayerClient {
 Update `packages/analytics-adapter/src/index.ts`, append:
 
 ```ts
-export { LightdashProvider, type LightdashProviderConfig } from './providers/lightdash';
+export {
+  LightdashProvider,
+  type LightdashProviderConfig,
+} from './providers/lightdash';
 ```
 
 - [ ] **Step 5: Run tests**
@@ -889,6 +906,7 @@ git commit -m "feat(analytics-adapter): implement Lightdash provider with query/
 ## Task 4: Add the factory function
 
 **Files:**
+
 - Create: `packages/analytics-adapter/src/factory.ts`
 - Create: `packages/analytics-adapter/__tests__/factory.test.ts`
 - Modify: `packages/analytics-adapter/src/index.ts`
@@ -917,9 +935,9 @@ describe('createClient', () => {
   });
 
   it('throws on unknown provider', () => {
-    expect(() =>
-      createClient({ provider: 'unknown' as never }),
-    ).toThrow('Unknown semantic layer provider: unknown');
+    expect(() => createClient({ provider: 'unknown' as never })).toThrow(
+      'Unknown semantic layer provider: unknown',
+    );
   });
 });
 ```
@@ -984,6 +1002,7 @@ git commit -m "feat(analytics-adapter): add createClient factory"
 ## Task 5: Create the app-level LightdashScorecardAdapter
 
 **Files:**
+
 - Create: `apps/situation-room/lib/data-adapters/lightdash-adapter.ts`
 - Create: `apps/situation-room/__tests__/lightdash-adapter.test.ts`
 - Modify: `apps/situation-room/package.json`
@@ -1014,10 +1033,7 @@ function makeMockClient(result: QueryResult): SemanticLayerClient {
   return { query: vi.fn().mockResolvedValue(result) };
 }
 
-function makeRows(
-  categories: readonly string[],
-  metricsPerCategory: number,
-) {
+function makeRows(categories: readonly string[], metricsPerCategory: number) {
   const rows: QueryResult['rows'] = [];
   for (const category of categories) {
     for (let i = 1; i <= metricsPerCategory; i++) {
@@ -1039,9 +1055,8 @@ describe('LightdashScorecardAdapter', () => {
     const rows = makeRows(CATEGORY_ORDER, 2);
     const client = makeMockClient({ rows, meta: { queryCount: 1 } });
 
-    const { LightdashScorecardAdapter } = await import(
-      '@/lib/data-adapters/lightdash-adapter'
-    );
+    const { LightdashScorecardAdapter } =
+      await import('@/lib/data-adapters/lightdash-adapter');
     const adapter = new LightdashScorecardAdapter(client);
     const result = await adapter.getScorecardReport({});
 
@@ -1058,13 +1073,13 @@ describe('LightdashScorecardAdapter', () => {
   it('passes filters through to the semantic layer client', async () => {
     const client = makeMockClient({ rows: makeRows(CATEGORY_ORDER, 1) });
 
-    const { LightdashScorecardAdapter } = await import(
-      '@/lib/data-adapters/lightdash-adapter'
-    );
+    const { LightdashScorecardAdapter } =
+      await import('@/lib/data-adapters/lightdash-adapter');
     const adapter = new LightdashScorecardAdapter(client);
     await adapter.getScorecardReport({ Division: ['Enterprise'] });
 
-    const queryCall = (client.query as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    const queryCall = (client.query as ReturnType<typeof vi.fn>).mock
+      .calls[0][0];
     const divisionFilter = queryCall.filters.find(
       (f: { field: string }) => f.field === 'Division',
     );
@@ -1076,9 +1091,8 @@ describe('LightdashScorecardAdapter', () => {
   it('delegates getFilterDictionary to the BigQueryAdapter', async () => {
     const client = makeMockClient({ rows: [] });
 
-    const { LightdashScorecardAdapter } = await import(
-      '@/lib/data-adapters/lightdash-adapter'
-    );
+    const { LightdashScorecardAdapter } =
+      await import('@/lib/data-adapters/lightdash-adapter');
     const adapter = new LightdashScorecardAdapter(client);
 
     // getFilterDictionary should exist and not use the semantic layer client
@@ -1237,6 +1251,7 @@ git commit -m "feat(situation-room): add LightdashScorecardAdapter using Semanti
 ## Task 6: Wire up the adapter factory with provider selection
 
 **Files:**
+
 - Modify: `apps/situation-room/lib/data-adapters/index.ts`
 - Modify: `apps/situation-room/__tests__/server-loaders.test.ts` (verify still passes)
 
@@ -1300,6 +1315,7 @@ git commit -m "feat(situation-room): support SITUATION_ROOM_BACKEND=lightdash in
 ## Task 7: Remove legacy Lightdash code
 
 **Files:**
+
 - Delete: `apps/situation-room/lib/lightdash-client.ts`
 - Delete: `apps/situation-room/lib/queries.ts`
 - Delete: `apps/situation-room/lib/scorecard-parser.ts`

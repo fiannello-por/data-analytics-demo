@@ -1,7 +1,4 @@
-import type {
-  ScorecardFilters,
-  ScorecardReportPayload,
-} from '@/lib/contracts';
+import type { ScorecardFilters, ScorecardReportPayload } from '@/lib/contracts';
 
 export type AdapterMeta = {
   source: 'bigquery' | 'lightdash';

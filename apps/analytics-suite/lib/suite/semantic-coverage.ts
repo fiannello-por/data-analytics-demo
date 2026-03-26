@@ -33,7 +33,7 @@ function collectRequiredFields(): SemanticCoverageIssue[] {
         model:
           surface.id === 'closed-won-table'
             ? 'sales_dashboard_v2_closed_won'
-            : module.registry.models[0] ?? '',
+            : (module.registry.models[0] ?? ''),
         field,
         fieldType: 'dimension' as const,
       })),

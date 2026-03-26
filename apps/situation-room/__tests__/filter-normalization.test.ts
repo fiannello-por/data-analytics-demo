@@ -19,8 +19,8 @@ describe('filter normalization', () => {
   });
 
   it('trims retained values and drops blank and duplicate values', () => {
-    expect(
-      normalizeFilters({ Owner: [' ', ' Alice ', 'Alice'] }),
-    ).toEqual({ Owner: ['Alice'] });
+    expect(normalizeFilters({ Owner: [' ', ' Alice ', 'Alice'] })).toEqual({
+      Owner: ['Alice'],
+    });
   });
 });

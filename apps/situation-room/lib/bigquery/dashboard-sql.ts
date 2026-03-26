@@ -3,10 +3,7 @@ import {
   findTileDefinition,
   type GlobalFilterKey,
 } from '@/lib/dashboard/catalog';
-import type {
-  DashboardFilters,
-  DateRange,
-} from '@/lib/dashboard/contracts';
+import type { DashboardFilters, DateRange } from '@/lib/dashboard/contracts';
 
 type DashboardQueryInput = {
   category: Category;
@@ -116,7 +113,13 @@ const CATEGORY_PREDICATES: Record<Category, string> = {
   Total: '1 = 1',
 };
 
-const TILE_ID_PREFIXES = ['new_logo_', 'expansion_', 'migration_', 'renewal_', 'total_'] as const;
+const TILE_ID_PREFIXES = [
+  'new_logo_',
+  'expansion_',
+  'migration_',
+  'renewal_',
+  'total_',
+] as const;
 
 const METRIC_SQL: Record<string, MetricSqlDefinition> = {
   bookings_amount: {
@@ -132,21 +135,15 @@ const METRIC_SQL: Record<string, MetricSqlDefinition> = {
     dateField: 'CloseDate',
   },
   annual_pacing_ytd: {
-    snapshotCurrentSql:
-      `COALESCE(SUM(CASE WHEN Won THEN ACV END), 0) * 365.0 / NULLIF(DATE_DIFF(DATE(@currentEndDate), DATE(@currentStartDate), DAY) + 1, 0)`,
-    snapshotPreviousSql:
-      `COALESCE(SUM(CASE WHEN Won THEN ACV END), 0) * 365.0 / NULLIF(DATE_DIFF(DATE(@previousEndDate), DATE(@previousStartDate), DAY) + 1, 0)`,
-    trendValueSql:
-      `COALESCE(SUM(CASE WHEN Won THEN ACV END), 0) * 365.0 / NULLIF(DATE_DIFF(DATE(@currentEndDate), DATE(@currentStartDate), DAY) + 1, 0)`,
+    snapshotCurrentSql: `COALESCE(SUM(CASE WHEN Won THEN ACV END), 0) * 365.0 / NULLIF(DATE_DIFF(DATE(@currentEndDate), DATE(@currentStartDate), DAY) + 1, 0)`,
+    snapshotPreviousSql: `COALESCE(SUM(CASE WHEN Won THEN ACV END), 0) * 365.0 / NULLIF(DATE_DIFF(DATE(@previousEndDate), DATE(@previousStartDate), DAY) + 1, 0)`,
+    trendValueSql: `COALESCE(SUM(CASE WHEN Won THEN ACV END), 0) * 365.0 / NULLIF(DATE_DIFF(DATE(@currentEndDate), DATE(@currentStartDate), DAY) + 1, 0)`,
     dateField: 'CloseDate',
   },
   close_rate: {
-    snapshotCurrentSql:
-      `SAFE_DIVIDE(COUNT(DISTINCT CASE WHEN isclosed AND Won THEN Id END), COUNT(DISTINCT CASE WHEN isclosed THEN Id END))`,
-    snapshotPreviousSql:
-      `SAFE_DIVIDE(COUNT(DISTINCT CASE WHEN isclosed AND Won THEN Id END), COUNT(DISTINCT CASE WHEN isclosed THEN Id END))`,
-    trendValueSql:
-      `SAFE_DIVIDE(COUNT(DISTINCT CASE WHEN isclosed AND Won THEN Id END), COUNT(DISTINCT CASE WHEN isclosed THEN Id END))`,
+    snapshotCurrentSql: `SAFE_DIVIDE(COUNT(DISTINCT CASE WHEN isclosed AND Won THEN Id END), COUNT(DISTINCT CASE WHEN isclosed THEN Id END))`,
+    snapshotPreviousSql: `SAFE_DIVIDE(COUNT(DISTINCT CASE WHEN isclosed AND Won THEN Id END), COUNT(DISTINCT CASE WHEN isclosed THEN Id END))`,
+    trendValueSql: `SAFE_DIVIDE(COUNT(DISTINCT CASE WHEN isclosed AND Won THEN Id END), COUNT(DISTINCT CASE WHEN isclosed THEN Id END))`,
     dateField: 'CloseDate',
   },
   avg_age: {
@@ -257,7 +254,10 @@ function getSourceTableReference(): string {
 }
 
 function getFilterParamName(key: GlobalFilterKey): string {
-  return `filter_${key.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '')}`;
+  return `filter_${key
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')}`;
 }
 
 function buildFilterClauses(filters: DashboardFilters): FilterClauseResult {
@@ -265,7 +265,9 @@ function buildFilterClauses(filters: DashboardFilters): FilterClauseResult {
   const clauses = Object.entries(filters)
     .filter((entry): entry is [GlobalFilterKey, string[]] => {
       const [key, values] = entry;
-      return key in FILTER_EXPRESSIONS && Array.isArray(values) && values.length > 0;
+      return (
+        key in FILTER_EXPRESSIONS && Array.isArray(values) && values.length > 0
+      );
     })
     .map(([key, values]) => {
       const paramName = getFilterParamName(key);
@@ -277,7 +279,9 @@ function buildFilterClauses(filters: DashboardFilters): FilterClauseResult {
 }
 
 function getMetricKey(tileId: string): string {
-  const matchingPrefix = TILE_ID_PREFIXES.find((prefix) => tileId.startsWith(prefix));
+  const matchingPrefix = TILE_ID_PREFIXES.find((prefix) =>
+    tileId.startsWith(prefix),
+  );
 
   if (!matchingPrefix) {
     throw new Error(`Unsupported dashboard tile: ${tileId}`);
@@ -350,7 +354,9 @@ export function buildTileSnapshotQuery(
 ): DashboardQueryDefinition {
   const tile = findTileDefinition(input.category, input.tileId);
   if (!tile) {
-    throw new Error(`Unknown tile "${input.tileId}" for category "${input.category}"`);
+    throw new Error(
+      `Unknown tile "${input.tileId}" for category "${input.category}"`,
+    );
   }
 
   const metric = getMetricDefinition(input.tileId);
@@ -404,7 +410,9 @@ export function buildTileTrendQuery(
 ): DashboardQueryDefinition {
   const tile = findTileDefinition(input.category, input.tileId);
   if (!tile) {
-    throw new Error(`Unknown tile "${input.tileId}" for category "${input.category}"`);
+    throw new Error(
+      `Unknown tile "${input.tileId}" for category "${input.category}"`,
+    );
   }
 
   const metric = getMetricDefinition(input.tileId);
@@ -472,7 +480,9 @@ export function buildFilterDictionaryQuery(
 ): DashboardQueryDefinition {
   const expression = FILTER_EXPRESSIONS[filterKey];
   if (!expression) {
-    throw new Error(`Unsupported dashboard filter dictionary key: ${filterKey}`);
+    throw new Error(
+      `Unsupported dashboard filter dictionary key: ${filterKey}`,
+    );
   }
 
   return {

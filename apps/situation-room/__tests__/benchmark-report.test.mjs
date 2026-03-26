@@ -1,10 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
-const scriptPath = new URL(
-  '../scripts/benchmark-report.mjs',
-  import.meta.url,
-);
+const scriptPath = new URL('../scripts/benchmark-report.mjs', import.meta.url);
 
 describe('benchmark report script', () => {
   it('includes the dashboard probe endpoints and tile timing header handling', () => {

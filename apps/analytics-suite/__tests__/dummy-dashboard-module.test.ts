@@ -7,8 +7,8 @@ describe('suite dashboard modules', () => {
       'sales-performance',
       'pipeline-health',
     ]);
-    expect(getDashboardModule('pipeline-health')?.registry.surfaces[0]?.label).toBe(
-      'Pipeline health summary',
-    );
+    expect(
+      getDashboardModule('pipeline-health')?.registry.surfaces[0]?.label,
+    ).toBe('Pipeline health summary');
   });
 });

@@ -47,7 +47,8 @@ describe('dashboard routes', () => {
       },
     });
 
-    const { GET } = await import('../app/api/dashboard/category/[category]/route');
+    const { GET } =
+      await import('../app/api/dashboard/category/[category]/route');
     const response = await GET(
       new NextRequest(
         'http://localhost/api/dashboard/category/New%20Logo?Division=Enterprise',
@@ -74,7 +75,9 @@ describe('dashboard routes', () => {
     });
     expect(response.headers.get('x-situation-room-query-count')).toBe('13');
     expect(response.headers.get('x-situation-room-source')).toBe('bigquery');
-    expect(response.headers.get('x-situation-room-bytes-processed')).toBe('130');
+    expect(response.headers.get('x-situation-room-bytes-processed')).toBe(
+      '130',
+    );
     expect(response.headers.get('x-situation-room-cache-mode')).toBe('off');
     expect(response.headers.get('x-situation-room-server-ms')).toBeTruthy();
     expect(response.headers.get('x-situation-room-tile-timings')).toBe('[]');
@@ -140,7 +143,8 @@ describe('dashboard routes', () => {
       },
     });
 
-    const { GET } = await import('../app/api/dashboard/closed-won/[category]/route');
+    const { GET } =
+      await import('../app/api/dashboard/closed-won/[category]/route');
     const response = await GET(
       new NextRequest(
         'http://localhost/api/dashboard/closed-won/New%20Logo?Division=Enterprise&cache=off',
@@ -174,11 +178,12 @@ describe('dashboard routes', () => {
       },
     });
 
-    const { GET } = await import(
-      '../app/api/dashboard/filter-dictionaries/[key]/route'
-    );
+    const { GET } =
+      await import('../app/api/dashboard/filter-dictionaries/[key]/route');
     const response = await GET(
-      new NextRequest('http://localhost/api/dashboard/filter-dictionaries/Division?cache=off'),
+      new NextRequest(
+        'http://localhost/api/dashboard/filter-dictionaries/Division?cache=off',
+      ),
       { params: Promise.resolve({ key: 'Division' }) },
     );
 
@@ -195,7 +200,8 @@ describe('dashboard routes', () => {
   });
 
   it('rejects unsupported category paths with a 400', async () => {
-    const { GET } = await import('../app/api/dashboard/category/[category]/route');
+    const { GET } =
+      await import('../app/api/dashboard/category/[category]/route');
     const response = await GET(
       new NextRequest('http://localhost/api/dashboard/category/Bogus'),
       { params: Promise.resolve({ category: 'Bogus' }) },
@@ -208,11 +214,12 @@ describe('dashboard routes', () => {
   });
 
   it('rejects unsupported filter dictionary keys with a 400', async () => {
-    const { GET } = await import(
-      '../app/api/dashboard/filter-dictionaries/[key]/route'
-    );
+    const { GET } =
+      await import('../app/api/dashboard/filter-dictionaries/[key]/route');
     const response = await GET(
-      new NextRequest('http://localhost/api/dashboard/filter-dictionaries/Bogus'),
+      new NextRequest(
+        'http://localhost/api/dashboard/filter-dictionaries/Bogus',
+      ),
       { params: Promise.resolve({ key: 'Bogus' }) },
     );
 
@@ -223,9 +230,12 @@ describe('dashboard routes', () => {
   });
 
   it('rejects an unsupported dashboard cache mode with a 400', async () => {
-    const { GET } = await import('../app/api/dashboard/category/[category]/route');
+    const { GET } =
+      await import('../app/api/dashboard/category/[category]/route');
     const response = await GET(
-      new NextRequest('http://localhost/api/dashboard/category/New%20Logo?cache=nope'),
+      new NextRequest(
+        'http://localhost/api/dashboard/category/New%20Logo?cache=nope',
+      ),
       { params: Promise.resolve({ category: 'New Logo' }) },
     );
 

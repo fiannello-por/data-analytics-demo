@@ -47,9 +47,15 @@ describe('TileTable', () => {
       <TileTable snapshot={snapshot} selectedTileId="positive_row" />,
     );
 
-    expect(html).toContain('class="p-2 align-middle whitespace-nowrap [&amp;:has([role=checkbox])]:pr-0 text-positive">+25%</td>');
-    expect(html).toContain('class="p-2 align-middle whitespace-nowrap [&amp;:has([role=checkbox])]:pr-0 text-negative">-20%</td>');
-    expect(html).toContain('class="p-2 align-middle whitespace-nowrap [&amp;:has([role=checkbox])]:pr-0 text-neutral-change">—</td>');
+    expect(html).toContain(
+      'class="p-2 align-middle whitespace-nowrap [&amp;:has([role=checkbox])]:pr-0 text-positive">+25%</td>',
+    );
+    expect(html).toContain(
+      'class="p-2 align-middle whitespace-nowrap [&amp;:has([role=checkbox])]:pr-0 text-negative">-20%</td>',
+    );
+    expect(html).toContain(
+      'class="p-2 align-middle whitespace-nowrap [&amp;:has([role=checkbox])]:pr-0 text-neutral-change">—</td>',
+    );
   });
 
   it('renders an inner bordered wrapper around the table content', () => {

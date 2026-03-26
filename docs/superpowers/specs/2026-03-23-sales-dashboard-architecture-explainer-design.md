@@ -3,6 +3,7 @@
 Date: 2026-03-23
 Status: Draft
 Related designs:
+
 - `2026-03-21-situation-room-dashboard-definition-design.md`
 - `2026-03-23-situation-room-overview-tab-design.md`
 

@@ -11,7 +11,11 @@ const getDashboardFilterDictionaryMock = vi.fn();
 vi.mock('server-only', () => ({}));
 
 vi.mock('@/components/dashboard/closed-won-opportunities-table', () => ({
-  ClosedWonOpportunitiesTable: ({ payload }: { payload: { category: string } }) =>
+  ClosedWonOpportunitiesTable: ({
+    payload,
+  }: {
+    payload: { category: string };
+  }) =>
     React.createElement(
       'div',
       { 'data-testid': 'closed-won-table' },
@@ -136,13 +140,15 @@ describe('dashboard page', { timeout: 20000 }, () => {
       meta: { source: 'bigquery', queryCount: 1, bytesProcessed: 22 },
     });
 
-    getDashboardFilterDictionaryMock.mockImplementation(async (key: string) => ({
-      data: {
-        filterKey: key,
-        options: [{ value: 'Enterprise', label: 'Enterprise', sortOrder: 1 }],
-      },
-      meta: { source: 'bigquery', queryCount: 1, bytesProcessed: 5 },
-    }));
+    getDashboardFilterDictionaryMock.mockImplementation(
+      async (key: string) => ({
+        data: {
+          filterKey: key,
+          options: [{ value: 'Enterprise', label: 'Enterprise', sortOrder: 1 }],
+        },
+        meta: { source: 'bigquery', queryCount: 1, bytesProcessed: 5 },
+      }),
+    );
 
     const { default: DashboardPage } = await import('@/app/page');
     const html = renderToStaticMarkup(await DashboardPage({}));
@@ -174,16 +180,18 @@ describe('dashboard page', { timeout: 20000 }, () => {
       meta: { source: 'bigquery', queryCount: 1, bytesProcessed: 22 },
     });
 
-    getDashboardFilterDictionaryMock.mockImplementation(async (key: string) => ({
-      data: {
-        filterKey: key,
-        options: [
-          { value: 'Enterprise', label: 'Enterprise', sortOrder: 1 },
-          { value: 'SMB', label: 'SMB', sortOrder: 2 },
-        ],
-      },
-      meta: { source: 'bigquery', queryCount: 1, bytesProcessed: 5 },
-    }));
+    getDashboardFilterDictionaryMock.mockImplementation(
+      async (key: string) => ({
+        data: {
+          filterKey: key,
+          options: [
+            { value: 'Enterprise', label: 'Enterprise', sortOrder: 1 },
+            { value: 'SMB', label: 'SMB', sortOrder: 2 },
+          ],
+        },
+        meta: { source: 'bigquery', queryCount: 1, bytesProcessed: 5 },
+      }),
+    );
 
     const { default: DashboardPage } = await import('@/app/page');
     const html = renderToStaticMarkup(
@@ -225,13 +233,15 @@ describe('dashboard page', { timeout: 20000 }, () => {
       meta: { source: 'bigquery', queryCount: 1, bytesProcessed: 22 },
     });
 
-    getDashboardFilterDictionaryMock.mockImplementation(async (key: string) => ({
-      data: {
-        filterKey: key,
-        options: [{ value: 'Enterprise', label: 'Enterprise', sortOrder: 1 }],
-      },
-      meta: { source: 'bigquery', queryCount: 1, bytesProcessed: 5 },
-    }));
+    getDashboardFilterDictionaryMock.mockImplementation(
+      async (key: string) => ({
+        data: {
+          filterKey: key,
+          options: [{ value: 'Enterprise', label: 'Enterprise', sortOrder: 1 }],
+        },
+        meta: { source: 'bigquery', queryCount: 1, bytesProcessed: 5 },
+      }),
+    );
 
     const { default: DashboardPage } = await import('@/app/page');
     const html = renderToStaticMarkup(

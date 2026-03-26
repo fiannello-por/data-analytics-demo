@@ -47,9 +47,9 @@ export async function fetchNormalizedReport(
   });
 
   if (!res.ok) {
-    const body = (await res.json().catch(() => null)) as
-      | { error?: string }
-      | null;
+    const body = (await res.json().catch(() => null)) as {
+      error?: string;
+    } | null;
     throw new Error(body?.error ?? `Request failed: ${res.status}`);
   }
 
@@ -70,10 +70,7 @@ export function useScorecardQuery(
   );
   const handledRefreshTokenRef = useRef(0);
 
-  const requestKey = useMemo(
-    () => serializeFilterCacheKey(filters),
-    [filters],
-  );
+  const requestKey = useMemo(() => serializeFilterCacheKey(filters), [filters]);
 
   const fetchData = useCallback(() => {
     setRefreshToken((value) => value + 1);
@@ -116,10 +113,7 @@ export function useScorecardQuery(
 
         setError(err instanceof Error ? err.message : 'Failed to load data');
       } finally {
-        if (
-          !controller.signal.aborted &&
-          requestId === requestIdRef.current
-        ) {
+        if (!controller.signal.aborted && requestId === requestIdRef.current) {
           setIsLoading(false);
         }
       }

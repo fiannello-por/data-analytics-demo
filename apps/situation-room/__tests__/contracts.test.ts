@@ -24,7 +24,9 @@ describe('contracts', () => {
       Owner: [],
     };
 
-    expect(summarizeFilters(filters)).toEqual([{ key: 'Division', values: ['North'] }]);
+    expect(summarizeFilters(filters)).toEqual([
+      { key: 'Division', values: ['North'] },
+    ]);
   });
 
   it('applies the default date range when missing', () => {

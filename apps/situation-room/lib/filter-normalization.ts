@@ -1,7 +1,4 @@
-import {
-  type ScorecardFilters,
-  withDefaultDateRange,
-} from '@/lib/contracts';
+import { type ScorecardFilters, withDefaultDateRange } from '@/lib/contracts';
 
 export function normalizeFilters(filters: ScorecardFilters): ScorecardFilters {
   const entries = Object.entries(filters)
@@ -9,7 +6,11 @@ export function normalizeFilters(filters: ScorecardFilters): ScorecardFilters {
       ([key, values]) =>
         [
           key,
-          [...new Set((values ?? []).map((value) => value.trim()).filter(Boolean))].sort(),
+          [
+            ...new Set(
+              (values ?? []).map((value) => value.trim()).filter(Boolean),
+            ),
+          ].sort(),
         ] as const,
     )
     .filter(([, values]) => values.length > 0)

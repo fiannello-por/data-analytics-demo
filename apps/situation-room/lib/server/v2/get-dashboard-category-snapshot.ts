@@ -2,11 +2,18 @@ import 'server-only';
 
 import { unstable_cache } from 'next/cache';
 import type { SemanticQueryResult } from '@por/analytics-adapter';
-import { getSnapshotGroups, buildSnapshotGroupQuery } from '@/lib/dashboard-v2/semantic-registry';
+import {
+  getSnapshotGroups,
+  buildSnapshotGroupQuery,
+} from '@/lib/dashboard-v2/semantic-registry';
 import type { Category } from '@/lib/dashboard/catalog';
 import { formatDateRange } from '@/lib/dashboard/date-range';
 import { serializeDashboardStateKey } from '@/lib/dashboard/query-inputs';
-import type { CategorySnapshotPayload, DashboardState, TileTiming } from '@/lib/dashboard/contracts';
+import type {
+  CategorySnapshotPayload,
+  DashboardState,
+  TileTiming,
+} from '@/lib/dashboard/contracts';
 import type { ProbeExecutionOptions } from '@/lib/probe-cache-mode';
 import {
   formatMetricValue,
@@ -84,8 +91,16 @@ export async function getDashboardV2CategorySnapshot(
           kind: 'composite',
           includes: group.tiles.map((tile) => tile.label),
           executions: [
-            { label: 'Current window', semanticRequest: currentRequest, result: current },
-            { label: 'Previous window', semanticRequest: previousRequest, result: previous },
+            {
+              label: 'Current window',
+              semanticRequest: currentRequest,
+              result: current,
+            },
+            {
+              label: 'Previous window',
+              semanticRequest: previousRequest,
+              result: previous,
+            },
           ],
         });
 
@@ -93,25 +108,26 @@ export async function getDashboardV2CategorySnapshot(
       }),
     );
 
-    const rows = groupResults.flatMap(({ group, current, previous, backendTrace }) =>
-      group.tiles.map((tile) => {
-        const currentRow = current.rows[0];
-        const previousRow = previous.rows[0];
-        const currentValue = getSemanticNumber(currentRow, tile.measure);
-        const previousValue = getSemanticNumber(previousRow, tile.measure);
+    const rows = groupResults.flatMap(
+      ({ group, current, previous, backendTrace }) =>
+        group.tiles.map((tile) => {
+          const currentRow = current.rows[0];
+          const previousRow = previous.rows[0];
+          const currentValue = getSemanticNumber(currentRow, tile.measure);
+          const previousValue = getSemanticNumber(previousRow, tile.measure);
 
-        return {
-          tileId: tile.tileId,
-          label: tile.label,
-          sortOrder: tile.sortOrder,
-          formatType: tile.formatType,
-          currentValue: formatMetricValue(currentValue, tile.formatType),
-          previousValue: formatMetricValue(previousValue, tile.formatType),
-          pctChange: formatPctChange(currentValue, previousValue),
-          backendTrace,
-          durationMs: current.totalDurationMs + previous.totalDurationMs,
-        };
-      }),
+          return {
+            tileId: tile.tileId,
+            label: tile.label,
+            sortOrder: tile.sortOrder,
+            formatType: tile.formatType,
+            currentValue: formatMetricValue(currentValue, tile.formatType),
+            previousValue: formatMetricValue(previousValue, tile.formatType),
+            pctChange: formatPctChange(currentValue, previousValue),
+            backendTrace,
+            durationMs: current.totalDurationMs + previous.totalDurationMs,
+          };
+        }),
     );
 
     const tileTimings: TileTiming[] = rows.map((row) => ({
@@ -151,7 +167,11 @@ export async function getDashboardV2CategorySnapshot(
 
   return unstable_cache(
     loadSnapshot,
-    ['v2-trace-links-3', 'dashboard-v2-category-snapshot', buildCacheKey(input)],
+    [
+      'v2-trace-links-3',
+      'dashboard-v2-category-snapshot',
+      buildCacheKey(input),
+    ],
     {
       revalidate: 60,
       tags: ['dashboard-v2-category-snapshot'],

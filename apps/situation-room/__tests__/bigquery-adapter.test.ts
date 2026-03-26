@@ -44,13 +44,9 @@ describe('BigQueryAdapter', () => {
 
     expect(result.data.appliedFilters).toEqual({ DateRange: ['current_year'] });
     expect(result.data.reportPeriodLabel).toBe('Current Year');
-    expect(result.data.categories.map((category) => category.category)).toEqual([
-      'New Logo',
-      'Expansion',
-      'Migration',
-      'Renewal',
-      'Total',
-    ]);
+    expect(result.data.categories.map((category) => category.category)).toEqual(
+      ['New Logo', 'Expansion', 'Migration', 'Renewal', 'Total'],
+    );
     expect(result.data.categories[1]).toEqual({
       category: 'Expansion',
       rows: [

@@ -94,14 +94,12 @@ export const LAB_CACHE_MODES: LabCacheModeOption[] = [
   {
     id: 'auto',
     label: 'Auto',
-    description:
-      'Allow BigQuery to reuse query-cache results when it can.',
+    description: 'Allow BigQuery to reuse query-cache results when it can.',
   },
   {
     id: 'off',
     label: 'Off',
-    description:
-      'Force live BigQuery execution with useQueryCache disabled.',
+    description: 'Force live BigQuery execution with useQueryCache disabled.',
   },
 ];
 

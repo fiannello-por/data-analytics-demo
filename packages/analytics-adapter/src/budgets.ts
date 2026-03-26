@@ -83,7 +83,8 @@ export function evaluateDashboardBudget(
   if (telemetrySnapshot.queryCount >= degradeThresholds.queryCount) {
     degradeReasons.push('query count crossed the degrade threshold');
   } else if (
-    telemetrySnapshot.queryCount >= policy.maxQueryCount * warningRatio
+    telemetrySnapshot.queryCount >=
+    policy.maxQueryCount * warningRatio
   ) {
     reasons.push('query count is near its configured budget');
   }
@@ -91,7 +92,8 @@ export function evaluateDashboardBudget(
   if (telemetrySnapshot.bytesProcessed >= degradeThresholds.bytesProcessed) {
     degradeReasons.push('bytes processed crossed the degrade threshold');
   } else if (
-    telemetrySnapshot.bytesProcessed >= policy.targetBytesProcessed * warningRatio
+    telemetrySnapshot.bytesProcessed >=
+    policy.targetBytesProcessed * warningRatio
   ) {
     reasons.push('bytes processed is near its configured budget');
   }
@@ -132,7 +134,9 @@ export function createDashboardBudgetTracker(
   const getPolicy = (dashboardId: string): DashboardBudgetPolicy => {
     const policy = policyByDashboardId.get(dashboardId);
     if (!policy) {
-      throw new Error(`No dashboard budget policy exists for "${dashboardId}".`);
+      throw new Error(
+        `No dashboard budget policy exists for "${dashboardId}".`,
+      );
     }
 
     return policy;
@@ -169,8 +173,9 @@ export function createDashboardBudgetTracker(
     },
 
     getReports() {
-      return [...telemetryByDashboardId.entries()].map(([dashboardId, telemetry]) =>
-        evaluateDashboardBudget(getPolicy(dashboardId), telemetry),
+      return [...telemetryByDashboardId.entries()].map(
+        ([dashboardId, telemetry]) =>
+          evaluateDashboardBudget(getPolicy(dashboardId), telemetry),
       );
     },
   };

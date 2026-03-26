@@ -93,7 +93,8 @@ export function buildScorecardReportQuery(
     params[key] = values;
   }
 
-  const whereClause = clauses.length > 0 ? clauses.join('\n        and ') : '1 = 1';
+  const whereClause =
+    clauses.length > 0 ? clauses.join('\n        and ') : '1 = 1';
 
   return {
     sql: `

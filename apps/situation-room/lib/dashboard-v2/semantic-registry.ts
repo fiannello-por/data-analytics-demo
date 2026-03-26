@@ -12,8 +12,10 @@ import {
 } from '@/lib/dashboard/catalog';
 import type { DashboardFilters, DateRange } from '@/lib/dashboard/contracts';
 
-export const DASHBOARD_V2_BASE_MODEL = 'sales_dashboard_v2_opportunity_base' as const;
-export const DASHBOARD_V2_CLOSED_WON_MODEL = 'sales_dashboard_v2_closed_won' as const;
+export const DASHBOARD_V2_BASE_MODEL =
+  'sales_dashboard_v2_opportunity_base' as const;
+export const DASHBOARD_V2_CLOSED_WON_MODEL =
+  'sales_dashboard_v2_closed_won' as const;
 
 type TileSemanticSpec = {
   measure: string;
@@ -21,54 +23,159 @@ type TileSemanticSpec = {
 };
 
 const TILE_SPECS: Record<string, TileSemanticSpec> = {
-  new_logo_bookings_amount: { measure: 'bookings_amount', dateDimension: 'close_date' },
-  new_logo_bookings_count: { measure: 'bookings_count', dateDimension: 'close_date' },
-  new_logo_annual_pacing_ytd: { measure: 'annual_pacing_ytd', dateDimension: 'close_date' },
+  new_logo_bookings_amount: {
+    measure: 'bookings_amount',
+    dateDimension: 'close_date',
+  },
+  new_logo_bookings_count: {
+    measure: 'bookings_count',
+    dateDimension: 'close_date',
+  },
+  new_logo_annual_pacing_ytd: {
+    measure: 'annual_pacing_ytd',
+    dateDimension: 'close_date',
+  },
   new_logo_close_rate: { measure: 'close_rate', dateDimension: 'close_date' },
   new_logo_avg_age: { measure: 'avg_age', dateDimension: 'close_date' },
-  new_logo_avg_booked_deal: { measure: 'avg_booked_deal', dateDimension: 'close_date' },
-  new_logo_avg_quoted_deal: { measure: 'avg_quoted_deal', dateDimension: 'created_date' },
-  new_logo_pipeline_created: { measure: 'pipeline_created', dateDimension: 'pipeline_start_date' },
+  new_logo_avg_booked_deal: {
+    measure: 'avg_booked_deal',
+    dateDimension: 'close_date',
+  },
+  new_logo_avg_quoted_deal: {
+    measure: 'avg_quoted_deal',
+    dateDimension: 'created_date',
+  },
+  new_logo_pipeline_created: {
+    measure: 'pipeline_created',
+    dateDimension: 'pipeline_start_date',
+  },
   new_logo_sql: { measure: 'sql_count', dateDimension: 'created_date' },
   new_logo_sqo: { measure: 'sqo_count', dateDimension: 'sales_qualified_date' },
-  new_logo_gate_1_complete: { measure: 'gate_1_complete_count', dateDimension: 'gate1_completed_date' },
+  new_logo_gate_1_complete: {
+    measure: 'gate_1_complete_count',
+    dateDimension: 'gate1_completed_date',
+  },
   new_logo_sdr_points: { measure: 'sdr_points', dateDimension: 'created_date' },
-  new_logo_sqo_users: { measure: 'sqo_users', dateDimension: 'sales_qualified_date' },
-  expansion_bookings_amount: { measure: 'bookings_amount', dateDimension: 'close_date' },
-  expansion_bookings_count: { measure: 'bookings_count', dateDimension: 'close_date' },
-  expansion_annual_pacing_ytd: { measure: 'annual_pacing_ytd', dateDimension: 'close_date' },
+  new_logo_sqo_users: {
+    measure: 'sqo_users',
+    dateDimension: 'sales_qualified_date',
+  },
+  expansion_bookings_amount: {
+    measure: 'bookings_amount',
+    dateDimension: 'close_date',
+  },
+  expansion_bookings_count: {
+    measure: 'bookings_count',
+    dateDimension: 'close_date',
+  },
+  expansion_annual_pacing_ytd: {
+    measure: 'annual_pacing_ytd',
+    dateDimension: 'close_date',
+  },
   expansion_close_rate: { measure: 'close_rate', dateDimension: 'close_date' },
   expansion_avg_age: { measure: 'avg_age', dateDimension: 'close_date' },
-  expansion_avg_booked_deal: { measure: 'avg_booked_deal', dateDimension: 'close_date' },
-  expansion_avg_quoted_deal: { measure: 'avg_quoted_deal', dateDimension: 'created_date' },
-  expansion_pipeline_created: { measure: 'pipeline_created', dateDimension: 'pipeline_start_date' },
-  expansion_sql: { measure: 'expansion_sql_count', dateDimension: 'created_date' },
-  expansion_sqo: { measure: 'expansion_sqo_count', dateDimension: 'expansion_qualified_date' },
-  migration_bookings_amount: { measure: 'bookings_amount', dateDimension: 'close_date' },
-  migration_bookings_count: { measure: 'bookings_count', dateDimension: 'close_date' },
-  migration_annual_pacing_ytd: { measure: 'annual_pacing_ytd', dateDimension: 'close_date' },
+  expansion_avg_booked_deal: {
+    measure: 'avg_booked_deal',
+    dateDimension: 'close_date',
+  },
+  expansion_avg_quoted_deal: {
+    measure: 'avg_quoted_deal',
+    dateDimension: 'created_date',
+  },
+  expansion_pipeline_created: {
+    measure: 'pipeline_created',
+    dateDimension: 'pipeline_start_date',
+  },
+  expansion_sql: {
+    measure: 'expansion_sql_count',
+    dateDimension: 'created_date',
+  },
+  expansion_sqo: {
+    measure: 'expansion_sqo_count',
+    dateDimension: 'expansion_qualified_date',
+  },
+  migration_bookings_amount: {
+    measure: 'bookings_amount',
+    dateDimension: 'close_date',
+  },
+  migration_bookings_count: {
+    measure: 'bookings_count',
+    dateDimension: 'close_date',
+  },
+  migration_annual_pacing_ytd: {
+    measure: 'annual_pacing_ytd',
+    dateDimension: 'close_date',
+  },
   migration_close_rate: { measure: 'close_rate', dateDimension: 'close_date' },
   migration_avg_age: { measure: 'avg_age', dateDimension: 'close_date' },
-  migration_avg_booked_deal: { measure: 'avg_booked_deal', dateDimension: 'close_date' },
-  migration_avg_quoted_deal: { measure: 'avg_quoted_deal', dateDimension: 'created_date' },
-  migration_pipeline_created: { measure: 'pipeline_created', dateDimension: 'pipeline_start_date' },
-  migration_sql: { measure: 'migration_sql_count', dateDimension: 'created_date' },
-  migration_sqo: { measure: 'migration_sqo_count', dateDimension: 'expansion_qualified_date' },
-  migration_sal: { measure: 'migration_sal_count', dateDimension: 'expansion_submitted_date' },
+  migration_avg_booked_deal: {
+    measure: 'avg_booked_deal',
+    dateDimension: 'close_date',
+  },
+  migration_avg_quoted_deal: {
+    measure: 'avg_quoted_deal',
+    dateDimension: 'created_date',
+  },
+  migration_pipeline_created: {
+    measure: 'pipeline_created',
+    dateDimension: 'pipeline_start_date',
+  },
+  migration_sql: {
+    measure: 'migration_sql_count',
+    dateDimension: 'created_date',
+  },
+  migration_sqo: {
+    measure: 'migration_sqo_count',
+    dateDimension: 'expansion_qualified_date',
+  },
+  migration_sal: {
+    measure: 'migration_sal_count',
+    dateDimension: 'expansion_submitted_date',
+  },
   migration_avg_users: { measure: 'avg_users', dateDimension: 'close_date' },
-  renewal_bookings_amount: { measure: 'bookings_amount', dateDimension: 'close_date' },
-  renewal_bookings_count: { measure: 'bookings_count', dateDimension: 'close_date' },
-  renewal_annual_pacing_ytd: { measure: 'annual_pacing_ytd', dateDimension: 'close_date' },
+  renewal_bookings_amount: {
+    measure: 'bookings_amount',
+    dateDimension: 'close_date',
+  },
+  renewal_bookings_count: {
+    measure: 'bookings_count',
+    dateDimension: 'close_date',
+  },
+  renewal_annual_pacing_ytd: {
+    measure: 'annual_pacing_ytd',
+    dateDimension: 'close_date',
+  },
   renewal_close_rate: { measure: 'close_rate', dateDimension: 'close_date' },
   renewal_avg_age: { measure: 'avg_age', dateDimension: 'close_date' },
-  renewal_avg_booked_deal: { measure: 'avg_booked_deal', dateDimension: 'close_date' },
-  renewal_avg_quoted_deal: { measure: 'avg_quoted_deal', dateDimension: 'created_date' },
-  renewal_pipeline_created: { measure: 'pipeline_created', dateDimension: 'pipeline_start_date' },
+  renewal_avg_booked_deal: {
+    measure: 'avg_booked_deal',
+    dateDimension: 'close_date',
+  },
+  renewal_avg_quoted_deal: {
+    measure: 'avg_quoted_deal',
+    dateDimension: 'created_date',
+  },
+  renewal_pipeline_created: {
+    measure: 'pipeline_created',
+    dateDimension: 'pipeline_start_date',
+  },
   renewal_sql: { measure: 'renewal_sql_count', dateDimension: 'close_date' },
-  total_bookings_amount: { measure: 'bookings_amount', dateDimension: 'close_date' },
-  total_bookings_count: { measure: 'bookings_count', dateDimension: 'close_date' },
-  total_annual_pacing_ytd: { measure: 'annual_pacing_ytd', dateDimension: 'close_date' },
-  total_one_time_revenue: { measure: 'one_time_revenue', dateDimension: 'close_date' },
+  total_bookings_amount: {
+    measure: 'bookings_amount',
+    dateDimension: 'close_date',
+  },
+  total_bookings_count: {
+    measure: 'bookings_count',
+    dateDimension: 'close_date',
+  },
+  total_annual_pacing_ytd: {
+    measure: 'annual_pacing_ytd',
+    dateDimension: 'close_date',
+  },
+  total_one_time_revenue: {
+    measure: 'one_time_revenue',
+    dateDimension: 'close_date',
+  },
 };
 
 const FILTER_DIMENSIONS: Record<GlobalFilterKey, string> = {
@@ -185,7 +292,9 @@ export function buildClosedWonQuery(
   };
 }
 
-export function buildFilterDictionaryQuery(key: GlobalFilterKey): SemanticQueryRequest {
+export function buildFilterDictionaryQuery(
+  key: GlobalFilterKey,
+): SemanticQueryRequest {
   const dimension = getSemanticFilterDimension(key);
 
   return {

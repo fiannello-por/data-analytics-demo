@@ -38,11 +38,7 @@ const nodeTypes = {
   architecture: GraphNode,
 };
 
-function GraphViewportSync({
-  dependencyKey,
-}: {
-  dependencyKey: string;
-}) {
+function GraphViewportSync({ dependencyKey }: { dependencyKey: string }) {
   const { fitView } = useReactFlow();
 
   React.useEffect(() => {
@@ -60,7 +56,10 @@ function GraphViewportSync({
   return null;
 }
 
-function getNodePosition(node: ArchitectureNode, manifest: ArchitectureManifest) {
+function getNodePosition(
+  node: ArchitectureNode,
+  manifest: ArchitectureManifest,
+) {
   if (node.position) {
     return node.position;
   }
@@ -127,7 +126,10 @@ export function GraphCanvas({
             color: 'rgba(226, 232, 240, 0.78)',
           },
           style: {
-            stroke: edge.type === 'trigger' ? 'rgba(125, 211, 252, 0.88)' : 'rgba(226, 232, 240, 0.74)',
+            stroke:
+              edge.type === 'trigger'
+                ? 'rgba(125, 211, 252, 0.88)'
+                : 'rgba(226, 232, 240, 0.74)',
             strokeWidth: edge.type === 'trigger' ? 1.8 : 1.3,
             opacity: 0.82,
           },
@@ -140,7 +142,9 @@ export function GraphCanvas({
 
   React.useEffect(() => {
     setNodes((currentNodes) => {
-      const currentNodeMap = new Map(currentNodes.map((node) => [node.id, node]));
+      const currentNodeMap = new Map(
+        currentNodes.map((node) => [node.id, node]),
+      );
 
       return baseNodes.map((node) => {
         const existingNode = currentNodeMap.get(node.id);
@@ -172,8 +176,10 @@ export function GraphCanvas({
   React.useEffect(() => {
     setEdges(
       computedEdges.map((edge) => {
-        const isIncoming = selectedNodeId != null && edge.target === selectedNodeId;
-        const isOutgoing = selectedNodeId != null && edge.source === selectedNodeId;
+        const isIncoming =
+          selectedNodeId != null && edge.target === selectedNodeId;
+        const isOutgoing =
+          selectedNodeId != null && edge.source === selectedNodeId;
         const isRelated = isIncoming || isOutgoing;
 
         return {
@@ -184,9 +190,9 @@ export function GraphCanvas({
             width: 18,
             height: 18,
             color: isIncoming
-                ? 'rgba(248, 113, 113, 0.95)'
-                : isOutgoing
-                  ? 'rgba(34, 197, 94, 0.95)'
+              ? 'rgba(248, 113, 113, 0.95)'
+              : isOutgoing
+                ? 'rgba(34, 197, 94, 0.95)'
                 : 'rgba(226, 232, 240, 0.82)',
           },
           style: {
@@ -240,7 +246,8 @@ export function GraphCanvas({
           zoomable
           className="!h-[96px] !w-[160px] !border !border-white/8 !bg-slate-950/90"
           nodeColor={(node) => {
-            const stage = (node.data?.node as ArchitectureNode | undefined)?.stage;
+            const stage = (node.data?.node as ArchitectureNode | undefined)
+              ?.stage;
 
             if (!stage) {
               return 'rgba(71, 85, 105, 0.85)';
@@ -262,12 +269,17 @@ export function GraphCanvas({
             </p>
             <div className="grid grid-cols-2 gap-x-4 gap-y-2">
               {STAGE_ORDER.map((stage) => (
-                <div key={stage} className="flex items-center gap-2 text-xs text-slate-200/92">
+                <div
+                  key={stage}
+                  className="flex items-center gap-2 text-xs text-slate-200/92"
+                >
                   <span
                     className="h-2.5 w-2.5 rounded-full"
                     style={{ backgroundColor: ARCHITECTURE_STAGE_COLOR[stage] }}
                   />
-                  <span className="whitespace-nowrap">{ARCHITECTURE_STAGE_LABEL[stage]}</span>
+                  <span className="whitespace-nowrap">
+                    {ARCHITECTURE_STAGE_LABEL[stage]}
+                  </span>
                 </div>
               ))}
             </div>

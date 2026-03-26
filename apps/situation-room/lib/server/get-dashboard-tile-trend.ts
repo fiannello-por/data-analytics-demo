@@ -22,7 +22,11 @@ import {
 
 type TileTrendState = Pick<
   DashboardState,
-  'selectedTileId' | 'filters' | 'dateRange' | 'previousDateRange' | 'trendGrain'
+  | 'selectedTileId'
+  | 'filters'
+  | 'dateRange'
+  | 'previousDateRange'
+  | 'trendGrain'
 >;
 type TileTrendInput = TileTrendState & { activeCategory: Category };
 

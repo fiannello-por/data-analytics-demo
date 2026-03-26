@@ -17,9 +17,13 @@ describe('analytics suite shell', () => {
   it('uses the denser preset-inspired card language on the home page', () => {
     const markup = renderToStaticMarkup(React.createElement(HomePage));
 
-    expect(markup).toContain('rounded-xl bg-card p-1 ring-1 ring-foreground/10');
+    expect(markup).toContain(
+      'rounded-xl bg-card p-1 ring-1 ring-foreground/10',
+    );
     expect(markup).toContain('ring-1 ring-foreground/10');
-    expect(markup).toContain('text-[11px] font-medium uppercase tracking-[0.18em]');
+    expect(markup).toContain(
+      'text-[11px] font-medium uppercase tracking-[0.18em]',
+    );
     expect(markup).toContain('text-2xl sm:text-[2rem]');
     expect(markup).toContain('h-7 gap-1 rounded-[min(var(--radius-md),12px)]');
   });

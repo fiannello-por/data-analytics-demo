@@ -5,7 +5,10 @@ import { CATEGORY_ORDER } from '@/lib/dashboard/catalog';
 import { formatDateRange } from '@/lib/dashboard/date-range';
 import { serializeDashboardStateKey } from '@/lib/dashboard/query-inputs';
 import type { ProbeExecutionOptions } from '@/lib/probe-cache-mode';
-import type { DashboardState, OverviewBoardPayload } from '@/lib/dashboard/contracts';
+import type {
+  DashboardState,
+  OverviewBoardPayload,
+} from '@/lib/dashboard/contracts';
 import {
   normalizeDashboardExecutionOptions,
   nowIsoString,
@@ -59,7 +62,10 @@ export async function getDashboardOverviewBoard(
       },
       meta: {
         source: 'bigquery' as const,
-        queryCount: snapshots.reduce((sum, snapshot) => sum + snapshot.meta.queryCount, 0),
+        queryCount: snapshots.reduce(
+          (sum, snapshot) => sum + snapshot.meta.queryCount,
+          0,
+        ),
         bytesProcessed: snapshots.reduce(
           (sum, snapshot) => sum + (snapshot.meta.bytesProcessed ?? 0),
           0,
@@ -73,8 +79,12 @@ export async function getDashboardOverviewBoard(
     return loadBoard();
   }
 
-  return unstable_cache(loadBoard, ['dashboard-overview-board', buildCacheKey(input)], {
-    revalidate: 60,
-    tags: ['dashboard-overview-board'],
-  })();
+  return unstable_cache(
+    loadBoard,
+    ['dashboard-overview-board', buildCacheKey(input)],
+    {
+      revalidate: 60,
+      tags: ['dashboard-overview-board'],
+    },
+  )();
 }

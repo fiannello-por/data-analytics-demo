@@ -25,7 +25,10 @@ import {
   setDashboardActiveCategory,
   setDashboardSelectedTile,
 } from '@/lib/dashboard/query-inputs';
-import { derivePreviousYearRange, formatDateRange } from '@/lib/dashboard/date-range';
+import {
+  derivePreviousYearRange,
+  formatDateRange,
+} from '@/lib/dashboard/date-range';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -43,7 +46,10 @@ import {
 } from '@/components/dashboard/closed-won-opportunities-table';
 import { OverviewSkeleton } from '@/components/dashboard/overview-skeleton';
 import { OverviewTab } from '@/components/dashboard/overview-tab';
-import { TileTable, TileTableSkeleton } from '@/components/dashboard/tile-table';
+import {
+  TileTable,
+  TileTableSkeleton,
+} from '@/components/dashboard/tile-table';
 import { TrendPanel } from '@/components/dashboard/trend-panel';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { buildOverviewBoard } from '@/lib/dashboard/overview-model';
@@ -101,10 +107,14 @@ function buildSnapshotCache(
 function hasFullSnapshotCache(
   snapshotByCategory: Partial<Record<Category, CategorySnapshotPayload>>,
 ) {
-  return CATEGORY_ORDER.every((category) => Boolean(snapshotByCategory[category]));
+  return CATEGORY_ORDER.every((category) =>
+    Boolean(snapshotByCategory[category]),
+  );
 }
 
-function getClosedWonCategory(activeCategory: DashboardState['activeCategory']): Category {
+function getClosedWonCategory(
+  activeCategory: DashboardState['activeCategory'],
+): Category {
   return isCategory(activeCategory) ? activeCategory : 'Total';
 }
 
@@ -118,14 +128,16 @@ export function DashboardShell({
   renderedAt,
   apiBasePath = '/api/dashboard',
 }: DashboardShellProps) {
-  const urls = React.useMemo(() => buildDashboardUrlFactory(apiBasePath), [apiBasePath]);
+  const urls = React.useMemo(
+    () => buildDashboardUrlFactory(apiBasePath),
+    [apiBasePath],
+  );
   const [state, setState] = React.useState(initialState);
   const [snapshotByCategory, setSnapshotByCategory] = React.useState<
     Partial<Record<Category, CategorySnapshotPayload>>
   >(() => buildSnapshotCache(initialOverviewBoard, initialSnapshot));
-  const [overviewBoard, setOverviewBoard] = React.useState<OverviewBoardPayload | null>(
-    initialOverviewBoard ?? null,
-  );
+  const [overviewBoard, setOverviewBoard] =
+    React.useState<OverviewBoardPayload | null>(initialOverviewBoard ?? null);
   const [trend, setTrend] = React.useState<TileTrendPayload | null>(
     initialTrend ?? null,
   );
@@ -137,7 +149,8 @@ export function DashboardShell({
   const [isTrendLoading, setTrendLoading] = React.useState(false);
   const [isClosedWonLoading, setClosedWonLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const [revealedTrendCategory, setRevealedTrendCategory] = React.useState<Category | null>(null);
+  const [revealedTrendCategory, setRevealedTrendCategory] =
+    React.useState<Category | null>(null);
   const refreshRequestIdRef = React.useRef(0);
   const isMountedRef = React.useRef(true);
 
@@ -181,7 +194,9 @@ export function DashboardShell({
           {
             headers: { Accept: 'application/json' },
           },
-        ).then((response) => readJson<OverviewBoardPayload>(response, 'Overview'))
+        ).then((response) =>
+          readJson<OverviewBoardPayload>(response, 'Overview'),
+        )
       : Promise.resolve(null);
     const snapshotFetch = scope.snapshot
       ? fetch(
@@ -217,16 +232,20 @@ export function DashboardShell({
             headers: { Accept: 'application/json' },
           },
         ).then((response) =>
-          readJson<ClosedWonOpportunitiesPayload>(response, 'Closed won opportunities'),
+          readJson<ClosedWonOpportunitiesPayload>(
+            response,
+            'Closed won opportunities',
+          ),
         )
       : Promise.resolve(null);
 
-    const [overviewResult, snapshotResult, trendResult, closedWonResult] = await Promise.allSettled([
-      overviewFetch,
-      snapshotFetch,
-      trendFetch,
-      closedWonFetch,
-    ]);
+    const [overviewResult, snapshotResult, trendResult, closedWonResult] =
+      await Promise.allSettled([
+        overviewFetch,
+        snapshotFetch,
+        trendFetch,
+        closedWonFetch,
+      ]);
 
     if (!isMountedRef.current || requestId !== refreshRequestIdRef.current) {
       return;
@@ -236,7 +255,9 @@ export function DashboardShell({
 
     if (scope.overview) {
       if (overviewResult.status === 'rejected') {
-        nextErrors.push(`Overview: ${overviewResult.reason instanceof Error ? overviewResult.reason.message : 'request failed.'}`);
+        nextErrors.push(
+          `Overview: ${overviewResult.reason instanceof Error ? overviewResult.reason.message : 'request failed.'}`,
+        );
       } else if (!overviewResult.value) {
         nextErrors.push('Overview: request failed.');
       }
@@ -244,7 +265,9 @@ export function DashboardShell({
 
     if (scope.snapshot) {
       if (snapshotResult.status === 'rejected') {
-        nextErrors.push(`Snapshot: ${snapshotResult.reason instanceof Error ? snapshotResult.reason.message : 'request failed.'}`);
+        nextErrors.push(
+          `Snapshot: ${snapshotResult.reason instanceof Error ? snapshotResult.reason.message : 'request failed.'}`,
+        );
       } else if (!snapshotResult.value) {
         nextErrors.push('Snapshot: request failed.');
       }
@@ -252,7 +275,9 @@ export function DashboardShell({
 
     if (scope.trend) {
       if (trendResult.status === 'rejected') {
-        nextErrors.push(`Trend: ${trendResult.reason instanceof Error ? trendResult.reason.message : 'request failed.'}`);
+        nextErrors.push(
+          `Trend: ${trendResult.reason instanceof Error ? trendResult.reason.message : 'request failed.'}`,
+        );
       } else if (!trendResult.value) {
         nextErrors.push('Trend: request failed.');
       }
@@ -260,7 +285,9 @@ export function DashboardShell({
 
     if (scope.closedWon) {
       if (closedWonResult.status === 'rejected') {
-        nextErrors.push(`Closed won: ${closedWonResult.reason instanceof Error ? closedWonResult.reason.message : 'request failed.'}`);
+        nextErrors.push(
+          `Closed won: ${closedWonResult.reason instanceof Error ? closedWonResult.reason.message : 'request failed.'}`,
+        );
       } else if (!closedWonResult.value) {
         nextErrors.push('Closed won: request failed.');
       }
@@ -278,16 +305,27 @@ export function DashboardShell({
       return;
     }
 
-    if (scope.overview && overviewResult.status === 'fulfilled' && overviewResult.value) {
+    if (
+      scope.overview &&
+      overviewResult.status === 'fulfilled' &&
+      overviewResult.value
+    ) {
       setOverviewBoard(overviewResult.value);
       setSnapshotByCategory(
         Object.fromEntries(
-          overviewResult.value.snapshots.map((snapshot) => [snapshot.category, snapshot]),
+          overviewResult.value.snapshots.map((snapshot) => [
+            snapshot.category,
+            snapshot,
+          ]),
         ) as Partial<Record<Category, CategorySnapshotPayload>>,
       );
     }
 
-    if (scope.snapshot && snapshotResult.status === 'fulfilled' && snapshotResult.value) {
+    if (
+      scope.snapshot &&
+      snapshotResult.status === 'fulfilled' &&
+      snapshotResult.value
+    ) {
       const snapshotData = snapshotResult.value;
       setSnapshotByCategory((current) => ({
         ...current,
@@ -295,11 +333,19 @@ export function DashboardShell({
       }));
     }
 
-    if (scope.trend && trendResult.status === 'fulfilled' && trendResult.value) {
+    if (
+      scope.trend &&
+      trendResult.status === 'fulfilled' &&
+      trendResult.value
+    ) {
       setTrend(trendResult.value);
     }
 
-    if (scope.closedWon && closedWonResult.status === 'fulfilled' && closedWonResult.value) {
+    if (
+      scope.closedWon &&
+      closedWonResult.status === 'fulfilled' &&
+      closedWonResult.value
+    ) {
       setClosedWonOpportunities(closedWonResult.value);
     }
 
@@ -324,20 +370,26 @@ export function DashboardShell({
   function handleCategoryChange(category: DashboardState['activeCategory']) {
     const nextState = setDashboardActiveCategory(state, category);
     setRevealedTrendCategory(null);
-    const shouldLoadOverview = isOverviewTab(category) && !hasFullSnapshotCache(snapshotByCategory);
-    const shouldLoadSnapshot = isCategory(category) && !snapshotByCategory[category];
+    const shouldLoadOverview =
+      isOverviewTab(category) && !hasFullSnapshotCache(snapshotByCategory);
+    const shouldLoadSnapshot =
+      isCategory(category) && !snapshotByCategory[category];
 
-    applyStateChange(nextState, {
-      overview: shouldLoadOverview,
-      snapshot: shouldLoadSnapshot,
-      trend: isCategory(category),
-      closedWon: true,
-      detailCategory: isCategory(category) ? category : CATEGORY_ORDER[0],
-      closedWonCategory: getClosedWonCategory(category),
-    }, {
-      optimisticState: nextState,
-      revertState: state,
-    });
+    applyStateChange(
+      nextState,
+      {
+        overview: shouldLoadOverview,
+        snapshot: shouldLoadSnapshot,
+        trend: isCategory(category),
+        closedWon: true,
+        detailCategory: isCategory(category) ? category : CATEGORY_ORDER[0],
+        closedWonCategory: getClosedWonCategory(category),
+      },
+      {
+        optimisticState: nextState,
+        revertState: state,
+      },
+    );
   }
 
   function handleTileSelect(tileId: string) {
@@ -351,20 +403,27 @@ export function DashboardShell({
     }
 
     const nextState = setDashboardSelectedTile(state, tileId);
-    applyStateChange(nextState, {
-      overview: false,
-      snapshot: false,
-      trend: true,
-      closedWon: false,
-      detailCategory: state.activeCategory,
-      closedWonCategory: getClosedWonCategory(state.activeCategory),
-    }, {
-      optimisticState: nextState,
-      revertState: state,
-    });
+    applyStateChange(
+      nextState,
+      {
+        overview: false,
+        snapshot: false,
+        trend: true,
+        closedWon: false,
+        detailCategory: state.activeCategory,
+        closedWonCategory: getClosedWonCategory(state.activeCategory),
+      },
+      {
+        optimisticState: nextState,
+        revertState: state,
+      },
+    );
   }
 
-  function handleFilterValueAdd(key: keyof DashboardState['filters'], value: string) {
+  function handleFilterValueAdd(
+    key: keyof DashboardState['filters'],
+    value: string,
+  ) {
     const nextState = {
       ...state,
       filters: addDashboardFilterValue(state.filters, key, value),
@@ -373,7 +432,8 @@ export function DashboardShell({
       ? nextState.activeCategory
       : CATEGORY_ORDER[0];
     const shouldRefreshOverview =
-      isOverviewTab(nextState.activeCategory) || hasFullSnapshotCache(snapshotByCategory);
+      isOverviewTab(nextState.activeCategory) ||
+      hasFullSnapshotCache(snapshotByCategory);
 
     applyStateChange(nextState, {
       overview: shouldRefreshOverview,
@@ -397,7 +457,8 @@ export function DashboardShell({
       ? nextState.activeCategory
       : CATEGORY_ORDER[0];
     const shouldRefreshOverview =
-      isOverviewTab(nextState.activeCategory) || hasFullSnapshotCache(snapshotByCategory);
+      isOverviewTab(nextState.activeCategory) ||
+      hasFullSnapshotCache(snapshotByCategory);
 
     applyStateChange(nextState, {
       overview: shouldRefreshOverview,
@@ -419,7 +480,8 @@ export function DashboardShell({
       ? nextState.activeCategory
       : CATEGORY_ORDER[0];
     const shouldRefreshOverview =
-      isOverviewTab(nextState.activeCategory) || hasFullSnapshotCache(snapshotByCategory);
+      isOverviewTab(nextState.activeCategory) ||
+      hasFullSnapshotCache(snapshotByCategory);
 
     applyStateChange(nextState, {
       overview: shouldRefreshOverview,
@@ -435,24 +497,28 @@ export function DashboardShell({
     ? state.activeCategory
     : CATEGORY_ORDER[0];
   const activeSnapshot = snapshotByCategory[detailCategory] ?? null;
-  const overviewSnapshots = overviewBoard?.snapshots ?? CATEGORY_ORDER
-    .map((category) => snapshotByCategory[category])
-    .filter((snapshot): snapshot is CategorySnapshotPayload => Boolean(snapshot));
+  const overviewSnapshots =
+    overviewBoard?.snapshots ??
+    CATEGORY_ORDER.map((category) => snapshotByCategory[category]).filter(
+      (snapshot): snapshot is CategorySnapshotPayload => Boolean(snapshot),
+    );
   const displayCategory = detailCategory;
   const displayWindowLabel = formatDateRange(state.dateRange);
   const displayTileLabel =
     (isCategory(detailCategory)
       ? findTileDefinition(detailCategory, state.selectedTileId)?.label
-      : undefined) ?? trend?.label ?? 'Metric trend';
+      : undefined) ??
+    trend?.label ??
+    'Metric trend';
   const displayPreviousWindowLabel = formatDateRange(state.previousDateRange);
   const showTrendPanel = revealedTrendCategory === detailCategory;
   const lastRefreshedAt = isOverviewTab(state.activeCategory)
-    ? overviewBoard?.lastRefreshedAt ??
+    ? (overviewBoard?.lastRefreshedAt ??
       overviewSnapshots[0]?.lastRefreshedAt ??
-      null
-    : activeSnapshot?.lastRefreshedAt ??
+      null)
+    : (activeSnapshot?.lastRefreshedAt ??
       overviewBoard?.lastRefreshedAt ??
-      null;
+      null);
 
   return (
     <main className="min-h-screen bg-background">
@@ -465,8 +531,9 @@ export function DashboardShell({
                   Sales Performance Dashboard
                 </h1>
                 <p className="max-w-3xl text-sm text-muted-foreground">
-                  Track bookings, pacing, conversion, deal quality, pipeline creation,
-                  and closed won performance across each booking category.
+                  Track bookings, pacing, conversion, deal quality, pipeline
+                  creation, and closed won performance across each booking
+                  category.
                 </p>
               </div>
             </div>
@@ -500,7 +567,8 @@ export function DashboardShell({
           onValueChange={handleCategoryChange}
         >
           {isOverviewTab(state.activeCategory) ? (
-            isSnapshotLoading || overviewSnapshots.length !== CATEGORY_ORDER.length ? (
+            isSnapshotLoading ||
+            overviewSnapshots.length !== CATEGORY_ORDER.length ? (
               <OverviewSkeleton />
             ) : (
               <OverviewTab
@@ -511,7 +579,9 @@ export function DashboardShell({
           ) : (
             <div className="flex flex-col gap-6">
               <Card
-                aria-busy={isSnapshotLoading || (showTrendPanel && isTrendLoading)}
+                aria-busy={
+                  isSnapshotLoading || (showTrendPanel && isTrendLoading)
+                }
                 data-testid="snapshot-card"
                 className="ring-0 shadow-none"
               >
@@ -528,7 +598,9 @@ export function DashboardShell({
                     ) : (
                       <TileTable
                         snapshot={activeSnapshot}
-                        selectedTileId={showTrendPanel ? state.selectedTileId : ''}
+                        selectedTileId={
+                          showTrendPanel ? state.selectedTileId : ''
+                        }
                         onRowSelect={handleTileSelect}
                       />
                     )}
@@ -539,10 +611,14 @@ export function DashboardShell({
                       isLoading={showTrendPanel ? isTrendLoading : false}
                       isVisible={showTrendPanel}
                       displayLabel={
-                        showTrendPanel && isTrendLoading ? displayTileLabel : undefined
+                        showTrendPanel && isTrendLoading
+                          ? displayTileLabel
+                          : undefined
                       }
                       displayCurrentWindowLabel={
-                        showTrendPanel && isTrendLoading ? displayWindowLabel : undefined
+                        showTrendPanel && isTrendLoading
+                          ? displayWindowLabel
+                          : undefined
                       }
                       displayPreviousWindowLabel={
                         showTrendPanel && isTrendLoading

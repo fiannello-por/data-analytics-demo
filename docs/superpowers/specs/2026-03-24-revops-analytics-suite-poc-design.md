@@ -3,8 +3,9 @@
 Date: 2026-03-24
 Status: Draft
 Related issues:
+
 - `#55 RevOps Analytics Suite PoC: shared semantic platform on Lightdash`
-Related designs:
+  Related designs:
 - `2026-03-20-situation-room-data-backend-roadmap-design.md`
 - `2026-03-21-modular-analytics-adapter-design.md`
 - `2026-03-23-sales-dashboard-architecture-explainer-design.md`

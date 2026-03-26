@@ -31,7 +31,9 @@ export function TimingWaterfall({
     <div className="space-y-4">
       <div className="flex items-baseline justify-between gap-3">
         <span className="text-sm text-muted-foreground">Total duration</span>
-        <span className="font-mono text-lg font-semibold">{timing.durationMs} ms</span>
+        <span className="font-mono text-lg font-semibold">
+          {timing.durationMs} ms
+        </span>
       </div>
 
       <div className="overflow-hidden rounded-md border border-border/70 bg-background/60">
@@ -65,7 +67,9 @@ export function TimingWaterfall({
               />
               <span className="text-muted-foreground">{segment.label}</span>
             </div>
-            <span className="font-mono text-sm font-medium">{segment.durationMs} ms</span>
+            <span className="font-mono text-sm font-medium">
+              {segment.durationMs} ms
+            </span>
           </div>
         ))}
       </div>

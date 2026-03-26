@@ -4,11 +4,12 @@ import { unstable_cache } from 'next/cache';
 import { findTileDefinition, type Category } from '@/lib/dashboard/catalog';
 import { formatDateRange } from '@/lib/dashboard/date-range';
 import { serializeDashboardStateKey } from '@/lib/dashboard/query-inputs';
-import type { DashboardState, TileTrendPayload } from '@/lib/dashboard/contracts';
+import type {
+  DashboardState,
+  TileTrendPayload,
+} from '@/lib/dashboard/contracts';
 import type { ProbeExecutionOptions } from '@/lib/probe-cache-mode';
-import {
-  type DashboardLoaderResult,
-} from '@/lib/server/dashboard-query-runtime';
+import { type DashboardLoaderResult } from '@/lib/server/dashboard-query-runtime';
 import { buildTrendQuery } from '@/lib/dashboard-v2/semantic-registry';
 import {
   getDashboardV2Runtime,
@@ -18,12 +19,19 @@ import {
   buildTileBackendTrace,
   resolveSemanticDimensionLabel,
 } from '@/lib/server/v2/tile-backend-trace';
-import { getSemanticNumber, getSemanticString } from '@/lib/server/v2/semantic-values';
+import {
+  getSemanticNumber,
+  getSemanticString,
+} from '@/lib/server/v2/semantic-values';
 import { getSemanticTileSpec } from '@/lib/dashboard-v2/semantic-registry';
 
 type TileTrendState = Pick<
   DashboardState,
-  'selectedTileId' | 'filters' | 'dateRange' | 'previousDateRange' | 'trendGrain'
+  | 'selectedTileId'
+  | 'filters'
+  | 'dateRange'
+  | 'previousDateRange'
+  | 'trendGrain'
 >;
 type TileTrendInput = TileTrendState & { activeCategory: Category };
 
@@ -59,14 +67,25 @@ export async function getDashboardV2TileTrend(
       runtime.runQuery(currentRequest),
       runtime.runQuery(previousRequest),
     ]);
-    const bucketField = Object.keys(current.rows[0] ?? {}).find((field) =>
-      field.endsWith('_week'),
-    ) ?? Object.keys(previous.rows[0] ?? {}).find((field) => field.endsWith('_week'));
-    const measureField = Object.keys(current.rows[0] ?? {}).find((field) => field !== bucketField)
-      ?? Object.keys(previous.rows[0] ?? {}).find((field) => field !== bucketField);
+    const bucketField =
+      Object.keys(current.rows[0] ?? {}).find((field) =>
+        field.endsWith('_week'),
+      ) ??
+      Object.keys(previous.rows[0] ?? {}).find((field) =>
+        field.endsWith('_week'),
+      );
+    const measureField =
+      Object.keys(current.rows[0] ?? {}).find(
+        (field) => field !== bucketField,
+      ) ??
+      Object.keys(previous.rows[0] ?? {}).find(
+        (field) => field !== bucketField,
+      );
 
     if (!bucketField || !measureField) {
-      throw new Error(`Trend query for "${input.selectedTileId}" did not return the expected fields.`);
+      throw new Error(
+        `Trend query for "${input.selectedTileId}" did not return the expected fields.`,
+      );
     }
 
     const currentRows = current.rows;
@@ -77,13 +96,23 @@ export async function getDashboardV2TileTrend(
       kind: 'single',
       includes: [tile.label],
       executions: [
-        { label: 'Current window', semanticRequest: currentRequest, result: current },
-        { label: 'Previous window', semanticRequest: previousRequest, result: previous },
+        {
+          label: 'Current window',
+          semanticRequest: currentRequest,
+          result: current,
+        },
+        {
+          label: 'Previous window',
+          semanticRequest: previousRequest,
+          result: previous,
+        },
       ],
     });
     const xAxisFieldLabel =
-      (await resolveSemanticDimensionLabel(currentRequest.model, semanticTile.dateDimension)) ??
-      semanticTile.dateDimension;
+      (await resolveSemanticDimensionLabel(
+        currentRequest.model,
+        semanticTile.dateDimension,
+      )) ?? semanticTile.dateDimension;
 
     return {
       data: {
@@ -100,7 +129,10 @@ export async function getDashboardV2TileTrend(
 
           return {
             bucketKey: String(index),
-            bucketLabel: getSemanticString(currentRow ?? previousRow, bucketField),
+            bucketLabel: getSemanticString(
+              currentRow ?? previousRow,
+              bucketField,
+            ),
             currentValue: getSemanticNumber(currentRow, measureField),
             previousValue: getSemanticNumber(previousRow, measureField),
           };
@@ -111,7 +143,8 @@ export async function getDashboardV2TileTrend(
         source: 'lightdash' as const,
         queryCount: 2,
         bytesProcessed:
-          (current.meta.bytesProcessed ?? 0) + (previous.meta.bytesProcessed ?? 0),
+          (current.meta.bytesProcessed ?? 0) +
+          (previous.meta.bytesProcessed ?? 0),
         cacheMode: execution.cacheMode,
       },
     } satisfies DashboardLoaderResult<TileTrendPayload>;

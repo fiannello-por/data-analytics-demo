@@ -97,6 +97,7 @@
 ## Task 1: Lock The Dashboard Domain Contracts
 
 **Files:**
+
 - Create: `apps/situation-room/lib/dashboard/catalog.ts`
 - Create: `apps/situation-room/lib/dashboard/date-range.ts`
 - Create: `apps/situation-room/lib/dashboard/filter-config.ts`
@@ -261,8 +262,18 @@ export const TILE_CATALOG = {
       sortOrder: 8,
       formatType: 'number',
     },
-    { tileId: 'new_logo_sql', label: 'SQL', sortOrder: 9, formatType: 'number' },
-    { tileId: 'new_logo_sqo', label: 'SQO', sortOrder: 10, formatType: 'number' },
+    {
+      tileId: 'new_logo_sql',
+      label: 'SQL',
+      sortOrder: 9,
+      formatType: 'number',
+    },
+    {
+      tileId: 'new_logo_sqo',
+      label: 'SQO',
+      sortOrder: 10,
+      formatType: 'number',
+    },
     {
       tileId: 'new_logo_gate_1_complete',
       label: 'Gate 1 Complete',
@@ -331,8 +342,18 @@ export const TILE_CATALOG = {
       sortOrder: 8,
       formatType: 'number',
     },
-    { tileId: 'expansion_sql', label: 'SQL', sortOrder: 9, formatType: 'number' },
-    { tileId: 'expansion_sqo', label: 'SQO', sortOrder: 10, formatType: 'number' },
+    {
+      tileId: 'expansion_sql',
+      label: 'SQL',
+      sortOrder: 9,
+      formatType: 'number',
+    },
+    {
+      tileId: 'expansion_sqo',
+      label: 'SQO',
+      sortOrder: 10,
+      formatType: 'number',
+    },
   ],
   Migration: [
     {
@@ -383,9 +404,24 @@ export const TILE_CATALOG = {
       sortOrder: 8,
       formatType: 'number',
     },
-    { tileId: 'migration_sql', label: 'SQL', sortOrder: 9, formatType: 'number' },
-    { tileId: 'migration_sqo', label: 'SQO', sortOrder: 10, formatType: 'number' },
-    { tileId: 'migration_sal', label: 'SAL', sortOrder: 11, formatType: 'number' },
+    {
+      tileId: 'migration_sql',
+      label: 'SQL',
+      sortOrder: 9,
+      formatType: 'number',
+    },
+    {
+      tileId: 'migration_sqo',
+      label: 'SQO',
+      sortOrder: 10,
+      formatType: 'number',
+    },
+    {
+      tileId: 'migration_sal',
+      label: 'SAL',
+      sortOrder: 11,
+      formatType: 'number',
+    },
     {
       tileId: 'migration_avg_users',
       label: 'Avg Users',
@@ -508,6 +544,7 @@ git commit -m "feat: add dashboard tile catalog and state contracts"
 ## Task 2: Build Direct BigQuery Query Builders
 
 **Files:**
+
 - Create: `apps/situation-room/lib/bigquery/dashboard-sql.ts`
 - Modify: `apps/situation-room/lib/bigquery/client.ts`
 - Test: `apps/situation-room/__tests__/dashboard-sql.test.ts`
@@ -605,6 +642,7 @@ git commit -m "feat: add dashboard BigQuery sql builders"
 ## Task 3: Add Server Loaders And Dashboard API Routes
 
 **Files:**
+
 - Create: `apps/situation-room/lib/server/get-dashboard-category-snapshot.ts`
 - Create: `apps/situation-room/lib/server/get-dashboard-tile-trend.ts`
 - Create: `apps/situation-room/lib/server/get-dashboard-filter-dictionary.ts`
@@ -696,6 +734,7 @@ git commit -m "feat: add dashboard server loaders and routes"
 ## Task 4: Build The Dashboard Page And Move The Lab To `/lab`
 
 **Files:**
+
 - Create: `apps/situation-room/app/lab/page.tsx`
 - Create: `apps/situation-room/components/dashboard/dashboard-shell.tsx`
 - Create: `apps/situation-room/components/dashboard/dashboard-filters.tsx`
@@ -729,7 +768,9 @@ describe('dashboard page', () => {
     const page = await DashboardPage();
     render(page);
 
-    expect(screen.getByRole('combobox', { name: /Division/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('combobox', { name: /Division/i }),
+    ).toBeInTheDocument();
   });
 });
 
@@ -790,6 +831,7 @@ git commit -m "feat: add situation room dashboard page"
 ## Task 5: Wire Client Refresh Behavior For Tabs, Filters, And Tile Selection
 
 **Files:**
+
 - Modify: `apps/situation-room/components/dashboard/dashboard-shell.tsx`
 - Modify: `apps/situation-room/components/dashboard/dashboard-filters.tsx`
 - Modify: `apps/situation-room/components/dashboard/category-tabs.tsx`
@@ -830,7 +872,11 @@ const [snapshot, setSnapshot] = useState(initialSnapshot);
 const [trend, setTrend] = useState(initialTrend);
 
 async function handleCategoryChange(category: Category) {
-  const nextState = { ...state, activeCategory: category, selectedTileId: getDefaultTileId(category) };
+  const nextState = {
+    ...state,
+    activeCategory: category,
+    selectedTileId: getDefaultTileId(category),
+  };
   const nextSnapshot = await fetchCategorySnapshot(nextState);
   const nextTrend = await fetchTileTrend(nextState, nextState.selectedTileId);
   setState(nextState);
@@ -855,6 +901,7 @@ git commit -m "feat: add dashboard tab and tile interactions"
 ## Task 6: Add Dashboard Probes To The Analytics Lab
 
 **Files:**
+
 - Modify: `apps/situation-room/lib/analytics-lab.ts`
 - Modify: `apps/situation-room/lib/server/architecture-probes.ts`
 - Modify: `apps/situation-room/components/architecture-lab.tsx`
@@ -867,7 +914,9 @@ git commit -m "feat: add dashboard tab and tile interactions"
 
 ```ts
 it('registers a dashboard category snapshot probe', () => {
-  expect(PROBES.some((probe) => probe.id === 'dashboard-category-snapshot')).toBe(true);
+  expect(
+    PROBES.some((probe) => probe.id === 'dashboard-category-snapshot'),
+  ).toBe(true);
 });
 
 it('measures dashboard tile trend probes', async () => {
@@ -876,7 +925,9 @@ it('measures dashboard tile trend probes', async () => {
 });
 
 it('registers the dashboard filter dictionary probe', () => {
-  expect(PROBES.some((probe) => probe.id === 'dashboard-filter-dictionary')).toBe(true);
+  expect(
+    PROBES.some((probe) => probe.id === 'dashboard-filter-dictionary'),
+  ).toBe(true);
 });
 ```
 
@@ -930,6 +981,7 @@ git commit -m "feat: add dashboard probes to analytics lab"
 ## Task 7: Protect Legacy Lab Compatibility
 
 **Files:**
+
 - Modify: `apps/situation-room/components/architecture-lab.tsx`
 - Modify: `apps/situation-room/app/api/report/route.ts`
 - Modify: `apps/situation-room/app/api/filter-dictionaries/[key]/route.ts`
@@ -978,6 +1030,7 @@ git commit -m "refactor: preserve lab compatibility during dashboard cutover"
 ## Task 8: Final Verification And Benchmark Capture
 
 **Files:**
+
 - Modify: `apps/situation-room/.env.local.example`
 - Modify: `apps/situation-room/package.json`
 - Create or update benchmark evidence in a follow-up doc if desired

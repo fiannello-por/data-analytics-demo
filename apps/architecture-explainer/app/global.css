@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -80,13 +80,21 @@ body {
 }
 
 body::before {
-  content: "";
+  content: '';
   position: fixed;
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(circle at top left, color-mix(in oklch, var(--primary) 12%, transparent) 0, transparent 32%),
-    radial-gradient(circle at bottom right, color-mix(in oklch, var(--accent) 10%, transparent) 0, transparent 38%);
+    radial-gradient(
+      circle at top left,
+      color-mix(in oklch, var(--primary) 12%, transparent) 0,
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at bottom right,
+      color-mix(in oklch, var(--accent) 10%, transparent) 0,
+      transparent 38%
+    );
   opacity: 0.9;
 }
 

@@ -18,7 +18,8 @@ describe('Lightdash semantic runtime', () => {
       ok: true,
       json: async () => ({
         results: {
-          query: 'select 1 as sales_dashboard_v2_opportunity_base_bookings_amount',
+          query:
+            'select 1 as sales_dashboard_v2_opportunity_base_bookings_amount',
         },
       }),
     });

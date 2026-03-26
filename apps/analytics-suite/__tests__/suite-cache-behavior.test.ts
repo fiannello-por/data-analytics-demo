@@ -13,7 +13,8 @@ describe('suite cache behavior', () => {
         model: 'sales_dashboard_v2_opportunity_base',
         sql: 'select 1 as sales_dashboard_v2_opportunity_base_bookings_amount',
         aliases: {
-          sales_dashboard_v2_opportunity_base_bookings_amount: 'bookings_amount',
+          sales_dashboard_v2_opportunity_base_bookings_amount:
+            'bookings_amount',
         },
       })),
     };
@@ -56,7 +57,8 @@ describe('suite cache behavior', () => {
         model: 'sales_dashboard_v2_opportunity_base',
         sql: 'select 1 as sales_dashboard_v2_opportunity_base_bookings_amount',
         aliases: {
-          sales_dashboard_v2_opportunity_base_bookings_amount: 'bookings_amount',
+          sales_dashboard_v2_opportunity_base_bookings_amount:
+            'bookings_amount',
         },
       })),
     };

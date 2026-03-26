@@ -75,19 +75,39 @@ export async function getDashboardClosedWonOpportunities(
         currentWindowLabel: formatDateRange(input.dateRange),
         lastRefreshedAt: nowIsoString(),
         rows: result.rows.map((row) => ({
-          accountName: requireStringField(row, 'account_name', 'closed won row'),
-          accountLink: requireOptionalStringField(row, 'account_link', 'closed won row'),
-          opportunityName: requireStringField(row, 'opportunity_name', 'closed won row'),
+          accountName: requireStringField(
+            row,
+            'account_name',
+            'closed won row',
+          ),
+          accountLink: requireOptionalStringField(
+            row,
+            'account_link',
+            'closed won row',
+          ),
+          opportunityName: requireStringField(
+            row,
+            'opportunity_name',
+            'closed won row',
+          ),
           opportunityLink: requireOptionalStringField(
             row,
             'opportunity_link',
             'closed won row',
           ),
           closeDate: requireStringField(row, 'close_date', 'closed won row'),
-          createdDate: requireStringField(row, 'created_date', 'closed won row'),
+          createdDate: requireStringField(
+            row,
+            'created_date',
+            'closed won row',
+          ),
           division: requireStringField(row, 'division', 'closed won row'),
           type: requireStringField(row, 'type', 'closed won row'),
-          productFamily: requireStringField(row, 'product_family', 'closed won row'),
+          productFamily: requireStringField(
+            row,
+            'product_family',
+            'closed won row',
+          ),
           bookingPlanOppType2025: requireStringField(
             row,
             'booking_plan_opp_type_2025',
@@ -95,7 +115,11 @@ export async function getDashboardClosedWonOpportunities(
           ),
           owner: requireStringField(row, 'owner', 'closed won row'),
           sdr: requireStringField(row, 'sdr', 'closed won row'),
-          oppRecordType: requireStringField(row, 'opp_record_type', 'closed won row'),
+          oppRecordType: requireStringField(
+            row,
+            'opp_record_type',
+            'closed won row',
+          ),
           age: formatMetricValue(
             requireNumberField(row, 'age', 'closed won row'),
             'days',
@@ -130,8 +154,12 @@ export async function getDashboardClosedWonOpportunities(
     return loadRows();
   }
 
-  return unstable_cache(loadRows, ['dashboard-closed-won', buildCacheKey(input)], {
-    revalidate: 60,
-    tags: ['dashboard-closed-won'],
-  })();
+  return unstable_cache(
+    loadRows,
+    ['dashboard-closed-won', buildCacheKey(input)],
+    {
+      revalidate: 60,
+      tags: ['dashboard-closed-won'],
+    },
+  )();
 }

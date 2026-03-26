@@ -149,7 +149,9 @@ export function createSemanticRuntime(
       return config.provider.getCatalogEntries(request);
     },
 
-    async runQuery(request: SemanticQueryRequest): Promise<SemanticQueryResult> {
+    async runQuery(
+      request: SemanticQueryRequest,
+    ): Promise<SemanticQueryResult> {
       const semanticVersion = config.cache?.semanticVersion;
       const cacheKey =
         semanticVersion == null
@@ -186,7 +188,9 @@ export function createSemanticRuntime(
         const executionDurationMs = performance.now() - executionStartedAt;
 
         const result: SemanticQueryResult = {
-          rows: execution.rows.map((row) => normalizeRow(row, compiled.aliases)),
+          rows: execution.rows.map((row) =>
+            normalizeRow(row, compiled.aliases),
+          ),
           meta: {
             source: 'lightdash',
             model: compiled.model,
@@ -231,7 +235,9 @@ export function createSemanticRuntime(
 
       return applyBudgetState(
         {
-          rows: execution.rows.map((row) => normalizeRow(row, compiled.aliases)),
+          rows: execution.rows.map((row) =>
+            normalizeRow(row, compiled.aliases),
+          ),
           meta: {
             source: 'lightdash',
             model: compiled.model,

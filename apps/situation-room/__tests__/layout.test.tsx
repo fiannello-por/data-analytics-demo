@@ -13,7 +13,12 @@ const themeProviderSpy = vi.fn(
   }: {
     children: React.ReactNode;
     defaultTheme?: string;
-  }) => React.createElement('div', { 'data-theme-default': defaultTheme }, children),
+  }) =>
+    React.createElement(
+      'div',
+      { 'data-theme-default': defaultTheme },
+      children,
+    ),
 );
 
 vi.mock('@/components/theme-provider', () => ({

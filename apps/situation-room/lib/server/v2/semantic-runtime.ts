@@ -80,7 +80,11 @@ export function getDashboardV2Runtime() {
 }
 
 export type DashboardV2Runtime = {
-  runQuery: (request: Parameters<ReturnType<typeof createSemanticRuntime>['runQuery']>[0]) => Promise<SemanticQueryResult>;
+  runQuery: (
+    request: Parameters<
+      ReturnType<typeof createSemanticRuntime>['runQuery']
+    >[0],
+  ) => Promise<SemanticQueryResult>;
 };
 
 export function normalizeDashboardV2ExecutionOptions(
@@ -92,5 +96,7 @@ export function normalizeDashboardV2ExecutionOptions(
 export function shouldBypassDashboardV2Cache(
   options: ProbeExecutionOptions = {},
 ): boolean {
-  return !shouldUseBigQueryQueryCache(normalizeDashboardV2ExecutionOptions(options).cacheMode);
+  return !shouldUseBigQueryQueryCache(
+    normalizeDashboardV2ExecutionOptions(options).cacheMode,
+  );
 }

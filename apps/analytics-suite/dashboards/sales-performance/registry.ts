@@ -27,7 +27,11 @@ export const salesPerformanceRegistry: DashboardRegistrySummary = {
       description:
         'Selected-metric time series used by the detail view trend panel.',
       measures: ['bookings_amount', 'pipeline_created', 'avg_booked_deal'],
-      dimensions: ['close_date_week', 'created_date_week', 'pipeline_start_date_week'],
+      dimensions: [
+        'close_date_week',
+        'created_date_week',
+        'pipeline_start_date_week',
+      ],
       filters: ['dashboard_category', 'division', 'region', 'owner'],
     },
     {
@@ -35,7 +39,13 @@ export const salesPerformanceRegistry: DashboardRegistrySummary = {
       label: 'Closed won opportunities',
       description:
         'Opportunity-grain table used by the closed won section below the detail surface.',
-      dimensions: ['account_name', 'opportunity_name', 'close_date', 'users', 'acv'],
+      dimensions: [
+        'account_name',
+        'opportunity_name',
+        'close_date',
+        'users',
+        'acv',
+      ],
       filters: ['dashboard_category', 'division', 'region', 'owner'],
       measures: [],
     },

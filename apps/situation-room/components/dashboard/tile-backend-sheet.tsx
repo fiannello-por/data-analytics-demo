@@ -22,7 +22,11 @@ import {
 } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { TileBackendTrace } from '@/lib/dashboard/contracts';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { GitHubMark, LightdashMark } from '@/components/ui/brand-icons';
 
@@ -30,7 +34,10 @@ type CodeLanguage = 'json' | 'yaml' | 'sql';
 
 function TileKindBadge({ kind }: { kind: TileBackendTrace['kind'] }) {
   return (
-    <Badge variant="outline" className="rounded-md px-2 py-1 text-[11px] font-medium">
+    <Badge
+      variant="outline"
+      className="rounded-md px-2 py-1 text-[11px] font-medium"
+    >
       {kind === 'composite' ? 'Composite tile' : 'Single tile'}
     </Badge>
   );
@@ -43,13 +50,21 @@ type SemanticFieldChip = {
   name: string;
 };
 
-function MetadataItem({ label, children }: { label: string; children: React.ReactNode }) {
+function MetadataItem({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="grid min-h-14 items-center grid-cols-[max-content_minmax(0,1fr)] gap-3 px-4 py-2.5">
       <p className="pr-1 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
         {label}
       </p>
-      <div className="min-w-0 text-sm leading-5 text-foreground">{children}</div>
+      <div className="min-w-0 text-sm leading-5 text-foreground">
+        {children}
+      </div>
     </div>
   );
 }
@@ -106,7 +121,10 @@ function FieldBadge({ field }: { field: SemanticFieldChip }) {
   return (
     <Badge
       variant="outline"
-      className={cn('rounded-md px-1.5 py-0.5 text-[11px] font-medium', styles[field.kind])}
+      className={cn(
+        'rounded-md px-1.5 py-0.5 text-[11px] font-medium',
+        styles[field.kind],
+      )}
     >
       {field.name}
     </Badge>
@@ -152,14 +170,22 @@ function CopyButton({
       size="icon-sm"
       className={cn(
         'rounded-md border border-border/60 bg-background/80 text-muted-foreground shadow-sm backdrop-blur hover:bg-background hover:text-foreground',
-        copied && 'border-emerald-500/25 bg-emerald-500/8 text-emerald-200 hover:bg-emerald-500/10 hover:text-emerald-100',
+        copied &&
+          'border-emerald-500/25 bg-emerald-500/8 text-emerald-200 hover:bg-emerald-500/10 hover:text-emerald-100',
         className,
       )}
       aria-label={copied ? 'Code copied' : 'Copy code'}
       onClick={handleCopy}
     >
-      <span aria-live="polite" className="inline-flex items-center justify-center">
-        {copied ? <CheckIcon className="size-3" /> : <CopyIcon className="size-3" />}
+      <span
+        aria-live="polite"
+        className="inline-flex items-center justify-center"
+      >
+        {copied ? (
+          <CheckIcon className="size-3" />
+        ) : (
+          <CopyIcon className="size-3" />
+        )}
       </span>
     </Button>
   );
@@ -220,8 +246,11 @@ function highlightYaml(line: string) {
   }
 
   const [, prefix, key, separator, value] = match;
-  const valueClassName =
-    /^\d/.test(value) ? 'text-amber-300' : value ? 'text-emerald-300' : 'text-foreground/90';
+  const valueClassName = /^\d/.test(value)
+    ? 'text-amber-300'
+    : value
+      ? 'text-emerald-300'
+      : 'text-foreground/90';
 
   return [
     { text: prefix, className: 'text-foreground/90' },
@@ -354,7 +383,11 @@ function highlightSql(line: string) {
       pushSqlTextSegment(parts, line.slice(lastIndex, index));
     }
 
-    pushSqlTextSegment(parts, token, getSqlTokenClass(token, line.slice(index + token.length)));
+    pushSqlTextSegment(
+      parts,
+      token,
+      getSqlTokenClass(token, line.slice(index + token.length)),
+    );
     lastIndex = index + token.length;
   }
 
@@ -362,7 +395,9 @@ function highlightSql(line: string) {
     pushSqlTextSegment(parts, line.slice(lastIndex));
   }
 
-  return parts.length > 0 ? parts : [{ text: line, className: 'text-foreground/90' }];
+  return parts.length > 0
+    ? parts
+    : [{ text: line, className: 'text-foreground/90' }];
 }
 
 function highlightLine(line: string, language: CodeLanguage) {
@@ -395,7 +430,10 @@ function HighlightedCode({
           </span>
           <div className="min-h-6">
             {highlightLine(line, language).map((token, tokenIndex) => (
-              <span key={`${language}-${lineIndex}-${tokenIndex}`} className={token.className}>
+              <span
+                key={`${language}-${lineIndex}-${tokenIndex}`}
+                className={token.className}
+              >
                 {token.text}
               </span>
             ))}
@@ -449,11 +487,19 @@ function CodeSection({
   );
 }
 
-function ExecutionsSummary({ executions }: { executions: TileBackendTrace['executions'] }) {
+function ExecutionsSummary({
+  executions,
+}: {
+  executions: TileBackendTrace['executions'];
+}) {
   return (
     <div className="flex flex-wrap gap-1.5">
       {executions.map((execution) => (
-        <Badge key={execution.label} variant="secondary" className="rounded-md px-1.5 py-0.5">
+        <Badge
+          key={execution.label}
+          variant="secondary"
+          className="rounded-md px-1.5 py-0.5"
+        >
           {execution.label}
         </Badge>
       ))}
@@ -549,7 +595,8 @@ function SectionSwitch({
           className={cn(
             'rounded-sm px-2.5 text-[11px] font-medium text-muted-foreground hover:bg-transparent hover:text-foreground',
             compact && 'h-7 px-2 text-[10px] uppercase tracking-[0.08em]',
-            value === option.value && 'bg-card text-foreground shadow-sm hover:bg-card',
+            value === option.value &&
+              'bg-card text-foreground shadow-sm hover:bg-card',
           )}
           onClick={() => onChange(option.value)}
         >
@@ -560,11 +607,7 @@ function SectionSwitch({
   );
 }
 
-function TabHelp({
-  content,
-}: {
-  content: string;
-}) {
+function TabHelp({ content }: { content: string }) {
   return (
     <Tooltip>
       <TooltipTrigger
@@ -578,19 +621,24 @@ function TabHelp({
       >
         <InfoIcon className="size-4" />
       </TooltipTrigger>
-      <TooltipContent className="max-w-72 text-left leading-5">{content}</TooltipContent>
+      <TooltipContent className="max-w-72 text-left leading-5">
+        {content}
+      </TooltipContent>
     </Tooltip>
   );
 }
 
 function SemanticQueryTab({ trace }: { trace: TileBackendTrace }) {
-  const [activeSection, setActiveSection] = React.useState<'api' | 'yaml'>('api');
+  const [activeSection, setActiveSection] = React.useState<'api' | 'yaml'>(
+    'api',
+  );
   const [activeExecutionLabel, setActiveExecutionLabel] = React.useState(
     trace.executions[0]?.label ?? 'Query',
   );
   const activeExecution =
-    trace.executions.find((execution) => execution.label === activeExecutionLabel) ??
-    trace.executions[0];
+    trace.executions.find(
+      (execution) => execution.label === activeExecutionLabel,
+    ) ?? trace.executions[0];
   const exploreDeepLink = activeExecution?.exploreUrl;
 
   return (
@@ -634,7 +682,9 @@ function SemanticQueryTab({ trace }: { trace: TileBackendTrace }) {
 
           {activeExecution ? (
             <CodeSection
-              title={trace.executions.length > 1 ? 'Request payload' : 'API request'}
+              title={
+                trace.executions.length > 1 ? 'Request payload' : 'API request'
+              }
               icon={<FileJson2Icon className="size-4 text-primary" />}
               content={formatSemanticRequest(activeExecution.semanticRequest)}
               language="json"
@@ -651,7 +701,11 @@ function SemanticQueryTab({ trace }: { trace: TileBackendTrace }) {
                       Explore in Lightdash
                     </a>
                   ) : null}
-                  <CopyButton value={formatSemanticRequest(activeExecution.semanticRequest)} />
+                  <CopyButton
+                    value={formatSemanticRequest(
+                      activeExecution.semanticRequest,
+                    )}
+                  />
                 </div>
               }
               className="flex min-h-0 flex-1 flex-col"
@@ -689,7 +743,10 @@ function SemanticQueryTab({ trace }: { trace: TileBackendTrace }) {
   );
 }
 
-function getLightdashSqlRunnerDeepLink(baseUrl: string | undefined, sql: string) {
+function getLightdashSqlRunnerDeepLink(
+  baseUrl: string | undefined,
+  sql: string,
+) {
   if (!baseUrl) {
     return undefined;
   }
@@ -706,10 +763,14 @@ function SqlTab({ trace }: { trace: TileBackendTrace }) {
     trace.executions[0]?.label ?? 'Query',
   );
   const activeExecution =
-    trace.executions.find((execution) => execution.label === activeExecutionLabel) ??
-    trace.executions[0];
+    trace.executions.find(
+      (execution) => execution.label === activeExecutionLabel,
+    ) ?? trace.executions[0];
   const sqlRunnerDeepLink = activeExecution
-    ? getLightdashSqlRunnerDeepLink(trace.sqlRunnerUrl, activeExecution.compiledSql)
+    ? getLightdashSqlRunnerDeepLink(
+        trace.sqlRunnerUrl,
+        activeExecution.compiledSql,
+      )
     : undefined;
 
   return (
@@ -800,8 +861,10 @@ export function TileBackendSheet({
 
   const triggerProps = triggerStopsPropagation
     ? {
-        onClick: (event: React.MouseEvent<HTMLButtonElement>) => event.stopPropagation(),
-        onKeyDown: (event: React.KeyboardEvent<HTMLButtonElement>) => event.stopPropagation(),
+        onClick: (event: React.MouseEvent<HTMLButtonElement>) =>
+          event.stopPropagation(),
+        onKeyDown: (event: React.KeyboardEvent<HTMLButtonElement>) =>
+          event.stopPropagation(),
       }
     : undefined;
 
@@ -834,8 +897,8 @@ export function TileBackendSheet({
                   <TileKindBadge kind={trace.kind} />
                 </div>
                 <SheetDescription>
-                  Inspect the semantic request sent to Lightdash and the compiled SQL executed in
-                  BigQuery for this tile.
+                  Inspect the semantic request sent to Lightdash and the
+                  compiled SQL executed in BigQuery for this tile.
                 </SheetDescription>
               </div>
             </div>
@@ -844,17 +907,26 @@ export function TileBackendSheet({
           </SheetHeader>
 
           <div className="flex min-h-0 flex-1 flex-col px-6 py-5">
-            <Tabs defaultValue="semantic-query" className="flex min-h-0 flex-1 flex-col">
+            <Tabs
+              defaultValue="semantic-query"
+              className="flex min-h-0 flex-1 flex-col"
+            >
               <TabsList variant="line">
                 <TabsTrigger value="semantic-query">Semantic query</TabsTrigger>
                 <TabsTrigger value="sql">SQL</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="semantic-query" className="mt-4 flex min-h-0 flex-1 flex-col">
+              <TabsContent
+                value="semantic-query"
+                className="mt-4 flex min-h-0 flex-1 flex-col"
+              >
                 <SemanticQueryTab trace={trace} />
               </TabsContent>
 
-              <TabsContent value="sql" className="mt-4 flex min-h-0 flex-1 flex-col">
+              <TabsContent
+                value="sql"
+                className="mt-4 flex min-h-0 flex-1 flex-col"
+              >
                 <SqlTab trace={trace} />
               </TabsContent>
             </Tabs>

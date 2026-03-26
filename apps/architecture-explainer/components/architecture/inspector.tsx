@@ -62,9 +62,9 @@ export function Inspector({
   onFocusConnections: () => void;
   onShowFullGraph: () => void;
 }) {
-  const [activeTab, setActiveTab] = React.useState<'overview' | 'contract' | 'code' | 'timing'>(
-    'overview',
-  );
+  const [activeTab, setActiveTab] = React.useState<
+    'overview' | 'contract' | 'code' | 'timing'
+  >('overview');
 
   React.useEffect(() => {
     setActiveTab('overview');
@@ -125,7 +125,9 @@ export function Inspector({
                 <p className="text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase">
                   What this does
                 </p>
-                <p className="text-sm leading-relaxed text-foreground/90">{node.summary}</p>
+                <p className="text-sm leading-relaxed text-foreground/90">
+                  {node.summary}
+                </p>
               </section>
 
               <Separator />
@@ -137,10 +139,14 @@ export function Inspector({
                 <div className="rounded-md border border-border/60 bg-background/35 px-3 py-3">
                   <p className="text-sm leading-relaxed text-foreground/90">
                     This node participates in the{' '}
-                    <span className="font-medium">{node.pipelines.join(', ')}</span>{' '}
+                    <span className="font-medium">
+                      {node.pipelines.join(', ')}
+                    </span>{' '}
                     pipeline flow and is classified as a{' '}
-                    <span className="font-medium">{node.kind.replace('-', ' ')}</span> component
-                    in the current dashboard architecture.
+                    <span className="font-medium">
+                      {node.kind.replace('-', ' ')}
+                    </span>{' '}
+                    component in the current dashboard architecture.
                   </p>
                 </div>
               </section>
@@ -164,8 +170,8 @@ export function Inspector({
                 </p>
               </div>
               <p className="text-sm leading-relaxed text-muted-foreground">
-                These are the concrete files and symbols that implement the selected
-                component in the current codebase.
+                These are the concrete files and symbols that implement the
+                selected component in the current codebase.
               </p>
               <div className="space-y-2">
                 {node.codeRefs.map((ref) => (

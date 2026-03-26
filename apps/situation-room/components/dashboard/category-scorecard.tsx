@@ -3,11 +3,21 @@
 import * as React from 'react';
 import { CircleHelpIcon } from 'lucide-react';
 import { OverviewMetricTile } from '@/components/dashboard/overview-metric-tile';
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { ScorecardSection } from '@/components/dashboard/scorecard-section';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { CATEGORY_DESCRIPTIONS } from '@/lib/dashboard/category-descriptions';
 import type { OverviewCategoryCard } from '@/lib/dashboard/overview-model';
 
@@ -15,7 +25,9 @@ export function CategoryScorecard({ card }: { card: OverviewCategoryCard }) {
   return (
     <Card className="h-full border-border/70 bg-card/70 shadow-none">
       <CardHeader className="pb-4">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{card.category}</CardTitle>
+        <CardTitle className="text-sm font-medium text-muted-foreground">
+          {card.category}
+        </CardTitle>
         <CardAction>
           <Tooltip>
             <TooltipTrigger
@@ -41,7 +53,10 @@ export function CategoryScorecard({ card }: { card: OverviewCategoryCard }) {
       <CardContent className="flex flex-col gap-5">
         <ScorecardSection>
           <div className="grid gap-4 md:grid-cols-3">
-            <OverviewMetricTile metric={card.sectionA.hero} valueClassName="text-2xl tracking-tight" />
+            <OverviewMetricTile
+              metric={card.sectionA.hero}
+              valueClassName="text-2xl tracking-tight"
+            />
             {card.sectionA.support ? (
               <OverviewMetricTile
                 metric={card.sectionA.support}

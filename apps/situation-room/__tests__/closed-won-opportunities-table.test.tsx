@@ -82,31 +82,36 @@ describe('ClosedWonOpportunitiesTable', { timeout: 10000 }, () => {
     });
 
     const getFirstAccountName = () =>
-      container.querySelector('[data-slot="table-body"] tr td')?.textContent ?? '';
+      container.querySelector('[data-slot="table-body"] tr td')?.textContent ??
+      '';
 
     expect(container.textContent).toContain('1-10 of 11');
     expect(getFirstAccountName()).toContain('Account 01');
 
-    const usersSortButton = Array.from(container.querySelectorAll('button')).find((button) =>
-      button.textContent?.includes('Users'),
-    );
+    const usersSortButton = Array.from(
+      container.querySelectorAll('button'),
+    ).find((button) => button.textContent?.includes('Users'));
 
     expect(usersSortButton).toBeTruthy();
 
     await act(async () => {
-      usersSortButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      usersSortButton?.dispatchEvent(
+        new MouseEvent('click', { bubbles: true }),
+      );
     });
 
     expect(getFirstAccountName()).toContain('Account 01');
 
     await act(async () => {
-      usersSortButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      usersSortButton?.dispatchEvent(
+        new MouseEvent('click', { bubbles: true }),
+      );
     });
 
     expect(getFirstAccountName()).toContain('Account 11');
 
-    const nextButton = Array.from(container.querySelectorAll('button')).find((button) =>
-      button.textContent?.includes('Next'),
+    const nextButton = Array.from(container.querySelectorAll('button')).find(
+      (button) => button.textContent?.includes('Next'),
     );
 
     expect(nextButton).toBeTruthy();

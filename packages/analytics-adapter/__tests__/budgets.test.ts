@@ -41,9 +41,13 @@ describe('dashboard budget policies', () => {
     });
 
     expect(warning.status).toBe('warning');
-    expect(warning.reasons).toContain('query count is near its configured budget');
+    expect(warning.reasons).toContain(
+      'query count is near its configured budget',
+    );
     expect(degrade.status).toBe('degrade');
-    expect(degrade.reasons).toContain('query count crossed the degrade threshold');
+    expect(degrade.reasons).toContain(
+      'query count crossed the degrade threshold',
+    );
   });
 
   it('tracks query count, bytes, and execution time per dashboard', () => {

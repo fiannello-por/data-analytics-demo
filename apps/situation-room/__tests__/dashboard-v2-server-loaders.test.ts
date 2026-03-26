@@ -10,40 +10,46 @@ describe('dashboard v2 server loaders', { timeout: 20000 }, () => {
   it('maps semantic snapshot query groups back into the legacy category snapshot payload shape', async () => {
     const runtime = {
       getCatalogEntries: vi.fn(),
-      runQuery: vi.fn(async (request: { measures?: string[]; filters?: Array<{ values?: string[] }> }) => {
-        const isPreviousRange = request.filters?.some((filter) =>
-          filter.values?.includes('2025-01-01'),
-        );
-        const value = isPreviousRange ? 80 : 100;
+      runQuery: vi.fn(
+        async (request: {
+          measures?: string[];
+          filters?: Array<{ values?: string[] }>;
+        }) => {
+          const isPreviousRange = request.filters?.some((filter) =>
+            filter.values?.includes('2025-01-01'),
+          );
+          const value = isPreviousRange ? 80 : 100;
 
-        return {
-          rows: [
-            Object.fromEntries(
-              (request.measures ?? []).map((measure) => [
-                measure,
-                {
-                  raw: value,
-                  formatted: String(value),
-                },
-              ]),
-            ),
-          ],
-          meta: {
-            source: 'lightdash' as const,
-            model: 'sales_dashboard_v2_opportunity_base',
-            queryCount: 1,
-            compiledSql: 'select 1',
-            compileDurationMs: 1,
-            executionDurationMs: 2,
-            bytesProcessed: 64,
-          },
-        };
-      }),
-    } as Parameters<typeof import('@/lib/server/v2/get-dashboard-category-snapshot')['getDashboardV2CategorySnapshot']>[1];
+          return {
+            rows: [
+              Object.fromEntries(
+                (request.measures ?? []).map((measure) => [
+                  measure,
+                  {
+                    raw: value,
+                    formatted: String(value),
+                  },
+                ]),
+              ),
+            ],
+            meta: {
+              source: 'lightdash' as const,
+              model: 'sales_dashboard_v2_opportunity_base',
+              queryCount: 1,
+              compiledSql: 'select 1',
+              compileDurationMs: 1,
+              executionDurationMs: 2,
+              bytesProcessed: 64,
+            },
+          };
+        },
+      ),
+    } as Parameters<
+      (typeof import('@/lib/server/v2/get-dashboard-category-snapshot'))['getDashboardV2CategorySnapshot']
+    >[1];
 
-    const { getDashboardV2CategorySnapshot } = await import(
-      '@/lib/server/v2/get-dashboard-category-snapshot'
-    );
+    const { getDashboardV2CategorySnapshot } =
+      await import('@/lib/server/v2/get-dashboard-category-snapshot');
 
     const result = await getDashboardV2CategorySnapshot(
       {
@@ -101,17 +107,16 @@ describe('dashboard v2 server loaders', { timeout: 20000 }, () => {
           bytesProcessed: 8,
         },
       })),
-    } as Parameters<typeof import('@/lib/server/v2/get-dashboard-filter-dictionary')['getDashboardV2FilterDictionary']>[1];
+    } as Parameters<
+      (typeof import('@/lib/server/v2/get-dashboard-filter-dictionary'))['getDashboardV2FilterDictionary']
+    >[1];
 
-    const { getDashboardV2FilterDictionary } = await import(
-      '@/lib/server/v2/get-dashboard-filter-dictionary'
-    );
+    const { getDashboardV2FilterDictionary } =
+      await import('@/lib/server/v2/get-dashboard-filter-dictionary');
 
-    const result = await getDashboardV2FilterDictionary(
-      'Division',
-      runtime,
-      { cacheMode: 'off' },
-    );
+    const result = await getDashboardV2FilterDictionary('Division', runtime, {
+      cacheMode: 'off',
+    });
 
     expect(result.data).toEqual({
       filterKey: 'Division',
@@ -129,7 +134,12 @@ describe('dashboard v2 server loaders', { timeout: 20000 }, () => {
       runQuery: vi
         .fn()
         .mockResolvedValueOnce({
-          rows: [{ close_date_week: { raw: '2026-01-05', formatted: '2026-01-05' }, bookings_amount: { raw: 100, formatted: '100' } }],
+          rows: [
+            {
+              close_date_week: { raw: '2026-01-05', formatted: '2026-01-05' },
+              bookings_amount: { raw: 100, formatted: '100' },
+            },
+          ],
           meta: {
             source: 'lightdash' as const,
             model: 'sales_dashboard_v2_opportunity_base',
@@ -142,7 +152,12 @@ describe('dashboard v2 server loaders', { timeout: 20000 }, () => {
           },
         })
         .mockResolvedValueOnce({
-          rows: [{ close_date_week: { raw: '2025-01-06', formatted: '2025-01-06' }, bookings_amount: { raw: 80, formatted: '80' } }],
+          rows: [
+            {
+              close_date_week: { raw: '2025-01-06', formatted: '2025-01-06' },
+              bookings_amount: { raw: 80, formatted: '80' },
+            },
+          ],
           meta: {
             source: 'lightdash' as const,
             model: 'sales_dashboard_v2_opportunity_base',
@@ -173,7 +188,10 @@ describe('dashboard v2 server loaders', { timeout: 20000 }, () => {
               age_days: { raw: 12, formatted: '12' },
               se: { raw: 'Pat', formatted: 'Pat' },
               quarter_label: { raw: '2026-Q1', formatted: '2026-Q1' },
-              contract_start_date: { raw: '2026-04-01', formatted: '2026-04-01' },
+              contract_start_date: {
+                raw: '2026-04-01',
+                formatted: '2026-04-01',
+              },
               users: { raw: 5, formatted: '5' },
               acv: { raw: 120000, formatted: '120000' },
             },
@@ -189,14 +207,14 @@ describe('dashboard v2 server loaders', { timeout: 20000 }, () => {
             cacheStatus: 'miss' as const,
           },
         }),
-    } as Parameters<typeof import('@/lib/server/v2/get-dashboard-tile-trend')['getDashboardV2TileTrend']>[1];
+    } as Parameters<
+      (typeof import('@/lib/server/v2/get-dashboard-tile-trend'))['getDashboardV2TileTrend']
+    >[1];
 
-    const { getDashboardV2TileTrend } = await import(
-      '@/lib/server/v2/get-dashboard-tile-trend'
-    );
-    const { getDashboardV2ClosedWonOpportunities } = await import(
-      '@/lib/server/v2/get-dashboard-closed-won-opportunities'
-    );
+    const { getDashboardV2TileTrend } =
+      await import('@/lib/server/v2/get-dashboard-tile-trend');
+    const { getDashboardV2ClosedWonOpportunities } =
+      await import('@/lib/server/v2/get-dashboard-closed-won-opportunities');
 
     const trend = await getDashboardV2TileTrend(
       {
@@ -218,7 +236,9 @@ describe('dashboard v2 server loaders', { timeout: 20000 }, () => {
     });
     expect(trend.data.xAxisFieldLabel).toBe('Close Date');
     expect(trend.data.backendTrace?.executions).toHaveLength(2);
-    expect(trend.data.backendTrace?.executions[0]?.compiledSql).toBe('select current trend');
+    expect(trend.data.backendTrace?.executions[0]?.compiledSql).toBe(
+      'select current trend',
+    );
 
     const closedWon = await getDashboardV2ClosedWonOpportunities(
       {

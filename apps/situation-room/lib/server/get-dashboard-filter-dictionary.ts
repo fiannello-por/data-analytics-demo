@@ -22,7 +22,10 @@ export async function getDashboardFilterDictionary(
   const execution = normalizeDashboardExecutionOptions(options);
 
   const loadDictionary = async () => {
-    const result = await client.queryRows(buildFilterDictionaryQuery(key), execution);
+    const result = await client.queryRows(
+      buildFilterDictionaryQuery(key),
+      execution,
+    );
 
     return {
       data: {

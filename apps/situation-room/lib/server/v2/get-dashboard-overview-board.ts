@@ -4,7 +4,10 @@ import { unstable_cache } from 'next/cache';
 import { CATEGORY_ORDER } from '@/lib/dashboard/catalog';
 import { formatDateRange } from '@/lib/dashboard/date-range';
 import { serializeDashboardStateKey } from '@/lib/dashboard/query-inputs';
-import type { DashboardState, OverviewBoardPayload } from '@/lib/dashboard/contracts';
+import type {
+  DashboardState,
+  OverviewBoardPayload,
+} from '@/lib/dashboard/contracts';
 import type { ProbeExecutionOptions } from '@/lib/probe-cache-mode';
 import {
   nowIsoString,
@@ -72,8 +75,12 @@ export async function getDashboardV2OverviewBoard(
     return loadBoard();
   }
 
-  return unstable_cache(loadBoard, ['dashboard-v2-overview-board', buildCacheKey(input)], {
-    revalidate: 60,
-    tags: ['dashboard-v2-overview-board'],
-  })();
+  return unstable_cache(
+    loadBoard,
+    ['dashboard-v2-overview-board', buildCacheKey(input)],
+    {
+      revalidate: 60,
+      tags: ['dashboard-v2-overview-board'],
+    },
+  )();
 }

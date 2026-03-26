@@ -55,7 +55,9 @@ export type ScorecardReportPayload = {
   categories: CategoryData[];
 };
 
-export function withDefaultDateRange(filters: ScorecardFilters): ScorecardFilters {
+export function withDefaultDateRange(
+  filters: ScorecardFilters,
+): ScorecardFilters {
   return filters.DateRange?.length
     ? filters
     : { ...filters, DateRange: [...DEFAULT_DATE_RANGE] };

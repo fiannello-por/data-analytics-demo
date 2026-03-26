@@ -164,10 +164,7 @@ function requireNumberField(
   );
 }
 
-function requireOptionalStringField(
-  row: QueryRow,
-  key: string,
-): string | null {
+function requireOptionalStringField(row: QueryRow, key: string): string | null {
   const value = row[key];
 
   if (value == null) {
@@ -193,17 +190,15 @@ function requireOptionalStringField(
   return value;
 }
 
-function mergeProbePayload<T>(
-  result: {
-    data: T;
-    meta: {
-      source: 'bigquery' | 'lightdash';
-      queryCount: number;
-      bytesProcessed?: number;
-      cacheMode?: 'auto' | 'off';
-    };
-  },
-): ProbeRunResult<T> {
+function mergeProbePayload<T>(result: {
+  data: T;
+  meta: {
+    source: 'bigquery' | 'lightdash';
+    queryCount: number;
+    bytesProcessed?: number;
+    cacheMode?: 'auto' | 'off';
+  };
+}): ProbeRunResult<T> {
   return {
     payload: {
       ...result.data,
@@ -215,10 +210,7 @@ function mergeProbePayload<T>(
   };
 }
 
-function buildDashboardState(
-  category: string,
-  tileId?: string,
-) {
+function buildDashboardState(category: string, tileId?: string) {
   const searchParams = new URLSearchParams();
   searchParams.set('category', category);
 
@@ -265,15 +257,17 @@ export async function getProbePing(
 export async function getProbeSummary(
   client: QueryClient = defaultQueryClient,
   options: ProbeExecutionOptions = {},
-): Promise<ProbeResult<{
-  dataset: string;
-  table: string;
-  refreshedAt: string;
-  rowCount: number;
-  divisionCount: number;
-  minReportDate: string | null;
-  maxReportDate: string | null;
-}>> {
+): Promise<
+  ProbeResult<{
+    dataset: string;
+    table: string;
+    refreshedAt: string;
+    rowCount: number;
+    divisionCount: number;
+    minReportDate: string | null;
+    maxReportDate: string | null;
+  }>
+> {
   const execution = normalizeProbeExecutionOptions(options);
   const env = getSituationRoomEnv();
   const query = buildProbeSummaryQuery(env.projectId, env.dataset);
@@ -303,12 +297,14 @@ export async function getProbeDivisionFilterOptions(
   key: 'Division',
   client: QueryClient = defaultQueryClient,
   options: ProbeExecutionOptions = {},
-): Promise<ProbeResult<{
-  key: 'Division';
-  refreshedAt: string;
-  optionCount: number;
-  options: { value: string; label: string; sortOrder: number }[];
-}>> {
+): Promise<
+  ProbeResult<{
+    key: 'Division';
+    refreshedAt: string;
+    optionCount: number;
+    options: { value: string; label: string; sortOrder: number }[];
+  }>
+> {
   if (key !== 'Division') {
     throw new Error(`Unsupported probe filter key: ${key}.`);
   }

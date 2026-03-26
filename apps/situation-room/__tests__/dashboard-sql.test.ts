@@ -57,7 +57,9 @@ describe('dashboard sql', () => {
   it('derives Gate Met or Accepted from source fields instead of assuming a physical column', () => {
     const query = buildFilterDictionaryQuery('Gate Met or Accepted');
 
-    expect(query.sql).toContain('CAST((Gate1CriteriaMet OR Accepted) AS STRING)');
+    expect(query.sql).toContain(
+      'CAST((Gate1CriteriaMet OR Accepted) AS STRING)',
+    );
     expect(query.sql).not.toContain('GateMetOrAccepted AS value');
   });
 
@@ -110,7 +112,7 @@ describe('dashboard sql', () => {
       filters: { Division: ['Enterprise'] },
     });
 
-    expect(query.sql).toContain("Won = TRUE");
+    expect(query.sql).toContain('Won = TRUE');
     expect(query.sql).toContain("StageName = 'Closed Won'");
     expect(query.sql).toContain('Division IN UNNEST(@filter_division)');
     expect(query.sql).toContain('ORDER BY ACV DESC');
