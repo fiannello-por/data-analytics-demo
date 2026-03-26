@@ -11,13 +11,14 @@ describe('homepage metadata', () => {
       dashboardModules.map((module) => module.id),
     );
 
-    const rows = dashboardModules.map(getHomepageModuleRow);
+    dashboardModules.forEach((module) => {
+      const row = getHomepageModuleRow(module);
 
-    expect(rows[0].statusLabel).toBe('Live');
-    expect(rows[1].statusLabel).toBe('WIP');
-    expect(rows[0].owner).toBeTruthy();
-    expect(rows[1].owner).toBeTruthy();
-    expect(rows[0].changelogLabel).toBeTruthy();
-    expect(rows[1].changelogLabel).toBeTruthy();
+      expect(row.id).toBe(module.id);
+      expect(row.dashboardName).toBe(module.title);
+      expect(row.statusLabel).toBe(module.status === 'active' ? 'Live' : 'WIP');
+      expect(row.owner).toBeTruthy();
+      expect(row.changelogLabel).toBeTruthy();
+    });
   });
 });
