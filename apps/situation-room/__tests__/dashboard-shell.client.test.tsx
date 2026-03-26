@@ -83,7 +83,11 @@ vi.mock('@/components/dashboard/category-tabs', () => ({
     React.createElement(
       'div',
       { 'data-testid': 'category-tabs' },
-      React.createElement('span', { 'data-testid': 'active-category' }, activeCategory),
+      React.createElement(
+        'span',
+        { 'data-testid': 'active-category' },
+        activeCategory,
+      ),
       React.createElement(
         'button',
         {
@@ -119,7 +123,11 @@ vi.mock('@/components/dashboard/tile-table', () => ({
     React.createElement(
       'div',
       { 'data-testid': 'tile-table' },
-      React.createElement('span', { 'data-testid': 'selected-tile' }, selectedTileId),
+      React.createElement(
+        'span',
+        { 'data-testid': 'selected-tile' },
+        selectedTileId,
+      ),
       snapshot.rows.map((row) =>
         React.createElement(
           'button',
@@ -176,7 +184,11 @@ vi.mock('@/components/dashboard/closed-won-opportunities-table', () => ({
       `${payload.category} closed won`,
     ),
   ClosedWonOpportunitiesTableSkeleton: () =>
-    React.createElement('div', { 'data-testid': 'closed-won-table-skeleton' }, 'closed won loading'),
+    React.createElement(
+      'div',
+      { 'data-testid': 'closed-won-table-skeleton' },
+      'closed won loading',
+    ),
 }));
 
 const snapshotCalls: string[] = [];
@@ -339,7 +351,9 @@ describe('dashboard shell client interactions', () => {
     deferClosedWonRequests = false;
     deferredClosedWonResolvers = [];
     vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
-    replaceStateSpy = vi.spyOn(window.history, 'replaceState').mockImplementation(() => {});
+    replaceStateSpy = vi
+      .spyOn(window.history, 'replaceState')
+      .mockImplementation(() => {});
     vi.stubGlobal(
       'fetch',
       vi.fn(async (input: RequestInfo | URL) => {
@@ -408,7 +422,8 @@ describe('dashboard shell client interactions', () => {
       }),
     );
 
-    const { DashboardShell } = await import('@/components/dashboard/dashboard-shell');
+    const { DashboardShell } =
+      await import('@/components/dashboard/dashboard-shell');
     root = createRoot(container);
 
     await act(async () => {
@@ -434,7 +449,9 @@ describe('dashboard shell client interactions', () => {
   });
 
   it('refreshes only the trend endpoint when a row is selected', async () => {
-    const rowButton = container.querySelector('[data-testid="row-new_logo_sqo"]');
+    const rowButton = container.querySelector(
+      '[data-testid="row-new_logo_sqo"]',
+    );
     expect(rowButton).not.toBeNull();
 
     await act(async () => {
@@ -451,7 +468,9 @@ describe('dashboard shell client interactions', () => {
   it('selects the clicked row immediately and shows trend loading while the trend refreshes', async () => {
     deferTrendRequests = true;
 
-    const rowButton = container.querySelector('[data-testid="row-new_logo_sqo"]');
+    const rowButton = container.querySelector(
+      '[data-testid="row-new_logo_sqo"]',
+    );
     const selectedTile = () =>
       container.querySelector('[data-testid="selected-tile"]')?.textContent;
 
@@ -464,7 +483,9 @@ describe('dashboard shell client interactions', () => {
     });
 
     expect(selectedTile()).toBe('new_logo_sqo');
-    expect(container.querySelector('[data-testid="trend-panel"]')?.textContent).toBe('SQO');
+    expect(
+      container.querySelector('[data-testid="trend-panel"]')?.textContent,
+    ).toBe('SQO');
     expect(trendCalls).toHaveLength(1);
 
     await act(async () => {
@@ -474,11 +495,15 @@ describe('dashboard shell client interactions', () => {
 
     await flush();
 
-    expect(container.querySelector('[data-testid="trend-panel"]')?.textContent).toBe('SQL');
+    expect(
+      container.querySelector('[data-testid="trend-panel"]')?.textContent,
+    ).toBe('SQL');
   });
 
   it('defaults to the first tile and refreshes both endpoints when the category changes', async () => {
-    const categoryButton = container.querySelector('[data-testid="select-total"]');
+    const categoryButton = container.querySelector(
+      '[data-testid="select-total"]',
+    );
     expect(categoryButton).not.toBeNull();
 
     await act(async () => {
@@ -496,17 +521,21 @@ describe('dashboard shell client interactions', () => {
     expect(closedWonCalls[0]).toBe(
       '/api/dashboard/closed-won/Total?category=Total&startDate=2026-01-01&endDate=2026-03-31',
     );
-    expect(trendCalls[0]).toContain('/api/dashboard/trend/total_bookings_amount');
-    expect(replaceStateSpy).toHaveBeenCalled();
-    expect(container.querySelector('[data-testid="trend-panel"]')?.textContent).toBe(
-      'trend placeholder',
+    expect(trendCalls[0]).toContain(
+      '/api/dashboard/trend/total_bookings_amount',
     );
+    expect(replaceStateSpy).toHaveBeenCalled();
+    expect(
+      container.querySelector('[data-testid="trend-panel"]')?.textContent,
+    ).toBe('trend placeholder');
   });
 
   it('activates the clicked tab immediately and shows tile loading while the snapshot refreshes', async () => {
     deferSnapshotRequests = true;
 
-    const categoryButton = container.querySelector('[data-testid="select-total"]');
+    const categoryButton = container.querySelector(
+      '[data-testid="select-total"]',
+    );
     const activeCategory = () =>
       container.querySelector('[data-testid="active-category"]')?.textContent;
 
@@ -532,13 +561,17 @@ describe('dashboard shell client interactions', () => {
 
     await flush();
 
-    expect(container.querySelector('[data-testid="tile-table-skeleton"]')).toBeNull();
+    expect(
+      container.querySelector('[data-testid="tile-table-skeleton"]'),
+    ).toBeNull();
   });
 
   it('keeps the current state and URL when a category refresh fails', async () => {
     failSnapshotRequests = true;
 
-    const categoryButton = container.querySelector('[data-testid="select-total"]');
+    const categoryButton = container.querySelector(
+      '[data-testid="select-total"]',
+    );
     const activeCategory = () =>
       container.querySelector('[data-testid="active-category"]')?.textContent;
 
@@ -560,7 +593,8 @@ describe('dashboard shell client interactions', () => {
   });
 
   it('reuses cached category snapshots after overview preload and only fetches trend on category click', async () => {
-    const { DashboardShell } = await import('@/components/dashboard/dashboard-shell');
+    const { DashboardShell } =
+      await import('@/components/dashboard/dashboard-shell');
 
     await act(async () => {
       root.render(
@@ -582,7 +616,9 @@ describe('dashboard shell client interactions', () => {
     trendCalls.length = 0;
     closedWonCalls.length = 0;
 
-    const categoryButton = container.querySelector('[data-testid="select-new-logo"]');
+    const categoryButton = container.querySelector(
+      '[data-testid="select-new-logo"]',
+    );
     expect(categoryButton).not.toBeNull();
 
     await act(async () => {
@@ -594,6 +630,8 @@ describe('dashboard shell client interactions', () => {
     expect(snapshotCalls).toHaveLength(0);
     expect(trendCalls).toHaveLength(1);
     expect(closedWonCalls).toHaveLength(1);
-    expect(trendCalls[0]).toContain('/api/dashboard/trend/new_logo_bookings_amount');
+    expect(trendCalls[0]).toContain(
+      '/api/dashboard/trend/new_logo_bookings_amount',
+    );
   });
 });

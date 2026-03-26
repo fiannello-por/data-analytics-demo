@@ -461,7 +461,9 @@ describe('dashboard filters', () => {
       applyButton!.click();
     });
 
-    expect(container.textContent).toContain('Date Range: Jan 1, 2026 - Mar 31, 2026');
+    expect(container.textContent).toContain(
+      'Date Range: Jan 1, 2026 - Mar 31, 2026',
+    );
     expect(container.textContent).toContain('Division: Enterprise');
   });
 });

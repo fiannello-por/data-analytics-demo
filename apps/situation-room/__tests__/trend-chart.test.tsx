@@ -134,11 +134,21 @@ describe('TrendChart', () => {
       root.render(React.createElement(TrendChart, { trend }));
     });
 
-    expect(container.firstElementChild?.getAttribute('class')).toContain('h-full');
-    expect(container.firstElementChild?.getAttribute('class')).toContain('min-h-0');
-    expect(container.firstElementChild?.getAttribute('class')).not.toContain('aspect-[1.52/1]');
-    expect(container.firstElementChild?.getAttribute('class')).not.toContain('h-[min(30rem,50vh)]');
-    expect(container.firstElementChild?.getAttribute('class')).not.toContain('min-h-[18rem]');
+    expect(container.firstElementChild?.getAttribute('class')).toContain(
+      'h-full',
+    );
+    expect(container.firstElementChild?.getAttribute('class')).toContain(
+      'min-h-0',
+    );
+    expect(container.firstElementChild?.getAttribute('class')).not.toContain(
+      'aspect-[1.52/1]',
+    );
+    expect(container.firstElementChild?.getAttribute('class')).not.toContain(
+      'h-[min(30rem,50vh)]',
+    );
+    expect(container.firstElementChild?.getAttribute('class')).not.toContain(
+      'min-h-[18rem]',
+    );
     expect(container.textContent).toContain('Current period');
     expect(container.textContent).toContain('Previous year');
     expect(container.textContent).toContain('Close Date');

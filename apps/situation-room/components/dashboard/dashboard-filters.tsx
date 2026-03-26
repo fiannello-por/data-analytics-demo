@@ -1,7 +1,13 @@
 'use client';
 
 import * as React from 'react';
-import { CalendarRangeIcon, ChevronDownIcon, CircleHelpIcon, SearchIcon, XIcon } from 'lucide-react';
+import {
+  CalendarRangeIcon,
+  ChevronDownIcon,
+  CircleHelpIcon,
+  SearchIcon,
+  XIcon,
+} from 'lucide-react';
 import type { DateRange as DayPickerDateRange } from 'react-day-picker';
 import type {
   FilterDictionaryPayload,
@@ -61,7 +67,10 @@ type DashboardFiltersProps = {
   onDateRangeApply: (range: DateRange) => void;
 };
 
-function formatFreshnessDistance(lastRefreshedAt: string, nowIsoString: string): string {
+function formatFreshnessDistance(
+  lastRefreshedAt: string,
+  nowIsoString: string,
+): string {
   const refreshedTime = Date.parse(lastRefreshedAt);
   const currentTime = Date.parse(nowIsoString);
 
@@ -69,7 +78,10 @@ function formatFreshnessDistance(lastRefreshedAt: string, nowIsoString: string):
     return 'Updated recently';
   }
 
-  const elapsedMinutes = Math.max(0, Math.round((currentTime - refreshedTime) / 60000));
+  const elapsedMinutes = Math.max(
+    0,
+    Math.round((currentTime - refreshedTime) / 60000),
+  );
 
   if (elapsedMinutes < 1) {
     return 'Updated just now';
@@ -120,7 +132,10 @@ function formatFreshnessTimestamp(timestamp: string): string {
   }).format(new Date(parsedTime));
 }
 
-function getFreshnessTone(lastRefreshedAt: string, nowIsoString: string): string {
+function getFreshnessTone(
+  lastRefreshedAt: string,
+  nowIsoString: string,
+): string {
   const refreshedTime = Date.parse(lastRefreshedAt);
   const currentTime = Date.parse(nowIsoString);
 
@@ -128,7 +143,10 @@ function getFreshnessTone(lastRefreshedAt: string, nowIsoString: string): string
     return 'bg-muted-foreground/60';
   }
 
-  const elapsedMinutes = Math.max(0, Math.round((currentTime - refreshedTime) / 60000));
+  const elapsedMinutes = Math.max(
+    0,
+    Math.round((currentTime - refreshedTime) / 60000),
+  );
 
   if (elapsedMinutes <= 30) {
     return 'bg-emerald-500';
@@ -157,7 +175,9 @@ function countActiveFilters(
   filters: DashboardState['filters'],
   dateRange: DashboardState['dateRange'],
 ): number {
-  const selectedValueFilters = Object.values(filters).filter((values) => (values?.length ?? 0) > 0).length;
+  const selectedValueFilters = Object.values(filters).filter(
+    (values) => (values?.length ?? 0) > 0,
+  ).length;
   const hasDateRange = Boolean(dateRange.startDate && dateRange.endDate);
 
   return selectedValueFilters + (hasDateRange ? 1 : 0);
@@ -205,9 +225,8 @@ export function DashboardFilters({
   onDateRangeApply,
 }: DashboardFiltersProps) {
   const [isControlsOpen, setControlsOpen] = React.useState(true);
-  const [openFilterKey, setOpenFilterKey] = React.useState<GlobalFilterKey | null>(
-    null,
-  );
+  const [openFilterKey, setOpenFilterKey] =
+    React.useState<GlobalFilterKey | null>(null);
   const [isDatePickerOpen, setDatePickerOpen] = React.useState(false);
   const [draftSelections, setDraftSelections] = React.useState<
     Partial<Record<GlobalFilterKey, string[]>>
@@ -216,12 +235,12 @@ export function DashboardFilters({
     Partial<Record<GlobalFilterKey, string>>
   >({});
   const [nowIsoString, setNowIsoString] = React.useState(renderedAt);
-  const [draftDateRange, setDraftDateRange] = React.useState<DayPickerDateRange | undefined>(
-    {
-      from: parseIsoDate(state.dateRange.startDate) ?? undefined,
-      to: parseIsoDate(state.dateRange.endDate) ?? undefined,
-    },
-  );
+  const [draftDateRange, setDraftDateRange] = React.useState<
+    DayPickerDateRange | undefined
+  >({
+    from: parseIsoDate(state.dateRange.startDate) ?? undefined,
+    to: parseIsoDate(state.dateRange.endDate) ?? undefined,
+  });
 
   React.useEffect(() => {
     setDraftSelections(state.filters);
@@ -249,21 +268,23 @@ export function DashboardFilters({
   }, []);
 
   const activeFilterCount = countActiveFilters(state.filters, state.dateRange);
-  const activeFilterDetails = getActiveFilterDetails(state.filters, state.dateRange);
+  const activeFilterDetails = getActiveFilterDetails(
+    state.filters,
+    state.dateRange,
+  );
   const currentPeriodLabel = formatDateRange(state.dateRange);
   const priorPeriodLabel = `${state.previousDateRange.startDate} to ${state.previousDateRange.endDate}`;
   const freshnessLabel = lastRefreshedAt
     ? formatFreshnessDistance(lastRefreshedAt, nowIsoString)
     : null;
-  const freshnessTimestamp = lastRefreshedAt ? formatFreshnessTimestamp(lastRefreshedAt) : null;
+  const freshnessTimestamp = lastRefreshedAt
+    ? formatFreshnessTimestamp(lastRefreshedAt)
+    : null;
   const freshnessTone = lastRefreshedAt
     ? getFreshnessTone(lastRefreshedAt, nowIsoString)
     : 'bg-muted-foreground/60';
 
-  function updateSearchQuery(
-    key: GlobalFilterKey,
-    value: string,
-  ) {
+  function updateSearchQuery(key: GlobalFilterKey, value: string) {
     setSearchQueries((current) => ({
       ...current,
       [key]: value,
@@ -286,7 +307,9 @@ export function DashboardFilters({
 
   function applyDraft(key: GlobalFilterKey) {
     const committedValues = normalizeValues(state.filters[key]);
-    const draftValues = normalizeValues(draftSelections[key] ?? committedValues);
+    const draftValues = normalizeValues(
+      draftSelections[key] ?? committedValues,
+    );
 
     for (const value of committedValues) {
       if (!draftValues.includes(value)) {
@@ -330,7 +353,8 @@ export function DashboardFilters({
                 <Tooltip>
                   <TooltipTrigger className="outline-none">
                     <Badge variant="secondary">
-                      {activeFilterCount} active filter{activeFilterCount === 1 ? '' : 's'}
+                      {activeFilterCount} active filter
+                      {activeFilterCount === 1 ? '' : 's'}
                     </Badge>
                   </TooltipTrigger>
                   <TooltipContent
@@ -394,11 +418,15 @@ export function DashboardFilters({
               </div>
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                 <span className="min-w-0">
-                  <span className="font-medium text-foreground/80">Current period:</span>{' '}
+                  <span className="font-medium text-foreground/80">
+                    Current period:
+                  </span>{' '}
                   {currentPeriodLabel}
                 </span>
                 <span className="min-w-0">
-                  <span className="font-medium text-foreground/80">Prior period:</span>{' '}
+                  <span className="font-medium text-foreground/80">
+                    Prior period:
+                  </span>{' '}
                   {priorPeriodLabel}
                 </span>
               </div>
@@ -417,7 +445,10 @@ export function DashboardFilters({
               <span>{isControlsOpen ? 'Collapse' : 'Expand'}</span>
               <ChevronDownIcon
                 data-icon="inline-end"
-                className={cn('transition-transform', isControlsOpen && 'rotate-180')}
+                className={cn(
+                  'transition-transform',
+                  isControlsOpen && 'rotate-180',
+                )}
               />
             </CollapsibleTrigger>
           </div>
@@ -427,11 +458,16 @@ export function DashboardFilters({
             <div
               className={cn(
                 'flex flex-col gap-3 transition-[opacity,transform] duration-[220ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none',
-                isControlsOpen ? 'translate-y-0 opacity-100' : '-translate-y-1 opacity-0',
+                isControlsOpen
+                  ? 'translate-y-0 opacity-100'
+                  : '-translate-y-1 opacity-0',
               )}
             >
               <div className="flex flex-wrap items-center gap-2.5">
-                <Popover open={isDatePickerOpen} onOpenChange={setDatePickerOpen}>
+                <Popover
+                  open={isDatePickerOpen}
+                  onOpenChange={setDatePickerOpen}
+                >
                   <PopoverTrigger
                     render={
                       <Button
@@ -477,7 +513,9 @@ export function DashboardFilters({
                           type="button"
                           aria-label="Apply date range"
                           className="bg-accent-brand text-background hover:bg-accent-brand/90"
-                          disabled={!draftDateRange?.from || !draftDateRange?.to}
+                          disabled={
+                            !draftDateRange?.from || !draftDateRange?.to
+                          }
                           onClick={applyDateRange}
                         >
                           Apply
@@ -491,19 +529,25 @@ export function DashboardFilters({
               <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-5 2xl:grid-cols-6">
                 {DASHBOARD_FILTER_DEFINITIONS.map((filter) => {
                   const dictionary = dictionaries[filter.key];
-                  const selectedValues = normalizeValues(state.filters[filter.key]);
+                  const selectedValues = normalizeValues(
+                    state.filters[filter.key],
+                  );
                   const draftValues = normalizeValues(
                     draftSelections[filter.key] ?? selectedValues,
                   );
-                  const searchQuery = searchQueries[filter.key]?.trim().toLowerCase() ?? '';
-                  const filteredOptions = (dictionary?.options ?? []).filter((option) =>
-                    option.label.toLowerCase().includes(searchQuery),
+                  const searchQuery =
+                    searchQueries[filter.key]?.trim().toLowerCase() ?? '';
+                  const filteredOptions = (dictionary?.options ?? []).filter(
+                    (option) =>
+                      option.label.toLowerCase().includes(searchQuery),
                   );
                   const isOpen = openFilterKey === filter.key;
                   const selectedCount = selectedValues.length;
                   const hasChanges =
                     selectedValues.length !== draftValues.length ||
-                    selectedValues.some((value, index) => value !== draftValues[index]);
+                    selectedValues.some(
+                      (value, index) => value !== draftValues[index],
+                    );
 
                   return (
                     <Popover
@@ -524,7 +568,9 @@ export function DashboardFilters({
                           <Button
                             id={`filter-trigger-${toStableDomId(filter.key)}`}
                             type="button"
-                            variant={selectedCount > 0 ? 'secondary' : 'outline'}
+                            variant={
+                              selectedCount > 0 ? 'secondary' : 'outline'
+                            }
                             aria-label={`${filter.label} filter`}
                             aria-expanded={isOpen}
                             className="h-9 w-full justify-between rounded-lg px-3"
@@ -536,7 +582,10 @@ export function DashboardFilters({
                         </span>
                         <ChevronDownIcon
                           data-icon="inline-end"
-                          className={cn('transition-transform', isOpen && 'rotate-180')}
+                          className={cn(
+                            'transition-transform',
+                            isOpen && 'rotate-180',
+                          )}
                         />
                       </PopoverTrigger>
                       <PopoverContent align="start" className="w-[15.5rem] p-0">
@@ -549,10 +598,16 @@ export function DashboardFilters({
                               placeholder="Search values"
                               value={searchQueries[filter.key] ?? ''}
                               onChange={(event) =>
-                                updateSearchQuery(filter.key, event.currentTarget.value)
+                                updateSearchQuery(
+                                  filter.key,
+                                  event.currentTarget.value,
+                                )
                               }
                               onInput={(event) =>
-                                updateSearchQuery(filter.key, event.currentTarget.value)
+                                updateSearchQuery(
+                                  filter.key,
+                                  event.currentTarget.value,
+                                )
                               }
                               className="h-8 rounded-md border-0 bg-transparent pl-8 pr-2 shadow-none ring-0 focus-visible:border-transparent focus-visible:ring-0"
                             />
@@ -572,7 +627,9 @@ export function DashboardFilters({
                               <CircleHelpIcon className="size-4" />
                             </TooltipTrigger>
                             <TooltipContent className="max-w-56 flex-col items-start gap-0.5 text-left">
-                              <span className="font-medium">{filter.label}</span>
+                              <span className="font-medium">
+                                {filter.label}
+                              </span>
                               <span>{filter.description}</span>
                             </TooltipContent>
                           </Tooltip>
@@ -580,7 +637,9 @@ export function DashboardFilters({
                         <div className="max-h-56 overflow-auto p-1.5">
                           <div className="flex flex-col gap-0.5">
                             {filteredOptions.map((option) => {
-                              const checked = draftValues.includes(option.value);
+                              const checked = draftValues.includes(
+                                option.value,
+                              );
 
                               return (
                                 <label
@@ -601,7 +660,9 @@ export function DashboardFilters({
                                       toggleDraftValue(filter.key, option.value)
                                     }
                                   />
-                                  <span className="truncate leading-tight">{option.label}</span>
+                                  <span className="truncate leading-tight">
+                                    {option.label}
+                                  </span>
                                 </label>
                               );
                             })}

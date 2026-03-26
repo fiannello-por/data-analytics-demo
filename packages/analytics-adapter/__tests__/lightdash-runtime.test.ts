@@ -1,4 +1,9 @@
-import { BigQueryDate, BigQueryDatetime, BigQueryTime, BigQueryTimestamp } from '@google-cloud/bigquery';
+import {
+  BigQueryDate,
+  BigQueryDatetime,
+  BigQueryTime,
+  BigQueryTimestamp,
+} from '@google-cloud/bigquery';
 import { describe, expect, it, vi, afterEach } from 'vitest';
 
 import type {
@@ -170,11 +175,15 @@ describe('Lightdash semantic runtime', () => {
     const executeQuery = vi.fn(async () => ({
       rows: [
         {
-          sales_dashboard_v2_closed_won_close_date: new BigQueryDate('2026-03-01'),
+          sales_dashboard_v2_closed_won_close_date: new BigQueryDate(
+            '2026-03-01',
+          ),
           sales_dashboard_v2_closed_won_close_datetime: new BigQueryDatetime(
             '2026-03-01T05:06:07',
           ),
-          sales_dashboard_v2_closed_won_close_time: new BigQueryTime('05:06:07'),
+          sales_dashboard_v2_closed_won_close_time: new BigQueryTime(
+            '05:06:07',
+          ),
           sales_dashboard_v2_closed_won_close_timestamp: new BigQueryTimestamp(
             '2026-03-01T05:06:07.000Z',
           ),
@@ -186,7 +195,12 @@ describe('Lightdash semantic runtime', () => {
 
     const result = await runtime.runQuery({
       model: 'sales_dashboard_v2_closed_won',
-      dimensions: ['close_date', 'close_datetime', 'close_time', 'close_timestamp'],
+      dimensions: [
+        'close_date',
+        'close_datetime',
+        'close_time',
+        'close_timestamp',
+      ],
     });
 
     expect(result.rows).toEqual([

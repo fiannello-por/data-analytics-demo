@@ -27,7 +27,9 @@ export function TrendPanel({
   const currentWindowLabel =
     displayCurrentWindowLabel ?? trend?.currentWindowLabel ?? 'Current period';
   const previousWindowLabel =
-    displayPreviousWindowLabel ?? trend?.previousWindowLabel ?? 'Previous period';
+    displayPreviousWindowLabel ??
+    trend?.previousWindowLabel ??
+    'Previous period';
 
   if (!isVisible) {
     return (
@@ -52,10 +54,7 @@ export function TrendPanel({
         </div>
         <div className="flex items-center gap-2">
           {trend ? (
-            <TileBackendSheet
-              title={label}
-              trace={trend.backendTrace}
-            />
+            <TileBackendSheet title={label} trace={trend.backendTrace} />
           ) : null}
         </div>
       </div>

@@ -6,7 +6,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { ClosedWonOpportunitiesTable } from '@/components/dashboard/closed-won-opportunities-table';
 import type { ClosedWonOpportunitiesPayload } from '@/lib/dashboard/contracts';
 
-const COLUMN_SIZING_STORAGE_KEY = 'situation-room.closed-won-opportunities.column-sizing.v1';
+const COLUMN_SIZING_STORAGE_KEY =
+  'situation-room.closed-won-opportunities.column-sizing.v1';
 
 function buildPayload(): ClosedWonOpportunitiesPayload {
   return {
@@ -129,8 +130,8 @@ describe('ClosedWonOpportunitiesTable', { timeout: 10000 }, () => {
       root.render(<ClosedWonOpportunitiesTable payload={buildPayload()} />);
     });
 
-    const accountHeader = Array.from(container.querySelectorAll('th')).find((cell) =>
-      cell.textContent?.includes('Account'),
+    const accountHeader = Array.from(container.querySelectorAll('th')).find(
+      (cell) => cell.textContent?.includes('Account'),
     );
     const accountResizer = container.querySelector(
       '[data-column-resizer="accountName"]',
@@ -151,26 +152,30 @@ describe('ClosedWonOpportunitiesTable', { timeout: 10000 }, () => {
       document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
     });
 
-    const resizedHeader = Array.from(container.querySelectorAll('th')).find((cell) =>
-      cell.textContent?.includes('Account'),
+    const resizedHeader = Array.from(container.querySelectorAll('th')).find(
+      (cell) => cell.textContent?.includes('Account'),
     );
     const resizedWidth = Number.parseFloat(resizedHeader?.style.width ?? '0');
 
     expect(resizedWidth).toBeGreaterThan(initialWidth);
-    expect(window.localStorage.getItem(COLUMN_SIZING_STORAGE_KEY)).toContain('accountName');
+    expect(window.localStorage.getItem(COLUMN_SIZING_STORAGE_KEY)).toContain(
+      'accountName',
+    );
 
-    const nextButton = Array.from(container.querySelectorAll('button')).find((button) =>
-      button.textContent?.includes('Next'),
+    const nextButton = Array.from(container.querySelectorAll('button')).find(
+      (button) => button.textContent?.includes('Next'),
     );
 
     await act(async () => {
       nextButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
 
-    const paginatedHeader = Array.from(container.querySelectorAll('th')).find((cell) =>
-      cell.textContent?.includes('Account'),
+    const paginatedHeader = Array.from(container.querySelectorAll('th')).find(
+      (cell) => cell.textContent?.includes('Account'),
     );
-    expect(Number.parseFloat(paginatedHeader?.style.width ?? '0')).toBe(resizedWidth);
+    expect(Number.parseFloat(paginatedHeader?.style.width ?? '0')).toBe(
+      resizedWidth,
+    );
 
     await act(async () => {
       root.unmount();
@@ -182,9 +187,11 @@ describe('ClosedWonOpportunitiesTable', { timeout: 10000 }, () => {
       root.render(<ClosedWonOpportunitiesTable payload={buildPayload()} />);
     });
 
-    const remountedHeader = Array.from(container.querySelectorAll('th')).find((cell) =>
-      cell.textContent?.includes('Account'),
+    const remountedHeader = Array.from(container.querySelectorAll('th')).find(
+      (cell) => cell.textContent?.includes('Account'),
     );
-    expect(Number.parseFloat(remountedHeader?.style.width ?? '0')).toBe(resizedWidth);
+    expect(Number.parseFloat(remountedHeader?.style.width ?? '0')).toBe(
+      resizedWidth,
+    );
   });
 });
