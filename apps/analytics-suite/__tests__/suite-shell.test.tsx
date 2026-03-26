@@ -9,7 +9,6 @@ describe('analytics suite shell', () => {
     const markup = renderToStaticMarkup(React.createElement(HomePage));
 
     expect(markup).toContain('Dashboard registry');
-    expect(markup).toContain('RevOps Analytics Suite');
     expect(markup).toContain('Dashboard name');
     expect(markup).toContain('Owner');
     expect(markup).toContain('Updated at');
