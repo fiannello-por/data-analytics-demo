@@ -1,8 +1,6 @@
 import type { DashboardModule } from '@/lib/suite/contracts';
-import { dashboardModules } from '@/lib/suite/modules';
 
 export type HomepageModuleStatus = 'Live' | 'WIP';
-type DashboardModuleId = (typeof dashboardModules)[number]['id'];
 
 const homepageModuleStatusLabels: Record<
   DashboardModule['status'],
@@ -50,14 +48,20 @@ export const homepageModuleMetadata = {
     changelogLabel: 'Changelog',
     changelogHref: '/dashboards/pipeline-health/changelog',
   },
-} satisfies Record<DashboardModuleId, HomepageModuleMeta>;
+} satisfies Record<string, HomepageModuleMeta>;
+
+type DashboardModuleId = keyof typeof homepageModuleMetadata;
+
+function isHomepageModuleId(moduleId: string): moduleId is DashboardModuleId {
+  return moduleId in homepageModuleMetadata;
+}
 
 function getHomepageModuleMetadata(moduleId: DashboardModule['id']): HomepageModuleMeta {
-  const metadata = homepageModuleMetadata[moduleId];
-
-  if (!metadata) {
+  if (!isHomepageModuleId(moduleId)) {
     throw new HomepageMetadataError(moduleId);
   }
+
+  const metadata = homepageModuleMetadata[moduleId];
 
   return metadata;
 }
