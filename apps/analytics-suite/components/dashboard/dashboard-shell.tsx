@@ -81,6 +81,10 @@ async function readJson<T>(response: Response, label: string): Promise<T> {
   return (await response.json()) as T;
 }
 
+function formatRefreshError(label: string, reason: unknown): string {
+  return `${label}: ${reason instanceof Error ? reason.message : 'request failed.'}`;
+}
+
 function buildSnapshotCache(
   initialOverviewBoard?: OverviewBoardPayload | null,
   initialSnapshot?: CategorySnapshotPayload | null,
@@ -262,13 +266,32 @@ export function DashboardShell({
         ).then((response) =>
           readJson<ClosedWonOpportunitiesPayload>(response, 'Closed won opportunities'),
         )
-      : Promise.resolve(null);
+      : null;
 
-    const [overviewResult, snapshotResult, trendResult, closedWonResult] = await Promise.allSettled([
+    if (closedWonFetch) {
+      void closedWonFetch
+        .then((payload) => {
+          if (!isMountedRef.current || requestId !== refreshRequestIdRef.current) {
+            return;
+          }
+
+          setClosedWonOpportunities(payload);
+          setClosedWonLoading(false);
+        })
+        .catch((reason) => {
+          if (!isMountedRef.current || requestId !== refreshRequestIdRef.current) {
+            return;
+          }
+
+          setClosedWonLoading(false);
+          setError((current) => current ?? formatRefreshError('Closed won', reason));
+        });
+    }
+
+    const [overviewResult, snapshotResult, trendResult] = await Promise.allSettled([
       overviewFetch,
       snapshotFetch,
       trendFetch,
-      closedWonFetch,
     ]);
 
     if (!isMountedRef.current || requestId !== refreshRequestIdRef.current) {
@@ -279,7 +302,7 @@ export function DashboardShell({
 
     if (scope.overview) {
       if (overviewResult.status === 'rejected') {
-        nextErrors.push(`Overview: ${overviewResult.reason instanceof Error ? overviewResult.reason.message : 'request failed.'}`);
+        nextErrors.push(formatRefreshError('Overview', overviewResult.reason));
       } else if (!overviewResult.value) {
         nextErrors.push('Overview: request failed.');
       }
@@ -287,7 +310,7 @@ export function DashboardShell({
 
     if (scope.snapshot) {
       if (snapshotResult.status === 'rejected') {
-        nextErrors.push(`Snapshot: ${snapshotResult.reason instanceof Error ? snapshotResult.reason.message : 'request failed.'}`);
+        nextErrors.push(formatRefreshError('Snapshot', snapshotResult.reason));
       } else if (!snapshotResult.value) {
         nextErrors.push('Snapshot: request failed.');
       }
@@ -295,21 +318,14 @@ export function DashboardShell({
 
     if (scope.trend) {
       if (trendResult.status === 'rejected') {
-        nextErrors.push(`Trend: ${trendResult.reason instanceof Error ? trendResult.reason.message : 'request failed.'}`);
+        nextErrors.push(formatRefreshError('Trend', trendResult.reason));
       } else if (!trendResult.value) {
         nextErrors.push('Trend: request failed.');
       }
     }
 
-    if (scope.closedWon) {
-      if (closedWonResult.status === 'rejected') {
-        nextErrors.push(`Closed won: ${closedWonResult.reason instanceof Error ? closedWonResult.reason.message : 'request failed.'}`);
-      } else if (!closedWonResult.value) {
-        nextErrors.push('Closed won: request failed.');
-      }
-    }
-
     if (nextErrors.length > 0) {
+      refreshRequestIdRef.current += 1;
       if (options?.optimisticState && options.revertState) {
         setState(options.revertState);
         updateUrl(options.revertState);
@@ -342,18 +358,16 @@ export function DashboardShell({
       setTrend(trendResult.value);
     }
 
-    if (scope.closedWon && closedWonResult.status === 'fulfilled' && closedWonResult.value) {
-      setClosedWonOpportunities(closedWonResult.value);
-    }
-
     if (!options?.optimisticState) {
       setState(nextState);
       updateUrl(nextState);
     }
     setSnapshotLoading(false);
     setTrendLoading(false);
-    setClosedWonLoading(false);
-    setError(null);
+    if (!scope.closedWon) {
+      setClosedWonLoading(false);
+    }
+    setError((current) => (current?.startsWith('Closed won:') ? current : null));
   }
 
   function applyStateChange(
