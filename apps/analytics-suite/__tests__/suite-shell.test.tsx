@@ -17,8 +17,11 @@ describe('analytics suite shell', () => {
     expect(markup).toContain('Status');
     expect(markup).toContain('Sales Performance');
     expect(markup).toContain('Pipeline Health');
+    expect(markup).toContain('href="/dashboards/sales-performance"');
     expect(markup).toContain('Live');
     expect(markup).toContain('WIP');
+    expect(markup).not.toContain('active');
+    expect(markup).not.toContain('demo');
     expect(markup).toContain('Action');
     expect(markup).toContain('Rows per page');
     expect(markup).toContain('Previous');
