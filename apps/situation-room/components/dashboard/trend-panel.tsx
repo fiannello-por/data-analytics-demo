@@ -31,12 +31,10 @@ export function TrendPanel({
 
   if (!isVisible) {
     return (
-      <section className="flex h-full min-h-[20rem] flex-1 flex-col justify-center rounded-lg border border-dashed border-border/60 bg-muted/[0.04] px-6 py-5 text-center">
+      <section className="flex h-full min-h-[20rem] w-full flex-1 flex-col justify-center rounded-lg border border-dashed border-border/60 bg-muted/[0.04] px-6 py-5 text-center">
         <div className="mx-auto max-w-sm space-y-2">
-          <CardTitle className="text-base">See the line chart</CardTitle>
           <CardDescription className="text-sm leading-6">
-            Click any metric in the table to inspect its evolution over time and compare the
-            current period with the previous year.
+            Click a metrics to load the line chart
           </CardDescription>
         </div>
       </section>
@@ -44,7 +42,7 @@ export function TrendPanel({
   }
 
   return (
-    <section className="group flex h-full min-h-[20rem] flex-col justify-end gap-4">
+    <section className="group flex h-full min-h-[20rem] w-full flex-col gap-4">
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-1">
           <CardTitle className="text-base">{label}</CardTitle>
@@ -58,9 +56,6 @@ export function TrendPanel({
               title={label}
               trace={trend.backendTrace}
             />
-          ) : null}
-          {isLoading ? (
-            <span className="pt-0.5 text-xs text-muted-foreground">Refreshing…</span>
           ) : null}
         </div>
       </div>
@@ -83,7 +78,7 @@ export function TrendPanel({
           <Skeleton className="min-h-0 flex-1 rounded-lg" />
         </div>
       ) : trend ? (
-        <div className="mt-6">
+        <div className="mt-6 flex min-h-0 flex-1">
           <TrendChart trend={trend} />
         </div>
       ) : (

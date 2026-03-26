@@ -54,14 +54,14 @@ function TooltipContent({
         <TooltipPrimitive.Popup
           data-slot="tooltip-content"
           className={cn(
-            "z-50 inline-flex w-fit max-w-xs origin-(--transform-origin) items-center gap-1.5 rounded-md bg-foreground px-3 py-1.5 text-xs text-background shadow-lg shadow-black/10 outline outline-border/50 transition-[transform,scale,opacity] duration-200 ease-out has-data-[slot=kbd]:pr-1.5 data-starting-style:scale-96 data-starting-style:opacity-0 data-ending-style:scale-96 data-ending-style:opacity-0 data-[side=bottom]:data-starting-style:-translate-y-1 data-[side=inline-end]:data-starting-style:-translate-x-1 data-[side=inline-start]:data-starting-style:translate-x-1 data-[side=left]:data-starting-style:translate-x-1 data-[side=right]:data-starting-style:-translate-x-1 data-[side=top]:data-starting-style:translate-y-1 data-instant:transition-none motion-reduce:transition-none **:data-[slot=kbd]:relative **:data-[slot=kbd]:isolate **:data-[slot=kbd]:z-50 **:data-[slot=kbd]:rounded-sm",
+            "z-50 inline-flex w-fit max-w-xs origin-(--transform-origin) items-center gap-1.5 rounded-md bg-[var(--tooltip-bg,var(--foreground))] px-3 py-1.5 text-xs text-[var(--tooltip-fg,var(--background))] shadow-lg shadow-black/10 outline outline-border/50 transition-[transform,scale,opacity] duration-200 ease-out has-data-[slot=kbd]:pr-1.5 data-starting-style:scale-96 data-starting-style:opacity-0 data-ending-style:scale-96 data-ending-style:opacity-0 data-[side=bottom]:data-starting-style:-translate-y-1 data-[side=inline-end]:data-starting-style:-translate-x-1 data-[side=inline-start]:data-starting-style:translate-x-1 data-[side=left]:data-starting-style:translate-x-1 data-[side=right]:data-starting-style:-translate-x-1 data-[side=top]:data-starting-style:translate-y-1 data-instant:transition-none motion-reduce:transition-none **:data-[slot=kbd]:relative **:data-[slot=kbd]:isolate **:data-[slot=kbd]:z-50 **:data-[slot=kbd]:rounded-sm",
             className
           )}
           {...props}
         >
           {children}
           <TooltipPrimitive.Arrow
-            className="z-50 flex size-2.5 rounded-[2px] bg-foreground fill-foreground data-[side=bottom]:-top-1 data-[side=inline-end]:-left-1 data-[side=inline-start]:-right-1 data-[side=left]:-right-1 data-[side=right]:-left-1 data-[side=top]:-bottom-1"
+            className="z-50 flex size-2.5 rounded-[2px] bg-[var(--tooltip-bg,var(--foreground))] fill-[var(--tooltip-bg,var(--foreground))] data-[side=bottom]:-top-1 data-[side=inline-end]:-left-1 data-[side=inline-start]:-right-1 data-[side=left]:-right-1 data-[side=right]:-left-1 data-[side=top]:-bottom-1"
             style={(state) => {
               const axis =
                 state.side === "top" || state.side === "bottom"
