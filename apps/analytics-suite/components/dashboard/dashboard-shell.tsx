@@ -108,6 +108,21 @@ function getClosedWonCategory(activeCategory: DashboardState['activeCategory']):
   return isCategory(activeCategory) ? activeCategory : 'Total';
 }
 
+export function buildClosedWonPrefetchUrls(
+  apiBasePath: string,
+  input: Pick<DashboardState, 'filters' | 'dateRange'>,
+): string[] {
+  const urls = buildDashboardUrlFactory(apiBasePath);
+
+  return CATEGORY_ORDER.map((category) =>
+    urls.buildClosedWonUrl({
+      activeCategory: category,
+      filters: input.filters,
+      dateRange: input.dateRange,
+    }),
+  );
+}
+
 export function DashboardShell({
   initialState,
   initialSnapshot,
@@ -147,6 +162,34 @@ export function DashboardShell({
     },
     [],
   );
+
+  const closedWonPrefetchUrls = React.useMemo(
+    () =>
+      buildClosedWonPrefetchUrls(apiBasePath, {
+        filters: state.filters,
+        dateRange: state.dateRange,
+      }),
+    [apiBasePath, state.dateRange, state.filters],
+  );
+
+  React.useEffect(() => {
+    const abortController = new AbortController();
+    const timeoutIds = closedWonPrefetchUrls.map((url, index) =>
+      window.setTimeout(() => {
+        void fetch(url, {
+          headers: { Accept: 'application/json' },
+          signal: abortController.signal,
+        }).catch(() => {});
+      }, index * 75),
+    );
+
+    return () => {
+      abortController.abort();
+      for (const timeoutId of timeoutIds) {
+        window.clearTimeout(timeoutId);
+      }
+    };
+  }, [closedWonPrefetchUrls]);
 
   function updateUrl(nextState: DashboardState) {
     if (typeof window === 'undefined') return;
