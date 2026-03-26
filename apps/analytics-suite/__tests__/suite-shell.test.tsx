@@ -25,10 +25,10 @@ describe('analytics suite homepage registry', () => {
     const markup = renderToStaticMarkup(React.createElement(HomePage));
 
     expect(markup).toMatch(
-      /<tr[^>]*>[\s\S]*?href="\/dashboards\/sales-performance"[\s\S]*?Live[\s\S]*?<\/tr>/,
+      /<tr[^>]*>[\s\S]*?Sales Performance[\s\S]*?href="\/dashboards\/sales-performance"[\s\S]*?Live[\s\S]*?<\/tr>/,
     );
     expect(markup).toMatch(
-      /<tr[^>]*>[\s\S]*?href="\/dashboards\/pipeline-health"[\s\S]*?WIP[\s\S]*?<\/tr>/,
+      /<tr[^>]*>[\s\S]*?Pipeline Health[\s\S]*?href="\/dashboards\/pipeline-health"[\s\S]*?WIP[\s\S]*?<\/tr>/,
     );
   });
 
