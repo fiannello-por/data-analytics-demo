@@ -14,6 +14,7 @@ import {
   getDashboardV2Runtime,
   normalizeDashboardV2ExecutionOptions,
 } from '@/lib/server/v2/semantic-runtime';
+import { withDashboardTimingLog } from '@/lib/server/v2/dashboard-timing-log';
 import {
   buildTileBackendTrace,
   resolveSemanticDimensionLabel,
@@ -56,8 +57,28 @@ export async function getDashboardV2TileTrend(
       input.previousDateRange,
     );
     const [current, previous] = await Promise.all([
-      runtime.runQuery(currentRequest),
-      runtime.runQuery(previousRequest),
+      withDashboardTimingLog(
+        'loader.trend.current-query',
+        {
+          category: input.activeCategory,
+          tileId: input.selectedTileId,
+          startDate: input.dateRange.startDate,
+          endDate: input.dateRange.endDate,
+          cacheMode: execution.cacheMode,
+        },
+        () => runtime.runQuery(currentRequest),
+      ),
+      withDashboardTimingLog(
+        'loader.trend.previous-query',
+        {
+          category: input.activeCategory,
+          tileId: input.selectedTileId,
+          startDate: input.previousDateRange.startDate,
+          endDate: input.previousDateRange.endDate,
+          cacheMode: execution.cacheMode,
+        },
+        () => runtime.runQuery(previousRequest),
+      ),
     ]);
     const bucketField = Object.keys(current.rows[0] ?? {}).find((field) =>
       field.endsWith('_week'),

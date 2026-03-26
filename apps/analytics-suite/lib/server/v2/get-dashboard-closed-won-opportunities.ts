@@ -19,6 +19,7 @@ import {
   getDashboardV2Runtime,
   normalizeDashboardV2ExecutionOptions,
 } from '@/lib/server/v2/semantic-runtime';
+import { withDashboardTimingLog } from '@/lib/server/v2/dashboard-timing-log';
 import { buildTileBackendTrace } from '@/lib/server/v2/tile-backend-trace';
 import {
   getSemanticNumber,
@@ -51,7 +52,16 @@ export async function getDashboardV2ClosedWonOpportunities(
       input.filters,
       input.dateRange,
     );
-    const result = await runtime.runQuery(semanticRequest);
+    const result = await withDashboardTimingLog(
+      'loader.closed-won.query',
+      {
+        category: input.activeCategory,
+        startDate: input.dateRange.startDate,
+        endDate: input.dateRange.endDate,
+        cacheMode: execution.cacheMode,
+      },
+      () => runtime.runQuery(semanticRequest),
+    );
     const backendTrace = await buildTileBackendTrace({
       kind: 'single',
       includes: ['Closed Won Opportunities'],

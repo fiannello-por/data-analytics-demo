@@ -18,6 +18,7 @@ import {
   getDashboardV2Runtime,
   normalizeDashboardV2ExecutionOptions,
 } from '@/lib/server/v2/semantic-runtime';
+import { logDashboardTiming } from '@/lib/server/v2/dashboard-timing-log';
 import { buildTileBackendTrace } from '@/lib/server/v2/tile-backend-trace';
 import { getSemanticNumber } from '@/lib/server/v2/semantic-values';
 
@@ -60,6 +61,7 @@ export async function getDashboardV2CategorySnapshot(
   const execution = normalizeDashboardV2ExecutionOptions(options);
 
   const loadSnapshot = async () => {
+    const loadStartedAt = performance.now();
     const groups = getSnapshotGroups(input.activeCategory);
     const groupResults = await Promise.all(
       groups.map(async (group) => {
@@ -118,6 +120,18 @@ export async function getDashboardV2CategorySnapshot(
       tileId: row.tileId,
       durationMs: row.durationMs,
     }));
+
+    logDashboardTiming(
+      'loader.category-snapshot.total',
+      performance.now() - loadStartedAt,
+      {
+        category: input.activeCategory,
+        startDate: input.dateRange.startDate,
+        endDate: input.dateRange.endDate,
+        cacheMode: execution.cacheMode,
+        tileCount: tileTimings.length,
+      },
+    );
 
     return {
       data: {

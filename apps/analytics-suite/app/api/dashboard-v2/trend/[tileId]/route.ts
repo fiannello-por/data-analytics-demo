@@ -5,6 +5,7 @@ import {
   applyProbeHeaders,
   getProbeExecutionOptionsFromRequest,
 } from '@/lib/server/probe-http';
+import { logDashboardTiming } from '@/lib/server/v2/dashboard-timing-log';
 import { getDashboardV2TileTrend } from '@/lib/server/v2/get-dashboard-tile-trend';
 
 function badRequest(message: string) {
@@ -48,6 +49,15 @@ export async function GET(
     execution,
   );
   const response = NextResponse.json(result.data);
+
+  logDashboardTiming('route.trend', performance.now() - startedAt, {
+    category,
+    tileId,
+    startDate: state.dateRange.startDate,
+    endDate: state.dateRange.endDate,
+    cacheMode: result.meta.cacheMode,
+    queryCount: result.meta.queryCount,
+  });
 
   return applyProbeHeaders(response, result.meta, startedAt);
 }
