@@ -6,11 +6,7 @@ import {
 } from '@por/dashboard-layout';
 import {
   type VisualizationRenderer,
-  getVisualizationRendererKey,
-  normalizeTileSpec,
-  validateTileSpec,
 } from '@por/dashboard-spec';
-import { createRechartsRendererRegistry } from '@por/dashboard-visualization-recharts';
 import { CardDescription, CardTitle } from '@/components/ui/card';
 import { TileTable, TileTableSkeleton } from '@/components/dashboard/tile-table';
 import { TrendPanel } from '@/components/dashboard/trend-panel';
@@ -19,6 +15,10 @@ import type {
   TileTrendPayload,
 } from '@/lib/dashboard/contracts';
 import { getDashboardSpecBinding } from '@/lib/dashboard-v2/spec-bindings';
+import {
+  getDashboardVisualizationRenderer,
+  resolveDashboardTileSpec,
+} from '@/lib/dashboard-v2/spec-runtime';
 import { mainMetricsCompositeSpec } from '@/lib/dashboard-v2/specs/main-metrics';
 import type {
   MainMetricsSnapshotBindingData,
@@ -26,16 +26,9 @@ import type {
 } from '@/lib/dashboard-v2/spec-data-shapes';
 import type { Category } from '@/lib/dashboard/catalog';
 
-const mainMetricsValidation = validateTileSpec(mainMetricsCompositeSpec);
-
-if (!mainMetricsValidation.ok) {
-  throw new Error(
-    `Invalid Main Metrics dashboard spec: ${mainMetricsValidation.errors.join(', ')}`,
-  );
-}
-
-const normalizedMainMetricsCompositeSpec = normalizeTileSpec(
+const normalizedMainMetricsCompositeSpec = resolveDashboardTileSpec(
   mainMetricsCompositeSpec,
+  'Main Metrics',
 );
 
 if (normalizedMainMetricsCompositeSpec.children == null) {
@@ -75,14 +68,8 @@ if (
 
 const resolvedMainMetricsTableSpec = mainMetricsTableSpec;
 const resolvedSelectedMetricTrendSpec = selectedMetricTrendSpec;
-
-getVisualizationRendererKey(resolvedMainMetricsTableSpec);
-const selectedMetricTrendRendererKey = getVisualizationRendererKey(
-  resolvedSelectedMetricTrendSpec,
-);
-const rechartsRegistry = createRechartsRendererRegistry();
 const selectedMetricTrendRenderer =
-  rechartsRegistry.visualizations[selectedMetricTrendRendererKey] as
+  getDashboardVisualizationRenderer(resolvedSelectedMetricTrendSpec) as
     | VisualizationRenderer<
         typeof resolvedSelectedMetricTrendSpec,
         SelectedMetricTrendBindingData['rows'][number],

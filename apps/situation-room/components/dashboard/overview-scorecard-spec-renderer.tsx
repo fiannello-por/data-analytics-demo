@@ -2,8 +2,6 @@
 
 import * as React from 'react';
 import {
-  normalizeTileSpec,
-  validateTileSpec,
   type CompositeTileSpec,
   type MetricTileSpec,
   type TileSpec,
@@ -38,6 +36,7 @@ import {
   buildOverviewTotalScorecardSpec,
   type OverviewMetricBindings,
 } from '@/lib/dashboard-v2/specs/overview-scorecards';
+import { resolveDashboardTileSpec } from '@/lib/dashboard-v2/spec-runtime';
 
 function resolveMetric(
   spec: MetricTileSpec,
@@ -53,15 +52,7 @@ function resolveMetric(
 }
 
 function resolveCompositeSpec(spec: TileSpec): CompositeTileSpec {
-  const validation = validateTileSpec(spec);
-
-  if (!validation.ok) {
-    throw new Error(
-      `Invalid overview scorecard spec: ${validation.errors.join(', ')}`,
-    );
-  }
-
-  const normalized = normalizeTileSpec(spec);
+  const normalized = resolveDashboardTileSpec(spec, 'overview scorecard');
 
   if (normalized.kind !== 'composite') {
     throw new Error('Overview scorecards must normalize to a composite tile.');

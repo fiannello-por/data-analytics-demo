@@ -12,8 +12,6 @@ import {
   type SortingState,
 } from '@tanstack/react-table';
 import {
-  normalizeTileSpec,
-  validateTileSpec,
   type TableTileSpec,
 } from '@por/dashboard-spec';
 import {
@@ -47,6 +45,7 @@ import {
 } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 import { closedWonOpportunitiesTableSpec } from '@/lib/dashboard-v2/specs/closed-won-table';
+import { resolveDashboardTileSpec } from '@/lib/dashboard-v2/spec-runtime';
 
 const DEFAULT_PAGE_SIZE = 10;
 
@@ -55,21 +54,10 @@ type ColumnMeta = {
   cellClassName?: string;
 };
 
-const closedWonTableValidation = validateTileSpec(closedWonOpportunitiesTableSpec);
-
-if (!closedWonTableValidation.ok) {
-  throw new Error(
-    `Invalid closed won table spec: ${closedWonTableValidation.errors.join(', ')}`,
-  );
-}
-
-const normalizedClosedWonTableSpec = normalizeTileSpec(
+const normalizedClosedWonTableSpec = resolveDashboardTileSpec(
   closedWonOpportunitiesTableSpec,
-);
-
-if (normalizedClosedWonTableSpec.kind !== 'table') {
-  throw new Error('Closed won table spec must normalize to a table tile.');
-}
+  'Closed Won Opportunities',
+) as TableTileSpec;
 
 function OpportunityLink({
   href,
