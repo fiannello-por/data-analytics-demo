@@ -56,8 +56,8 @@ vi.mock('@/lib/server/v2/get-dashboard-filter-dictionary', () => ({
   getDashboardV2FilterDictionary: getDashboardV2FilterDictionaryMock,
 }));
 
-describe('dashboard v2 page', { timeout: 20000 }, () => {
-  it('renders the same dashboard shell against the semantic v2 backend', async () => {
+describe('sales performance page', { timeout: 20000 }, () => {
+  it('renders the sales performance dashboard shell against the semantic backend', async () => {
     const newLogoSnapshot = {
       category: 'New Logo',
       currentWindowLabel: 'Jan 1, 2026 - Mar 23, 2026',
@@ -127,8 +127,9 @@ describe('dashboard v2 page', { timeout: 20000 }, () => {
       }),
     );
 
-    const { default: DashboardPageV2 } = await import('@/app/v2/page');
-    const html = renderToStaticMarkup(await DashboardPageV2({}));
+    const { default: SalesPerformancePage } =
+      await import('@/app/sales-performance/page');
+    const html = renderToStaticMarkup(await SalesPerformancePage({}));
 
     expect(html).toContain('shell:/api/dashboard-v2');
     expect(dashboardShellMock).toHaveBeenCalledWith(
