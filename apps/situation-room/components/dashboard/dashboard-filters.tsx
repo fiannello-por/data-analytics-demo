@@ -10,6 +10,7 @@ import type {
 } from '@/lib/dashboard/contracts';
 import type { GlobalFilterKey } from '@/lib/dashboard/catalog';
 import {
+  DATE_RANGE_FILTER_LABEL,
   DASHBOARD_FILTER_DEFINITIONS,
 } from '@/lib/dashboard/filter-config';
 import {
@@ -162,6 +163,38 @@ function countActiveFilters(
   return selectedValueFilters + (hasDateRange ? 1 : 0);
 }
 
+function hasActiveDateRange(dateRange: DashboardState['dateRange']): boolean {
+  return Boolean(dateRange.startDate && dateRange.endDate);
+}
+
+function getActiveFilterDetails(
+  filters: DashboardState['filters'],
+  dateRange: DashboardState['dateRange'],
+): Array<{ label: string; value: string }> {
+  const details: Array<{ label: string; value: string }> = [];
+
+  if (hasActiveDateRange(dateRange)) {
+    details.push({
+      label: DATE_RANGE_FILTER_LABEL,
+      value: formatDateRange(dateRange),
+    });
+  }
+
+  for (const filter of DASHBOARD_FILTER_DEFINITIONS) {
+    const selectedValues = normalizeValues(filters[filter.key]);
+    if (selectedValues.length === 0) {
+      continue;
+    }
+
+    details.push({
+      label: filter.label,
+      value: selectedValues.join(', '),
+    });
+  }
+
+  return details;
+}
+
 export function DashboardFilters({
   state,
   dictionaries,
@@ -216,6 +249,7 @@ export function DashboardFilters({
   }, []);
 
   const activeFilterCount = countActiveFilters(state.filters, state.dateRange);
+  const activeFilterDetails = getActiveFilterDetails(state.filters, state.dateRange);
   const currentPeriodLabel = formatDateRange(state.dateRange);
   const priorPeriodLabel = `${state.previousDateRange.startDate} to ${state.previousDateRange.endDate}`;
   const freshnessLabel = lastRefreshedAt
@@ -293,9 +327,50 @@ export function DashboardFilters({
             <div className="min-w-0 space-y-1">
               <div className="flex flex-wrap items-center gap-2">
                 <CardTitle className="text-base">Global Controls</CardTitle>
-                <Badge variant="secondary">
-                  {activeFilterCount} active filter{activeFilterCount === 1 ? '' : 's'}
-                </Badge>
+                <Tooltip>
+                  <TooltipTrigger className="outline-none">
+                    <Badge variant="secondary">
+                      {activeFilterCount} active filter{activeFilterCount === 1 ? '' : 's'}
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="bottom"
+                    align="start"
+                    className="[--tooltip-bg:#09090b] [--tooltip-fg:#fafafa] w-80 max-w-[min(24rem,calc(100vw-1.5rem))] rounded-xl border border-white/10 px-3.5 py-3 shadow-2xl shadow-black/35"
+                  >
+                    <div className="flex w-full flex-col gap-2">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/60">
+                          Active filters
+                        </span>
+                        <span className="text-[11px] text-white/45">
+                          {activeFilterCount} total
+                        </span>
+                      </div>
+                      {activeFilterDetails.length > 0 ? (
+                        <div className="flex flex-col gap-1.5">
+                          {activeFilterDetails.map((item) => (
+                            <div
+                              key={`${item.label}:${item.value}`}
+                              className="grid grid-cols-[max-content,minmax(0,1fr)] items-start gap-x-2 rounded-lg bg-white/5 px-2.5 py-2"
+                            >
+                              <span className="text-[11px] font-medium text-white/55">
+                                {item.label}
+                              </span>
+                              <span className="min-w-0 text-[12px] leading-5 text-white/92">
+                                {item.value}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="rounded-lg bg-white/5 px-2.5 py-2 text-[12px] text-white/72">
+                          No active filters applied.
+                        </div>
+                      )}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
                 {freshnessLabel && freshnessTimestamp ? (
                   <Tooltip>
                     <TooltipTrigger
@@ -452,10 +527,7 @@ export function DashboardFilters({
                             variant={selectedCount > 0 ? 'secondary' : 'outline'}
                             aria-label={`${filter.label} filter`}
                             aria-expanded={isOpen}
-                            className={cn(
-                              'h-9 w-full justify-between rounded-lg px-3',
-                              selectedCount > 0 && 'border-transparent',
-                            )}
+                            className="h-9 w-full justify-between rounded-lg px-3"
                           />
                         }
                       >

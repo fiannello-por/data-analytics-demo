@@ -521,7 +521,7 @@ export function DashboardShell({
                     Current period vs previous-year equivalent.
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(22rem,0.95fr)]">
+                <CardContent className="grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(22rem,0.95fr)] xl:items-stretch">
                   <div className="min-w-0">
                     {isSnapshotLoading || !activeSnapshot ? (
                       <TileTableSkeleton category={detailCategory} />
@@ -533,7 +533,7 @@ export function DashboardShell({
                       />
                     )}
                   </div>
-                  <div className="flex min-w-0 xl:border-l xl:border-border/45 xl:pl-6">
+                  <div className="flex min-w-0 self-stretch xl:border-l xl:border-border/45 xl:pl-6">
                     <TrendPanel
                       trend={showTrendPanel ? trend : null}
                       isLoading={showTrendPanel ? isTrendLoading : false}

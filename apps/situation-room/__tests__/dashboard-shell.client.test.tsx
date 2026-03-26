@@ -160,7 +160,7 @@ vi.mock('@/components/dashboard/trend-panel', () => ({
     React.createElement(
       'div',
       { 'data-testid': 'trend-panel' },
-      isVisible ? `${displayLabel ?? trend?.label}${isLoading ? ' refreshing' : ''}` : 'trend placeholder',
+      isVisible ? `${displayLabel ?? trend?.label}` : 'trend placeholder',
     ),
 }));
 
@@ -464,9 +464,7 @@ describe('dashboard shell client interactions', () => {
     });
 
     expect(selectedTile()).toBe('new_logo_sqo');
-    expect(container.querySelector('[data-testid="trend-panel"]')?.textContent).toContain(
-      'SQO refreshing',
-    );
+    expect(container.querySelector('[data-testid="trend-panel"]')?.textContent).toBe('SQO');
     expect(trendCalls).toHaveLength(1);
 
     await act(async () => {

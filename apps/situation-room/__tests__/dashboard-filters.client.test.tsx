@@ -425,4 +425,33 @@ describe('dashboard filters', () => {
       container.querySelector('button[aria-label="Division filter"]'),
     ).not.toBeNull();
   });
+
+  it('shows active filter details in the active-filter tooltip content', async () => {
+    const divisionTrigger = container.querySelector(
+      'button[aria-label="Division filter"]',
+    ) as HTMLButtonElement | null;
+    const enterpriseCheckbox = container.querySelector(
+      'input[aria-label="Select Enterprise for Division"]',
+    ) as HTMLInputElement | null;
+    const applyButton = container.querySelector(
+      'button[aria-label="Apply Division filter"]',
+    ) as HTMLButtonElement | null;
+    const toggleButton = container.querySelector(
+      'button[aria-label="Toggle global controls"]',
+    ) as HTMLButtonElement | null;
+
+    expect(divisionTrigger).not.toBeNull();
+    expect(enterpriseCheckbox).not.toBeNull();
+    expect(applyButton).not.toBeNull();
+    expect(toggleButton).not.toBeNull();
+
+    await act(async () => {
+      divisionTrigger!.click();
+      enterpriseCheckbox!.click();
+      applyButton!.click();
+    });
+
+    expect(container.textContent).toContain('Date Range: Jan 1, 2026 - Mar 31, 2026');
+    expect(container.textContent).toContain('Division: Enterprise');
+  });
 });

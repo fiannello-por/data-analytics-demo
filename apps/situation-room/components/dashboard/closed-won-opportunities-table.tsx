@@ -2,11 +2,13 @@
 
 import * as React from 'react';
 import {
+  functionalUpdate,
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
+  type ColumnSizingState,
   type ColumnDef,
   type PaginationState,
   type SortingState,
@@ -37,11 +39,60 @@ import {
 import { cn } from '@/lib/utils';
 
 const DEFAULT_PAGE_SIZE = 10;
+const COLUMN_SIZING_STORAGE_KEY = 'situation-room.closed-won-opportunities.column-sizing.v1';
 
 type ColumnMeta = {
   headClassName?: string;
   cellClassName?: string;
 };
+
+const COLUMN_WIDTHS = {
+  accountName: { size: 220, minSize: 160, maxSize: 320 },
+  opportunityName: { size: 240, minSize: 180, maxSize: 340 },
+  closeDate: { size: 132, minSize: 116, maxSize: 180 },
+  createdDate: { size: 132, minSize: 116, maxSize: 180 },
+  division: { size: 132, minSize: 100, maxSize: 180 },
+  type: { size: 120, minSize: 96, maxSize: 160 },
+  productFamily: { size: 140, minSize: 108, maxSize: 200 },
+  bookingPlanOppType2025: { size: 220, minSize: 160, maxSize: 320 },
+  owner: { size: 140, minSize: 112, maxSize: 220 },
+  sdr: { size: 120, minSize: 96, maxSize: 180 },
+  oppRecordType: { size: 128, minSize: 104, maxSize: 180 },
+  age: { size: 112, minSize: 88, maxSize: 150 },
+  se: { size: 112, minSize: 88, maxSize: 180 },
+  quarter: { size: 120, minSize: 100, maxSize: 160 },
+  contractStartDate: { size: 168, minSize: 136, maxSize: 220 },
+  users: { size: 108, minSize: 88, maxSize: 160 },
+  acv: { size: 132, minSize: 108, maxSize: 180 },
+} satisfies Record<string, { size: number; minSize: number; maxSize: number }>;
+
+function readStoredColumnSizing(): ColumnSizingState {
+  if (typeof window === 'undefined') {
+    return {};
+  }
+
+  try {
+    const raw = window.localStorage.getItem(COLUMN_SIZING_STORAGE_KEY);
+    if (!raw) {
+      return {};
+    }
+
+    const parsed = JSON.parse(raw);
+    if (typeof parsed !== 'object' || parsed == null) {
+      return {};
+    }
+
+    return Object.entries(parsed).reduce<ColumnSizingState>((accumulator, [key, value]) => {
+      if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+        accumulator[key] = value;
+      }
+
+      return accumulator;
+    }, {});
+  } catch {
+    return {};
+  }
+}
 
 function OpportunityLink({
   href,
@@ -51,7 +102,7 @@ function OpportunityLink({
   label: string;
 }) {
   if (!href) {
-    return <span className="text-foreground">{label}</span>;
+    return <span className="block w-full truncate text-foreground">{label}</span>;
   }
 
   return (
@@ -59,7 +110,7 @@ function OpportunityLink({
       href={href}
       target="_blank"
       rel="noreferrer"
-      className="font-medium text-foreground transition-colors hover:text-accent-brand"
+      className="block w-full truncate font-medium text-foreground transition-colors hover:text-accent-brand"
     >
       {label}
     </a>
@@ -76,6 +127,14 @@ function parseCurrency(value: string): number {
   const normalized = value.replace(/[^0-9.-]/g, '');
   const parsed = Number(normalized);
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function renderCellContent(content: React.ReactNode): React.ReactNode {
+  if (typeof content === 'string' || typeof content === 'number') {
+    return <span className="block w-full truncate">{content}</span>;
+  }
+
+  return content;
 }
 
 function SortableHeader({
@@ -97,21 +156,23 @@ function SortableHeader({
       : sortState === 'desc'
         ? ArrowDownIcon
         : ArrowUpDownIcon;
+  const iconClassName =
+    sortState === false
+      ? 'opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100'
+      : 'opacity-100';
 
   return (
-    <Button
+    <button
       type="button"
-      variant="ghost"
-      size="sm"
       className={cn(
-        'h-auto justify-start gap-1.5 px-0 py-0 font-medium text-foreground/90 hover:bg-transparent hover:text-foreground',
+        'group flex h-full w-full items-center gap-1.5 bg-transparent px-0 py-0 text-left font-medium text-foreground/90 outline-none transition-colors hover:bg-transparent hover:text-foreground focus-visible:outline-none',
         className,
       )}
       onClick={() => column.toggleSorting(sortState === 'asc')}
     >
       <span>{title}</span>
-      <Icon className="size-3.5 text-muted-foreground" />
-    </Button>
+      <Icon className={cn('size-3.5 shrink-0 text-muted-foreground', iconClassName)} />
+    </button>
   );
 }
 
@@ -119,113 +180,124 @@ function getColumns(): Array<ColumnDef<ClosedWonOpportunityRow>> {
   return [
     {
       accessorKey: 'accountName',
+      ...COLUMN_WIDTHS.accountName,
       header: ({ column }) => <SortableHeader column={column} title="Account" />,
       cell: ({ row }) => (
         <OpportunityLink href={row.original.accountLink} label={row.original.accountName} />
       ),
       meta: {
-        headClassName: 'min-w-40',
-        cellClassName: 'min-w-40 text-foreground',
+        cellClassName: 'text-foreground',
       } satisfies ColumnMeta,
     },
     {
       accessorKey: 'opportunityName',
+      ...COLUMN_WIDTHS.opportunityName,
       header: ({ column }) => <SortableHeader column={column} title="Opportunity" />,
       cell: ({ row }) => (
         <OpportunityLink href={row.original.opportunityLink} label={row.original.opportunityName} />
       ),
       meta: {
-        headClassName: 'min-w-44',
-        cellClassName: 'min-w-44 text-foreground',
+        cellClassName: 'text-foreground',
       } satisfies ColumnMeta,
     },
     {
       accessorKey: 'closeDate',
+      ...COLUMN_WIDTHS.closeDate,
       header: ({ column }) => <SortableHeader column={column} title="Close Date" />,
-      meta: { headClassName: 'min-w-28', cellClassName: 'min-w-28' } satisfies ColumnMeta,
+      meta: {} satisfies ColumnMeta,
     },
     {
       accessorKey: 'createdDate',
+      ...COLUMN_WIDTHS.createdDate,
       header: ({ column }) => <SortableHeader column={column} title="Created Date" />,
-      meta: { headClassName: 'min-w-28', cellClassName: 'min-w-28' } satisfies ColumnMeta,
+      meta: {} satisfies ColumnMeta,
     },
     {
       accessorKey: 'division',
-      header: 'Division',
-      enableSorting: false,
-      meta: { headClassName: 'min-w-24', cellClassName: 'min-w-24' } satisfies ColumnMeta,
+      ...COLUMN_WIDTHS.division,
+      header: ({ column }) => <SortableHeader column={column} title="Division" />,
+      meta: {} satisfies ColumnMeta,
     },
     {
       accessorKey: 'type',
-      header: 'Type',
-      enableSorting: false,
-      meta: { headClassName: 'min-w-20', cellClassName: 'min-w-20' } satisfies ColumnMeta,
+      ...COLUMN_WIDTHS.type,
+      header: ({ column }) => <SortableHeader column={column} title="Type" />,
+      meta: {} satisfies ColumnMeta,
     },
     {
       accessorKey: 'productFamily',
-      header: 'Product',
-      enableSorting: false,
-      meta: { headClassName: 'min-w-28', cellClassName: 'min-w-28' } satisfies ColumnMeta,
+      ...COLUMN_WIDTHS.productFamily,
+      header: ({ column }) => <SortableHeader column={column} title="Product" />,
+      meta: {} satisfies ColumnMeta,
     },
     {
       accessorKey: 'bookingPlanOppType2025',
-      header: 'Booking Plan Opp Type 2025',
-      enableSorting: false,
-      meta: { headClassName: 'min-w-44', cellClassName: 'min-w-44' } satisfies ColumnMeta,
+      ...COLUMN_WIDTHS.bookingPlanOppType2025,
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Booking Plan Opp Type 2025" />
+      ),
+      meta: {} satisfies ColumnMeta,
     },
     {
       accessorKey: 'owner',
+      ...COLUMN_WIDTHS.owner,
       header: ({ column }) => <SortableHeader column={column} title="Owner" />,
-      meta: { headClassName: 'min-w-28', cellClassName: 'min-w-28' } satisfies ColumnMeta,
+      meta: {} satisfies ColumnMeta,
     },
     {
       accessorKey: 'sdr',
-      header: 'SDR',
-      enableSorting: false,
-      meta: { headClassName: 'min-w-20', cellClassName: 'min-w-20' } satisfies ColumnMeta,
+      ...COLUMN_WIDTHS.sdr,
+      header: ({ column }) => <SortableHeader column={column} title="SDR" />,
+      meta: {} satisfies ColumnMeta,
     },
     {
       accessorKey: 'oppRecordType',
-      header: 'POR / R360',
-      enableSorting: false,
-      meta: { headClassName: 'min-w-24', cellClassName: 'min-w-24' } satisfies ColumnMeta,
+      ...COLUMN_WIDTHS.oppRecordType,
+      header: ({ column }) => <SortableHeader column={column} title="POR / R360" />,
+      meta: {} satisfies ColumnMeta,
     },
     {
       accessorKey: 'age',
-      header: 'Age',
-      enableSorting: false,
-      meta: { headClassName: 'min-w-20', cellClassName: 'min-w-20' } satisfies ColumnMeta,
+      ...COLUMN_WIDTHS.age,
+      header: ({ column }) => <SortableHeader column={column} title="Age" />,
+      sortingFn: (rowA, rowB, columnId) =>
+        parseInteger(String(rowA.getValue(columnId))) - parseInteger(String(rowB.getValue(columnId))),
+      meta: {} satisfies ColumnMeta,
     },
     {
       accessorKey: 'se',
-      header: 'SE',
-      enableSorting: false,
-      meta: { headClassName: 'min-w-20', cellClassName: 'min-w-20' } satisfies ColumnMeta,
+      ...COLUMN_WIDTHS.se,
+      header: ({ column }) => <SortableHeader column={column} title="SE" />,
+      meta: {} satisfies ColumnMeta,
     },
     {
       accessorKey: 'quarter',
+      ...COLUMN_WIDTHS.quarter,
       header: ({ column }) => <SortableHeader column={column} title="Quarter" />,
-      meta: { headClassName: 'min-w-24', cellClassName: 'min-w-24' } satisfies ColumnMeta,
+      meta: {} satisfies ColumnMeta,
     },
     {
       accessorKey: 'contractStartDate',
+      ...COLUMN_WIDTHS.contractStartDate,
       header: ({ column }) => <SortableHeader column={column} title="Contract Start Date" />,
-      meta: { headClassName: 'min-w-36', cellClassName: 'min-w-36' } satisfies ColumnMeta,
+      meta: {} satisfies ColumnMeta,
     },
     {
       accessorKey: 'users',
+      ...COLUMN_WIDTHS.users,
       header: ({ column }) => (
         <SortableHeader column={column} title="Users" className="justify-end" />
       ),
       sortingFn: (rowA, rowB, columnId) =>
         parseInteger(String(rowA.getValue(columnId))) - parseInteger(String(rowB.getValue(columnId))),
       meta: {
-        headClassName: 'min-w-20 text-right',
-        cellClassName: 'min-w-20 text-right tabular-nums text-foreground',
+        headClassName: 'text-right',
+        cellClassName: 'text-right tabular-nums text-foreground',
       } satisfies ColumnMeta,
     },
     {
       accessorKey: 'acv',
+      ...COLUMN_WIDTHS.acv,
       header: ({ column }) => (
         <SortableHeader column={column} title="ACV $" className="justify-end" />
       ),
@@ -233,11 +305,19 @@ function getColumns(): Array<ColumnDef<ClosedWonOpportunityRow>> {
         parseCurrency(String(rowA.getValue(columnId))) -
         parseCurrency(String(rowB.getValue(columnId))),
       meta: {
-        headClassName: 'min-w-24 text-right',
-        cellClassName: 'min-w-24 text-right font-medium tabular-nums text-foreground',
+        headClassName: 'text-right',
+        cellClassName: 'text-right font-medium tabular-nums text-foreground',
       } satisfies ColumnMeta,
     },
   ];
+}
+
+function getColumnWidthStyle(size: number): React.CSSProperties {
+  return {
+    width: `${size}px`,
+    minWidth: `${size}px`,
+    maxWidth: `${size}px`,
+  };
 }
 
 export function ClosedWonOpportunitiesTable({
@@ -251,13 +331,39 @@ export function ClosedWonOpportunitiesTable({
     pageIndex: 0,
     pageSize: DEFAULT_PAGE_SIZE,
   });
+  const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
+  const [hasLoadedColumnSizing, setHasLoadedColumnSizing] = React.useState(false);
+
+  React.useEffect(() => {
+    setColumnSizing(readStoredColumnSizing());
+    setHasLoadedColumnSizing(true);
+  }, []);
+
+  React.useEffect(() => {
+    if (!hasLoadedColumnSizing || typeof window === 'undefined') {
+      return;
+    }
+
+    window.localStorage.setItem(
+      COLUMN_SIZING_STORAGE_KEY,
+      JSON.stringify(columnSizing),
+    );
+  }, [columnSizing, hasLoadedColumnSizing]);
 
   const table = useReactTable({
     data: payload.rows,
     columns,
-    state: { sorting, pagination },
+    defaultColumn: {
+      minSize: 96,
+      size: 140,
+      maxSize: 360,
+    },
+    state: { sorting, pagination, columnSizing },
     onSortingChange: setSorting,
     onPaginationChange: setPagination,
+    onColumnSizingChange: (updater) =>
+      setColumnSizing((current) => functionalUpdate(updater, current)),
+    columnResizeMode: 'onChange',
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -294,7 +400,10 @@ export function ClosedWonOpportunitiesTable({
         ) : (
           <>
             <div className="overflow-hidden rounded-md border border-border/70 bg-background/60">
-              <Table>
+              <Table
+                className="table-fixed"
+                style={{ width: table.getTotalSize(), minWidth: '100%' }}
+              >
                 <TableHeader className="[&_tr]:border-border/80">
                   {table.getHeaderGroups().map((headerGroup) => (
                     <TableRow key={headerGroup.id} className="bg-muted/30 hover:bg-muted/30">
@@ -305,13 +414,45 @@ export function ClosedWonOpportunitiesTable({
                           <TableHead
                             key={header.id}
                             className={cn(
-                              'h-11 border-border/80 text-xs font-semibold tracking-wide text-foreground/90',
+                              'relative h-11 overflow-hidden border-border/80 text-xs font-semibold tracking-wide text-foreground/90',
                               meta?.headClassName,
                             )}
+                            style={getColumnWidthStyle(header.getSize())}
                           >
-                            {header.isPlaceholder
-                              ? null
-                              : flexRender(header.column.columnDef.header, header.getContext())}
+                            {header.isPlaceholder ? null : (
+                              <div className="flex h-full items-center pr-3">
+                                <div className="min-w-0 flex-1 overflow-hidden">
+                                  {flexRender(
+                                    header.column.columnDef.header,
+                                    header.getContext(),
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                            {header.column.getCanResize() ? (
+                              <button
+                                type="button"
+                                aria-label={`Resize ${header.column.id} column`}
+                                data-column-resizer={header.column.id}
+                                className={cn(
+                                  'absolute top-0 right-0 h-full w-3 cursor-col-resize touch-none select-none border-0 bg-transparent p-0 outline-none',
+                                  header.column.getIsResizing()
+                                    ? 'bg-transparent'
+                                    : 'hover:bg-transparent',
+                                )}
+                                onClick={(event) => event.preventDefault()}
+                                onMouseDown={header.getResizeHandler()}
+                                onTouchStart={header.getResizeHandler()}
+                              >
+                                <span
+                                  aria-hidden="true"
+                                  className={cn(
+                                    'absolute top-1/2 right-1 h-6 w-px -translate-y-1/2 bg-border/80 transition-colors',
+                                    header.column.getIsResizing() && 'bg-border',
+                                  )}
+                                />
+                              </button>
+                            ) : null}
                           </TableHead>
                         );
                       })}
@@ -327,9 +468,14 @@ export function ClosedWonOpportunitiesTable({
                         return (
                           <TableCell
                             key={cell.id}
-                            className={cn('py-3 align-top', meta?.cellClassName)}
+                            className={cn('min-w-0 overflow-hidden py-3 align-top', meta?.cellClassName)}
+                            style={getColumnWidthStyle(cell.column.getSize())}
                           >
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            <div className="min-w-0 w-full overflow-hidden text-ellipsis whitespace-nowrap">
+                              {renderCellContent(
+                                flexRender(cell.column.columnDef.cell, cell.getContext()),
+                              )}
+                            </div>
                           </TableCell>
                         );
                       })}
