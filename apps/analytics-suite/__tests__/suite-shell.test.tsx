@@ -1,8 +1,12 @@
 import * as React from 'react';
+import fs from 'node:fs';
+import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import HomePage from '@/app/page';
+
+const appRoot = path.resolve(__dirname, '..');
 
 describe('analytics suite homepage registry', () => {
   it('renders a centered workflow table without shell framing', () => {
@@ -41,6 +45,16 @@ describe('analytics suite homepage registry', () => {
     );
     expect(markup).not.toContain('href="/dashboards/pipeline-health"');
     expect(markup).not.toContain('href="/dashboards/revenue-velocity"');
+  });
+
+  it('keeps internal dashboard navigation in the same tab', () => {
+    const source = fs.readFileSync(
+      path.join(appRoot, 'components/homepage/dashboard-modules-table.tsx'),
+      'utf8',
+    );
+
+    expect(source).not.toContain('href={row.original.href}\n          target="_blank"');
+    expect(source).not.toContain('<Link href={row.href} target="_blank" rel="noreferrer" />');
   });
 
   it('removes the stale shell card-grid copy', () => {

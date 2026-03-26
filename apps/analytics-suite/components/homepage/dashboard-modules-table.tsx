@@ -93,11 +93,7 @@ function DashboardRowActions({ row }: { row: HomepageModuleRow }) {
             disabled={!row.href}
             nativeButton={false}
             render={
-              row.href ? (
-                <Link href={row.href} target="_blank" rel="noreferrer" />
-              ) : (
-                <div />
-              )
+              row.href ? <Link href={row.href} /> : <div />
             }
           >
             <ExternalLink className="size-4" />
@@ -136,8 +132,6 @@ const columns: ColumnDef<HomepageModuleRow>[] = [
       row.original.href ? (
         <Link
           href={row.original.href}
-          target="_blank"
-          rel="noreferrer"
           className="cursor-pointer text-[14px] font-semibold tracking-[-0.01em] text-white transition-colors hover:text-white/88 hover:underline"
         >
           {row.original.dashboardName}
