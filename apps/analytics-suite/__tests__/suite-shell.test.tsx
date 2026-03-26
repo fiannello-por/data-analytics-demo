@@ -12,16 +12,21 @@ describe('analytics suite homepage registry', () => {
     expect(markup).toContain('<table');
     expect(markup).toContain('Dashboard name');
     expect(markup).toContain('Owner');
+    expect(markup).toContain('Author');
     expect(markup).toContain('Updated at');
-    expect(markup).toContain('Changelog');
     expect(markup).toContain('Status');
     expect(markup).toContain('Open actions for Sales Performance');
     expect(markup).toContain('Open actions for Pipeline Health');
     expect(markup).toContain('Revenue Velocity');
+    expect(markup).toContain('RevOps');
+    expect(markup).toContain('Facundo Iannello');
     expect(markup).toContain('Open actions for Revenue Velocity');
     expect(markup).toContain('Rows per page');
     expect(markup).toContain('Page 1 of 2');
-    expect(markup).toContain('Pending');
+    expect(markup).toContain(
+      'href="https://data-analytics-demo-orcin.vercel.app/?dashboard=sales-performance"',
+    );
+    expect(markup).toContain('href="/dashboards/sales-performance"');
     expect(markup).not.toContain('RevOps Analytics Suite');
   });
 
@@ -29,7 +34,7 @@ describe('analytics suite homepage registry', () => {
     const markup = renderToStaticMarkup(React.createElement(HomePage));
 
     expect(markup).toMatch(
-      /<tr[^>]*>[\s\S]*?href="\/dashboards\/sales-performance\?view=v2"[\s\S]*?Sales Performance[\s\S]*?WIP[\s\S]*?<\/tr>/,
+      /<tr[^>]*>[\s\S]*?href="\/dashboards\/sales-performance"[\s\S]*?Sales Performance[\s\S]*?Live[\s\S]*?<\/tr>/,
     );
     expect(markup).toMatch(
       /<tr[^>]*>[\s\S]*?Pipeline Health[\s\S]*?WIP[\s\S]*?<\/tr>/,
