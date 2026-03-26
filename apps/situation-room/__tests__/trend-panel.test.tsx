@@ -29,6 +29,7 @@ describe('TrendPanel', () => {
   beforeEach(() => {
     container = document.createElement('div');
     document.body.appendChild(container);
+    vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
     root = createRoot(container);
   });
 
@@ -36,12 +37,20 @@ describe('TrendPanel', () => {
     await act(async () => {
       root.unmount();
     });
+    vi.unstubAllGlobals();
     container.remove();
   });
 
   it('renders the trend subsection with semantic x-axis context', async () => {
     await act(async () => {
-      root.render(React.createElement(TrendPanel, { trend, isVisible: true }));
+      root.render(
+        React.createElement(TrendPanel, {
+          trend,
+          category: trend.category,
+          tileId: trend.tileId,
+          isVisible: true,
+        }),
+      );
     });
 
     expect(container.textContent).toContain('SQL');
@@ -54,15 +63,45 @@ describe('TrendPanel', () => {
     expect(
       container.querySelector('[data-testid="trend-chart"]'),
     ).not.toBeNull();
+
+    expect(container.firstElementChild?.getAttribute('class')).toContain(
+      'w-full',
+    );
+    expect(container.firstElementChild?.getAttribute('class')).toContain(
+      'flex-1',
+    );
+    expect(container.firstElementChild?.getAttribute('class')).toContain(
+      'min-w-0',
+    );
+    expect(container.firstElementChild?.getAttribute('class')).not.toContain(
+      'justify-end',
+    );
+    expect(container.innerHTML).toContain('border-t');
+    expect(
+      container
+        .querySelector('[data-testid="trend-chart"]')
+        ?.parentElement?.getAttribute('class'),
+    ).toContain('min-h-[18rem]');
+    expect(
+      container
+        .querySelector('[data-testid="trend-chart"]')
+        ?.parentElement?.getAttribute('class'),
+    ).toContain('flex-1');
   });
 
-  it('renders an instructional empty state before a metric is selected', async () => {
+  it('renders nothing when the shared layout owns the empty state', async () => {
     await act(async () => {
-      root.render(React.createElement(TrendPanel, { trend, isVisible: false }));
+      root.render(
+        React.createElement(TrendPanel, {
+          trend,
+          category: trend.category,
+          tileId: trend.tileId,
+          isVisible: false,
+        }),
+      );
     });
 
-    expect(container.textContent).toContain('See the line chart');
-    expect(container.textContent).toContain('Click any metric in the table');
+    expect(container.textContent).toBe('');
     expect(container.querySelector('[data-testid="trend-chart"]')).toBeNull();
   });
 });

@@ -143,4 +143,113 @@ describe('dashboard v2 page', { timeout: 20000 }, () => {
       }),
     );
   });
+
+  it('passes pilot spec bindings to the shell when rendering a detail tab', async () => {
+    const detailSnapshot = {
+      category: 'New Logo',
+      currentWindowLabel: 'Jan 1, 2026 - Mar 23, 2026',
+      previousWindowLabel: 'Jan 1, 2025 - Mar 23, 2025',
+      lastRefreshedAt: '2026-03-24T00:00:00.000Z',
+      rows: [
+        {
+          tileId: 'new_logo_bookings_amount',
+          label: 'Bookings $',
+          sortOrder: 1,
+          formatType: 'currency',
+          currentValue: '$100',
+          previousValue: '$80',
+          pctChange: '+25%',
+        },
+      ],
+      tileTimings: [],
+      specBindings: {
+        mainMetricsSnapshot: {
+          status: 'ready',
+          rows: [
+            {
+              tileId: 'new_logo_bookings_amount',
+              label: 'Bookings $',
+              currentValue: '$100',
+              previousValue: '$80',
+              pctChange: '+25%',
+            },
+          ],
+          traces: {},
+        },
+      },
+    } as const;
+
+    const detailTrend = {
+      category: 'New Logo',
+      tileId: 'new_logo_bookings_amount',
+      label: 'Bookings $',
+      grain: 'weekly',
+      xAxisFieldLabel: 'Close Date',
+      currentWindowLabel: 'Jan 1, 2026 - Mar 23, 2026',
+      previousWindowLabel: 'Jan 1, 2025 - Mar 23, 2025',
+      points: [],
+      specBindings: {
+        selectedMetricTrend: {
+          status: 'empty',
+          xAxisLabel: 'Close Date',
+          rows: [],
+        },
+      },
+    } as const;
+
+    getDashboardV2CategorySnapshotMock.mockResolvedValueOnce({
+      data: detailSnapshot,
+      meta: { source: 'lightdash', queryCount: 1, bytesProcessed: 256 },
+    });
+    getDashboardV2TileTrendMock.mockResolvedValueOnce({
+      data: detailTrend,
+      meta: { source: 'lightdash', queryCount: 2, bytesProcessed: 512 },
+    });
+    getDashboardV2ClosedWonOpportunitiesMock.mockResolvedValueOnce({
+      data: {
+        category: 'New Logo',
+        currentWindowLabel: 'Jan 1, 2026 - Mar 23, 2026',
+        lastRefreshedAt: '2026-03-24T00:00:00.000Z',
+        rows: [],
+      },
+      meta: { source: 'lightdash', queryCount: 1, bytesProcessed: 128 },
+    });
+    getDashboardV2FilterDictionaryMock.mockImplementation(
+      async (key: string) => ({
+        data: {
+          filterKey: key,
+          options: [{ value: 'Enterprise', label: 'Enterprise', sortOrder: 1 }],
+        },
+        meta: { source: 'lightdash', queryCount: 1, bytesProcessed: 10 },
+      }),
+    );
+
+    const { default: DashboardPageV2 } = await import('@/app/v2/page');
+
+    renderToStaticMarkup(
+      await DashboardPageV2({
+        searchParams: Promise.resolve({ category: 'New Logo' }),
+      }),
+    );
+
+    expect(dashboardShellMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        apiBasePath: '/api/dashboard-v2',
+        initialSnapshot: expect.objectContaining({
+          specBindings: expect.objectContaining({
+            mainMetricsSnapshot: expect.objectContaining({
+              status: 'ready',
+            }),
+          }),
+        }),
+        initialTrend: expect.objectContaining({
+          specBindings: expect.objectContaining({
+            selectedMetricTrend: expect.objectContaining({
+              xAxisLabel: 'Close Date',
+            }),
+          }),
+        }),
+      }),
+    );
+  });
 });

@@ -46,11 +46,7 @@ import {
 } from '@/components/dashboard/closed-won-opportunities-table';
 import { OverviewSkeleton } from '@/components/dashboard/overview-skeleton';
 import { OverviewTab } from '@/components/dashboard/overview-tab';
-import {
-  TileTable,
-  TileTableSkeleton,
-} from '@/components/dashboard/tile-table';
-import { TrendPanel } from '@/components/dashboard/trend-panel';
+import { MainMetricsSpecRenderer } from '@/components/dashboard/spec-dashboard-renderer';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { buildOverviewBoard } from '@/lib/dashboard/overview-model';
 
@@ -591,42 +587,32 @@ export function DashboardShell({
                     Current period vs previous-year equivalent.
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(22rem,0.95fr)]">
-                  <div className="min-w-0">
-                    {isSnapshotLoading || !activeSnapshot ? (
-                      <TileTableSkeleton category={detailCategory} />
-                    ) : (
-                      <TileTable
-                        snapshot={activeSnapshot}
-                        selectedTileId={
-                          showTrendPanel ? state.selectedTileId : ''
-                        }
-                        onRowSelect={handleTileSelect}
-                      />
-                    )}
-                  </div>
-                  <div className="flex min-w-0 xl:border-l xl:border-border/45 xl:pl-6">
-                    <TrendPanel
-                      trend={showTrendPanel ? trend : null}
-                      isLoading={showTrendPanel ? isTrendLoading : false}
-                      isVisible={showTrendPanel}
-                      displayLabel={
-                        showTrendPanel && isTrendLoading
-                          ? displayTileLabel
-                          : undefined
-                      }
-                      displayCurrentWindowLabel={
-                        showTrendPanel && isTrendLoading
-                          ? displayWindowLabel
-                          : undefined
-                      }
-                      displayPreviousWindowLabel={
-                        showTrendPanel && isTrendLoading
-                          ? displayPreviousWindowLabel
-                          : undefined
-                      }
-                    />
-                  </div>
+                <CardContent>
+                  <MainMetricsSpecRenderer
+                    category={detailCategory}
+                    snapshot={activeSnapshot}
+                    trend={showTrendPanel ? trend : null}
+                    selectedTileId={state.selectedTileId}
+                    isSnapshotLoading={isSnapshotLoading}
+                    isTrendLoading={showTrendPanel ? isTrendLoading : false}
+                    showTrend={showTrendPanel}
+                    onRowSelect={handleTileSelect}
+                    displayTrendLabel={
+                      showTrendPanel && isTrendLoading
+                        ? displayTileLabel
+                        : undefined
+                    }
+                    displayCurrentWindowLabel={
+                      showTrendPanel && isTrendLoading
+                        ? displayWindowLabel
+                        : undefined
+                    }
+                    displayPreviousWindowLabel={
+                      showTrendPanel && isTrendLoading
+                        ? displayPreviousWindowLabel
+                        : undefined
+                    }
+                  />
                 </CardContent>
               </Card>
               {isClosedWonLoading || !closedWonOpportunities ? (

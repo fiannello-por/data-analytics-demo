@@ -1,3 +1,4 @@
+import { BigQueryDate, BigQueryDatetime, BigQueryTimestamp } from '@google-cloud/bigquery';
 import { describe, expect, it, vi, afterEach } from 'vitest';
 
 import type {
@@ -150,6 +151,57 @@ describe('Lightdash semantic runtime', () => {
     expect(result.rows).toEqual([
       { division: { raw: 'Enterprise', formatted: 'Enterprise' } },
       { division: { raw: 'SMB', formatted: 'SMB' } },
+    ]);
+  });
+
+  it('normalizes BigQuery temporal wrapper values into formatted strings', async () => {
+    const provider: SemanticProvider = {
+      compileQuery: vi.fn(async () => ({
+        sql: 'select dates from demo',
+        aliases: {
+          sales_dashboard_v2_closed_won_close_date: 'close_date',
+          sales_dashboard_v2_closed_won_created_date: 'created_date',
+          sales_dashboard_v2_closed_won_contract_start_date:
+            'contract_start_date',
+        },
+        model: 'sales_dashboard_v2_closed_won',
+      })),
+    };
+    const executeQuery = vi.fn(async () => ({
+      rows: [
+        {
+          sales_dashboard_v2_closed_won_close_date: new BigQueryDate('2026-03-26'),
+          sales_dashboard_v2_closed_won_created_date: new BigQueryDatetime(
+            '2026-03-01T14:15:16',
+          ),
+          sales_dashboard_v2_closed_won_contract_start_date:
+            new BigQueryTimestamp('2026-04-01T00:00:00Z'),
+        },
+      ],
+    })) as unknown as (query: { sql: string }) => Promise<QueryExecutionResult>;
+    const runtime = createSemanticRuntime({ provider, executeQuery });
+
+    const result = await runtime.runQuery({
+      model: 'sales_dashboard_v2_closed_won',
+      dimensions: ['close_date', 'created_date', 'contract_start_date'],
+      limit: 10,
+    });
+
+    expect(result.rows).toEqual([
+      {
+        close_date: {
+          raw: expect.any(BigQueryDate),
+          formatted: '2026-03-26',
+        },
+        created_date: {
+          raw: expect.any(BigQueryDatetime),
+          formatted: '2026-03-01T14:15:16',
+        },
+        contract_start_date: {
+          raw: expect.any(BigQueryTimestamp),
+          formatted: '2026-04-01T00:00:00.000Z',
+        },
+      },
     ]);
   });
 });

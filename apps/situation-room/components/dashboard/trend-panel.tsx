@@ -2,7 +2,11 @@
 
 import * as React from 'react';
 import { TileBackendSheet } from '@/components/dashboard/tile-backend-sheet';
-import type { TileTrendPayload } from '@/lib/dashboard/contracts';
+import type {
+  TileBackendTrace,
+  TileTrendPayload,
+} from '@/lib/dashboard/contracts';
+import type { SelectedMetricTrendBindingData } from '@/lib/dashboard-v2/spec-data-shapes';
 import { CardDescription, CardTitle } from '@/components/ui/card';
 import { TrendChart } from '@/components/trend-chart';
 import { formatTrendRangeLabel } from '@/lib/trend-chart-model';
@@ -10,6 +14,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export function TrendPanel({
   trend,
+  binding,
+  category,
+  tileId,
+  trace,
+  grain = 'weekly',
+  chartContent,
   isLoading,
   isVisible = true,
   displayLabel,
@@ -17,6 +27,12 @@ export function TrendPanel({
   displayPreviousWindowLabel,
 }: {
   trend: TileTrendPayload | null;
+  binding?: SelectedMetricTrendBindingData | null;
+  category: TileTrendPayload['category'];
+  tileId: string;
+  trace?: TileBackendTrace;
+  grain?: TileTrendPayload['grain'];
+  chartContent?: React.ReactNode;
   isLoading?: boolean;
   isVisible?: boolean;
   displayLabel?: string;
@@ -32,66 +48,81 @@ export function TrendPanel({
     'Previous period';
 
   if (!isVisible) {
-    return (
-      <section className="flex h-full min-h-[20rem] flex-1 flex-col justify-center rounded-lg border border-dashed border-border/60 bg-muted/[0.04] px-6 py-5 text-center">
-        <div className="mx-auto max-w-sm space-y-2">
-          <CardTitle className="text-base">See the line chart</CardTitle>
-          <CardDescription className="text-sm leading-6">
-            Click any metric in the table to inspect its evolution over time and
-            compare the current period with the previous year.
-          </CardDescription>
-        </div>
-      </section>
-    );
+    return null;
   }
 
+  const trendChartPayload =
+    binding != null
+      ? {
+          category,
+          tileId,
+          label,
+          grain,
+          xAxisFieldLabel: binding.xAxisLabel,
+          currentWindowLabel,
+          previousWindowLabel,
+          points: binding.rows.map((row) => ({
+            bucketKey: row.bucketKey,
+            bucketLabel: row.bucketLabel,
+            currentValue: row.currentValue,
+            previousValue: row.previousValue,
+          })),
+          backendTrace: trace,
+        }
+      : trend;
+
   return (
-    <section className="group flex h-full min-h-[20rem] flex-col justify-end gap-4">
-      <div className="flex items-start justify-between gap-4">
+    <section className="group flex h-full min-h-[20rem] w-full min-w-0 flex-1 flex-col">
+      <div className="shrink-0 space-y-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-1">
+            <CardTitle className="text-base">{label}</CardTitle>
+            <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+              Weekly trend
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {trace ?? trend?.backendTrace ? (
+              <TileBackendSheet
+                title={label}
+                trace={trace ?? trend?.backendTrace}
+              />
+            ) : null}
+            {isLoading ? (
+              <span className="pt-0.5 text-xs text-muted-foreground">
+                Refreshing…
+              </span>
+            ) : null}
+          </div>
+        </div>
+
         <div className="space-y-1">
-          <CardTitle className="text-base">{label}</CardTitle>
-          <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-            Weekly trend
+          <CardDescription className="text-xs leading-5 text-foreground/80">
+            {formatTrendRangeLabel(currentWindowLabel)}
+          </CardDescription>
+          <p className="text-xs leading-5 text-muted-foreground">
+            Compared with {formatTrendRangeLabel(previousWindowLabel)}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          {trend ? (
-            <TileBackendSheet title={label} trace={trend.backendTrace} />
-          ) : null}
-          {isLoading ? (
-            <span className="pt-0.5 text-xs text-muted-foreground">
-              Refreshing…
-            </span>
-          ) : null}
-        </div>
-      </div>
-
-      <div className="space-y-1">
-        <CardDescription className="text-xs leading-5 text-foreground/80">
-          {formatTrendRangeLabel(currentWindowLabel)}
-        </CardDescription>
-        <p className="text-xs leading-5 text-muted-foreground">
-          Compared with {formatTrendRangeLabel(previousWindowLabel)}
-        </p>
       </div>
 
       {isLoading ? (
-        <div className="mt-6 flex aspect-[1.75/1] min-h-[16rem] w-full max-h-[min(24rem,42vh)] flex-col gap-3">
+        <div className="mt-6 flex min-h-[18rem] w-full min-w-0 flex-1 flex-col border-t border-border/35 pt-5">
           <div className="flex gap-4">
             <Skeleton className="h-3 w-24" />
             <Skeleton className="h-3 w-24" />
           </div>
-          <Skeleton className="min-h-0 flex-1 rounded-lg" />
+          <Skeleton className="mt-4 min-h-[16rem] flex-1 rounded-lg" />
         </div>
-      ) : trend ? (
-        <div className="mt-6">
-          <TrendChart trend={trend} />
+      ) : chartContent ? (
+        <div className="mt-6 flex min-h-[18rem] w-full min-w-0 flex-1 flex-col border-t border-border/35 pt-5">
+          {chartContent}
         </div>
-      ) : (
-        <div className="mt-6 flex aspect-[1.75/1] min-h-[16rem] w-full max-h-[min(24rem,42vh)] items-center justify-center rounded-lg border border-dashed border-border/60 text-sm text-muted-foreground">
-          Select a metric to load its trend.
+      ) : trendChartPayload ? (
+        <div className="mt-6 flex min-h-[18rem] w-full min-w-0 flex-1 flex-col border-t border-border/35 pt-5">
+          <TrendChart trend={trendChartPayload} />
         </div>
-      )}
+      ) : null}
     </section>
   );
 }

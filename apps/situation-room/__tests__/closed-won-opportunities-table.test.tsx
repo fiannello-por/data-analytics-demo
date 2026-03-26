@@ -3,8 +3,10 @@ import * as React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { validateTileSpec } from '@por/dashboard-spec';
 import { ClosedWonOpportunitiesTable } from '@/components/dashboard/closed-won-opportunities-table';
 import type { ClosedWonOpportunitiesPayload } from '@/lib/dashboard/contracts';
+import { closedWonOpportunitiesTableSpec } from '@/lib/dashboard-v2/specs/closed-won-table';
 
 function buildPayload(): ClosedWonOpportunitiesPayload {
   return {
@@ -102,5 +104,15 @@ describe('ClosedWonOpportunitiesTable', { timeout: 10000 }, () => {
 
     expect(container.textContent).toContain('11-11 of 11');
     expect(container.textContent).toContain('Account 01');
+  });
+
+  it('builds a valid shared spec for the closed won table', () => {
+    const validation = validateTileSpec(closedWonOpportunitiesTableSpec);
+
+    expect(validation.ok).toBe(true);
+    expect(closedWonOpportunitiesTableSpec.kind).toBe('table');
+    expect(closedWonOpportunitiesTableSpec.visualization.columns).toHaveLength(
+      17,
+    );
   });
 });

@@ -11,6 +11,7 @@ import type {
 import type { ProbeExecutionOptions } from '@/lib/probe-cache-mode';
 import { type DashboardLoaderResult } from '@/lib/server/dashboard-query-runtime';
 import { buildTrendQuery } from '@/lib/dashboard-v2/semantic-registry';
+import { buildSelectedMetricTrendBinding } from '@/lib/dashboard-v2/spec-builders';
 import {
   getDashboardV2Runtime,
   normalizeDashboardV2ExecutionOptions,
@@ -114,30 +115,34 @@ export async function getDashboardV2TileTrend(
         semanticTile.dateDimension,
       )) ?? semanticTile.dateDimension;
 
+    const data = {
+      category: input.activeCategory,
+      tileId: tile.tileId,
+      label: tile.label,
+      grain: input.trendGrain,
+      xAxisFieldLabel,
+      currentWindowLabel: formatDateRange(input.dateRange),
+      previousWindowLabel: formatDateRange(input.previousDateRange),
+      points: Array.from({ length }).map((_, index) => {
+        const currentRow = currentRows[index];
+        const previousRow = previousRows[index];
+
+        return {
+          bucketKey: String(index),
+          bucketLabel: getSemanticString(currentRow ?? previousRow, bucketField),
+          currentValue: getSemanticNumber(currentRow, measureField),
+          previousValue: getSemanticNumber(previousRow, measureField),
+        };
+      }),
+      backendTrace,
+    };
+
     return {
       data: {
-        category: input.activeCategory,
-        tileId: tile.tileId,
-        label: tile.label,
-        grain: input.trendGrain,
-        xAxisFieldLabel,
-        currentWindowLabel: formatDateRange(input.dateRange),
-        previousWindowLabel: formatDateRange(input.previousDateRange),
-        points: Array.from({ length }).map((_, index) => {
-          const currentRow = currentRows[index];
-          const previousRow = previousRows[index];
-
-          return {
-            bucketKey: String(index),
-            bucketLabel: getSemanticString(
-              currentRow ?? previousRow,
-              bucketField,
-            ),
-            currentValue: getSemanticNumber(currentRow, measureField),
-            previousValue: getSemanticNumber(previousRow, measureField),
-          };
-        }),
-        backendTrace,
+        ...data,
+        specBindings: {
+          selectedMetricTrend: buildSelectedMetricTrendBinding(data),
+        },
       },
       meta: {
         source: 'lightdash' as const,
@@ -159,6 +164,7 @@ export async function getDashboardV2TileTrend(
     [
       'v2-trace-links-3',
       'v2-trend-axis-label-1',
+      'v2-temporal-format-1',
       'dashboard-v2-tile-trend',
       serializeDashboardStateKey({
         activeCategory: input.activeCategory,

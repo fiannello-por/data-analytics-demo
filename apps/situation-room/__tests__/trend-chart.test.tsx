@@ -136,7 +136,25 @@ describe('TrendChart', () => {
 
     expect(container.textContent).toContain('Current period');
     expect(container.textContent).toContain('Previous year');
-    expect(container.textContent).toContain('Close Date');
+    expect(container.textContent).not.toContain('Close Date');
+    expect(container.firstElementChild?.getAttribute('class')).toContain(
+      'w-full',
+    );
+    expect(container.firstElementChild?.getAttribute('class')).toContain(
+      'h-full',
+    );
+    expect(container.firstElementChild?.getAttribute('class')).toContain(
+      'flex-1',
+    );
+    expect(container.firstElementChild?.getAttribute('class')).not.toContain(
+      'aspect-[1.52/1]',
+    );
+    expect(
+      container.querySelector('[data-testid="chart-container"]')?.parentElement?.getAttribute('class'),
+    ).toContain('flex-1');
+    expect(
+      container.querySelector('[data-testid="chart-container"]')?.parentElement?.getAttribute('class'),
+    ).toContain('min-h-[18rem]');
 
     const currentLine = lineProps.find((line) => line.dataKey === 'current');
     const previousLine = lineProps.find((line) => line.dataKey === 'previous');
@@ -161,6 +179,12 @@ describe('TrendChart', () => {
     ).toBe('Jan 5');
     expect(xAxis?.props.tickLine).toEqual(
       expect.objectContaining({ stroke: 'var(--border)', strokeWidth: 1 }),
+    );
+    expect(xAxis?.props.label).toEqual(
+      expect.objectContaining({
+        value: 'Close Date',
+        position: 'insideBottom',
+      }),
     );
     expect(xAxis?.props.tickSize).toBe(6);
     expect(xAxis?.props.axisLine).toEqual(
@@ -202,7 +226,8 @@ describe('TrendChart', () => {
       container
         .querySelector('[data-testid="chart-container"]')
         ?.getAttribute('class'),
-    ).toContain('flex-1');
+    ).toContain('h-full');
+    expect(chartContainerProps.at(-1)?.className).toContain('min-w-0');
     expect(chartContainerProps.at(-1)?.id).toBe(
       'trend-chart-new-logo-new-logo-bookings-amount',
     );
