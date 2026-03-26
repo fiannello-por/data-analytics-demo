@@ -1,5 +1,6 @@
-import * as React from 'react';
+'use client';
 
+import * as React from 'react';
 import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -36,7 +37,7 @@ function PaginationItem({
   className,
   ...props
 }: React.ComponentProps<'li'>) {
-  return <li data-slot="pagination-item" className={cn('', className)} {...props} />;
+  return <li data-slot="pagination-item" className={cn(className)} {...props} />;
 }
 
 type PaginationLinkProps = React.ComponentProps<typeof Button> & {
