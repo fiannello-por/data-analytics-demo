@@ -67,26 +67,8 @@ export async function getDashboardV2TileTrend(
       runtime.runQuery(currentRequest),
       runtime.runQuery(previousRequest),
     ]);
-    const bucketField =
-      Object.keys(current.rows[0] ?? {}).find((field) =>
-        field.endsWith('_week'),
-      ) ??
-      Object.keys(previous.rows[0] ?? {}).find((field) =>
-        field.endsWith('_week'),
-      );
-    const measureField =
-      Object.keys(current.rows[0] ?? {}).find(
-        (field) => field !== bucketField,
-      ) ??
-      Object.keys(previous.rows[0] ?? {}).find(
-        (field) => field !== bucketField,
-      );
-
-    if (!bucketField || !measureField) {
-      throw new Error(
-        `Trend query for "${input.selectedTileId}" did not return the expected fields.`,
-      );
-    }
+    const bucketField = `${semanticTile.dateDimension}_week`;
+    const measureField = semanticTile.measure;
 
     const currentRows = current.rows;
     const previousRows = previous.rows;
