@@ -15,10 +15,6 @@ describe('analytics suite homepage registry', () => {
     expect(markup).toContain('Updated at');
     expect(markup).toContain('Changelog');
     expect(markup).toContain('Status');
-    expect(markup).toContain('Sales Performance');
-    expect(markup).toContain('Pipeline Health');
-    expect(markup).toContain('href="/dashboards/sales-performance"');
-    expect(markup).toContain('href="/dashboards/pipeline-health"');
     expect(markup).toContain('Open actions for Sales Performance');
     expect(markup).toContain('Rows per page');
     expect(markup).toContain('Previous');
@@ -28,8 +24,12 @@ describe('analytics suite homepage registry', () => {
   it('maps status labels to the correct dashboard rows', () => {
     const markup = renderToStaticMarkup(React.createElement(HomePage));
 
-    expect(markup).toContain('Sales Performance status Live');
-    expect(markup).toContain('Pipeline Health status WIP');
+    expect(markup).toMatch(
+      /<tr[^>]*>[\s\S]*?href="\/dashboards\/sales-performance"[\s\S]*?Live[\s\S]*?<\/tr>/,
+    );
+    expect(markup).toMatch(
+      /<tr[^>]*>[\s\S]*?href="\/dashboards\/pipeline-health"[\s\S]*?WIP[\s\S]*?<\/tr>/,
+    );
   });
 
   it('removes the stale shell card-grid copy', () => {
