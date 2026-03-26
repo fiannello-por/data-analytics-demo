@@ -16,6 +16,7 @@ describe('analytics suite homepage registry', () => {
     expect(markup).toContain('Changelog');
     expect(markup).toContain('Status');
     expect(markup).toContain('Open actions for Sales Performance');
+    expect(markup).toContain('Open actions for Pipeline Health');
     expect(markup).toContain('Rows per page');
     expect(markup).toContain('Previous');
     expect(markup).toContain('Next');

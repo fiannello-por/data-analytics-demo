@@ -1,4 +1,5 @@
 import type { DashboardModule } from '@/lib/suite/contracts';
+import { dashboardModules } from '@/lib/suite/modules';
 
 export type HomepageModuleStatus = 'Live' | 'WIP';
 
@@ -48,7 +49,7 @@ export const homepageModuleMetadata = {
     changelogLabel: 'Changelog',
     changelogHref: '/dashboards/pipeline-health/changelog',
   },
-} satisfies Record<string, HomepageModuleMeta>;
+} satisfies Record<(typeof dashboardModules)[number]['id'], HomepageModuleMeta>;
 
 type DashboardModuleId = keyof typeof homepageModuleMetadata;
 
