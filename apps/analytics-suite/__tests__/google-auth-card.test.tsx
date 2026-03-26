@@ -14,7 +14,7 @@ describe('google auth card', () => {
 
     expect(markup).toContain('Ligthdash as a Semantic Layer POC');
     expect(markup).toContain(
-      'Sign in or create an account with Google to access the analytics suite.',
+      'Sign in or create an account with Google to access.',
     );
     expect(markup).toContain('Continue with Google');
   });

@@ -32,6 +32,20 @@ describe('analytics suite preset configuration', () => {
     expect(css).toContain('--font-heading: var(--font-sans);');
   });
 
+  it('adds only a scoped dashboard accent palette without overriding backgrounds', () => {
+    const css = fs.readFileSync(path.join(appRoot, 'app/global.css'), 'utf8');
+
+    expect(css).toContain('.sales-dashboard-accent {');
+    expect(css).toContain('--primary: #2c49c8;');
+    expect(css).toContain('--dashboard-action: #84b3e8;');
+    expect(css).toContain('--chart-1: #69b0f4;');
+    expect(css).toContain('--chart-2: #9c63bf;');
+    expect(css).toContain('--chart-5: #2a44b8;');
+    expect(css).not.toContain('.sales-dashboard-accent {\n  --background:');
+    expect(css).not.toContain('.sales-dashboard-theme {');
+    expect(css).not.toContain('.dark .sales-dashboard-theme {');
+  });
+
   it('uses small radii and a solid subtle menu implementation in the UI primitives', () => {
     const button = fs.readFileSync(
       path.join(appRoot, 'components/ui/button.tsx'),

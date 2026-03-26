@@ -1,4 +1,6 @@
-@import 'tailwindcss';
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -38,7 +40,25 @@
   --color-sidebar-ring: var(--sidebar-ring);
   --color-surface: var(--surface);
   --color-surface-elevated: var(--surface-elevated);
+  --color-surface-sunken: var(--surface-sunken);
   --color-surface-strong: var(--surface-strong);
+  --color-border-subtle: var(--border-subtle);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-positive: var(--positive);
+  --color-positive-bg: var(--positive-bg);
+  --color-positive-border: var(--positive-border);
+  --color-negative: var(--negative);
+  --color-negative-bg: var(--negative-bg);
+  --color-negative-border: var(--negative-border);
+  --color-neutral-change: var(--neutral-change);
+  --color-neutral-change-bg: var(--neutral-change-bg);
+  --color-accent-brand: var(--accent-brand);
+  --color-accent-brand-subtle: var(--accent-brand-subtle);
+  --color-heading-primary: var(--heading-primary);
+  --color-heading-section: var(--heading-section);
+  --color-heading-overline: var(--heading-overline);
   --color-primary-soft: var(--primary-soft);
   --color-text-muted: var(--muted-foreground);
   --radius-sm: calc(var(--radius) * 0.6);
@@ -85,7 +105,25 @@
   --sidebar-ring: oklch(0.708 0 0);
   --surface: var(--card);
   --surface-elevated: var(--card);
+  --surface-sunken: var(--muted);
   --surface-strong: var(--muted);
+  --border-subtle: var(--border);
+  --text-primary: var(--foreground);
+  --text-secondary: var(--muted-foreground);
+  --text-tertiary: color-mix(in oklch, var(--muted-foreground) 75%, transparent);
+  --positive: oklch(0.62 0.17 149);
+  --positive-bg: color-mix(in oklch, var(--positive) 18%, var(--background));
+  --positive-border: color-mix(in oklch, var(--positive) 32%, var(--border));
+  --negative: oklch(0.62 0.22 23);
+  --negative-bg: color-mix(in oklch, var(--negative) 18%, var(--background));
+  --negative-border: color-mix(in oklch, var(--negative) 32%, var(--border));
+  --neutral-change: var(--muted-foreground);
+  --neutral-change-bg: var(--muted);
+  --accent-brand: var(--primary);
+  --accent-brand-subtle: color-mix(in oklch, var(--primary) 12%, var(--background));
+  --heading-primary: var(--foreground);
+  --heading-section: var(--muted-foreground);
+  --heading-overline: color-mix(in oklch, var(--muted-foreground) 78%, transparent);
   --primary-soft: color-mix(in oklch, var(--primary) 14%, white);
 }
 
@@ -123,8 +161,74 @@
   --sidebar-ring: oklch(0.556 0 0);
   --surface: var(--card);
   --surface-elevated: var(--card);
+  --surface-sunken: color-mix(in oklch, var(--background) 92%, black);
   --surface-strong: var(--muted);
+  --border-subtle: color-mix(in oklch, var(--border) 92%, transparent);
+  --text-primary: var(--foreground);
+  --text-secondary: var(--muted-foreground);
+  --text-tertiary: color-mix(in oklch, var(--muted-foreground) 72%, transparent);
+  --positive: oklch(0.78 0.17 149);
+  --positive-bg: color-mix(in oklch, var(--positive) 16%, var(--background));
+  --positive-border: color-mix(in oklch, var(--positive) 30%, var(--border));
+  --negative: oklch(0.72 0.18 24);
+  --negative-bg: color-mix(in oklch, var(--negative) 16%, var(--background));
+  --negative-border: color-mix(in oklch, var(--negative) 30%, var(--border));
+  --neutral-change: var(--muted-foreground);
+  --neutral-change-bg: color-mix(in oklch, var(--muted) 90%, black);
+  --accent-brand: var(--primary);
+  --accent-brand-subtle: color-mix(in oklch, var(--primary) 16%, var(--background));
+  --heading-primary: var(--foreground);
+  --heading-section: var(--muted-foreground);
+  --heading-overline: color-mix(in oklch, var(--muted-foreground) 70%, transparent);
   --primary-soft: color-mix(in oklch, var(--primary) 18%, transparent);
+}
+
+.sales-dashboard-accent {
+  --primary: #2c49c8;
+  --primary-foreground: #f5f7ff;
+  --dashboard-action: #84b3e8;
+  --dashboard-action-foreground: #08111f;
+  --accent-brand: var(--primary);
+  --accent-brand-subtle: color-mix(in srgb, var(--primary) 20%, transparent);
+  --chart-1: #69b0f4;
+  --chart-2: #9c63bf;
+  --chart-3: #2d63ef;
+  --chart-4: #284de1;
+  --chart-5: #2a44b8;
+}
+
+@layer components {
+  .heading-overline {
+    @apply text-xs font-medium uppercase tracking-[0.15em] text-heading-overline;
+  }
+
+  .heading-section {
+    @apply text-heading-section leading-relaxed;
+  }
+
+  .heading-primary {
+    @apply text-heading-primary;
+  }
+
+  .kpi-value {
+    @apply text-2xl font-bold tracking-tight tabular-nums text-heading-primary;
+  }
+
+  .pill-status {
+    @apply inline-flex items-center gap-0.5 rounded-md border px-2 py-0.5 text-xs font-medium tabular-nums;
+  }
+
+  .pill-status[data-direction='positive'] {
+    @apply border-positive-border bg-positive-bg text-positive;
+  }
+
+  .pill-status[data-direction='negative'] {
+    @apply border-negative-border bg-negative-bg text-negative;
+  }
+
+  .pill-status[data-direction='neutral'] {
+    @apply border-border-subtle bg-neutral-change-bg text-neutral-change;
+  }
 }
 
 @layer base {

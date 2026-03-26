@@ -46,12 +46,22 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { HomepageModuleRow } from '@/lib/suite/homepage-metadata';
 import { cn } from '@/lib/utils';
 
 type DashboardModulesTableProps = {
   rows: HomepageModuleRow[];
 };
+
+function getInitials(name: string) {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('');
+}
 
 function DashboardRowActions({ row }: { row: HomepageModuleRow }) {
   return (
@@ -102,6 +112,7 @@ function DashboardRowActions({ row }: { row: HomepageModuleRow }) {
                   href={row.changelogHref}
                   target="_blank"
                   rel="noreferrer"
+                  className="cursor-pointer"
                 />
               ) : (
                 <div />
@@ -143,10 +154,41 @@ const columns: ColumnDef<HomepageModuleRow>[] = [
     cell: ({ row }) => <span className="text-white/82">{row.original.owner}</span>,
   },
   {
+    accessorKey: 'author',
+    header: () => <span>Author</span>,
+    cell: ({ row }) => (
+      <div className="flex items-center gap-2.5">
+        <Avatar size="sm" className="border border-white/10 bg-white/[0.04]">
+          <AvatarImage
+            src={row.original.author.avatarUrl}
+            alt={row.original.author.name}
+          />
+          <AvatarFallback className="bg-white/[0.06] text-[10px] font-medium text-white/72">
+            {getInitials(row.original.author.name)}
+          </AvatarFallback>
+        </Avatar>
+        <span className="text-white/82">{row.original.author.name}</span>
+      </div>
+    ),
+  },
+  {
     accessorKey: 'updatedAt',
     header: () => <span>Updated at</span>,
     cell: ({ row }) =>
-      (
+      row.original.changelogHref ? (
+        <Link
+          href={row.original.changelogHref}
+          target="_blank"
+          rel="noreferrer"
+          className="cursor-pointer text-white/64 transition-colors hover:text-white/88 hover:underline"
+        >
+          {new Intl.DateTimeFormat('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          }).format(new Date(row.original.updatedAt))}
+        </Link>
+      ) : (
         <span className="text-white/64">
           {new Intl.DateTimeFormat('en-US', {
             month: 'short',
@@ -154,21 +196,6 @@ const columns: ColumnDef<HomepageModuleRow>[] = [
             year: 'numeric',
           }).format(new Date(row.original.updatedAt))}
         </span>
-      ),
-  },
-  {
-    accessorKey: 'changelogLabel',
-    header: () => <span>Changelog</span>,
-    cell: ({ row }) =>
-      row.original.changelogHref ? (
-        <Link
-          href={row.original.changelogHref}
-          className="text-[13px] font-medium text-white/74 transition-colors hover:text-white"
-        >
-          {row.original.changelogLabel}
-        </Link>
-      ) : (
-        <span className="text-white/44">{row.original.changelogLabel}</span>
       ),
   },
   {
@@ -234,9 +261,9 @@ export function DashboardModulesTable({ rows }: DashboardModulesTableProps) {
                   key={header.id}
                   className={cn(
                     header.column.id === 'dashboardName' && 'w-[32%]',
-                    header.column.id === 'owner' && 'w-[20%]',
+                    header.column.id === 'owner' && 'w-[14%]',
+                    header.column.id === 'author' && 'w-[16%]',
                     header.column.id === 'updatedAt' && 'w-[16%]',
-                    header.column.id === 'changelog' && 'w-[12%]',
                     header.column.id === 'statusLabel' && 'w-[14%]',
                     header.column.id === 'actions' && 'w-16 text-right',
                     'h-11 px-5 text-[14px] font-medium tracking-[-0.01em] text-white/92',
