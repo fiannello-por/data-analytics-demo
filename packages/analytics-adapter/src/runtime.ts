@@ -1,3 +1,9 @@
+import {
+  BigQueryDate,
+  BigQueryDatetime,
+  BigQueryTime,
+  BigQueryTimestamp,
+} from '@google-cloud/bigquery';
 import type { DashboardBudgetTracker } from './budgets';
 import {
   buildPersistentSemanticCacheKey,
@@ -31,16 +37,47 @@ export type SemanticRuntimeConfig = {
   budgetTracker?: DashboardBudgetTracker;
 };
 
+function normalizeScalarValue(value: unknown): unknown {
+  if (
+    value instanceof BigQueryDate ||
+    value instanceof BigQueryDatetime ||
+    value instanceof BigQueryTime ||
+    value instanceof BigQueryTimestamp
+  ) {
+    return value.value;
+  }
+
+  return value;
+}
+
 function formatValue(value: unknown): string {
-  if (value == null) {
+  const normalized = normalizeScalarValue(value);
+
+  if (normalized == null) {
     return '';
   }
 
-  if (value instanceof Date) {
-    return value.toISOString();
+  if (normalized instanceof Date) {
+    return normalized.toISOString();
   }
 
-  return String(value);
+  return String(normalized);
+}
+
+function normalizeFieldValue(value: unknown): SemanticFieldValue {
+  const normalized = normalizeScalarValue(value);
+
+  if (value == null) {
+    return {
+      raw: null,
+      formatted: '',
+    };
+  }
+
+  return {
+    raw: normalized,
+    formatted: formatValue(normalized),
+  };
 }
 
 function normalizeRow(
@@ -50,10 +87,7 @@ function normalizeRow(
   return Object.fromEntries(
     Object.entries(row).map(([key, value]) => [
       aliases[key] ?? key,
-      {
-        raw: value ?? null,
-        formatted: formatValue(value),
-      } satisfies SemanticFieldValue,
+      normalizeFieldValue(value),
     ]),
   );
 }

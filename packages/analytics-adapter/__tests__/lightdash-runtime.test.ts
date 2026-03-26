@@ -1,3 +1,4 @@
+import { BigQueryDate, BigQueryDatetime, BigQueryTime, BigQueryTimestamp } from '@google-cloud/bigquery';
 import { describe, expect, it, vi, afterEach } from 'vitest';
 
 import type {
@@ -149,6 +150,57 @@ describe('Lightdash semantic runtime', () => {
     expect(result.rows).toEqual([
       { division: { raw: 'Enterprise', formatted: 'Enterprise' } },
       { division: { raw: 'SMB', formatted: 'SMB' } },
+    ]);
+  });
+
+  it('normalizes BigQuery temporal wrapper values into strings', async () => {
+    const provider: SemanticProvider = {
+      compileQuery: vi.fn(async () => ({
+        sql: 'select close_date, close_datetime, close_time, close_timestamp from demo',
+        aliases: {
+          sales_dashboard_v2_closed_won_close_date: 'close_date',
+          sales_dashboard_v2_closed_won_close_datetime: 'close_datetime',
+          sales_dashboard_v2_closed_won_close_time: 'close_time',
+          sales_dashboard_v2_closed_won_close_timestamp: 'close_timestamp',
+        },
+        model: 'sales_dashboard_v2_closed_won',
+      })),
+    };
+    const executeQuery = vi.fn(async () => ({
+      rows: [
+        {
+          sales_dashboard_v2_closed_won_close_date: new BigQueryDate('2026-03-01'),
+          sales_dashboard_v2_closed_won_close_datetime: new BigQueryDatetime(
+            '2026-03-01T05:06:07',
+          ),
+          sales_dashboard_v2_closed_won_close_time: new BigQueryTime('05:06:07'),
+          sales_dashboard_v2_closed_won_close_timestamp: new BigQueryTimestamp(
+            '2026-03-01T05:06:07.000Z',
+          ),
+        },
+      ],
+    })) as unknown as (query: { sql: string }) => Promise<QueryExecutionResult>;
+
+    const runtime = createSemanticRuntime({ provider, executeQuery });
+
+    const result = await runtime.runQuery({
+      model: 'sales_dashboard_v2_closed_won',
+      dimensions: ['close_date', 'close_datetime', 'close_time', 'close_timestamp'],
+    });
+
+    expect(result.rows).toEqual([
+      {
+        close_date: { raw: '2026-03-01', formatted: '2026-03-01' },
+        close_datetime: {
+          raw: '2026-03-01T05:06:07',
+          formatted: '2026-03-01T05:06:07',
+        },
+        close_time: { raw: '05:06:07', formatted: '05:06:07' },
+        close_timestamp: {
+          raw: '2026-03-01T05:06:07.000Z',
+          formatted: '2026-03-01T05:06:07.000Z',
+        },
+      },
     ]);
   });
 });
