@@ -44,6 +44,19 @@ describe('TrendPanel', () => {
       root.render(React.createElement(TrendPanel, { trend, isVisible: true }));
     });
 
+    expect(container.firstElementChild?.getAttribute('class')).toContain(
+      'w-full',
+    );
+    expect(
+      container
+        .querySelector('[data-testid="trend-chart"]')
+        ?.parentElement?.getAttribute('class'),
+    ).toContain('flex-1');
+    expect(
+      container
+        .querySelector('[data-testid="trend-chart"]')
+        ?.parentElement?.getAttribute('class'),
+    ).toContain('min-h-0');
     expect(container.textContent).toContain('SQL');
     expect(container.textContent).toContain('Weekly trend');
     expect(container.textContent).toContain('Jan 1, 2026 to Mar 31, 2026');

@@ -108,7 +108,7 @@ export function TrendChart({ trend }: { trend: TileTrendPayload }) {
   const xAxisFieldLabel = trend.xAxisFieldLabel ?? 'Date';
 
   return (
-    <div className="flex aspect-[1.52/1] min-h-[18rem] w-full max-h-[min(30rem,50vh)] flex-col justify-end gap-3">
+    <div className="flex h-full min-h-0 w-full flex-col justify-end gap-3">
       <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-muted-foreground">
         <div className="inline-flex items-center gap-2">
           <span
