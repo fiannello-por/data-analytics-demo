@@ -20,6 +20,7 @@ describe('homepage metadata', () => {
       expect(row.statusLabel).toBe(module.status === 'active' ? 'Live' : 'WIP');
       expect(row.owner).toBeTruthy();
       expect(row.changelogLabel).toBeTruthy();
+      expect(row.changelogHref).toBeTruthy();
       expect(row.updatedAt).toBeTruthy();
       expect(row.href).toBe(module.href);
     });
