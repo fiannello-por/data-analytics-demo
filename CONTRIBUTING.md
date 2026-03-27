@@ -19,6 +19,7 @@ Run `pnpm check:versions` to verify your local setup matches.
 
 ## What Belongs In This Repo
 
+- The retained product surfaces: `analytics-suite`, `pdr`, and `changelog-site`.
 - Lightdash models, charts, and dashboards as code.
 - Contributor standards for semantic modeling and analytics engineering.
 - Changelog content for externally visible analytics changes.

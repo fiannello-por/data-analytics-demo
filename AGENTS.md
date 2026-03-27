@@ -31,9 +31,6 @@ when intentionally updating the pinned upstream snapshots.
 ## Lightdash Conventions
 
 - Use standalone Lightdash YAML only. Do not introduce `dbt_project.yml` yet.
-- Exception: the Situation Room app-serving backend pilot may introduce `dbt Core`
-  models and `dbt_project.yml` to benchmark direct BigQuery vs Lightdash-backed
-  delivery. Lightdash content for that pilot should remain YAML-defined.
 - Prefer domain-oriented model names and stable business vocabulary.
 - Hide helper columns and raw warehouse identifiers unless they are intentionally user-facing.
 - Add labels for any field whose warehouse name is not business-friendly.

@@ -3,6 +3,8 @@
 This repository is the operational home for the Point of Rental analytics stack:
 
 - `lightdash/` contains the semantic layer, charts, and dashboards for a pure Lightdash YAML project.
+- `apps/analytics-suite/` is the retained analytics application surface.
+- `apps/pdr/` is the retained planning and architecture documentation app.
 - `apps/changelog-site/` is a Docusaurus site published on Vercel for the public-facing analytics changelog.
 - `src/por_analytics/agents/` contains Codex-powered automation for pull request review and changelog generation.
 - `.agents/skills/` and `.claude/skills/` bundle repo-local agent skills for Codex and Claude Code.
@@ -23,7 +25,9 @@ The current architecture is intentionally dbt-free. Lightdash metadata lives in 
 ├── AGENTS.md
 ├── CONTRIBUTING.md
 ├── apps/
-│   └── changelog-site/
+│   ├── analytics-suite/
+│   ├── changelog-site/
+│   └── pdr/
 ├── docs/
 ├── lightdash/
 │   ├── charts/
