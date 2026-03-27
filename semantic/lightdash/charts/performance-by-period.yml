@@ -1,0 +1,81 @@
+name: Performance by Period
+description: null
+tableName: opportunity_view
+updatedAt: '2026-03-13T19:12:15.771Z'
+metricQuery:
+  exploreName: opportunity_view
+  dimensions:
+    - opportunity_view_Quarter
+    - opportunity_view_SDRSource
+  metrics:
+    - opportunity_view_acv_dollars
+  filters:
+    dimensions:
+      id: root
+      and:
+        - id: won_filter
+          target:
+            fieldId: opportunity_view_Won
+          values:
+            - true
+          operator: equals
+        - id: current_or_prev_year
+          target:
+            fieldId: opportunity_view_IsCurrentOrPrevYear
+          values:
+            - true
+          operator: equals
+        - id: ytd_window
+          target:
+            fieldId: opportunity_view_IsWithinYTDWindow
+          values:
+            - true
+          operator: equals
+  sorts:
+    - fieldId: opportunity_view_Quarter
+      descending: false
+  limit: 500
+  metricOverrides: {}
+  dimensionOverrides: {}
+  tableCalculations: []
+  additionalMetrics: []
+  customDimensions: []
+chartConfig:
+  type: cartesian
+  config:
+    layout:
+      stack: false
+      xField: opportunity_view_Quarter
+      yField:
+        - opportunity_view_acv_dollars
+      flipAxes: false
+      showGridY: true
+    eChartsConfig:
+      xAxis:
+        - name: ''
+      yAxis:
+        - name: ACV $
+      legend:
+        show: true
+      series:
+        - type: bar
+          label:
+            show: true
+            position: top
+          encode:
+            xRef:
+              field: opportunity_view_Quarter
+            yRef:
+              field: opportunity_view_acv_dollars
+pivotConfig:
+  columns:
+    - opportunity_view_SDRSource
+slug: performance-by-period
+tableConfig:
+  columnOrder:
+    - opportunity_view_Quarter
+    - opportunity_view_SDRSource
+    - opportunity_view_acv_dollars
+spaceSlug: point-of-rental-revops-analytics-demo/revenue/charts-prod
+version: 1
+downloadedAt: '2026-03-16T12:16:07.364Z'

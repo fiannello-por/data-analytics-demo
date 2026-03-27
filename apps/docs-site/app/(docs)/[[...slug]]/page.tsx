@@ -7,6 +7,7 @@ import {
 } from 'fumadocs-ui/page';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import type { ComponentPropsWithoutRef } from 'react';
 import { source } from '@/lib/source';
 import { Callout } from 'fumadocs-ui/components/callout';
 import {
@@ -58,7 +59,9 @@ export default async function Page(props: {
             Pipeline,
             BranchFlow,
             Timeline,
-            blockquote: (props) => <Callout>{props.children}</Callout>,
+            blockquote: (props: ComponentPropsWithoutRef<'blockquote'>) => (
+              <Callout>{props.children}</Callout>
+            ),
           }}
         />
         {(prev || next) && (

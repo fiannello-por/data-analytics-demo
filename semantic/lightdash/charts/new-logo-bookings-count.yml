@@ -1,0 +1,70 @@
+name: 'New Logo: Bookings #'
+description: null
+tableName: opportunity_view
+updatedAt: '2026-03-13T19:12:15.742Z'
+metricQuery:
+  exploreName: opportunity_view
+  dimensions:
+    - opportunity_view_CloseDate_year
+  metrics:
+    - opportunity_view_bookings_count
+  filters:
+    dimensions:
+      id: root
+      and:
+        - id: won_filter
+          target:
+            fieldId: opportunity_view_Won
+          values:
+            - true
+          operator: equals
+        - id: type_filter
+          target:
+            fieldId: opportunity_view_Type
+          values:
+            - New Business
+          operator: equals
+        - id: acv_positive
+          target:
+            fieldId: opportunity_view_ACV
+          values:
+            - 0
+          operator: greaterThan
+        - id: stage_filter
+          target:
+            fieldId: opportunity_view_StageName
+          values:
+            - Closed Won
+          operator: equals
+        - id: ytd_window
+          target:
+            fieldId: opportunity_view_IsWithinYTDWindow
+          values:
+            - true
+          operator: equals
+  sorts:
+    - fieldId: opportunity_view_CloseDate_year
+      descending: true
+  limit: 2
+  metricOverrides: {}
+  dimensionOverrides: {}
+  tableCalculations: []
+  additionalMetrics: []
+  customDimensions: []
+chartConfig:
+  type: big_number
+  config:
+    label: 'Bookings #'
+    selectedField: opportunity_view_bookings_count
+    showComparison: true
+    comparisonLabel: vs. prev year
+    comparisonFormat: percentage
+    showBigNumberLabel: true
+slug: new-logo-bookings-count
+tableConfig:
+  columnOrder:
+    - opportunity_view_CloseDate_year
+    - opportunity_view_bookings_count
+spaceSlug: point-of-rental-revops-analytics-demo/revenue/charts-prod
+version: 1
+downloadedAt: '2026-03-16T12:16:07.364Z'

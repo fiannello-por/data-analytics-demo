@@ -2,10 +2,10 @@
 
 This repository is the operational home for the Point of Rental analytics stack:
 
-- `lightdash/` contains the semantic layer, charts, and dashboards for a pure Lightdash YAML project.
+- `semantic/lightdash/` contains the semantic layer, charts, and dashboards for a pure Lightdash YAML project.
 - `apps/analytics-suite/` is the retained analytics application surface.
-- `apps/pdr/` is the retained planning and architecture documentation app.
-- `apps/changelog-site/` is a Docusaurus site published on Vercel for the public-facing analytics changelog.
+- `apps/docs-site/` is the retained planning and architecture documentation app.
+- `apps/changelog/` is a Docusaurus site published on Vercel for the public-facing analytics changelog.
 - `src/por_analytics/agents/` contains Codex-powered automation for changelog generation.
 
 The current architecture is intentionally dbt-free. Lightdash metadata lives in standalone YAML so the BI layer can move quickly without coupling business logic to dbt project structure. When dbt is introduced, the semantic layer standards in this repo are designed to migrate cleanly into dbt `meta:` blocks.
@@ -25,13 +25,15 @@ The current architecture is intentionally dbt-free. Lightdash metadata lives in 
 ├── CONTRIBUTING.md
 ├── apps/
 │   ├── analytics-suite/
-│   ├── changelog-site/
-│   └── pdr/
+│   ├── changelog/
+│   └── docs-site/
 ├── docs/
-├── lightdash/
-│   ├── charts/
-│   ├── dashboards/
-│   └── models/
+├── semantic/
+│   ├── dbt/
+│   └── lightdash/
+│       ├── charts/
+│       ├── dashboards/
+│       └── models/
 ├── src/
 │   └── por_analytics/
 │       ├── agents/
