@@ -100,8 +100,8 @@ jobs:
 
       - name: Create or update preview project
         run: |
-          lightdash start-preview --name "$LIGHTDASH_PREVIEW_NAME" --skip-copy-content
           cd semantic/lightdash
+          lightdash start-preview --name "$LIGHTDASH_PREVIEW_NAME" --skip-copy-content
           lightdash deploy --no-warehouse-credentials
           lightdash upload --path . --force
 
