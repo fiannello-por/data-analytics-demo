@@ -6,7 +6,7 @@
 2. Keep semantic-layer changes, dashboard content changes, and automation changes easy to review.
 3. Run `pnpm validate` before opening a PR.
 4. Fill out the PR template completely.
-5. Merge only after Codex review, CI, and human review all pass.
+5. Merge only after CI and human review pass.
 
 ## Prerequisites
 
