@@ -169,18 +169,29 @@ export function BranchFlow({
       </div>
 
       {/* Horizontal bar spanning all branches */}
-      <div className="mx-auto flex" style={{ width: `${Math.min(branches.length * 200, 100)}%`, maxWidth: '100%' }}>
+      <div
+        className="mx-auto flex"
+        style={{
+          width: `${Math.min(branches.length * 200, 100)}%`,
+          maxWidth: '100%',
+        }}
+      >
         <div className="flex w-full items-start">
           {branches.map((_, i) => (
             <div key={i} className="flex flex-1 justify-center">
               {/* Left half of bar + right half of bar, forming continuous line */}
               <div className="flex w-full items-start">
-                <div className={`h-px flex-1 ${i === 0 ? 'bg-transparent' : 'bg-fd-border'}`} style={{ marginTop: 0 }} />
+                <div
+                  className={`h-px flex-1 ${i === 0 ? 'bg-transparent' : 'bg-fd-border'}`}
+                  style={{ marginTop: 0 }}
+                />
                 <div className="flex flex-col items-center">
                   {/* Junction dot */}
                   <div className="h-px w-px" />
                 </div>
-                <div className={`h-px flex-1 ${i === branches.length - 1 ? 'bg-transparent' : 'bg-fd-border'}`} />
+                <div
+                  className={`h-px flex-1 ${i === branches.length - 1 ? 'bg-transparent' : 'bg-fd-border'}`}
+                />
               </div>
             </div>
           ))}
@@ -196,7 +207,11 @@ export function BranchFlow({
             {/* Small arrow */}
             <div className="text-fd-border max-sm:hidden">
               <svg width="8" height="5" viewBox="0 0 8 5" fill="none">
-                <path d="M0 0l4 4 4-4" stroke="currentColor" strokeWidth="1.2" />
+                <path
+                  d="M0 0l4 4 4-4"
+                  stroke="currentColor"
+                  strokeWidth="1.2"
+                />
               </svg>
             </div>
             {/* Output box */}

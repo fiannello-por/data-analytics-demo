@@ -1,5 +1,5 @@
 ---
-title: "Architecture Overview"
+title: 'Architecture Overview'
 description: Lightdash as a Headless Semantic Layer
 ---
 
@@ -54,7 +54,7 @@ That is the hypothesis this POC tests.
 
 This POC answers one question with one dashboard.
 
-**In scope**
+### In Scope
 
 - Lightdash works as a headless semantic layer: its API compiles semantic intent, model + measures + dimensions + filters, into SQL without ever rendering a chart
 - A Next.js app can consume that API to render a fully custom dashboard with complete UI freedom
@@ -62,7 +62,7 @@ This POC answers one question with one dashboard.
 - Performance is viable: compile + execute latency is acceptable for an interactive dashboard
 - One working example: the Sales Performance dashboard, rebuilt in Next.js and powered by Lightdash&apos;s semantic layer
 
-**Out of scope**
+### Out of Scope
 
 - This is not a production architecture recommendation; it is a feasibility test
 - This is not a design review of the dashboard UI; the point is to prove that the same data can be reproduced outside Lightdash and that adding Lightdash to the stack does not introduce unacceptable query latency
@@ -118,37 +118,37 @@ Reference docs: [Lightdash API reference](https://docs.lightdash.com/api-referen
         The UI asks the Semantic Layer to compile a query. It sends metric names, dimension names, and filters, no SQL.
       </div>
 
-```http
-POST /api/v1/projects/0cfa36e8-.../explores/sales_dashboard_v2_opportunity_base/compileQuery
-```
+      <pre>
+        <code className="language-http">{`POST /api/v1/projects/0cfa36e8-.../explores/sales_dashboard_v2_opportunity_base/compileQuery`}</code>
+      </pre>
 
-```json
+      <pre>
+        <code className="language-json">{`{
+
+"metrics": ["sales_dashboard_v2_opportunity_base_close_rate"],
+"dimensions": ["sales_dashboard_v2_opportunity_base_close_date_week"],
+"filters": {
+"dimensions": {
+"and": [
 {
-  "metrics": [
-    "sales_dashboard_v2_opportunity_base_close_rate"
-  ],
-  "dimensions": [
-    "sales_dashboard_v2_opportunity_base_close_date_week"
-  ],
-  "filters": {
-    "dimensions": {
-      "and": [
-        {
-          "target": { "fieldId": "...dashboard_category" },
-          "operator": "equals",
-          "values": ["Expansion"]
-        },
-        {
-          "target": { "fieldId": "...close_date" },
-          "operator": "inBetween",
-          "values": ["2026-01-01", "2026-03-27"]
-        }
-      ]
-    }
-  }
+"target": { "fieldId": "...dashboard_category" },
+"operator": "equals",
+"values": ["Expansion"]
+},
+{
+"target": { "fieldId": "...close_date" },
+"operator": "inBetween",
+"values": ["2026-01-01", "2026-03-27"]
 }
-```
+]
+}
+}
+}`}</code>
+
+</pre>
+
     </div>
+
   </details>
 
   <details className="group mb-6 rounded-xl border border-white/10 bg-white/[0.02]" open>
@@ -180,19 +180,23 @@ POST /api/v1/projects/0cfa36e8-.../explores/sales_dashboard_v2_opportunity_base/
         Lightdash resolves <code className="text-fd-foreground">close_rate</code> into the actual SQL formula. It also resolves <code className="text-fd-foreground">close_date_week</code> into <code className="text-fd-foreground">DATE_TRUNC(close_date, WEEK)</code>. These definitions live in version-controlled YAML, defined once, used everywhere.
       </div>
 
-```yaml
-close_rate:
-  type: number
-  sql: 'SAFE_DIVIDE(
-    COUNT(DISTINCT CASE WHEN ${TABLE}.is_closed
-      AND ${TABLE}.won THEN ${TABLE}.opportunity_id END),
-    COUNT(DISTINCT CASE WHEN ${TABLE}.is_closed
-      THEN ${TABLE}.opportunity_id END)
-  )'
-  label: 'Close Rate'
-  format: percent
-```
+      <pre>
+        <code className="language-yaml">{`close_rate:
+
+type: number
+sql: 'SAFE_DIVIDE(
+COUNT(DISTINCT CASE WHEN \${TABLE}.is_closed
+AND \${TABLE}.won THEN \${TABLE}.opportunity_id END),
+COUNT(DISTINCT CASE WHEN \${TABLE}.is_closed
+THEN \${TABLE}.opportunity_id END)
+)'
+label: 'Close Rate'
+format: percent`}</code>
+
+</pre>
+
     </div>
+
   </details>
 
   <details className="group mb-6 rounded-xl border border-white/10 bg-white/[0.02]" open>
@@ -224,20 +228,24 @@ close_rate:
         The UI takes the compiled SQL and executes it directly against BigQuery via <code className="text-fd-foreground">bigquery.createQueryJob()</code>. The Semantic Layer is not involved in execution.
       </div>
 
-```sql
-SELECT
-  DATE_TRUNC(close_date, WEEK) AS close_date_week,
-  SAFE_DIVIDE(
-    COUNT(DISTINCT CASE WHEN is_closed AND won THEN opportunity_id END),
-    COUNT(DISTINCT CASE WHEN is_closed THEN opportunity_id END)
-  ) AS close_rate
-FROM `data-analytics-306119.scorecard_test.sales_dashboard_v2_opportunity_base`
+      <pre>
+        <code className="language-sql">{`SELECT
+
+DATE_TRUNC(close_date, WEEK) AS close_date_week,
+SAFE_DIVIDE(
+COUNT(DISTINCT CASE WHEN is_closed AND won THEN opportunity_id END),
+COUNT(DISTINCT CASE WHEN is_closed THEN opportunity_id END)
+) AS close_rate
+FROM \`data-analytics-306119.scorecard_test.sales_dashboard_v2_opportunity_base\`
 WHERE dashboard_category = 'Expansion'
-  AND close_date BETWEEN '2026-01-01' AND '2026-03-27'
+AND close_date BETWEEN '2026-01-01' AND '2026-03-27'
 GROUP BY close_date_week
-ORDER BY close_date_week ASC
-```
+ORDER BY close_date_week ASC`}</code>
+
+</pre>
+
     </div>
+
   </details>
 
   <details className="group mb-6 rounded-xl border border-white/10 bg-white/[0.02]" open>
@@ -269,16 +277,20 @@ ORDER BY close_date_week ASC
         BigQuery returns raw rows. The UI transforms these into the Close Rate trend chart you see on the dashboard.
       </div>
 
-```json
-[
-  { "close_date_week": "2026-01-06", "close_rate": 0.76 },
-  { "close_date_week": "2026-01-13", "close_rate": 0.71 },
-  { "close_date_week": "2026-01-20", "close_rate": 0.68 },
-  { "close_date_week": "2026-01-27", "close_rate": 0.73 },
-  { "close_date_week": "2026-02-03", "close_rate": 0.70 }
-]
-```
+      <pre>
+        <code className="language-json">{`[
+
+{ "close_date_week": "2026-01-06", "close_rate": 0.76 },
+{ "close_date_week": "2026-01-13", "close_rate": 0.71 },
+{ "close_date_week": "2026-01-20", "close_rate": 0.68 },
+{ "close_date_week": "2026-01-27", "close_rate": 0.73 },
+{ "close_date_week": "2026-02-03", "close_rate": 0.7 }
+]`}</code>
+
+</pre>
+
     </div>
+
   </details>
 
 </div>

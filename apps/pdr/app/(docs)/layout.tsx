@@ -2,10 +2,7 @@ import { DocsLayout } from 'fumadocs-ui/layouts/docs';
 import type { ReactNode } from 'react';
 import { baseOptions } from '@/app/layout.config';
 import { source } from '@/lib/source';
-import {
-  ChapterItem,
-  ChapterSeparator,
-} from '@/app/components/sidebar-nav';
+import { ChapterItem, ChapterSeparator } from '@/app/components/sidebar-nav';
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (

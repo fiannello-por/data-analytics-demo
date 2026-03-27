@@ -40,8 +40,7 @@ export default async function Page(props: {
   const currentUrl = `/${params.slug?.join('/') ?? ''}`;
   const currentIndex = pages.findIndex((p) => p.url === currentUrl);
   const prev = currentIndex > 0 ? pages[currentIndex - 1] : null;
-  const next =
-    currentIndex < pages.length - 1 ? pages[currentIndex + 1] : null;
+  const next = currentIndex < pages.length - 1 ? pages[currentIndex + 1] : null;
 
   return (
     <DocsPage

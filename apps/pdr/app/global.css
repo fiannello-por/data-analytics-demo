@@ -149,12 +149,12 @@
 }
 
 /* Warn callouts — orange accent */
-.prose .shadow-md.border-s-2[class*="orange"] {
+.prose .shadow-md.border-s-2[class*='orange'] {
   border-inline-start-color: hsl(30, 80%, 55%) !important;
 }
 
 /* Error callouts — red accent */
-.prose .shadow-md.border-s-2[class*="red"] {
+.prose .shadow-md.border-s-2[class*='red'] {
   border-inline-start-color: hsl(0, 70%, 55%) !important;
 }
 

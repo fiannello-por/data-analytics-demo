@@ -8,14 +8,16 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 
 ## 3.1 Architecture Overview
 
-<FlowDiagram steps={[
-  { label: "Salesforce", sublabel: "(source)", tag: "Existing" },
-  { label: "Stitch", sublabel: "(ingest)", tag: "Existing" },
-  { label: "BigQuery", sublabel: "(warehouse)", tag: "Existing" },
-  { label: "dbt", sublabel: "(transform)", tag: "Phase 2" },
-  { label: "Lightdash", sublabel: "(BI)", tag: "New", biArrow: true },
-  { label: "GitHub", sublabel: "(CI/CD)", tag: "New" },
-]} />
+<FlowDiagram
+  steps={[
+    { label: 'Salesforce', sublabel: '(source)', tag: 'Existing' },
+    { label: 'Stitch', sublabel: '(ingest)', tag: 'Existing' },
+    { label: 'BigQuery', sublabel: '(warehouse)', tag: 'Existing' },
+    { label: 'dbt', sublabel: '(transform)', tag: 'Phase 2' },
+    { label: 'Lightdash', sublabel: '(BI)', tag: 'New', biArrow: true },
+    { label: 'GitHub', sublabel: '(CI/CD)', tag: 'New' },
+  ]}
+/>
 
 | Component                                    | Role                                           | Status                 |
 | -------------------------------------------- | ---------------------------------------------- | ---------------------- |
@@ -67,14 +69,16 @@ We evaluated the major open-source BI platforms against our core requirements: *
 
 Every change to a dashboard, chart, or metric definition goes through an automated pipeline:
 
-<FlowDiagram steps={[
-  { label: "Author edits", sublabel: "YAML files" },
-  { label: "Push to branch", sublabel: "on GitHub" },
-  { label: "CI validates", sublabel: "automated checks" },
-  { label: "Preview env", sublabel: "spins up" },
-  { label: "Team reviews", sublabel: "the PR" },
-  { label: "Production", sublabel: "updates on merge", tag: "New" },
-]} />
+<FlowDiagram
+  steps={[
+    { label: 'Author edits', sublabel: 'YAML files' },
+    { label: 'Push to branch', sublabel: 'on GitHub' },
+    { label: 'CI validates', sublabel: 'automated checks' },
+    { label: 'Preview env', sublabel: 'spins up' },
+    { label: 'Team reviews', sublabel: 'the PR' },
+    { label: 'Production', sublabel: 'updates on merge', tag: 'New' },
+  ]}
+/>
 
 **What CI checks on every change:**
 
@@ -147,13 +151,18 @@ Lightdash provides an [official set of LLM skills](https://docs.lightdash.com/gu
 </Tab>
 </Tabs>
 
-<FlowDiagram steps={[
-  { label: '"Add a close rate chart to the expansion scorecard"', sublabel: "natural language" },
-  { label: "Claude Code", sublabel: "generates YAML" },
-  { label: "Pull Request", sublabel: "opened" },
-  { label: "CI validates", sublabel: "automatically" },
-  { label: "Review & merge", tag: "New" },
-]} />
+<FlowDiagram
+  steps={[
+    {
+      label: '"Add a close rate chart to the expansion scorecard"',
+      sublabel: 'natural language',
+    },
+    { label: 'Claude Code', sublabel: 'generates YAML' },
+    { label: 'Pull Request', sublabel: 'opened' },
+    { label: 'CI validates', sublabel: 'automatically' },
+    { label: 'Review & merge', tag: 'New' },
+  ]}
+/>
 
 ## 3.8 The Semantic Layer
 
