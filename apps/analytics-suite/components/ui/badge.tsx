@@ -11,6 +11,10 @@ const badgeVariants = cva(
         default: 'border-transparent bg-primary text-primary-foreground',
         outline: 'border-border bg-transparent text-foreground',
         secondary: 'border-transparent bg-secondary text-secondary-foreground',
+        success:
+          'border-[color:color-mix(in_oklch,var(--primary)_28%,var(--border))] bg-[color:var(--primary-soft)] text-foreground',
+        warning:
+          'border-border bg-[color:color-mix(in_oklch,var(--secondary)_82%,var(--background))] text-secondary-foreground',
       },
     },
     defaultVariants: {

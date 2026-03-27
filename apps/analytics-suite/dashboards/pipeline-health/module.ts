@@ -3,7 +3,7 @@ import { pipelineHealthRegistry } from '@/dashboards/pipeline-health/registry';
 import { pipelineHealthMapperNotes } from '@/dashboards/pipeline-health/mappers';
 import { suiteBudgetPolicies } from '@/lib/suite/budgets';
 
-export const pipelineHealthModule: DashboardModule = {
+export const pipelineHealthModule = {
   id: 'pipeline-health',
   title: 'Pipeline Health',
   description:
@@ -13,4 +13,4 @@ export const pipelineHealthModule: DashboardModule = {
   registry: pipelineHealthRegistry,
   budgetPolicy: suiteBudgetPolicies['pipeline-health'],
   highlights: pipelineHealthMapperNotes,
-};
+} satisfies DashboardModule;

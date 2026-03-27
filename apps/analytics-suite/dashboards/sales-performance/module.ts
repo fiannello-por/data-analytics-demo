@@ -3,7 +3,7 @@ import { salesPerformanceRegistry } from '@/dashboards/sales-performance/registr
 import { salesPerformanceMapperNotes } from '@/dashboards/sales-performance/mappers';
 import { suiteBudgetPolicies } from '@/lib/suite/budgets';
 
-export const salesPerformanceModule: DashboardModule = {
+export const salesPerformanceModule = {
   id: 'sales-performance',
   title: 'Sales Performance',
   description:
@@ -13,4 +13,4 @@ export const salesPerformanceModule: DashboardModule = {
   registry: salesPerformanceRegistry,
   budgetPolicy: suiteBudgetPolicies['sales-performance'],
   highlights: salesPerformanceMapperNotes,
-};
+} satisfies DashboardModule;
