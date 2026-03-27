@@ -242,7 +242,7 @@ describe('app-serving opportunity base SQL', () => {
   it('keeps non-category opportunities available for Total rollups', () => {
     const sql = readFileSync(
       new URL(
-        '../../../dbt/models/app_serving/sales_dashboard_v2_opportunity_base.sql',
+        '../__fixtures__/sales_dashboard_v2_opportunity_base.sql',
         import.meta.url,
       ),
       'utf8',
@@ -254,7 +254,7 @@ describe('app-serving opportunity base SQL', () => {
   it('persists the fiscal day counter needed for annual pacing parity', () => {
     const sql = readFileSync(
       new URL(
-        '../../../dbt/models/app_serving/sales_dashboard_v2_opportunity_base.sql',
+        '../__fixtures__/sales_dashboard_v2_opportunity_base.sql',
         import.meta.url,
       ),
       'utf8',
