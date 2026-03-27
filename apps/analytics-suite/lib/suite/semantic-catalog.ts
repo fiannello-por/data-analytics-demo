@@ -1,0 +1,130 @@
+import type { SemanticCatalogEntry } from '@por/analytics-adapter';
+
+export const suiteSemanticCatalogEntries: SemanticCatalogEntry[] = [
+  {
+    model: 'sales_dashboard_v2_opportunity_base',
+    field: 'bookings_amount',
+    label: 'Bookings $',
+    fieldType: 'metric',
+  },
+  {
+    model: 'sales_dashboard_v2_opportunity_base',
+    field: 'bookings_count',
+    label: 'Bookings #',
+    fieldType: 'metric',
+  },
+  {
+    model: 'sales_dashboard_v2_opportunity_base',
+    field: 'annual_pacing_ytd',
+    label: 'Annual pacing YTD',
+    fieldType: 'metric',
+  },
+  {
+    model: 'sales_dashboard_v2_opportunity_base',
+    field: 'close_rate',
+    label: 'Close rate',
+    fieldType: 'metric',
+  },
+  {
+    model: 'sales_dashboard_v2_opportunity_base',
+    field: 'avg_age',
+    label: 'Average age',
+    fieldType: 'metric',
+  },
+  {
+    model: 'sales_dashboard_v2_opportunity_base',
+    field: 'pipeline_created',
+    label: 'Pipeline created',
+    fieldType: 'metric',
+  },
+  {
+    model: 'sales_dashboard_v2_opportunity_base',
+    field: 'avg_booked_deal',
+    label: 'Average booked deal',
+    fieldType: 'metric',
+  },
+  {
+    model: 'sales_dashboard_v2_opportunity_base',
+    field: 'avg_quoted_deal',
+    label: 'Average quoted deal',
+    fieldType: 'metric',
+  },
+  {
+    model: 'sales_dashboard_v2_opportunity_base',
+    field: 'sql_count',
+    label: 'SQL count',
+    fieldType: 'metric',
+  },
+  {
+    model: 'sales_dashboard_v2_opportunity_base',
+    field: 'dashboard_category',
+    label: 'Dashboard category',
+    fieldType: 'dimension',
+  },
+  {
+    model: 'sales_dashboard_v2_opportunity_base',
+    field: 'division',
+    label: 'Division',
+    fieldType: 'dimension',
+  },
+  {
+    model: 'sales_dashboard_v2_opportunity_base',
+    field: 'region',
+    label: 'Region',
+    fieldType: 'dimension',
+  },
+  {
+    model: 'sales_dashboard_v2_opportunity_base',
+    field: 'owner',
+    label: 'Owner',
+    fieldType: 'dimension',
+  },
+  {
+    model: 'sales_dashboard_v2_opportunity_base',
+    field: 'close_date_week',
+    label: 'Close date week',
+    fieldType: 'dimension',
+  },
+  {
+    model: 'sales_dashboard_v2_opportunity_base',
+    field: 'created_date_week',
+    label: 'Created date week',
+    fieldType: 'dimension',
+  },
+  {
+    model: 'sales_dashboard_v2_opportunity_base',
+    field: 'pipeline_start_date_week',
+    label: 'Pipeline start date week',
+    fieldType: 'dimension',
+  },
+  {
+    model: 'sales_dashboard_v2_closed_won',
+    field: 'account_name',
+    label: 'Account name',
+    fieldType: 'dimension',
+  },
+  {
+    model: 'sales_dashboard_v2_closed_won',
+    field: 'opportunity_name',
+    label: 'Opportunity name',
+    fieldType: 'dimension',
+  },
+  {
+    model: 'sales_dashboard_v2_closed_won',
+    field: 'close_date',
+    label: 'Close date',
+    fieldType: 'dimension',
+  },
+  {
+    model: 'sales_dashboard_v2_closed_won',
+    field: 'users',
+    label: 'Users',
+    fieldType: 'dimension',
+  },
+  {
+    model: 'sales_dashboard_v2_closed_won',
+    field: 'acv',
+    label: 'ACV',
+    fieldType: 'dimension',
+  },
+];
