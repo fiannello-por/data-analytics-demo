@@ -61,7 +61,7 @@ describe('dashboard v2 routes', () => {
       { cacheMode: 'off' },
     );
     expect(response.status).toBe(200);
-    expect(response.headers.get('x-situation-room-source')).toBe('lightdash');
+    expect(response.headers.get('x-analytics-suite-source')).toBe('lightdash');
   });
 
   it('returns the v2 filter dictionary payload from analytics-suite', async () => {
@@ -93,6 +93,6 @@ describe('dashboard v2 routes', () => {
       { cacheMode: 'off' },
     );
     expect(response.status).toBe(200);
-    expect(response.headers.get('x-situation-room-source')).toBe('lightdash');
+    expect(response.headers.get('x-analytics-suite-source')).toBe('lightdash');
   });
 });

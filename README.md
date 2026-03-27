@@ -3,9 +3,10 @@
 This repository is the operational home for the Point of Rental analytics stack:
 
 - `lightdash/` contains the semantic layer, charts, and dashboards for a pure Lightdash YAML project.
+- `apps/analytics-suite/` is the retained analytics application surface.
+- `apps/pdr/` is the retained planning and architecture documentation app.
 - `apps/changelog-site/` is a Docusaurus site published on Vercel for the public-facing analytics changelog.
-- `src/por_analytics/agents/` contains Codex-powered automation for pull request review and changelog generation.
-- `.agents/skills/` and `.claude/skills/` bundle repo-local agent skills for Codex and Claude Code.
+- `src/por_analytics/agents/` contains Codex-powered automation for changelog generation.
 
 The current architecture is intentionally dbt-free. Lightdash metadata lives in standalone YAML so the BI layer can move quickly without coupling business logic to dbt project structure. When dbt is introduced, the semantic layer standards in this repo are designed to migrate cleanly into dbt `meta:` blocks.
 
@@ -23,7 +24,9 @@ The current architecture is intentionally dbt-free. Lightdash metadata lives in 
 ├── AGENTS.md
 ├── CONTRIBUTING.md
 ├── apps/
-│   └── changelog-site/
+│   ├── analytics-suite/
+│   ├── changelog-site/
+│   └── pdr/
 ├── docs/
 ├── lightdash/
 │   ├── charts/
@@ -51,27 +54,10 @@ Useful commands:
 
 - `pnpm lightdash:lint` validates Lightdash YAML.
 - `pnpm changelog:build` builds the Docusaurus changelog site.
-- `pnpm review:pr` runs the Codex review agent locally if the required env vars are set.
-- `uv run sync-agent-skillsets` refreshes the vendored Superpowers and Impeccable skill snapshots.
-
-## Agent Skills
-
-This repo vendors selected upstream skill libraries so contributors do not need
-to install them globally before using them in this project:
-
-- `obra/superpowers`
-- `pbakaus/impeccable`
-
-Codex-discoverable copies live under `.agents/skills/`. Claude Code copies live
-under `.claude/skills/`.
-
-See [docs/agent-skills.md](./docs/agent-skills.md) for pinned upstream commits
-and refresh instructions.
 
 ## CI/CD
 
 - `ci.yml` enforces formatting, Markdown quality, Python type checking, linting, and tests, and site build integrity.
-- `codex-review.yml` reviews PR diffs for semantic-layer mistakes, anti-patterns, and missing PR documentation.
 - `lightdash-deploy.yml` deploys Lightdash metadata and content on merge to `main`.
 - `codex-changelog.yml` generates a changelog entry from merged PR metadata and commits it back to `main`.
 

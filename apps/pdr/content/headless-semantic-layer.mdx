@@ -4,6 +4,7 @@ description: Lightdash as a Headless Semantic Layer
 ---
 
 import { ArchitectureOverviewDiagram } from '@/app/components/architecture-overview-diagram';
+import { DynamicCodeBlock } from 'fumadocs-ui/components/dynamic-codeblock';
 
 ## Introduction
 
@@ -118,12 +119,14 @@ Reference docs: [Lightdash API reference](https://docs.lightdash.com/api-referen
         The UI asks the Semantic Layer to compile a query. It sends metric names, dimension names, and filters, no SQL.
       </div>
 
-      <pre>
-        <code className="language-http">{`POST /api/v1/projects/0cfa36e8-.../explores/sales_dashboard_v2_opportunity_base/compileQuery`}</code>
-      </pre>
+      <DynamicCodeBlock
+        lang="http"
+        code={`POST /api/v1/projects/0cfa36e8-.../explores/sales_dashboard_v2_opportunity_base/compileQuery`}
+      />
 
-      <pre>
-        <code className="language-json">{`{
+      <DynamicCodeBlock
+        lang="json"
+        code={`{
 
 "metrics": ["sales_dashboard_v2_opportunity_base_close_rate"],
 "dimensions": ["sales_dashboard_v2_opportunity_base_close_date_week"],
@@ -143,9 +146,8 @@ Reference docs: [Lightdash API reference](https://docs.lightdash.com/api-referen
 ]
 }
 }
-}`}</code>
-
-</pre>
+}`}
+/>
 
     </div>
 
@@ -180,8 +182,9 @@ Reference docs: [Lightdash API reference](https://docs.lightdash.com/api-referen
         Lightdash resolves <code className="text-fd-foreground">close_rate</code> into the actual SQL formula. It also resolves <code className="text-fd-foreground">close_date_week</code> into <code className="text-fd-foreground">DATE_TRUNC(close_date, WEEK)</code>. These definitions live in version-controlled YAML, defined once, used everywhere.
       </div>
 
-      <pre>
-        <code className="language-yaml">{`close_rate:
+      <DynamicCodeBlock
+        lang="yaml"
+        code={`close_rate:
 
 type: number
 sql: 'SAFE_DIVIDE(
@@ -191,9 +194,8 @@ COUNT(DISTINCT CASE WHEN \${TABLE}.is_closed
 THEN \${TABLE}.opportunity_id END)
 )'
 label: 'Close Rate'
-format: percent`}</code>
-
-</pre>
+format: percent`}
+/>
 
     </div>
 
@@ -228,8 +230,9 @@ format: percent`}</code>
         The UI takes the compiled SQL and executes it directly against BigQuery via <code className="text-fd-foreground">bigquery.createQueryJob()</code>. The Semantic Layer is not involved in execution.
       </div>
 
-      <pre>
-        <code className="language-sql">{`SELECT
+      <DynamicCodeBlock
+        lang="sql"
+        code={`SELECT
 
 DATE_TRUNC(close_date, WEEK) AS close_date_week,
 SAFE_DIVIDE(
@@ -240,9 +243,8 @@ FROM \`data-analytics-306119.scorecard_test.sales_dashboard_v2_opportunity_base\
 WHERE dashboard_category = 'Expansion'
 AND close_date BETWEEN '2026-01-01' AND '2026-03-27'
 GROUP BY close_date_week
-ORDER BY close_date_week ASC`}</code>
-
-</pre>
+ORDER BY close_date_week ASC`}
+/>
 
     </div>
 
@@ -277,17 +279,17 @@ ORDER BY close_date_week ASC`}</code>
         BigQuery returns raw rows. The UI transforms these into the Close Rate trend chart you see on the dashboard.
       </div>
 
-      <pre>
-        <code className="language-json">{`[
+      <DynamicCodeBlock
+        lang="json"
+        code={`[
 
 { "close_date_week": "2026-01-06", "close_rate": 0.76 },
 { "close_date_week": "2026-01-13", "close_rate": 0.71 },
 { "close_date_week": "2026-01-20", "close_rate": 0.68 },
 { "close_date_week": "2026-01-27", "close_rate": 0.73 },
 { "close_date_week": "2026-02-03", "close_rate": 0.7 }
-]`}</code>
-
-</pre>
+]`}
+/>
 
     </div>
 

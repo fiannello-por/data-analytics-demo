@@ -48,7 +48,7 @@ export async function GET(
 
   applyProbeHeaders(response, result.meta, startedAt);
   response.headers.set(
-    'x-situation-room-tile-timings',
+    'x-analytics-suite-tile-timings',
     JSON.stringify(result.data.tileTimings),
   );
 

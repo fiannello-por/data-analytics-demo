@@ -11,9 +11,7 @@ dependencies = [
 [project.scripts]
 validate-refs = "por_analytics.validators.lightdash_refs:main"
 validate-shared = "por_analytics.validators.shared_folder:main"
-review-pr = "por_analytics.agents.review_pr:main"
 generate-changelog = "por_analytics.agents.generate_changelog:main"
-sync-agent-skillsets = "por_analytics.tools.sync_agent_skillsets:main"
 
 [build-system]
 requires = ["hatchling"]
@@ -44,8 +42,6 @@ quote-style = "double"
 
 [dependency-groups]
 dev = [
-    "dbt-bigquery>=1.11.1",
-    "dbt-core>=1.11.7",
     "mypy>=1.19.1",
     "pytest>=9.0.2",
     "ruff>=0.15.6",

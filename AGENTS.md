@@ -2,17 +2,6 @@
 
 This repository is optimized for both human contributors and coding agents.
 
-## Bundled Skills
-
-This repo vendors project-local copies of:
-
-- `obra/superpowers`
-- `pbakaus/impeccable`
-
-Codex-compatible copies live under `.agents/skills/`. Claude-compatible copies
-live under `.claude/skills/`. Refresh them with `uv run sync-agent-skillsets`
-when intentionally updating the pinned upstream snapshots.
-
 ## Non-Negotiables
 
 - Preserve semantic correctness over stylistic preference.
@@ -30,10 +19,7 @@ when intentionally updating the pinned upstream snapshots.
 
 ## Lightdash Conventions
 
-- Use standalone Lightdash YAML only. Do not introduce `dbt_project.yml` yet.
-- Exception: the Situation Room app-serving backend pilot may introduce `dbt Core`
-  models and `dbt_project.yml` to benchmark direct BigQuery vs Lightdash-backed
-  delivery. Lightdash content for that pilot should remain YAML-defined.
+- Use standalone Lightdash YAML only.
 - Prefer domain-oriented model names and stable business vocabulary.
 - Hide helper columns and raw warehouse identifiers unless they are intentionally user-facing.
 - Add labels for any field whose warehouse name is not business-friendly.

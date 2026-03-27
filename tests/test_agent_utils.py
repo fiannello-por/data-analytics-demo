@@ -8,13 +8,6 @@ from por_analytics.agents.generate_changelog import sanitize_sections, sanitize_
 
 if TYPE_CHECKING:
     from pathlib import Path
-from por_analytics.agents.review_pr import (
-    COMMENT_MARKER,
-    ReviewFinding,
-    ReviewResult,
-    _render_review_comment,
-    _select_lightdash_guidance,
-)
 from por_analytics.lib.agent_utils import (
     build_diff_summary,
     read_guidance_if_exists,
@@ -132,84 +125,3 @@ def test_sanitize_slug_truncates_to_60_chars() -> None:
 def test_sanitize_sections_cleans_keys_and_values() -> None:
     result = sanitize_sections({"  Key \0": "  Value \0 "})
     assert result == {"Key": "Value"}
-
-
-# ---------------------------------------------------------------------------
-# _render_review_comment / _select_lightdash_guidance (review_pr)
-# ---------------------------------------------------------------------------
-
-
-def test_render_review_comment_includes_marker_and_findings() -> None:
-    review = ReviewResult(
-        summary="Looks good overall.",
-        documentation_status="pass",
-        required_changes=False,
-        findings=[
-            ReviewFinding(
-                severity="medium",
-                title="Missing label",
-                rationale="Field has no label",
-                file="lightdash/models/foo.yml",
-                recommendation="Add a label",
-            )
-        ],
-    )
-    body = _render_review_comment(review=review, missing_sections=[], pr_url="https://example.com")
-    assert COMMENT_MARKER in body
-    assert "[MEDIUM]" in body
-    assert "Missing label" in body
-    assert "https://example.com" in body
-
-
-def test_render_review_comment_with_missing_sections() -> None:
-    review = ReviewResult(
-        summary="Needs work.",
-        documentation_status="needs-work",
-        required_changes=True,
-        findings=[],
-    )
-    body = _render_review_comment(
-        review=review,
-        missing_sections=["Risks", "Validation"],
-        pr_url="https://example.com",
-    )
-    assert "Missing PR template sections:" in body
-    assert "- Risks" in body
-    assert "- Validation" in body
-
-
-def test_render_review_comment_no_findings() -> None:
-    review = ReviewResult(
-        summary="All clear.",
-        documentation_status="pass",
-        required_changes=False,
-        findings=[],
-    )
-    body = _render_review_comment(review=review, missing_sections=[], pr_url="https://example.com")
-    assert "No concrete findings" in body
-
-
-def test_select_lightdash_guidance_includes_skill_md() -> None:
-    files = [
-        PullRequestFile(
-            filename="README.md", status="modified", additions=1, deletions=0, changes=1
-        )
-    ]
-    guidance = _select_lightdash_guidance(files)
-    # SKILL.md is always included
-    assert any("SKILL.md" in g for g in guidance)
-
-
-def test_select_lightdash_guidance_adds_model_docs() -> None:
-    files = [
-        PullRequestFile(
-            filename="lightdash/models/foo.yml",
-            status="modified",
-            additions=1,
-            deletions=0,
-            changes=1,
-        )
-    ]
-    guidance = _select_lightdash_guidance(files)
-    assert any("metrics-reference" in g for g in guidance)
-    assert any("dimensions-reference" in g for g in guidance)
