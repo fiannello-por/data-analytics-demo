@@ -112,7 +112,7 @@ function getLightdashModelsDir() {
   }
 
   throw new Error(
-    'Unable to locate lightdash/models directory from situation-room.',
+    'Unable to locate lightdash/models directory from analytics-suite.',
   );
 }
 

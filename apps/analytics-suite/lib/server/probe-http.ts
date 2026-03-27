@@ -32,19 +32,19 @@ export function applyProbeHeaders(
   meta: ProbeResponseMeta,
   startedAt: number,
 ) {
-  response.headers.set('x-situation-room-source', meta.source);
-  response.headers.set('x-situation-room-query-count', String(meta.queryCount));
-  response.headers.set('x-situation-room-cache-mode', meta.cacheMode);
+  response.headers.set('x-analytics-suite-source', meta.source);
+  response.headers.set('x-analytics-suite-query-count', String(meta.queryCount));
+  response.headers.set('x-analytics-suite-cache-mode', meta.cacheMode);
 
   if (meta.bytesProcessed != null) {
     response.headers.set(
-      'x-situation-room-bytes-processed',
+      'x-analytics-suite-bytes-processed',
       String(meta.bytesProcessed),
     );
   }
 
   response.headers.set(
-    'x-situation-room-server-ms',
+    'x-analytics-suite-server-ms',
     String(Math.round((performance.now() - startedAt) * 100) / 100),
   );
 

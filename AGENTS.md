@@ -19,7 +19,7 @@ This repository is optimized for both human contributors and coding agents.
 
 ## Lightdash Conventions
 
-- Use standalone Lightdash YAML only. Do not introduce `dbt_project.yml` yet.
+- Use standalone Lightdash YAML only.
 - Prefer domain-oriented model names and stable business vocabulary.
 - Hide helper columns and raw warehouse identifiers unless they are intentionally user-facing.
 - Add labels for any field whose warehouse name is not business-friendly.

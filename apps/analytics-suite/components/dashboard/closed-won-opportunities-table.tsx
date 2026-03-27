@@ -46,7 +46,7 @@ import { cn } from '@/lib/utils';
 
 const DEFAULT_PAGE_SIZE = 10;
 const COLUMN_SIZING_STORAGE_KEY =
-  'situation-room.closed-won-opportunities.column-sizing.v1';
+  'analytics-suite.closed-won-opportunities.column-sizing.v1';
 
 type ColumnMeta = {
   headClassName?: string;
