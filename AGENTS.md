@@ -2,17 +2,6 @@
 
 This repository is optimized for both human contributors and coding agents.
 
-## Bundled Skills
-
-This repo vendors project-local copies of:
-
-- `obra/superpowers`
-- `pbakaus/impeccable`
-
-Codex-compatible copies live under `.agents/skills/`. Claude-compatible copies
-live under `.claude/skills/`. Refresh them with `uv run sync-agent-skillsets`
-when intentionally updating the pinned upstream snapshots.
-
 ## Non-Negotiables
 
 - Preserve semantic correctness over stylistic preference.
