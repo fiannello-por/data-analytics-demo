@@ -6,6 +6,7 @@ export const CATEGORY_DESCRIPTIONS: Record<Category, string> = {
   Expansion:
     'Growth within existing accounts through upsells, cross-sells, and seat expansion.',
   Migration: 'Platform transitions as customers move between product lines.',
-  Renewal: 'Contract renewals and retention performance across the existing book.',
+  Renewal:
+    'Contract renewals and retention performance across the existing book.',
   Total: 'Aggregate performance across all booking categories.',
 };

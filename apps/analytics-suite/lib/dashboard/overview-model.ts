@@ -54,17 +54,31 @@ export type OverviewBoardModel = {
   totalCard: OverviewTotalCard;
 };
 
-const SECTION_B_LABELS = ['Annual Pacing (YTD)', 'Close Rate', 'Avg Age'] as const;
-const SECTION_C_LABELS = ['Pipeline Created', 'Avg Booked Deal', 'Avg Quoted Deal'] as const;
+const SECTION_B_LABELS = [
+  'Annual Pacing (YTD)',
+  'Close Rate',
+  'Avg Age',
+] as const;
+const SECTION_C_LABELS = [
+  'Pipeline Created',
+  'Avg Booked Deal',
+  'Avg Quoted Deal',
+] as const;
 
-const SUPPORT_ROW_LABELS: Record<Exclude<Category, 'Total'>, readonly string[]> = {
+const SUPPORT_ROW_LABELS: Record<
+  Exclude<Category, 'Total'>,
+  readonly string[]
+> = {
   'New Logo': ['SQL', 'SQO', 'Gate 1 Complete', 'SDR Points', 'SQO Users'],
   Expansion: ['SQL', 'SQO'],
   Migration: ['SQL', 'SQO', 'SAL', 'Avg Users'],
   Renewal: ['SQL'],
 };
 
-function parseMetricValue(value: string, formatType: TileFormatType): number | null {
+function parseMetricValue(
+  value: string,
+  formatType: TileFormatType,
+): number | null {
   if (value === '—') {
     return null;
   }
@@ -148,25 +162,37 @@ function findRow(snapshot: CategorySnapshotPayload, label: string) {
   return snapshot.rows.find((row) => row.label === label);
 }
 
-function requireMetric(snapshot: CategorySnapshotPayload, label: string): OverviewMetric {
+function requireMetric(
+  snapshot: CategorySnapshotPayload,
+  label: string,
+): OverviewMetric {
   const metric = toMetric(findRow(snapshot, label));
 
   if (!metric) {
-    throw new Error(`Overview metric "${label}" missing from category "${snapshot.category}".`);
+    throw new Error(
+      `Overview metric "${label}" missing from category "${snapshot.category}".`,
+    );
   }
 
   return metric;
 }
 
-function optionalMetrics(snapshot: CategorySnapshotPayload, labels: readonly string[]) {
+function optionalMetrics(
+  snapshot: CategorySnapshotPayload,
+  labels: readonly string[],
+) {
   return labels
     .map((label) => toMetric(findRow(snapshot, label)))
     .filter((metric): metric is OverviewMetric => metric !== null);
 }
 
-function buildCategoryScorecard(snapshot: CategorySnapshotPayload): OverviewCategoryCard {
+function buildCategoryScorecard(
+  snapshot: CategorySnapshotPayload,
+): OverviewCategoryCard {
   if (snapshot.category === 'Total') {
-    throw new Error('Total snapshot cannot be rendered as a category scorecard.');
+    throw new Error(
+      'Total snapshot cannot be rendered as a category scorecard.',
+    );
   }
 
   return {
@@ -190,7 +216,9 @@ function buildCategoryScorecard(snapshot: CategorySnapshotPayload): OverviewCate
   };
 }
 
-function buildTotalScorecard(snapshot: CategorySnapshotPayload | undefined): OverviewTotalCard {
+function buildTotalScorecard(
+  snapshot: CategorySnapshotPayload | undefined,
+): OverviewTotalCard {
   if (!snapshot || snapshot.category !== 'Total') {
     throw new Error('Overview board requires a Total snapshot.');
   }
@@ -199,18 +227,29 @@ function buildTotalScorecard(snapshot: CategorySnapshotPayload | undefined): Ove
     category: 'Total',
     hero: requireMetric(snapshot, 'Bookings $'),
     support: toMetric(findRow(snapshot, 'Bookings #')),
-    secondaryMetrics: optionalMetrics(snapshot, ['Annual Pacing (YTD)', 'One-time Revenue']),
+    secondaryMetrics: optionalMetrics(snapshot, [
+      'Annual Pacing (YTD)',
+      'One-time Revenue',
+    ]),
   };
 }
 
 export function buildOverviewBoard(
   snapshots: CategorySnapshotPayload[],
 ): OverviewBoardModel {
-  const totalSnapshot = snapshots.find((snapshot) => snapshot.category === 'Total');
+  const totalSnapshot = snapshots.find(
+    (snapshot) => snapshot.category === 'Total',
+  );
 
   return {
     categoryCards: snapshots
-      .filter((snapshot): snapshot is CategorySnapshotPayload & { category: Exclude<Category, 'Total'> } => snapshot.category !== 'Total')
+      .filter(
+        (
+          snapshot,
+        ): snapshot is CategorySnapshotPayload & {
+          category: Exclude<Category, 'Total'>;
+        } => snapshot.category !== 'Total',
+      )
       .map(buildCategoryScorecard),
     totalCard: buildTotalScorecard(totalSnapshot),
   };

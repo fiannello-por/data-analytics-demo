@@ -71,8 +71,8 @@ describe('analytics suite preset configuration', () => {
     expect(card).toContain('ring-1 ring-foreground/10');
     expect(badge).toContain('border-border bg-transparent text-foreground');
     expect(shell).toContain('rounded-xl bg-card p-1 ring-1 ring-foreground/10');
-    expect(shell).toContain(
-      "variant: activeSection === 'platform' ? 'secondary' : 'ghost'",
+    expect(shell).toMatch(
+      /variant:\s*activeSection === 'platform' \? 'secondary' : 'ghost'/,
     );
   });
 });

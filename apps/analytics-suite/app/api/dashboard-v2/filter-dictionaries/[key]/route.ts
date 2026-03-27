@@ -29,7 +29,11 @@ export async function GET(
       error instanceof Error ? error.message : 'Invalid dashboard request.',
     );
   }
-  const result = await getDashboardV2FilterDictionary(key, undefined, execution);
+  const result = await getDashboardV2FilterDictionary(
+    key,
+    undefined,
+    execution,
+  );
   const response = NextResponse.json(result.data);
 
   return applyProbeHeaders(response, result.meta, startedAt);

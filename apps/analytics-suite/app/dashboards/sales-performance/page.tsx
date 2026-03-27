@@ -1,7 +1,12 @@
 import * as React from 'react';
 import type { Metadata } from 'next';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
-import { CATEGORY_ORDER, GLOBAL_FILTER_KEYS, isCategory, isOverviewTab } from '@/lib/dashboard/catalog';
+import {
+  CATEGORY_ORDER,
+  GLOBAL_FILTER_KEYS,
+  isCategory,
+  isOverviewTab,
+} from '@/lib/dashboard/catalog';
 import { parseDashboardSearchParams } from '@/lib/dashboard/query-inputs';
 import { getDashboardV2CategorySnapshot } from '@/lib/server/v2/get-dashboard-category-snapshot';
 import { getDashboardV2FilterDictionary } from '@/lib/server/v2/get-dashboard-filter-dictionary';
@@ -10,7 +15,8 @@ import { getDashboardV2TileTrend } from '@/lib/server/v2/get-dashboard-tile-tren
 
 export const metadata: Metadata = {
   title: 'Sales Performance Dashboard',
-  description: 'Executive sales performance dashboard backed by Lightdash and BigQuery.',
+  description:
+    'Executive sales performance dashboard backed by Lightdash and BigQuery.',
 };
 
 type SearchParamsInput =
@@ -68,7 +74,9 @@ export default async function DashboardPageV2({
           previousDateRange: initialState.previousDateRange,
         })
       ).data
-    : initialOverviewBoard?.snapshots.find((snapshot) => snapshot.category === CATEGORY_ORDER[0]) ?? null;
+    : (initialOverviewBoard?.snapshots.find(
+        (snapshot) => snapshot.category === CATEGORY_ORDER[0],
+      ) ?? null);
   const initialTrend = isCategory(initialState.activeCategory)
     ? (
         await getDashboardV2TileTrend({

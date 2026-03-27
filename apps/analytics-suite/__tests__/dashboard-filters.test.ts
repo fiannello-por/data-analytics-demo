@@ -22,7 +22,11 @@ describe('dashboard filter option styles', () => {
       'utf8',
     );
 
-    expect(source).toContain('className="sales-dashboard-accent w-fit max-w-[calc(100vw-1rem)] p-0"');
-    expect(source).toContain('className="sales-dashboard-accent w-[15.5rem] p-0"');
+    expect(source).toContain(
+      'className="sales-dashboard-accent w-fit max-w-[calc(100vw-1rem)] p-0"',
+    );
+    expect(source).toContain(
+      'className="sales-dashboard-accent w-[15.5rem] p-0"',
+    );
   });
 });

@@ -8,6 +8,8 @@ describe('dashboard accent colors', () => {
   });
 
   it('uses the lighter action accent for the active tab underline', () => {
-    expect(getAnimatedUnderlineClassName()).toContain('bg-[var(--dashboard-action)]');
+    expect(getAnimatedUnderlineClassName()).toContain(
+      'bg-[var(--dashboard-action)]',
+    );
   });
 });

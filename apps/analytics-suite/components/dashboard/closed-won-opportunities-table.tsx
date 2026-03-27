@@ -26,7 +26,13 @@ import type {
 } from '@/lib/dashboard/contracts';
 import { TileBackendSheet } from '@/components/dashboard/tile-backend-sheet';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
@@ -39,7 +45,8 @@ import {
 import { cn } from '@/lib/utils';
 
 const DEFAULT_PAGE_SIZE = 10;
-const COLUMN_SIZING_STORAGE_KEY = 'situation-room.closed-won-opportunities.column-sizing.v1';
+const COLUMN_SIZING_STORAGE_KEY =
+  'situation-room.closed-won-opportunities.column-sizing.v1';
 
 type ColumnMeta = {
   headClassName?: string;
@@ -82,13 +89,16 @@ function readStoredColumnSizing(): ColumnSizingState {
       return {};
     }
 
-    return Object.entries(parsed).reduce<ColumnSizingState>((accumulator, [key, value]) => {
-      if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
-        accumulator[key] = value;
-      }
+    return Object.entries(parsed).reduce<ColumnSizingState>(
+      (accumulator, [key, value]) => {
+        if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+          accumulator[key] = value;
+        }
 
-      return accumulator;
-    }, {});
+        return accumulator;
+      },
+      {},
+    );
   } catch {
     return {};
   }
@@ -102,7 +112,9 @@ function OpportunityLink({
   label: string;
 }) {
   if (!href) {
-    return <span className="block w-full truncate text-foreground">{label}</span>;
+    return (
+      <span className="block w-full truncate text-foreground">{label}</span>
+    );
   }
 
   return (
@@ -171,7 +183,9 @@ function SortableHeader({
       onClick={() => column.toggleSorting(sortState === 'asc')}
     >
       <span>{title}</span>
-      <Icon className={cn('size-3.5 shrink-0 text-muted-foreground', iconClassName)} />
+      <Icon
+        className={cn('size-3.5 shrink-0 text-muted-foreground', iconClassName)}
+      />
     </button>
   );
 }
@@ -181,9 +195,14 @@ function getColumns(): Array<ColumnDef<ClosedWonOpportunityRow>> {
     {
       accessorKey: 'accountName',
       ...COLUMN_WIDTHS.accountName,
-      header: ({ column }) => <SortableHeader column={column} title="Account" />,
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Account" />
+      ),
       cell: ({ row }) => (
-        <OpportunityLink href={row.original.accountLink} label={row.original.accountName} />
+        <OpportunityLink
+          href={row.original.accountLink}
+          label={row.original.accountName}
+        />
       ),
       meta: {
         cellClassName: 'text-foreground',
@@ -192,9 +211,14 @@ function getColumns(): Array<ColumnDef<ClosedWonOpportunityRow>> {
     {
       accessorKey: 'opportunityName',
       ...COLUMN_WIDTHS.opportunityName,
-      header: ({ column }) => <SortableHeader column={column} title="Opportunity" />,
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Opportunity" />
+      ),
       cell: ({ row }) => (
-        <OpportunityLink href={row.original.opportunityLink} label={row.original.opportunityName} />
+        <OpportunityLink
+          href={row.original.opportunityLink}
+          label={row.original.opportunityName}
+        />
       ),
       meta: {
         cellClassName: 'text-foreground',
@@ -203,19 +227,25 @@ function getColumns(): Array<ColumnDef<ClosedWonOpportunityRow>> {
     {
       accessorKey: 'closeDate',
       ...COLUMN_WIDTHS.closeDate,
-      header: ({ column }) => <SortableHeader column={column} title="Close Date" />,
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Close Date" />
+      ),
       meta: {} satisfies ColumnMeta,
     },
     {
       accessorKey: 'createdDate',
       ...COLUMN_WIDTHS.createdDate,
-      header: ({ column }) => <SortableHeader column={column} title="Created Date" />,
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Created Date" />
+      ),
       meta: {} satisfies ColumnMeta,
     },
     {
       accessorKey: 'division',
       ...COLUMN_WIDTHS.division,
-      header: ({ column }) => <SortableHeader column={column} title="Division" />,
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Division" />
+      ),
       meta: {} satisfies ColumnMeta,
     },
     {
@@ -227,7 +257,9 @@ function getColumns(): Array<ColumnDef<ClosedWonOpportunityRow>> {
     {
       accessorKey: 'productFamily',
       ...COLUMN_WIDTHS.productFamily,
-      header: ({ column }) => <SortableHeader column={column} title="Product" />,
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Product" />
+      ),
       meta: {} satisfies ColumnMeta,
     },
     {
@@ -253,7 +285,9 @@ function getColumns(): Array<ColumnDef<ClosedWonOpportunityRow>> {
     {
       accessorKey: 'oppRecordType',
       ...COLUMN_WIDTHS.oppRecordType,
-      header: ({ column }) => <SortableHeader column={column} title="POR / R360" />,
+      header: ({ column }) => (
+        <SortableHeader column={column} title="POR / R360" />
+      ),
       meta: {} satisfies ColumnMeta,
     },
     {
@@ -261,7 +295,8 @@ function getColumns(): Array<ColumnDef<ClosedWonOpportunityRow>> {
       ...COLUMN_WIDTHS.age,
       header: ({ column }) => <SortableHeader column={column} title="Age" />,
       sortingFn: (rowA, rowB, columnId) =>
-        parseInteger(String(rowA.getValue(columnId))) - parseInteger(String(rowB.getValue(columnId))),
+        parseInteger(String(rowA.getValue(columnId))) -
+        parseInteger(String(rowB.getValue(columnId))),
       meta: {} satisfies ColumnMeta,
     },
     {
@@ -273,13 +308,17 @@ function getColumns(): Array<ColumnDef<ClosedWonOpportunityRow>> {
     {
       accessorKey: 'quarter',
       ...COLUMN_WIDTHS.quarter,
-      header: ({ column }) => <SortableHeader column={column} title="Quarter" />,
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Quarter" />
+      ),
       meta: {} satisfies ColumnMeta,
     },
     {
       accessorKey: 'contractStartDate',
       ...COLUMN_WIDTHS.contractStartDate,
-      header: ({ column }) => <SortableHeader column={column} title="Contract Start Date" />,
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Contract Start Date" />
+      ),
       meta: {} satisfies ColumnMeta,
     },
     {
@@ -289,7 +328,8 @@ function getColumns(): Array<ColumnDef<ClosedWonOpportunityRow>> {
         <SortableHeader column={column} title="Users" className="justify-end" />
       ),
       sortingFn: (rowA, rowB, columnId) =>
-        parseInteger(String(rowA.getValue(columnId))) - parseInteger(String(rowB.getValue(columnId))),
+        parseInteger(String(rowA.getValue(columnId))) -
+        parseInteger(String(rowB.getValue(columnId))),
       meta: {
         headClassName: 'text-right',
         cellClassName: 'text-right tabular-nums text-foreground',
@@ -326,13 +366,16 @@ export function ClosedWonOpportunitiesTable({
   payload: ClosedWonOpportunitiesPayload;
 }) {
   const columns = React.useMemo(() => getColumns(), []);
-  const [sorting, setSorting] = React.useState<SortingState>([{ id: 'acv', desc: true }]);
+  const [sorting, setSorting] = React.useState<SortingState>([
+    { id: 'acv', desc: true },
+  ]);
   const [pagination, setPagination] = React.useState<PaginationState>({
     pageIndex: 0,
     pageSize: DEFAULT_PAGE_SIZE,
   });
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
-  const [hasLoadedColumnSizing, setHasLoadedColumnSizing] = React.useState(false);
+  const [hasLoadedColumnSizing, setHasLoadedColumnSizing] =
+    React.useState(false);
 
   React.useEffect(() => {
     setColumnSizing(readStoredColumnSizing());
@@ -372,7 +415,8 @@ export function ClosedWonOpportunitiesTable({
   const totalRows = payload.rows.length;
   const { pageIndex, pageSize } = table.getState().pagination;
   const startRow = totalRows === 0 ? 0 : pageIndex * pageSize + 1;
-  const endRow = totalRows === 0 ? 0 : Math.min((pageIndex + 1) * pageSize, totalRows);
+  const endRow =
+    totalRows === 0 ? 0 : Math.min((pageIndex + 1) * pageSize, totalRows);
 
   return (
     <Card className="group border-border/70 bg-card shadow-none">
@@ -381,8 +425,8 @@ export function ClosedWonOpportunitiesTable({
           <div className="space-y-2">
             <CardTitle>Closed Won Opportunities</CardTitle>
             <CardDescription>
-              Current-period closed won opportunities for {payload.category}. Sort by key columns
-              and paginate through the current result set.
+              Current-period closed won opportunities for {payload.category}.
+              Sort by key columns and paginate through the current result set.
             </CardDescription>
           </div>
           <TileBackendSheet
@@ -395,7 +439,8 @@ export function ClosedWonOpportunitiesTable({
       <CardContent className="space-y-4">
         {totalRows === 0 ? (
           <div className="rounded-md border border-dashed border-border/70 bg-background/50 px-4 py-8 text-sm text-muted-foreground">
-            No closed won opportunities for the selected filters and current period.
+            No closed won opportunities for the selected filters and current
+            period.
           </div>
         ) : (
           <>
@@ -406,9 +451,14 @@ export function ClosedWonOpportunitiesTable({
               >
                 <TableHeader className="[&_tr]:border-border/80">
                   {table.getHeaderGroups().map((headerGroup) => (
-                    <TableRow key={headerGroup.id} className="bg-muted/30 hover:bg-muted/30">
+                    <TableRow
+                      key={headerGroup.id}
+                      className="bg-muted/30 hover:bg-muted/30"
+                    >
                       {headerGroup.headers.map((header) => {
-                        const meta = header.column.columnDef.meta as ColumnMeta | undefined;
+                        const meta = header.column.columnDef.meta as
+                          | ColumnMeta
+                          | undefined;
 
                         return (
                           <TableHead
@@ -448,7 +498,8 @@ export function ClosedWonOpportunitiesTable({
                                   aria-hidden="true"
                                   className={cn(
                                     'absolute top-1/2 right-1 h-6 w-px -translate-y-1/2 bg-border/80 transition-colors',
-                                    header.column.getIsResizing() && 'bg-border',
+                                    header.column.getIsResizing() &&
+                                      'bg-border',
                                   )}
                                 />
                               </button>
@@ -461,19 +512,30 @@ export function ClosedWonOpportunitiesTable({
                 </TableHeader>
                 <TableBody className="text-muted-foreground">
                   {table.getRowModel().rows.map((row) => (
-                    <TableRow key={row.id} className="border-border/60 hover:bg-muted/20">
+                    <TableRow
+                      key={row.id}
+                      className="border-border/60 hover:bg-muted/20"
+                    >
                       {row.getVisibleCells().map((cell) => {
-                        const meta = cell.column.columnDef.meta as ColumnMeta | undefined;
+                        const meta = cell.column.columnDef.meta as
+                          | ColumnMeta
+                          | undefined;
 
                         return (
                           <TableCell
                             key={cell.id}
-                            className={cn('min-w-0 overflow-hidden py-3 align-top', meta?.cellClassName)}
+                            className={cn(
+                              'min-w-0 overflow-hidden py-3 align-top',
+                              meta?.cellClassName,
+                            )}
                             style={getColumnWidthStyle(cell.column.getSize())}
                           >
                             <div className="min-w-0 w-full overflow-hidden text-ellipsis whitespace-nowrap">
                               {renderCellContent(
-                                flexRender(cell.column.columnDef.cell, cell.getContext()),
+                                flexRender(
+                                  cell.column.columnDef.cell,
+                                  cell.getContext(),
+                                ),
                               )}
                             </div>
                           </TableCell>
@@ -528,7 +590,9 @@ export function ClosedWonOpportunitiesTableSkeleton() {
     <Card className="border-border/70 bg-card shadow-none">
       <CardHeader>
         <CardTitle>Closed Won Opportunities</CardTitle>
-        <CardDescription>Loading current-period closed won opportunities.</CardDescription>
+        <CardDescription>
+          Loading current-period closed won opportunities.
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="overflow-hidden rounded-md border border-border/70 bg-background/60">

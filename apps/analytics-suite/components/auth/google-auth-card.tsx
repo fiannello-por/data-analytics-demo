@@ -1,6 +1,12 @@
 import * as React from 'react';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { GoogleAuthButton } from '@/app/signin/google-auth-button';
 
 export function GoogleAuthCard() {

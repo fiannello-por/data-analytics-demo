@@ -10,13 +10,21 @@ export function TotalScorecard({ card }: { card: OverviewTotalCard }) {
   return (
     <Card className="border-border/70 bg-card/70 shadow-none">
       <CardHeader className="pb-4">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{card.category}</CardTitle>
+        <CardTitle className="text-sm font-medium text-muted-foreground">
+          {card.category}
+        </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,1.1fr)_auto_minmax(0,0.9fr)] lg:items-start">
         <div className="grid gap-4 md:grid-cols-2">
-          <OverviewMetricTile metric={card.hero} valueClassName="text-3xl tracking-tight" />
+          <OverviewMetricTile
+            metric={card.hero}
+            valueClassName="text-3xl tracking-tight"
+          />
           {card.support ? (
-            <OverviewMetricTile metric={card.support} valueClassName="text-3xl tracking-tight" />
+            <OverviewMetricTile
+              metric={card.support}
+              valueClassName="text-3xl tracking-tight"
+            />
           ) : null}
         </div>
 

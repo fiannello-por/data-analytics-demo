@@ -5,7 +5,7 @@ import { salesPerformanceModule } from '@/dashboards/sales-performance/module';
 export const dashboardModules = [
   salesPerformanceModule,
   pipelineHealthModule,
- ] as const satisfies readonly DashboardModule[];
+] as const satisfies readonly DashboardModule[];
 
 export function getDashboardModule(
   id: DashboardModule['id'],

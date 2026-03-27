@@ -78,8 +78,8 @@ export function SuiteShell({
                     </div>
                     <p className="mt-2 text-[13px] leading-5 text-muted-foreground">
                       This PoC slice now includes dashboard module boundaries,
-                      shared cache semantics, and budget-aware platform reporting
-                      on top of the shared runtime.
+                      shared cache semantics, and budget-aware platform
+                      reporting on top of the shared runtime.
                     </p>
                   </div>
                 ) : null}
@@ -93,7 +93,8 @@ export function SuiteShell({
                     href="/platform"
                     className={cn(
                       buttonVariants({
-                        variant: activeSection === 'platform' ? 'secondary' : 'ghost',
+                        variant:
+                          activeSection === 'platform' ? 'secondary' : 'ghost',
                         size: 'sm',
                       }),
                     )}

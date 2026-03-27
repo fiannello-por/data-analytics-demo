@@ -59,7 +59,9 @@ export const defaultDashboardQueryClient: DashboardQueryClient = {
 
     return {
       rows: rows as DashboardQueryRow[],
-      bytesProcessed: Number(metadata.statistics?.query?.totalBytesProcessed ?? 0),
+      bytesProcessed: Number(
+        metadata.statistics?.query?.totalBytesProcessed ?? 0,
+      ),
     };
   },
 };

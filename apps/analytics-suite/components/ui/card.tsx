@@ -45,7 +45,10 @@ const CardTitle = React.forwardRef<
   <h3
     ref={ref}
     data-slot="card-title"
-    className={cn('font-heading text-base leading-snug font-medium group-data-[size=sm]/card:text-sm', className)}
+    className={cn(
+      'font-heading text-base leading-snug font-medium group-data-[size=sm]/card:text-sm',
+      className,
+    )}
     {...props}
   />
 ));

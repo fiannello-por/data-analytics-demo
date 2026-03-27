@@ -41,9 +41,9 @@ describe('homepage metadata', () => {
     expect(getHomepageModuleRow(dashboardModules[0]).author.name).toBe(
       'Facundo Iannello',
     );
-    expect(getHomepageModuleRow(dashboardModules[0]).author.githubUsername).toBe(
-      'facundoiannello',
-    );
+    expect(
+      getHomepageModuleRow(dashboardModules[0]).author.githubUsername,
+    ).toBe('facundoiannello');
   });
 
   it('throws a named error when metadata is missing', () => {

@@ -8,7 +8,10 @@ import {
 import { dashboardModules } from '@/lib/suite/modules';
 
 export default function HomePage() {
-  const rows = [...dashboardModules.map(getHomepageModuleRow), ...homepageDummyRows];
+  const rows = [
+    ...dashboardModules.map(getHomepageModuleRow),
+    ...homepageDummyRows,
+  ];
 
   return (
     <main className="min-h-screen bg-[#050505] px-4 py-10 sm:px-6 lg:px-8">

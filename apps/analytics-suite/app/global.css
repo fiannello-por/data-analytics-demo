@@ -1,6 +1,6 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -110,7 +110,11 @@
   --border-subtle: var(--border);
   --text-primary: var(--foreground);
   --text-secondary: var(--muted-foreground);
-  --text-tertiary: color-mix(in oklch, var(--muted-foreground) 75%, transparent);
+  --text-tertiary: color-mix(
+    in oklch,
+    var(--muted-foreground) 75%,
+    transparent
+  );
   --positive: oklch(0.62 0.17 149);
   --positive-bg: color-mix(in oklch, var(--positive) 18%, var(--background));
   --positive-border: color-mix(in oklch, var(--positive) 32%, var(--border));
@@ -120,10 +124,18 @@
   --neutral-change: var(--muted-foreground);
   --neutral-change-bg: var(--muted);
   --accent-brand: var(--primary);
-  --accent-brand-subtle: color-mix(in oklch, var(--primary) 12%, var(--background));
+  --accent-brand-subtle: color-mix(
+    in oklch,
+    var(--primary) 12%,
+    var(--background)
+  );
   --heading-primary: var(--foreground);
   --heading-section: var(--muted-foreground);
-  --heading-overline: color-mix(in oklch, var(--muted-foreground) 78%, transparent);
+  --heading-overline: color-mix(
+    in oklch,
+    var(--muted-foreground) 78%,
+    transparent
+  );
   --primary-soft: color-mix(in oklch, var(--primary) 14%, white);
 }
 
@@ -166,7 +178,11 @@
   --border-subtle: color-mix(in oklch, var(--border) 92%, transparent);
   --text-primary: var(--foreground);
   --text-secondary: var(--muted-foreground);
-  --text-tertiary: color-mix(in oklch, var(--muted-foreground) 72%, transparent);
+  --text-tertiary: color-mix(
+    in oklch,
+    var(--muted-foreground) 72%,
+    transparent
+  );
   --positive: oklch(0.78 0.17 149);
   --positive-bg: color-mix(in oklch, var(--positive) 16%, var(--background));
   --positive-border: color-mix(in oklch, var(--positive) 30%, var(--border));
@@ -176,10 +192,18 @@
   --neutral-change: var(--muted-foreground);
   --neutral-change-bg: color-mix(in oklch, var(--muted) 90%, black);
   --accent-brand: var(--primary);
-  --accent-brand-subtle: color-mix(in oklch, var(--primary) 16%, var(--background));
+  --accent-brand-subtle: color-mix(
+    in oklch,
+    var(--primary) 16%,
+    var(--background)
+  );
   --heading-primary: var(--foreground);
   --heading-section: var(--muted-foreground);
-  --heading-overline: color-mix(in oklch, var(--muted-foreground) 70%, transparent);
+  --heading-overline: color-mix(
+    in oklch,
+    var(--muted-foreground) 70%,
+    transparent
+  );
   --primary-soft: color-mix(in oklch, var(--primary) 18%, transparent);
 }
 

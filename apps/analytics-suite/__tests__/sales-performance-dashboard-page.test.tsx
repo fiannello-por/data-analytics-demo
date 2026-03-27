@@ -88,19 +88,22 @@ describe('sales performance dashboard page', { timeout: 20000 }, () => {
       meta: { source: 'lightdash', queryCount: 20, bytesProcessed: 2048 },
     });
 
-    getDashboardV2FilterDictionaryMock.mockImplementation(async (key: string) => ({
-      data: {
-        filterKey: key,
-        options: [{ value: 'Enterprise', label: 'Enterprise', sortOrder: 1 }],
-      },
-      meta: { source: 'lightdash', queryCount: 1, bytesProcessed: 10 },
-    }));
-
-    const { default: SalesPerformanceDashboardPage } = await import(
-      '@/app/dashboards/sales-performance/page'
+    getDashboardV2FilterDictionaryMock.mockImplementation(
+      async (key: string) => ({
+        data: {
+          filterKey: key,
+          options: [{ value: 'Enterprise', label: 'Enterprise', sortOrder: 1 }],
+        },
+        meta: { source: 'lightdash', queryCount: 1, bytesProcessed: 10 },
+      }),
     );
+
+    const { default: SalesPerformanceDashboardPage } =
+      await import('@/app/dashboards/sales-performance/page');
     const html = renderToStaticMarkup(
-      await SalesPerformanceDashboardPage({ searchParams: Promise.resolve({}) }),
+      await SalesPerformanceDashboardPage({
+        searchParams: Promise.resolve({}),
+      }),
     );
 
     expect(html).toContain('shell:/api/dashboard-v2');

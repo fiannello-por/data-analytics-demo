@@ -53,8 +53,12 @@ describe('analytics suite homepage registry', () => {
       'utf8',
     );
 
-    expect(source).not.toContain('href={row.original.href}\n          target="_blank"');
-    expect(source).not.toContain('<Link href={row.href} target="_blank" rel="noreferrer" />');
+    expect(source).not.toContain(
+      'href={row.original.href}\n          target="_blank"',
+    );
+    expect(source).not.toContain(
+      '<Link href={row.href} target="_blank" rel="noreferrer" />',
+    );
   });
 
   it('removes the stale shell card-grid copy', () => {

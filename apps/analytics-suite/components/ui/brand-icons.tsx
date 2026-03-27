@@ -4,7 +4,9 @@ import * as React from 'react';
 import { Icon } from '@iconify/react';
 
 export function GitHubMark({ className }: { className?: string }) {
-  return <Icon icon="simple-icons:github" className={className} aria-hidden="true" />;
+  return (
+    <Icon icon="simple-icons:github" className={className} aria-hidden="true" />
+  );
 }
 
 export function LightdashMark({ className }: { className?: string }) {

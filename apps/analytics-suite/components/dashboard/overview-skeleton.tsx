@@ -11,7 +11,13 @@ function SkeletonCard({ wide = false }: { wide?: boolean }) {
         <Skeleton className="h-4 w-24" />
       </CardHeader>
       <CardContent className="space-y-5">
-        <div className={wide ? 'grid gap-4 md:grid-cols-2' : 'grid gap-4 md:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]'}>
+        <div
+          className={
+            wide
+              ? 'grid gap-4 md:grid-cols-2'
+              : 'grid gap-4 md:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]'
+          }
+        >
           <Skeleton className="h-16 w-full rounded-lg" />
           <Skeleton className="h-16 w-full rounded-lg" />
         </div>

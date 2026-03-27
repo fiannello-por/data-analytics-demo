@@ -92,9 +92,7 @@ function DashboardRowActions({ row }: { row: HomepageModuleRow }) {
           <DropdownMenuItem
             disabled={!row.href}
             nativeButton={false}
-            render={
-              row.href ? <Link href={row.href} /> : <div />
-            }
+            render={row.href ? <Link href={row.href} /> : <div />}
           >
             <ExternalLink className="size-4" />
             Open dashboard
@@ -145,7 +143,9 @@ const columns: ColumnDef<HomepageModuleRow>[] = [
   {
     accessorKey: 'owner',
     header: () => <span>Owner</span>,
-    cell: ({ row }) => <span className="text-white/82">{row.original.owner}</span>,
+    cell: ({ row }) => (
+      <span className="text-white/82">{row.original.owner}</span>
+    ),
   },
   {
     accessorKey: 'author',

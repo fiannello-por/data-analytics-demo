@@ -6,10 +6,7 @@ import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-function Pagination({
-  className,
-  ...props
-}: React.ComponentProps<'nav'>) {
+function Pagination({ className, ...props }: React.ComponentProps<'nav'>) {
   return (
     <nav
       aria-label="pagination"
@@ -33,11 +30,10 @@ function PaginationContent({
   );
 }
 
-function PaginationItem({
-  className,
-  ...props
-}: React.ComponentProps<'li'>) {
-  return <li data-slot="pagination-item" className={cn(className)} {...props} />;
+function PaginationItem({ className, ...props }: React.ComponentProps<'li'>) {
+  return (
+    <li data-slot="pagination-item" className={cn(className)} {...props} />
+  );
 }
 
 type PaginationLinkProps = React.ComponentProps<typeof Button> & {

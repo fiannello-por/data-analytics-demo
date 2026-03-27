@@ -25,7 +25,9 @@ export function toIsoDateString(date: Date): string {
   return toIsoDateUTC(date);
 }
 
-export function getCurrentYearRange(referenceDate: Date = new Date()): DateRange {
+export function getCurrentYearRange(
+  referenceDate: Date = new Date(),
+): DateRange {
   const year = referenceDate.getUTCFullYear();
   return {
     startDate: `${year}-01-01`,

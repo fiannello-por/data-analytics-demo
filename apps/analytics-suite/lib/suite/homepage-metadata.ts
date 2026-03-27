@@ -226,7 +226,9 @@ function isHomepageModuleId(moduleId: string): moduleId is DashboardModuleId {
   return moduleId in homepageModuleMetadata;
 }
 
-function getHomepageModuleMetadata(moduleId: DashboardModule['id']): HomepageModuleMeta {
+function getHomepageModuleMetadata(
+  moduleId: DashboardModule['id'],
+): HomepageModuleMeta {
   if (!isHomepageModuleId(moduleId)) {
     throw new HomepageMetadataError(moduleId);
   }
@@ -236,7 +238,9 @@ function getHomepageModuleMetadata(moduleId: DashboardModule['id']): HomepageMod
   return metadata;
 }
 
-export function getHomepageModuleRow(module: DashboardModule): HomepageModuleRow {
+export function getHomepageModuleRow(
+  module: DashboardModule,
+): HomepageModuleRow {
   const metadata = getHomepageModuleMetadata(module.id);
 
   return {
@@ -251,7 +255,6 @@ export function getHomepageModuleRow(module: DashboardModule): HomepageModuleRow
       module.id === 'sales-performance'
         ? 'Live'
         : homepageModuleStatusLabels[module.status],
-    href:
-      module.id === 'sales-performance' ? module.href : undefined,
+    href: module.id === 'sales-performance' ? module.href : undefined,
   };
 }

@@ -2,7 +2,11 @@
 
 import * as React from 'react';
 import { Separator } from '@/components/ui/separator';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
