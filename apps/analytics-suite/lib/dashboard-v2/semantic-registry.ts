@@ -17,10 +17,49 @@ export const DASHBOARD_V2_BASE_MODEL =
 export const DASHBOARD_V2_CLOSED_WON_MODEL =
   'sales_dashboard_v2_closed_won' as const;
 
+type DateRangeStrategy = 'selected' | 'ytd_to_end';
+
 type TileSemanticSpec = {
   measure: string;
   dateDimension: string;
+  extraFilters?: SemanticFilter[];
+  dateRangeStrategy?: DateRangeStrategy;
 };
+
+const CLOSED_WON_FILTERS = [
+  {
+    field: 'won',
+    operator: 'equals',
+    values: [true],
+  },
+  {
+    field: 'stage_name',
+    operator: 'equals',
+    values: ['Closed Won'],
+  },
+] satisfies SemanticFilter[];
+
+const CLOSED_WON_POSITIVE_ACV_FILTERS = [
+  ...CLOSED_WON_FILTERS,
+  {
+    field: 'acv',
+    operator: 'greaterThan',
+    values: [0],
+  },
+] satisfies SemanticFilter[];
+
+const WON_POSITIVE_ACV_FILTERS = [
+  {
+    field: 'won',
+    operator: 'equals',
+    values: [true],
+  },
+  {
+    field: 'acv',
+    operator: 'greaterThan',
+    values: [0],
+  },
+] satisfies SemanticFilter[];
 
 const TILE_SPECS: Record<string, TileSemanticSpec> = {
   new_logo_bookings_amount: {
@@ -34,6 +73,7 @@ const TILE_SPECS: Record<string, TileSemanticSpec> = {
   new_logo_annual_pacing_ytd: {
     measure: 'annual_pacing_ytd',
     dateDimension: 'close_date',
+    dateRangeStrategy: 'ytd_to_end',
   },
   new_logo_close_rate: { measure: 'close_rate', dateDimension: 'close_date' },
   new_logo_avg_age: { measure: 'avg_age', dateDimension: 'close_date' },
@@ -63,17 +103,25 @@ const TILE_SPECS: Record<string, TileSemanticSpec> = {
   expansion_bookings_amount: {
     measure: 'bookings_amount',
     dateDimension: 'close_date',
+    extraFilters: CLOSED_WON_POSITIVE_ACV_FILTERS,
   },
   expansion_bookings_count: {
     measure: 'bookings_count',
     dateDimension: 'close_date',
+    extraFilters: CLOSED_WON_POSITIVE_ACV_FILTERS,
   },
   expansion_annual_pacing_ytd: {
     measure: 'annual_pacing_ytd',
     dateDimension: 'close_date',
+    extraFilters: WON_POSITIVE_ACV_FILTERS,
+    dateRangeStrategy: 'ytd_to_end',
   },
   expansion_close_rate: { measure: 'close_rate', dateDimension: 'close_date' },
-  expansion_avg_age: { measure: 'avg_age', dateDimension: 'close_date' },
+  expansion_avg_age: {
+    measure: 'avg_age_scorecard',
+    dateDimension: 'close_date',
+    extraFilters: WON_POSITIVE_ACV_FILTERS,
+  },
   expansion_avg_booked_deal: {
     measure: 'avg_booked_deal',
     dateDimension: 'close_date',
@@ -105,6 +153,7 @@ const TILE_SPECS: Record<string, TileSemanticSpec> = {
   migration_annual_pacing_ytd: {
     measure: 'annual_pacing_ytd',
     dateDimension: 'close_date',
+    dateRangeStrategy: 'ytd_to_end',
   },
   migration_close_rate: { measure: 'close_rate', dateDimension: 'close_date' },
   migration_avg_age: { measure: 'avg_age', dateDimension: 'close_date' },
@@ -144,6 +193,7 @@ const TILE_SPECS: Record<string, TileSemanticSpec> = {
   renewal_annual_pacing_ytd: {
     measure: 'annual_pacing_ytd',
     dateDimension: 'close_date',
+    dateRangeStrategy: 'ytd_to_end',
   },
   renewal_close_rate: { measure: 'close_rate', dateDimension: 'close_date' },
   renewal_avg_age: { measure: 'avg_age', dateDimension: 'close_date' },
@@ -163,14 +213,18 @@ const TILE_SPECS: Record<string, TileSemanticSpec> = {
   total_bookings_amount: {
     measure: 'bookings_amount',
     dateDimension: 'close_date',
+    extraFilters: CLOSED_WON_POSITIVE_ACV_FILTERS,
   },
   total_bookings_count: {
     measure: 'bookings_count',
     dateDimension: 'close_date',
+    extraFilters: CLOSED_WON_POSITIVE_ACV_FILTERS,
   },
   total_annual_pacing_ytd: {
     measure: 'annual_pacing_ytd',
     dateDimension: 'close_date',
+    extraFilters: CLOSED_WON_POSITIVE_ACV_FILTERS,
+    dateRangeStrategy: 'ytd_to_end',
   },
   total_one_time_revenue: {
     measure: 'one_time_revenue',
@@ -307,16 +361,46 @@ export function buildFilterDictionaryQuery(
 
 type SnapshotGroup = {
   dateDimension: string;
+  extraFilters?: SemanticFilter[];
+  dateRangeStrategy?: DateRangeStrategy;
   tiles: Array<TileDefinition & TileSemanticSpec>;
 };
+
+function buildFilterSignature(filters?: SemanticFilter[]): string {
+  if (!filters?.length) {
+    return '';
+  }
+
+  return JSON.stringify(filters);
+}
+
+function getEffectiveDateRange(
+  dateRange: DateRange,
+  strategy: DateRangeStrategy | undefined,
+): DateRange {
+  if (strategy !== 'ytd_to_end') {
+    return dateRange;
+  }
+
+  // The source scorecard/opportunity_view YTD logic is calendar-year based:
+  // it uses DATE_TRUNC(..., YEAR) and EXTRACT(DAYOFYEAR ...), so the dashboard
+  // needs to normalize pacing windows to Jan 1 through the selected end date.
+  return {
+    startDate: `${dateRange.endDate.slice(0, 4)}-01-01`,
+    endDate: dateRange.endDate,
+  };
+}
 
 export function getSnapshotGroups(category: Category): SnapshotGroup[] {
   const groups = new Map<string, SnapshotGroup>();
 
   for (const tile of getCategoryTiles(category)) {
     const semantic = getSemanticTileSpec(tile.tileId);
-    const group = groups.get(semantic.dateDimension) ?? {
+    const key = `${semantic.dateDimension}:${semantic.dateRangeStrategy ?? 'selected'}:${buildFilterSignature(semantic.extraFilters)}`;
+    const group = groups.get(key) ?? {
       dateDimension: semantic.dateDimension,
+      extraFilters: semantic.extraFilters,
+      dateRangeStrategy: semantic.dateRangeStrategy,
       tiles: [],
     };
 
@@ -324,7 +408,7 @@ export function getSnapshotGroups(category: Category): SnapshotGroup[] {
       ...tile,
       ...semantic,
     });
-    groups.set(semantic.dateDimension, group);
+    groups.set(key, group);
   }
 
   return [...groups.values()];
@@ -336,15 +420,21 @@ export function buildSnapshotGroupQuery(
   dateRange: DateRange,
   group: SnapshotGroup,
 ): SemanticQueryRequest {
+  const effectiveDateRange = getEffectiveDateRange(
+    dateRange,
+    group.dateRangeStrategy,
+  );
+
   return {
     model: DASHBOARD_V2_BASE_MODEL,
     measures: group.tiles.map((tile) => tile.measure),
     filters: [
       ...buildSemanticFilters(filters, category),
+      ...(group.extraFilters ?? []),
       {
         field: group.dateDimension,
         operator: 'between',
-        values: [dateRange.startDate, dateRange.endDate],
+        values: [effectiveDateRange.startDate, effectiveDateRange.endDate],
       },
     ],
   };
@@ -362,6 +452,10 @@ export function buildTrendQuery(
   }
 
   const semantic = getSemanticTileSpec(tileId);
+  const effectiveDateRange = getEffectiveDateRange(
+    dateRange,
+    semantic.dateRangeStrategy,
+  );
 
   return {
     model: DASHBOARD_V2_BASE_MODEL,
@@ -369,10 +463,11 @@ export function buildTrendQuery(
     dimensions: [`${semantic.dateDimension}_week`],
     filters: [
       ...buildSemanticFilters(filters, category),
+      ...(semantic.extraFilters ?? []),
       {
         field: semantic.dateDimension,
         operator: 'between',
-        values: [dateRange.startDate, dateRange.endDate],
+        values: [effectiveDateRange.startDate, effectiveDateRange.endDate],
       },
     ],
     sorts: [

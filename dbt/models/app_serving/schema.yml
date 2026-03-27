@@ -28,7 +28,7 @@ models:
       - name: opportunity_id
         tests: [not_null]
       - name: dashboard_category
-        tests: [not_null]
+        description: Nullable for opportunities that should roll into Total but not a named dashboard category.
 
   - name: sales_dashboard_v2_closed_won_opportunities
     description: Narrow closed-won opportunity serving table for Situation Room semantic v2 detail queries.
