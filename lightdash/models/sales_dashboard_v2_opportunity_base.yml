@@ -224,6 +224,12 @@ dimensions:
     hidden: true
     description: 'Raw ACV used by booked and quoted deal metrics.'
 
+  - name: calendar_days_passed_since_first_day_of_close_date_fy
+    type: number
+    sql: ${TABLE}.calendar_days_passed_since_first_day_of_close_date_fy
+    hidden: true
+    description: 'Source fiscal day counter used to annualize booked pace consistently with OpportunityViewTable.'
+
   - name: hard_imp_value_usd
     type: number
     sql: ${TABLE}.hard_imp_value_usd
@@ -265,7 +271,7 @@ metrics:
 
   annual_pacing_ytd:
     type: number
-    sql: 'COALESCE(SUM(CASE WHEN ${TABLE}.won THEN ${TABLE}.acv END), 0) * 365.0 / NULLIF(DATE_DIFF(MAX(${TABLE}.close_date), MIN(${TABLE}.close_date), DAY) + 1, 0)'
+    sql: 'COALESCE(SUM(CASE WHEN ${TABLE}.won THEN ${TABLE}.acv END), 0) * 365.0 / NULLIF(MAX(${TABLE}.calendar_days_passed_since_first_day_of_close_date_fy), 0)'
     label: 'Annual Pacing (YTD)'
     format: usd
     round: 0
@@ -285,6 +291,13 @@ metrics:
     label: 'Avg Age'
     round: 0
     description: 'Average age in days of won opportunities in the filtered slice.'
+
+  avg_age_scorecard:
+    type: average
+    sql: 'CASE WHEN ${TABLE}.won AND ${TABLE}.acv > 0 AND ${TABLE}.pipeline_start_date IS NOT NULL THEN DATE_DIFF(${TABLE}.close_date, ${TABLE}.pipeline_start_date, DAY) ELSE NULL END'
+    label: 'Avg Age'
+    round: 0
+    description: 'Average booked age in days aligned to the scorecard_daily close-to-pipeline-start logic.'
 
   avg_booked_deal:
     type: average

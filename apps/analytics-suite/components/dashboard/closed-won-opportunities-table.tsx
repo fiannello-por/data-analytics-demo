@@ -211,6 +211,7 @@ function getColumns(): Array<ColumnDef<ClosedWonOpportunityRow>> {
     {
       accessorKey: 'opportunityName',
       ...COLUMN_WIDTHS.opportunityName,
+      sortingFn: 'text',
       header: ({ column }) => (
         <SortableHeader column={column} title="Opportunity" />
       ),

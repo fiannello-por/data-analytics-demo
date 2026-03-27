@@ -46,6 +46,8 @@ with source_rows as (
     coalesce(cast(MigrationOpp as bool), false) as migration_opp,
     cast(Age__c as float64) as age_days,
     cast(ACV as float64) as acv,
+    cast(CalendarDaysPassedSinceFirstDayofCloseDateFY as float64)
+      as calendar_days_passed_since_first_day_of_close_date_fy,
     cast(HardImpValueUSD as float64) as hard_imp_value_usd,
     cast(SDR_Points as float64) as sdr_points,
     cast(Users as float64) as users,
@@ -60,4 +62,3 @@ select
   *,
   (gate1_criteria_met or accepted) as gate_met_or_accepted
 from source_rows
-where dashboard_category is not null

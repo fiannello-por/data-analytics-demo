@@ -110,12 +110,10 @@ function collectSemanticFields(trace: TileBackendTrace): SemanticFieldChip[] {
 
 function FieldBadge({ field }: { field: SemanticFieldChip }) {
   const styles: Record<SemanticFieldKind, string> = {
-    measure:
-      'border-emerald-500/20 bg-emerald-500/10 text-emerald-100 hover:bg-emerald-500/15',
+    measure: 'border-[#62431a] bg-[#62431a] text-[#ffe8b0] hover:bg-[#6b4a1d]',
     dimension:
-      'border-sky-500/20 bg-sky-500/10 text-sky-100 hover:bg-sky-500/15',
-    filter:
-      'border-amber-500/20 bg-amber-500/10 text-amber-100 hover:bg-amber-500/15',
+      'border-[#2c3558] bg-[#2c3558] text-[#e4ecff] hover:bg-[#313b63]',
+    filter: 'border-sky-500/20 bg-sky-500/10 text-sky-100 hover:bg-sky-500/15',
   };
 
   return (
