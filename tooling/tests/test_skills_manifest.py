@@ -8,7 +8,8 @@ from typing import Any, cast
 
 import pytest
 
-from por_analytics.validators.skills_manifest import (
+from por_tooling.validators.skills_manifest import (
+    _default_manifest_path,
     check_installed_skills,
     compute_skill_tree_sha256,
     load_manifest,
@@ -62,9 +63,9 @@ def _manifest_dict() -> dict[str, Any]:
                     "description": "All Lightdash tasks must use the Lightdash skill.",
                     "match": {
                         "paths": [
-                            "lightdash/**",
+                            "semantic/lightdash/**",
                             "lightdash.config.yml",
-                            "src/por_analytics/validators/**",
+                            "tooling/src/por_tooling/validators/**",
                         ],
                         "keywords": ["lightdash", "semantic layer", "dashboard as code"],
                     },
@@ -76,7 +77,7 @@ def _manifest_dict() -> dict[str, Any]:
 
 
 def test_repo_manifest_is_valid() -> None:
-    manifest = load_manifest(Path("skills.manifest.json"))
+    manifest = load_manifest(_default_manifest_path())
     validate_manifest(manifest)
 
     assert manifest.policy.global_required == [

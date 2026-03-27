@@ -9,7 +9,7 @@ import yaml
 if TYPE_CHECKING:
     from pathlib import Path
 
-from por_analytics.validators.lightdash_refs import (
+from por_tooling.validators.lightdash_refs import (
     load_chart,
     load_model,
     validate_refs,

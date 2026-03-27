@@ -212,6 +212,10 @@ def _default_codex_home() -> Path:
     return Path.home() / ".codex"
 
 
+def _default_manifest_path() -> Path:
+    return Path(__file__).resolve().parents[4] / "skills.manifest.json"
+
+
 def _resolve_install_path(skill: SkillDefinition, codex_home: Path) -> Path:
     if skill.install.kind == "codex_superpowers":
         return codex_home / "superpowers" / skill.install.path
@@ -253,7 +257,7 @@ def main() -> int:
     parser.add_argument(
         "--manifest",
         type=Path,
-        default=Path("skills.manifest.json"),
+        default=_default_manifest_path(),
         help="Path to the skills manifest file.",
     )
     parser.add_argument(

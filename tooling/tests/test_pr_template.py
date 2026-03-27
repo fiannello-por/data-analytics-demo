@@ -1,8 +1,8 @@
-"""Tests for por_analytics.lib.pr_template."""
+"""Tests for por_tooling.lib.pr_template."""
 
 from __future__ import annotations
 
-from por_analytics.lib.pr_template import (
+from por_tooling.lib.pr_template import (
     changelog_note,
     missing_required_sections,
     parse_template_sections,

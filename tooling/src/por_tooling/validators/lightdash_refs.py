@@ -164,10 +164,10 @@ def validate_refs(models_dir: Path, charts_dir: Path) -> list[str]:
 
 def main() -> None:
     """CLI entry point for validate-refs."""
-    # Determine project root (walk up from this file to find lightdash/)
+    # Determine project root (walk up from this file to find semantic/lightdash/)
     project_root = Path.cwd()
-    models_dir = project_root / "lightdash" / "models"
-    charts_dir = project_root / "lightdash" / "charts"
+    models_dir = project_root / "semantic" / "lightdash" / "models"
+    charts_dir = project_root / "semantic" / "lightdash" / "charts"
 
     if not models_dir.is_dir():
         print(f"ERROR: Models directory not found: {models_dir}", file=sys.stderr)

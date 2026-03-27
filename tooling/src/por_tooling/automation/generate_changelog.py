@@ -18,21 +18,21 @@ from pathlib import Path
 
 from openai import OpenAI
 
-from por_analytics.lib.agent_utils import (
+from por_tooling.lib.agent_utils import (
     build_diff_summary,
     read_guidance_if_exists,
     sanitize_markdown,
     sanitize_plain_text,
     yaml_single_quoted,
 )
-from por_analytics.lib.github import (
+from por_tooling.lib.github import (
     fetch_github_user,
     github_request,
     paginate_github,
     parse_pr_file,
     parse_repository,
 )
-from por_analytics.lib.pr_template import (
+from por_tooling.lib.pr_template import (
     changelog_note,
     parse_template_sections,
     should_skip_changelog,
@@ -61,7 +61,7 @@ def sanitize_sections(sections: dict[str, str]) -> dict[str, str]:
 
 def next_available_path(date: str, slug: str) -> Path:
     """Find available path for changelog entry, append timestamp if exists."""
-    blog_dir = Path.cwd() / "apps" / "changelog-site" / "blog"
+    blog_dir = Path.cwd() / "apps" / "changelog" / "blog"
     base_path = blog_dir / f"{date}-{slug}.mdx"
 
     if not base_path.exists():

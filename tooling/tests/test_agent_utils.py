@@ -1,28 +1,28 @@
-"""Tests for por_analytics.lib.agent_utils."""
+"""Tests for por_tooling.lib.agent_utils."""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from por_analytics.agents.generate_changelog import sanitize_sections, sanitize_slug
+from por_tooling.automation.generate_changelog import sanitize_sections, sanitize_slug
 
 if TYPE_CHECKING:
     from pathlib import Path
-from por_analytics.lib.agent_utils import (
+from por_tooling.lib.agent_utils import (
     build_diff_summary,
     read_guidance_if_exists,
     sanitize_markdown,
     sanitize_plain_text,
     yaml_single_quoted,
 )
-from por_analytics.lib.github import PullRequestFile
+from por_tooling.lib.github import PullRequestFile
 
 
 def test_build_diff_summary_truncates_file_list_and_patch_text() -> None:
     summary = build_diff_summary(
         [
             PullRequestFile(
-                filename="lightdash/models/opportunity_view.yml",
+                filename="semantic/lightdash/models/opportunity_view.yml",
                 status="modified",
                 additions=10,
                 deletions=2,

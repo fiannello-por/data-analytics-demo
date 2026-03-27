@@ -293,8 +293,8 @@ def validate_all(
 def main() -> None:
     """CLI entry point for validate-shared."""
     project_root = Path.cwd()
-    charts_dir = project_root / "lightdash" / "charts"
-    dashboards_dir = project_root / "lightdash" / "dashboards"
+    charts_dir = project_root / "semantic" / "lightdash" / "charts"
+    dashboards_dir = project_root / "semantic" / "lightdash" / "dashboards"
 
     if not charts_dir.is_dir():
         print(f"ERROR: Charts directory not found: {charts_dir}", file=sys.stderr)

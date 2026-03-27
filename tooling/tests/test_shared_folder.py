@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from por_analytics.validators.shared_folder import (
+from por_tooling.validators.shared_folder import (
     SHARED_CHARTS_SPACE,
     SHARED_DASHBOARDS_SPACE,
     SHARED_ROOT,
