@@ -12,6 +12,7 @@ dependencies = [
 validate-refs = "por_analytics.validators.lightdash_refs:main"
 validate-shared = "por_analytics.validators.shared_folder:main"
 generate-changelog = "por_analytics.agents.generate_changelog:main"
+check-skills = "por_analytics.validators.skills_manifest:main"
 
 [build-system]
 requires = ["hatchling"]

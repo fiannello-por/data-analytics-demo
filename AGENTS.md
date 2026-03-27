@@ -2,6 +2,14 @@
 
 This repository is optimized for both human contributors and coding agents.
 
+## Skills Policy
+
+- `skills.manifest.json` is the source of truth for mandatory repo skills, source pins, and content hashes.
+- Global mandatory skills for all tasks are `using-superpowers` and `verification-before-completion`.
+- Any task that touches Lightdash surfaces or Lightdash-adjacent validators must also use `developing-in-lightdash`.
+- Run `pnpm skills:check` locally to verify that the installed skill copies match the manifest pins.
+- Skill bodies must stay outside the repository. Do not vendor `.agents/` or `.claude/` snapshots back into this repo.
+
 ## Non-Negotiables
 
 - Preserve semantic correctness over stylistic preference.
@@ -20,6 +28,7 @@ This repository is optimized for both human contributors and coding agents.
 ## Lightdash Conventions
 
 - Use standalone Lightdash YAML only.
+- Lightdash work must follow the mandatory skill policy defined in `skills.manifest.json`.
 - Prefer domain-oriented model names and stable business vocabulary.
 - Hide helper columns and raw warehouse identifiers unless they are intentionally user-facing.
 - Add labels for any field whose warehouse name is not business-friendly.
