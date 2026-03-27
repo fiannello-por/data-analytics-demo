@@ -6,7 +6,7 @@ This repository is the operational home for the Point of Rental analytics stack:
 - `apps/analytics-suite/` is the retained analytics application surface.
 - `apps/docs-site/` is the retained planning and architecture documentation app.
 - `apps/changelog/` is a Docusaurus site published on Vercel for the public-facing analytics changelog.
-- `src/por_analytics/agents/` contains Codex-powered automation for changelog generation.
+- `tooling/src/por_tooling/automation/` contains Codex-powered automation for changelog generation.
 
 The current architecture is intentionally dbt-free. Lightdash metadata lives in standalone YAML so the BI layer can move quickly without coupling business logic to dbt project structure. When dbt is introduced, the semantic layer standards in this repo are designed to migrate cleanly into dbt `meta:` blocks.
 
@@ -34,20 +34,22 @@ The current architecture is intentionally dbt-free. Lightdash metadata lives in 
 │       ├── charts/
 │       ├── dashboards/
 │       └── models/
-├── src/
-│   └── por_analytics/
-│       ├── agents/
-│       ├── lib/
-│       └── validators/
-├── pyproject.toml
+├── tooling/
+│   ├── pyproject.toml
+│   ├── src/
+│   │   └── por_tooling/
+│   │       ├── automation/
+│   │       ├── lib/
+│   │       └── validators/
+│   └── tests/
 └── lightdash.config.yml
 ```
 
 ## Local Development
 
 ```bash
-uv sync
 pnpm install
+cd tooling && uv sync
 pnpm validate
 pnpm changelog:dev
 ```

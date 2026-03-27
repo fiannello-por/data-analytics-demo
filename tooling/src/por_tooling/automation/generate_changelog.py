@@ -20,6 +20,7 @@ from openai import OpenAI
 
 from por_tooling.lib.agent_utils import (
     build_diff_summary,
+    find_repo_root,
     read_guidance_if_exists,
     sanitize_markdown,
     sanitize_plain_text,
@@ -61,7 +62,7 @@ def sanitize_sections(sections: dict[str, str]) -> dict[str, str]:
 
 def next_available_path(date: str, slug: str) -> Path:
     """Find available path for changelog entry, append timestamp if exists."""
-    blog_dir = Path.cwd() / "apps" / "changelog" / "blog"
+    blog_dir = find_repo_root() / "apps" / "changelog" / "blog"
     base_path = blog_dir / f"{date}-{slug}.mdx"
 
     if not base_path.exists():
@@ -218,7 +219,7 @@ def _run() -> int:
         encoding="utf-8",
     )
 
-    relative = output_path.relative_to(Path.cwd())
+    relative = output_path.relative_to(find_repo_root())
     print(f"Generated changelog entry: {relative}")
     return 0
 

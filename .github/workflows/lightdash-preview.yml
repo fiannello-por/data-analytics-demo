@@ -7,7 +7,7 @@ on:
       - synchronize
       - reopened
     paths:
-      - 'lightdash/**'
+      - 'semantic/lightdash/**'
       - 'lightdash.config.yml'
 
 permissions:
@@ -49,13 +49,13 @@ jobs:
         run: uv python install
 
       - name: Install Python dependencies
-        run: uv sync
+        run: cd tooling && uv sync
 
       - name: Validate Lightdash references (offline)
-        run: uv run validate-refs
+        run: cd tooling && uv run validate-refs
 
       - name: Validate shared folder rules (offline)
-        run: uv run validate-shared
+        run: cd tooling && uv run validate-shared
 
       - name: Create GitHub deployment
         id: deployment
@@ -103,7 +103,7 @@ jobs:
         run: |
           lightdash start-preview --name "$LIGHTDASH_PREVIEW_NAME" --skip-copy-content
           lightdash deploy --no-warehouse-credentials
-          lightdash upload --force
+          lightdash upload --path ./semantic/lightdash --force
 
       - name: Resolve preview project URL
         id: preview_url

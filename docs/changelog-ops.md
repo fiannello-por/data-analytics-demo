@@ -2,7 +2,7 @@
 
 ## Source Of Truth
 
-The public changelog lives in [apps/changelog-site/blog](../apps/changelog-site/blog). Entries are generated from merged pull requests to the main branch and land through a follow-up automation PR.
+The public changelog lives in [apps/changelog/blog](../apps/changelog/blog). Entries are generated from merged pull requests to the main branch and land through a follow-up automation PR.
 
 ## PR Requirements
 

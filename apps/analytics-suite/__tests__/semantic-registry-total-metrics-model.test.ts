@@ -16,7 +16,7 @@ describe('sales dashboard v2 semantic model', () => {
     const model = parse(
       readFileSync(
         new URL(
-          '../../../lightdash/models/sales_dashboard_v2_opportunity_base.yml',
+          '../../../semantic/lightdash/models/sales_dashboard_v2_opportunity_base.yml',
           import.meta.url,
         ),
         'utf8',
@@ -33,7 +33,7 @@ describe('sales dashboard v2 semantic model', () => {
     const model = parse(
       readFileSync(
         new URL(
-          '../../../lightdash/models/sales_dashboard_v2_opportunity_base.yml',
+          '../../../semantic/lightdash/models/sales_dashboard_v2_opportunity_base.yml',
           import.meta.url,
         ),
         'utf8',
@@ -52,7 +52,7 @@ describe('sales dashboard v2 semantic model', () => {
     const model = parse(
       readFileSync(
         new URL(
-          '../../../lightdash/models/sales_dashboard_v2_opportunity_base.yml',
+          '../../../semantic/lightdash/models/sales_dashboard_v2_opportunity_base.yml',
           import.meta.url,
         ),
         'utf8',

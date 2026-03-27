@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const filePath = resolve('apps/pdr/content/headless-semantic-layer.mdx');
+const filePath = resolve('apps/docs-site/content/headless-semantic-layer.mdx');
 const content = readFileSync(filePath, 'utf8');
 
 if (content.includes('<pre>') || content.includes('className="language-')) {

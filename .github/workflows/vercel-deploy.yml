@@ -60,16 +60,16 @@ jobs:
         run: npm install --global vercel@latest
 
       - name: Pull production environment
-        working-directory: apps/changelog-site
+        working-directory: apps/changelog
         run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
 
       - name: Build production deployment
-        working-directory: apps/changelog-site
+        working-directory: apps/changelog
         run: vercel build --prod --token="$VERCEL_TOKEN"
 
       - name: Deploy to Vercel production
         id: deploy
-        working-directory: apps/changelog-site
+        working-directory: apps/changelog
         run: |
           url="$(vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN")"
           echo "deployment_url=$url" >> "$GITHUB_OUTPUT"

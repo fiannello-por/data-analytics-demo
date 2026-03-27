@@ -12,6 +12,16 @@ if TYPE_CHECKING:
 _SAFE_HTML_TAGS = frozenset({"details", "summary", "br"})
 
 
+def find_repo_root() -> Path:
+    """Locate the monorepo root from the installed tooling package location."""
+    current = Path(__file__).resolve()
+    for candidate in current.parents:
+        if (candidate / "pnpm-workspace.yaml").is_file():
+            return candidate
+
+    raise ValueError(f"Unable to locate repository root from {current}")
+
+
 def read_guidance_if_exists(
     file_path: str,
     max_chars: int = 20000,
@@ -25,7 +35,7 @@ def read_guidance_if_exists(
         ValueError: If the resolved path escapes the workspace root.
     """
     if workspace_root is None:
-        workspace_root = Path.cwd()
+        workspace_root = find_repo_root()
 
     resolved = (workspace_root / file_path).resolve()
 

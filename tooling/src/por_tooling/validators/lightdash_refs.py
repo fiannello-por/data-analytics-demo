@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import yaml
+from por_tooling.lib.agent_utils import find_repo_root
 
 # Time-interval suffixes generated at runtime by Lightdash
 TIME_SUFFIXES = ("_day", "_week", "_month", "_quarter", "_year")
@@ -165,7 +166,7 @@ def validate_refs(models_dir: Path, charts_dir: Path) -> list[str]:
 def main() -> None:
     """CLI entry point for validate-refs."""
     # Determine project root (walk up from this file to find semantic/lightdash/)
-    project_root = Path.cwd()
+    project_root = find_repo_root()
     models_dir = project_root / "semantic" / "lightdash" / "models"
     charts_dir = project_root / "semantic" / "lightdash" / "charts"
 

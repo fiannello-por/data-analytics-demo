@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import yaml
+from por_tooling.lib.agent_utils import find_repo_root
 
 # --- Configuration ---
 
@@ -292,7 +293,7 @@ def validate_all(
 
 def main() -> None:
     """CLI entry point for validate-shared."""
-    project_root = Path.cwd()
+    project_root = find_repo_root()
     charts_dir = project_root / "semantic" / "lightdash" / "charts"
     dashboards_dir = project_root / "semantic" / "lightdash" / "dashboards"
 

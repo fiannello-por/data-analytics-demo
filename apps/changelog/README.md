@@ -12,4 +12,4 @@ pnpm serve
 
 ## Publishing
 
-Deploy this directory to Vercel with the project root set to `apps/changelog-site`.
+Deploy this directory to Vercel with the project root set to `apps/changelog`.

@@ -20,7 +20,7 @@
     "format:check": "prettier --check . && cd tooling && uv run ruff format --check src tests",
     "lightdash:deploy": "lightdash deploy --no-warehouse-credentials",
     "lightdash:lint": "lightdash lint --path ./semantic/lightdash",
-    "lightdash:upload": "lightdash upload --force",
+    "lightdash:upload": "lightdash upload --path ./semantic/lightdash --force",
     "lightdash:validate-refs": "cd tooling && uv run validate-refs",
     "lightdash:validate-shared": "cd tooling && uv run validate-shared",
     "lint:python": "cd tooling && uv run ruff check src tests",

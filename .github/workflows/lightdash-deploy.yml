@@ -43,4 +43,4 @@ jobs:
         run: lightdash deploy --no-warehouse-credentials
 
       - name: Upload charts and dashboards
-        run: lightdash upload --force
+        run: lightdash upload --path ./semantic/lightdash --force

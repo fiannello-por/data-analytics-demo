@@ -98,8 +98,8 @@ function getLightdashProjectBaseUrl(): string | undefined {
 
 function getLightdashModelsDir() {
   const candidates = [
-    path.resolve(process.cwd(), 'lightdash/models'),
-    path.resolve(process.cwd(), '../../lightdash/models'),
+    path.resolve(process.cwd(), 'semantic/lightdash/models'),
+    path.resolve(process.cwd(), '../../semantic/lightdash/models'),
   ];
 
   for (const candidate of candidates) {
@@ -112,7 +112,7 @@ function getLightdashModelsDir() {
   }
 
   throw new Error(
-    'Unable to locate lightdash/models directory from analytics-suite.',
+    'Unable to locate semantic/lightdash/models directory from analytics-suite.',
   );
 }
 
@@ -271,7 +271,7 @@ function buildGithubModelUrl(fileName: string) {
     return undefined;
   }
 
-  return `https://github.com/${context.owner}/${context.repo}/blob/${context.branch}/lightdash/models/${fileName}`;
+  return `https://github.com/${context.owner}/${context.repo}/blob/${context.branch}/semantic/lightdash/models/${fileName}`;
 }
 
 function normalizeFieldName(field: string): string {

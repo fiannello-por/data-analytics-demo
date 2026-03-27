@@ -75,7 +75,7 @@ below).
 Changes to the Shared folder follow the code-managed deployment process:
 
 1. **Author** creates or modifies chart/dashboard YAML files in their local
-   branch (under `lightdash/charts/` or `lightdash/dashboards/`).
+   branch (under `semantic/lightdash/charts/` or `semantic/lightdash/dashboards/`).
 2. **Author** opens a pull request on GitHub targeting the `main` branch.
 3. **CI automation** runs on the PR:
    - Validates field references (`pnpm lightdash:validate-refs`).
