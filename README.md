@@ -54,6 +54,7 @@ Useful commands:
 
 - `pnpm lightdash:lint` validates Lightdash YAML.
 - `pnpm changelog:build` builds the Docusaurus changelog site.
+- `pnpm skills:check` validates the local mandatory skill installs against `skills.manifest.json`.
 
 ## CI/CD
 
@@ -69,5 +70,4 @@ Useful commands:
 - [docs/agentic-bi-principles.md](./docs/agentic-bi-principles.md)
 - [docs/lightdash-playbook.md](./docs/lightdash-playbook.md)
 - [docs/changelog-ops.md](./docs/changelog-ops.md)
-- [docs/agent-skills.md](./docs/agent-skills.md)
 - [docs/setup-secrets.md](./docs/setup-secrets.md)

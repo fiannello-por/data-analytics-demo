@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "skills": {
+    "using-superpowers": {
+      "source": {
+        "kind": "git",
+        "repo": "https://github.com/obra/superpowers.git",
+        "commit": "8ea39819eed74fe2a0338e71789f06b30e953041",
+        "path": "skills/using-superpowers"
+      },
+      "install": {
+        "kind": "codex_superpowers",
+        "path": "skills/using-superpowers"
+      },
+      "content_sha256": "08384a16826e1312d937c2ae882d2497671e64bb7662a05291130e2507b8d18c"
+    },
+    "verification-before-completion": {
+      "source": {
+        "kind": "git",
+        "repo": "https://github.com/obra/superpowers.git",
+        "commit": "8ea39819eed74fe2a0338e71789f06b30e953041",
+        "path": "skills/verification-before-completion"
+      },
+      "install": {
+        "kind": "codex_superpowers",
+        "path": "skills/verification-before-completion"
+      },
+      "content_sha256": "9f704f1335e61a3ce258270d9f492cf487af55f1db0b9fc1bc5fa2173ebd38fa"
+    },
+    "developing-in-lightdash": {
+      "source": {
+        "kind": "managed",
+        "repository": "codex-skills",
+        "version": "2026-03-27",
+        "path": "developing-in-lightdash"
+      },
+      "install": {
+        "kind": "codex_home",
+        "path": "skills/developing-in-lightdash"
+      },
+      "content_sha256": "47e74e760b66b2a8bea557f2686e6002512721ebb0d131c454690a4171d18e8b"
+    }
+  },
+  "policy": {
+    "global_required": ["using-superpowers", "verification-before-completion"],
+    "task_rules": [
+      {
+        "name": "lightdash",
+        "description": "All Lightdash tasks must use the dedicated Lightdash skill.",
+        "match": {
+          "paths": [
+            "lightdash/**",
+            "lightdash.config.yml",
+            "src/por_analytics/validators/**"
+          ],
+          "keywords": [
+            "lightdash",
+            "semantic layer",
+            "dashboard as code",
+            "chart as code"
+          ]
+        },
+        "required_skills": ["developing-in-lightdash"]
+      }
+    ]
+  }
+}
