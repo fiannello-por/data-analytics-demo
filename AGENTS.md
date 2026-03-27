@@ -47,8 +47,9 @@ PRs are expected to use the repository template and complete every section with 
 
 ## Automation Code
 
-Review and changelog agents live in `src/por_analytics/agents/`. Shared libraries
-are in `src/por_analytics/lib/` and validators in `src/por_analytics/validators/`.
+Review and changelog agents live in `tooling/src/por_tooling/automation/`.
+Shared libraries are in `tooling/src/por_tooling/lib/` and validators in
+`tooling/src/por_tooling/validators/`.
 
 ## Changelog Rules
 

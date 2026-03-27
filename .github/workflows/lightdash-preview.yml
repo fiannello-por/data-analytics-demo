@@ -7,8 +7,7 @@ on:
       - synchronize
       - reopened
     paths:
-      - 'lightdash/**'
-      - 'lightdash.config.yml'
+      - 'semantic/lightdash/**'
 
 permissions:
   contents: read
@@ -49,13 +48,13 @@ jobs:
         run: uv python install
 
       - name: Install Python dependencies
-        run: uv sync
+        run: cd tooling && uv sync
 
       - name: Validate Lightdash references (offline)
-        run: uv run validate-refs
+        run: cd tooling && uv run validate-refs
 
       - name: Validate shared folder rules (offline)
-        run: uv run validate-shared
+        run: cd tooling && uv run validate-shared
 
       - name: Create GitHub deployment
         id: deployment
@@ -93,7 +92,7 @@ jobs:
           node-version-file: .nvmrc
 
       - name: Install Lightdash CLI
-        run: npm install -g "@lightdash/cli@$(cat .lightdash-version)"
+        run: npm install -g "@lightdash/cli@$(cat semantic/lightdash/.lightdash-version)"
 
       - name: Reset existing preview project
         run: |
@@ -101,9 +100,10 @@ jobs:
 
       - name: Create or update preview project
         run: |
+          cd semantic/lightdash
           lightdash start-preview --name "$LIGHTDASH_PREVIEW_NAME" --skip-copy-content
           lightdash deploy --no-warehouse-credentials
-          lightdash upload --force
+          lightdash upload --path . --force
 
       - name: Resolve preview project URL
         id: preview_url
@@ -128,6 +128,7 @@ jobs:
       - name: Validate preview project (server-side)
         if: steps.preview_url.outputs.uuid != ''
         run: |
+          cd semantic/lightdash
           lightdash validate \
             --project "$PREVIEW_UUID" \
             --skip-dbt-compile \

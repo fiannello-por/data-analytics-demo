@@ -68,7 +68,7 @@ else
 fi
 
 # --- Lightdash CLI ---
-expected_lightdash=$(cat .lightdash-version)
+expected_lightdash=$(cat semantic/lightdash/.lightdash-version)
 actual_lightdash=$(lightdash --version 2>/dev/null | awk '{print $NF}' || echo "not installed")
 if [ "$actual_lightdash" = "not installed" ]; then
   echo "- Lightdash CLI: not installed (expected ${expected_lightdash})"

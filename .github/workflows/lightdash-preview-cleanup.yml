@@ -5,8 +5,7 @@ on:
     types:
       - closed
     paths:
-      - 'lightdash/**'
-      - 'lightdash.config.yml'
+      - 'semantic/lightdash/**'
 
 permissions:
   contents: read
@@ -38,7 +37,7 @@ jobs:
         with:
           sparse-checkout: |
             .nvmrc
-            .lightdash-version
+            semantic/lightdash/.lightdash-version
           sparse-checkout-cone-mode: false
 
       - name: Set up Node.js
@@ -47,7 +46,7 @@ jobs:
           node-version-file: .nvmrc
 
       - name: Install Lightdash CLI
-        run: npm install -g "@lightdash/cli@$(cat .lightdash-version)"
+        run: npm install -g "@lightdash/cli@$(cat semantic/lightdash/.lightdash-version)"
 
       - name: Stop preview project
         run: lightdash stop-preview --name "$LIGHTDASH_PREVIEW_NAME"

@@ -37,10 +37,10 @@ jobs:
           node-version-file: .nvmrc
 
       - name: Install Lightdash CLI
-        run: npm install -g "@lightdash/cli@$(cat .lightdash-version)"
+        run: npm install -g "@lightdash/cli@$(cat semantic/lightdash/.lightdash-version)"
 
       - name: Deploy semantic layer
-        run: lightdash deploy --no-warehouse-credentials
+        run: cd semantic/lightdash && lightdash deploy --no-warehouse-credentials
 
       - name: Upload charts and dashboards
-        run: lightdash upload --force
+        run: cd semantic/lightdash && lightdash upload --path . --force

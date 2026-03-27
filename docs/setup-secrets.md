@@ -23,7 +23,7 @@ Optional GitHub Actions variables:
 
 ## Vercel
 
-Create a Vercel project with the repo root directory set to `apps/changelog-site`.
+Create a Vercel project with the repo root directory set to `apps/changelog`.
 
 Recommended settings:
 

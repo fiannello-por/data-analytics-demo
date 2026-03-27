@@ -32,20 +32,16 @@ jobs:
         with:
           filters: |
             lightdash:
-              - 'lightdash/**'
-              - 'lightdash.config.yml'
-              - 'src/por_analytics/validators/**'
+              - 'semantic/lightdash/**'
+              - 'tooling/src/por_tooling/validators/**'
             code:
-              - 'src/**'
-              - 'tests/**'
+              - 'tooling/**'
               - 'apps/**'
-              - 'pyproject.toml'
-              - 'uv.lock'
               - 'package.json'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
             changelog-site:
-              - 'apps/changelog-site/**'
+              - 'apps/changelog/**'
             markdown:
               - '**/*.md'
               - '**/*.mdx'
@@ -69,13 +65,13 @@ jobs:
         run: uv python install
 
       - name: Install Python dependencies
-        run: uv sync
+        run: cd tooling && uv sync
 
       - name: Validate Lightdash references
-        run: uv run validate-refs
+        run: cd tooling && uv run validate-refs
 
       - name: Validate shared folder rules
-        run: uv run validate-shared
+        run: cd tooling && uv run validate-shared
 
   lint-format:
     runs-on: ubuntu-latest
@@ -93,7 +89,7 @@ jobs:
         run: uv python install
 
       - name: Install Python dependencies
-        run: uv sync
+        run: cd tooling && uv sync
 
       - name: Set up pnpm
         uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
@@ -152,7 +148,7 @@ jobs:
         run: uv python install
 
       - name: Install Python dependencies
-        run: uv sync
+        run: cd tooling && uv sync
 
       - name: Set up pnpm
         uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
@@ -167,13 +163,13 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Lint Python
-        run: uv run ruff check src tests
+        run: cd tooling && uv run ruff check src tests
 
       - name: Type check Python
-        run: uv run mypy src tests
+        run: cd tooling && uv run mypy src tests
 
       - name: Run Python tests
-        run: uv run pytest -v
+        run: cd tooling && uv run pytest -v
 
       - name: Typecheck changelog site
         run: pnpm --filter @point-of-rental/changelog-site typecheck

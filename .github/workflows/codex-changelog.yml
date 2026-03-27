@@ -41,7 +41,7 @@ jobs:
         run: uv python install
 
       - name: Install Python dependencies
-        run: uv sync
+        run: cd tooling && uv sync
 
       - name: Generate changelog entry
         env:
@@ -50,7 +50,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_CODEX_MODEL: ${{ vars.OPENAI_CODEX_MODEL || 'gpt-5.2-codex' }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: uv run generate-changelog
+        run: cd tooling && uv run generate-changelog
 
       - name: Commit generated changelog
         id: commit_changelog
@@ -64,7 +64,7 @@ jobs:
           git config user.name "codex-bot"
           git config user.email "codex-bot@users.noreply.github.com"
           git switch -c "$branch"
-          git add apps/changelog-site/blog
+          git add apps/changelog/blog
           git commit -m "docs(changelog): update from PR #${{ github.event.pull_request.number }} [skip ci]"
           git push --force --set-upstream origin "$branch"
           echo "changed=true" >> "$GITHUB_OUTPUT"

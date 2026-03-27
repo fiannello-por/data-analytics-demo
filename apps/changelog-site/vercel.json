@@ -1,6 +1,0 @@
-{
-  "ignoreCommand": "git diff HEAD^ HEAD --quiet -- apps/changelog-site/",
-  "github": {
-    "silent": true
-  }
-}
