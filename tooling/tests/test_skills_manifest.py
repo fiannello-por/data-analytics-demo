@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import pytest
 
@@ -15,6 +14,9 @@ from por_tooling.validators.skills_manifest import (
     load_manifest,
     validate_manifest,
 )
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def _manifest_dict() -> dict[str, Any]:

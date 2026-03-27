@@ -9,10 +9,14 @@ from __future__ import annotations
 import re
 import sys
 from dataclasses import dataclass
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import yaml
+
 from por_tooling.lib.agent_utils import find_repo_root
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 # Time-interval suffixes generated at runtime by Lightdash
 TIME_SUFFIXES = ("_day", "_week", "_month", "_quarter", "_year")

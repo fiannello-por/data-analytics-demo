@@ -3,13 +3,13 @@ node_modules
 .claude
 .codex
 .context
-apps/changelog-site/.docusaurus
-apps/changelog-site/build
+apps/changelog/.docusaurus
+apps/changelog/build
 initial_context.md
 pnpm-lock.yaml
 *.py
 uv.lock
 .venv
-apps/pdr/.next
-apps/pdr/.source
+apps/docs-site/.next
+apps/docs-site/.source
 apps/situation-room/app/generated-theme.css

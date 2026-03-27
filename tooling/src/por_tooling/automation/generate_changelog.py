@@ -14,7 +14,7 @@ import sys
 import time
 import traceback
 from datetime import UTC, datetime
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from openai import OpenAI
 
@@ -38,6 +38,9 @@ from por_tooling.lib.pr_template import (
     parse_template_sections,
     should_skip_changelog,
 )
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def _require_env(name: str) -> str:
