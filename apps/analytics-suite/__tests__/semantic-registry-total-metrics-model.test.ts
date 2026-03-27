@@ -2,8 +2,13 @@ import { readFileSync } from 'node:fs';
 import { parse } from 'yaml';
 import { describe, expect, it } from 'vitest';
 
+type LightdashMetric = {
+  sql?: string;
+  label?: string;
+};
+
 type LightdashModel = {
-  metrics?: Record<string, { sql?: string }>;
+  metrics?: Record<string, LightdashMetric>;
 };
 
 describe('sales dashboard v2 semantic model', () => {
@@ -57,6 +62,8 @@ describe('sales dashboard v2 semantic model', () => {
     expect(model.metrics?.avg_age_scorecard?.sql).toContain(
       'DATE_DIFF(${TABLE}.close_date, ${TABLE}.pipeline_start_date, DAY)',
     );
+    expect(model.metrics?.avg_age_scorecard?.label).toBe('Avg Age (Scorecard)');
+    expect(model.metrics?.avg_age?.label).toBe('Avg Age');
     expect(model.metrics?.avg_age_scorecard?.sql).toContain('${TABLE}.acv > 0');
     expect(model.metrics?.avg_age_scorecard?.sql).not.toContain(
       '${TABLE}.age_days',

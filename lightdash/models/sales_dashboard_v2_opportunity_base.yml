@@ -295,7 +295,7 @@ metrics:
   avg_age_scorecard:
     type: average
     sql: 'CASE WHEN ${TABLE}.won AND ${TABLE}.acv > 0 AND ${TABLE}.pipeline_start_date IS NOT NULL THEN DATE_DIFF(${TABLE}.close_date, ${TABLE}.pipeline_start_date, DAY) ELSE NULL END'
-    label: 'Avg Age'
+    label: 'Avg Age (Scorecard)'
     round: 0
     description: 'Average booked age in days aligned to the scorecard_daily close-to-pipeline-start logic.'
 

@@ -382,6 +382,9 @@ function getEffectiveDateRange(
     return dateRange;
   }
 
+  // The source scorecard/opportunity_view YTD logic is calendar-year based:
+  // it uses DATE_TRUNC(..., YEAR) and EXTRACT(DAYOFYEAR ...), so the dashboard
+  // needs to normalize pacing windows to Jan 1 through the selected end date.
   return {
     startDate: `${dateRange.endDate.slice(0, 4)}-01-01`,
     endDate: dateRange.endDate,
