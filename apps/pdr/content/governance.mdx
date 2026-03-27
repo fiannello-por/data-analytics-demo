@@ -37,67 +37,94 @@ Lightdash/
 
 ## 5.2 Security Considerations
 
-### Authentication & SSO
+A full security assessment was conducted against the self-hosted Lightdash deployment. The scores below reflect the fully hardened configuration after all pending items are implemented.
 
-- Lightdash supports [SSO via Google, Azure AD, Okta, and OneLogin](https://docs.lightdash.com/self-host/customize-deployment/use-sso-login-for-self-hosted-lightdash) — multiple providers can be active simultaneously
-- Password-based login can be disabled to enforce SSO-only access
-- GitHub access is managed through organization membership with [two-factor authentication](https://docs.github.com/en/authentication/securing-your-account-with-two-factor-authentication-2fa) enforced
+**Assessment scope:** Lightdash open-source v0.2628.0 on Render (Professional workspace) + Cloudflare free WAF, connected to BigQuery (GCP project `data-analytics-306119`). Full assessment details: [Issue #35](https://github.com/fiannello-por/data-analytics-demo/issues/35).
 
-### Role-Based Access Control
+### Security Posture — Target State (8.0 / 10)
 
-Lightdash provides [granular roles and permissions](https://docs.lightdash.com/references/roles) at multiple levels:
+| #   | Category                            | Score   | Controls in Place                                                                                                                                                                                                                                                   |
+| --- | ----------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | **Authentication & Access Control** | 8.5     | Google OAuth with PKCE + state parameter. Password authentication disabled. Google app set to Internal (only `@pointofrental.com` Workspace accounts). Server-side email domain restriction. 8-hour session max. All unused PATs and non-corporate accounts removed |
+| 2   | **Data Encryption**                 | 9.0     | AES-256-GCM for warehouse credentials (random salt/IV per operation). Render Postgres AES-256 at rest. TLS 1.2+ in transit. `LIGHTDASH_SECRET` at 288-bit entropy                                                                                                   |
+| 3   | **API Security**                    | 6.5     | Cloudflare WAF rate limiting on all endpoints. Headless browser, embedding, and service accounts disabled. Attack surface minimized to core analytics use                                                                                                           |
+| 4   | **SQL Injection Protection**        | 7.0     | Application database (Postgres/Knex) uses parameterized queries. Warehouse SQL uses custom escaping (double quotes, strip comments, null byte removal) across 8+ SQL dialects. Custom SQL dimensions are RBAC-gated                                                 |
+| 5   | **Infrastructure Security**         | 8.5     | Render Professional private networking (Lightdash ↔ Postgres). Cloudflare WAF + rate limiting. Secure cookies over HTTPS only. Telemetry disabled. GCP service account confirmed least-privilege (`bigquery.jobUser` + `bigquery.dataViewer` only)                  |
+| 6   | **Dependency Health**               | 6.0     | Dependabot monitors weekly for new Lightdash releases. No known CVEs against Lightdash itself. Remaining CVEs are in transitive dependencies managed by Lightdash upstream                                                                                          |
+| 7   | **Operational Security**            | 9.0     | Dockerfile pinned to specific version (no auto-deploy). Dependabot PR workflow for controlled upgrades. Incident response runbook. Render Professional automated backups with point-in-time recovery                                                                |
+| 8   | **Credential Management**           | 7.5     | PATs reduced to active-use only with 90-day expiry. GCP service account verified least-privilege. `LIGHTDASH_SECRET` confirmed 288-bit entropy                                                                                                                      |
+|     | **OVERALL**                         | **8.0** |                                                                                                                                                                                                                                                                     |
 
-| Level                                                                                         | Controls                                                                                                     |
-| --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| **Organization**                                                                              | Admin, member, viewer roles across the entire instance                                                       |
-| **Project**                                                                                   | Per-project access for different teams or use cases                                                          |
-| **[Space](https://docs.lightdash.com/guides/spaces/)**                                        | Restricted or full-access spaces with nested permissions — control who can view, edit, or manage each folder |
-| **[User groups](https://changelog.lightdash.com/manage-user-group-access-to-a-space-293637)** | Manage access at scale by assigning groups to spaces instead of individual users                             |
+### Accepted Risk (Lightdash Codebase)
 
-### Row-Level Security
+These exist in **every Lightdash edition**, including Cloud Pro ($2,400/mo). Only the Lightdash development team can address them:
 
-Lightdash supports [row-level security](https://changelog.lightdash.com/row-level-security-based-on-a-user's-email-or-name-290489) based on user attributes (email, name, department, region). This means the same dashboard can show different data to different users — a sales rep sees only their region, a director sees all regions — without building separate dashboards.
+| Issue                                                                               | Risk Level | Mitigation                                                                               |
+| ----------------------------------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------- |
+| Single master secret (`LIGHTDASH_SECRET`) for encryption, sessions, and PAT hashing | Medium     | High-entropy secret (288 bits). Rotation procedure documented in runbook                 |
+| PBKDF2 key derivation at 2,000 iterations (OWASP recommends 600,000+)               | Medium     | Only exploitable if encrypted database is exfiltrated. Render Postgres encrypted at rest |
+| Warehouse SQL via string concatenation (not parameterized)                          | Medium     | Custom escaping compensates. Custom SQL dimensions restricted via RBAC                   |
+| CSV/file download endpoints without authentication                                  | Medium     | Requires valid 21-char random nanoId. No directory listing. Files auto-expire            |
+| No CSRF token middleware                                                            | Low        | `SameSite=Lax` cookies active. Embedding disabled — bypass path closed                   |
+| No CSV formula injection sanitization                                               | Low        | Internal users only. Awareness-based mitigation                                          |
 
-```yaml
-# Example: filter opportunities by the logged-in user's email
-sql_filter: ${TABLE}.owner_email = '${lightdash.user.email}'
-```
+### Maintenance & DevOps Artifacts
 
-### Change Control & Audit Trail
+| Artifact                                  | Status    | Purpose                                                                                                                                       | Ongoing Effort                                 |
+| ----------------------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| **Version-pinned deploy repo**            | Delivered | Forked Dockerfile pinned to v0.2628.0. Prevents unreviewed auto-updates                                                                       | —                                              |
+| **Dependabot (weekly Docker monitoring)** | Delivered | Opens PR on Mondays when new Lightdash version is published                                                                                   | ~15 min/week to review changelog + merge       |
+| **Incident response runbook**             | To create | 8-scenario playbook with containment, credential rotation (exact CLI commands), and recovery steps                                            | 2–3 hours initial, review quarterly            |
+| **Monitoring & alerting**                 | To create | Render log drains → free alerting service (Betterstack or Grafana Cloud free tier). Detect anomalous logins, API abuse, unusual query volumes | 2–4 hours initial, ~30 min/month               |
+| **Backup & disaster recovery plan**       | To create | Render Professional Postgres backup schedule + restore procedure + RTO/RPO targets                                                            | 1–2 hours initial (after Professional upgrade) |
+| **Quarterly security review**             | To create | Re-run Trivy + Semgrep on new versions before upgrading. Verify GCP SA roles. Review PAT list                                                 | 1 hour/quarter                                 |
 
-- All changes to production dashboards go through [GitHub pull requests](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches) with required reviews — no direct modifications
-- [Branch protection rules](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/managing-a-branch-protection-rule) enforce that all CI checks pass before merge
-- Every change is logged with who made it, when, why, and what was reviewed — full audit trail in Git history
-- Force pushes and branch deletions are blocked on `main`
+### Cloud Pro vs Self-Hosted
 
-### Data Security
+|                              | Self-Hosted (target)                   | Cloud Pro            | Difference                                    |
+| ---------------------------- | -------------------------------------- | -------------------- | --------------------------------------------- |
+| **Security score**           | 8.0                                    | ~8.5                 | +0.5 from ops (their SRE team), not from code |
+| **Monthly cost**             | $63                                    | $2,400               | 38x more expensive                            |
+| **Annual cost**              | $756                                   | $28,800              | $28,044 difference                            |
+| **Codebase security issues** | 8                                      | 8                    | Identical                                     |
+| **Authentication**           | Google OAuth + PKCE, domain-restricted | Same                 | Identical                                     |
+| **Encryption**               | AES-256-GCM, TLS 1.2+                  | Same                 | Identical                                     |
+| **WAF / rate limiting**      | Cloudflare free tier                   | Their infrastructure | Equivalent                                    |
 
-- Lightdash [does not cache or store query results](https://www.lightdash.com/lightdash-security) — data stays in BigQuery
-- All connections to BigQuery use encrypted channels
-- Self-hosted deployment means data never leaves our controlled infrastructure
-- Lightdash maintains [SOC 2 Type II and HIPAA compliance](https://security.lightdash.com/) for their cloud offering — the same security practices apply to the open-source codebase
+The ~0.5 score difference is operational resilience — their SRE team handles monitoring, incident response, and backups — not stronger security controls. With the maintenance artifacts above in place, the operational gap narrows further.
 
-### AI Agent Security
+**Cloud Pro features that are genuinely exclusive** (and not security-related):
 
-- AI agents (PR review, changelog) operate through the same PR workflow — they cannot modify production directly
-- [AI agents in Lightdash](https://docs.lightdash.com/guides/ai-agents/data-access) respect the same role-based permissions as human users — an agent can only access data the authenticated user is allowed to see
-- LLM API keys are stored as [GitHub encrypted secrets](https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions), never committed to code
+| Feature                                                               | Cost                  |
+| --------------------------------------------------------------------- | --------------------- |
+| AI Agents (natural language data exploration, Slack @mention Q&A)     | +$600/mo add-on       |
+| Smart caching (enterprise-gated query result caching)                 | Included in Cloud Pro |
+| User groups + private spaces (bulk permission management convenience) | Included in Cloud Pro |
+| 30-day version history (vs 3-day)                                     | Included in Cloud Pro |
+| Dedicated human support (1-day SLA)                                   | Included in Cloud Pro |
+
+<Callout type="info">
+  **Recommendation:** Self-hosted at $63/month achieves 94% of the security
+  posture that $28,800/year buys, with identical codebase risk. Per-user access
+  control is already available in self-hosted — user groups only add bulk
+  management convenience, not new security capabilities.
+</Callout>
 
 ## 5.3 Change Management & Stakeholder Communication
 
 Every change to production analytics is communicated automatically — no manual effort required.
 
-```text
-PR merged to main
-       |
-       +---> Production auto-deployed
-       |
-       +---> Changelog entry auto-generated
-       |         |
-       |         +---> Published to changelog site
-       |
-       +---> Subscribers notified via Slack
-```
+<BranchFlow
+  trigger="PR merged to main"
+  branches={[
+    { label: 'Production', sublabel: 'auto-deployed' },
+    {
+      label: 'Changelog',
+      sublabel: 'auto-generated → published to changelog site',
+    },
+    { label: 'Slack', sublabel: 'subscribers notified' },
+  ]}
+/>
 
 **Subscription model:**
 

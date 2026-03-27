@@ -100,16 +100,18 @@ Replace BigQuery scheduled queries with version-controlled dbt models. This phas
 
 At every phase, the existing Looker Studio dashboards remain live and untouched. There is no "switch-over day."
 
-```text
-              Phase 0          Phase 1               Phase 2
-Timeline  ----+----------------+---------------------+------------>
-
-Looker Studio =================================================> (stays live)
-
-              Lightdash        ===============================> (grows alongside)
-
-                                             dbt     =========> (plugs in when ready)
-```
+<Timeline
+  phases={[
+    { label: 'Phase 0', description: 'Proof of Concept' },
+    { label: 'Phase 1', description: 'Core Platform' },
+    { label: 'Phase 2', description: 'dbt Integration' },
+  ]}
+  tracks={[
+    { label: 'Looker Studio', startPhase: 0, note: 'stays live' },
+    { label: 'Lightdash', startPhase: 0.5, note: 'grows alongside' },
+    { label: 'dbt', startPhase: 2, note: 'plugs in when ready' },
+  ]}
+/>
 
 - Looker Studio stays live until the team is confident in the replacement
 - Each phase delivers standalone value — if the project pauses at any point, what's been built remains useful

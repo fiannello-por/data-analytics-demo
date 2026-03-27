@@ -1,0 +1,296 @@
+---
+title: 'Architecture Overview'
+description: Lightdash as a Headless Semantic Layer
+---
+
+import { ArchitectureOverviewDiagram } from '@/app/components/architecture-overview-diagram';
+
+## Introduction
+
+### How We Got Here
+
+The PDR established that we need to modernize off Looker Studio. Lightdash was proposed as the full-stack replacement: semantic layer, dashboards-as-code, CI/CD, AI-readiness, all open source and budget-friendly.
+
+The feedback was that Lightdash&apos;s visualization layer, tile-based and grid-constrained, does not meet the bar for what leadership wants to present to stakeholders. The dashboards need to feel like a product, not a BI tool.
+
+That creates the real tension:
+
+<table>
+  <thead>
+    <tr>
+      <th>Requirement</th>
+      <th>What satisfies it</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Semantic layer + metric governance</td>
+      <td>Lightdash, Looker, dbt</td>
+    </tr>
+    <tr>
+      <td>Budget-friendly</td>
+      <td>Lightdash, open-source tools</td>
+    </tr>
+    <tr>
+      <td>LLM-friendly (code-first, text-based)</td>
+      <td>Lightdash, Looker (LookML)</td>
+    </tr>
+    <tr>
+      <td>Beautiful, flexible visualization</td>
+      <td>Custom webapp, Tableau</td>
+    </tr>
+    <tr>
+      <td>BI platform features (self-service, exploration)</td>
+      <td>Traditional BI tools</td>
+    </tr>
+  </tbody>
+</table>
+
+No single tool checks all five boxes. So the question becomes: can we split the stack? Keep Lightdash for what it is great at, semantic layer, governance, self-service exploration, and CI/CD, and use Next.js for what it is great at, pixel-perfect, fully custom visualization.
+
+That is the hypothesis this POC tests.
+
+### Scope
+
+This POC answers one question with one dashboard.
+
+### In Scope
+
+- Lightdash works as a headless semantic layer: its API compiles semantic intent, model + measures + dimensions + filters, into SQL without ever rendering a chart
+- A Next.js app can consume that API to render a fully custom dashboard with complete UI freedom
+- The governance model survives: metrics are still defined once in YAML, version-controlled, CI-validated, and shared between Lightdash&apos;s own UI and the custom webapp
+- Performance is viable: compile + execute latency is acceptable for an interactive dashboard
+- One working example: the Sales Performance dashboard, rebuilt in Next.js and powered by Lightdash&apos;s semantic layer
+
+### Out of Scope
+
+- This is not a production architecture recommendation; it is a feasibility test
+- This is not a design review of the dashboard UI; the point is to prove that the same data can be reproduced outside Lightdash and that adding Lightdash to the stack does not introduce unacceptable query latency
+
+## How It Works
+
+<ArchitectureOverviewDiagram />
+
+1. **The UI asks the Semantic Layer:** "I need the close rate metric, filtered by expansion customers, grouped by week." This is a semantic intent. It describes what, not how.
+
+2. **The Semantic Layer responds with compiled SQL:** A fully formed query ready to execute, built from version-controlled metric definitions. The UI never writes SQL.
+
+3. **The UI sends the SQL to the Warehouse:** The compiled query goes directly from the UI to BigQuery. The Semantic Layer is not involved in execution.
+
+4. **The Warehouse returns rows:** Raw result data flows back to the UI, which renders it as charts, tables, or any other visualization.
+
+See the live example: [Sales Performance Dashboard](https://analytics-suite.vercel.app/dashboards/sales-performance?category=Expansion&startDate=2026-01-01&endDate=2026-03-27&tileId=expansion_annual_pacing_ytd).
+
+## Real Example: Close Rate Expansion
+
+Here&apos;s how a single chart, **Close Rate (Expansion)**, flows through the same architecture. Every arrow, payload, and transformation below is taken from the actual system.
+
+Reference docs: [Lightdash API reference](https://docs.lightdash.com/api-reference/v1/introduction) and [Lightdash semantic layer guide](https://docs.lightdash.com/guides/lightdash-semantic-layer).
+
+<div id="real-example" className="semantic-real-example relative left-1/2 my-10 w-[min(920px,calc(100vw-4rem))] max-w-none -translate-x-1/2">
+
+  <details className="group mb-6 rounded-xl border border-white/10 bg-white/[0.02]" open>
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3 marker:content-none">
+      <div className="flex min-w-0 items-center gap-3 text-sm">
+        <span className="shrink-0 rounded bg-white/[0.06] px-2 py-1 text-xs font-bold uppercase tracking-wider text-zinc-300">
+          Step 1
+        </span>
+        <span className="font-semibold text-fd-foreground">The Request</span>
+        <span className="truncate text-zinc-500">UI &rarr; Semantic Layer</span>
+      </div>
+      <svg
+        viewBox="0 0 20 20"
+        aria-hidden="true"
+        className="h-4 w-4 shrink-0 text-zinc-500 transition-transform duration-200 group-open:rotate-180"
+      >
+        <path
+          d="M5.25 7.5 10 12.25 14.75 7.5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </summary>
+    <div className="border-t border-white/10 px-4 py-4">
+      <div className="text-sm text-fd-muted-foreground !mb-3">
+        The UI asks the Semantic Layer to compile a query. It sends metric names, dimension names, and filters, no SQL.
+      </div>
+
+      <pre>
+        <code className="language-http">{`POST /api/v1/projects/0cfa36e8-.../explores/sales_dashboard_v2_opportunity_base/compileQuery`}</code>
+      </pre>
+
+      <pre>
+        <code className="language-json">{`{
+
+"metrics": ["sales_dashboard_v2_opportunity_base_close_rate"],
+"dimensions": ["sales_dashboard_v2_opportunity_base_close_date_week"],
+"filters": {
+"dimensions": {
+"and": [
+{
+"target": { "fieldId": "...dashboard_category" },
+"operator": "equals",
+"values": ["Expansion"]
+},
+{
+"target": { "fieldId": "...close_date" },
+"operator": "inBetween",
+"values": ["2026-01-01", "2026-03-27"]
+}
+]
+}
+}
+}`}</code>
+
+</pre>
+
+    </div>
+
+  </details>
+
+  <details className="group mb-6 rounded-xl border border-white/10 bg-white/[0.02]" open>
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3 marker:content-none">
+      <div className="flex min-w-0 items-center gap-3 text-sm">
+        <span className="shrink-0 rounded bg-white/[0.06] px-2 py-1 text-xs font-bold uppercase tracking-wider text-zinc-300">
+          Step 2
+        </span>
+        <span className="font-semibold text-fd-foreground">The Compilation</span>
+        <span className="truncate text-zinc-500">inside the Semantic Layer</span>
+      </div>
+      <svg
+        viewBox="0 0 20 20"
+        aria-hidden="true"
+        className="h-4 w-4 shrink-0 text-zinc-500 transition-transform duration-200 group-open:rotate-180"
+      >
+        <path
+          d="M5.25 7.5 10 12.25 14.75 7.5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </summary>
+    <div className="border-t border-white/10 px-4 py-4">
+      <div className="text-sm text-fd-muted-foreground !mb-3">
+        Lightdash resolves <code className="text-fd-foreground">close_rate</code> into the actual SQL formula. It also resolves <code className="text-fd-foreground">close_date_week</code> into <code className="text-fd-foreground">DATE_TRUNC(close_date, WEEK)</code>. These definitions live in version-controlled YAML, defined once, used everywhere.
+      </div>
+
+      <pre>
+        <code className="language-yaml">{`close_rate:
+
+type: number
+sql: 'SAFE_DIVIDE(
+COUNT(DISTINCT CASE WHEN \${TABLE}.is_closed
+AND \${TABLE}.won THEN \${TABLE}.opportunity_id END),
+COUNT(DISTINCT CASE WHEN \${TABLE}.is_closed
+THEN \${TABLE}.opportunity_id END)
+)'
+label: 'Close Rate'
+format: percent`}</code>
+
+</pre>
+
+    </div>
+
+  </details>
+
+  <details className="group mb-6 rounded-xl border border-white/10 bg-white/[0.02]" open>
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3 marker:content-none">
+      <div className="flex min-w-0 items-center gap-3 text-sm">
+        <span className="shrink-0 rounded bg-white/[0.06] px-2 py-1 text-xs font-bold uppercase tracking-wider text-zinc-300">
+          Step 3
+        </span>
+        <span className="font-semibold text-fd-foreground">The Execution</span>
+        <span className="truncate text-zinc-500">UI &rarr; Warehouse</span>
+      </div>
+      <svg
+        viewBox="0 0 20 20"
+        aria-hidden="true"
+        className="h-4 w-4 shrink-0 text-zinc-500 transition-transform duration-200 group-open:rotate-180"
+      >
+        <path
+          d="M5.25 7.5 10 12.25 14.75 7.5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </summary>
+    <div className="border-t border-white/10 px-4 py-4">
+      <div className="text-sm text-fd-muted-foreground !mb-3">
+        The UI takes the compiled SQL and executes it directly against BigQuery via <code className="text-fd-foreground">bigquery.createQueryJob()</code>. The Semantic Layer is not involved in execution.
+      </div>
+
+      <pre>
+        <code className="language-sql">{`SELECT
+
+DATE_TRUNC(close_date, WEEK) AS close_date_week,
+SAFE_DIVIDE(
+COUNT(DISTINCT CASE WHEN is_closed AND won THEN opportunity_id END),
+COUNT(DISTINCT CASE WHEN is_closed THEN opportunity_id END)
+) AS close_rate
+FROM \`data-analytics-306119.scorecard_test.sales_dashboard_v2_opportunity_base\`
+WHERE dashboard_category = 'Expansion'
+AND close_date BETWEEN '2026-01-01' AND '2026-03-27'
+GROUP BY close_date_week
+ORDER BY close_date_week ASC`}</code>
+
+</pre>
+
+    </div>
+
+  </details>
+
+  <details className="group mb-6 rounded-xl border border-white/10 bg-white/[0.02]" open>
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3 marker:content-none">
+      <div className="flex min-w-0 items-center gap-3 text-sm">
+        <span className="shrink-0 rounded bg-white/[0.06] px-2 py-1 text-xs font-bold uppercase tracking-wider text-zinc-300">
+          Step 4
+        </span>
+        <span className="font-semibold text-fd-foreground">The Result</span>
+        <span className="truncate text-zinc-500">Warehouse &rarr; UI</span>
+      </div>
+      <svg
+        viewBox="0 0 20 20"
+        aria-hidden="true"
+        className="h-4 w-4 shrink-0 text-zinc-500 transition-transform duration-200 group-open:rotate-180"
+      >
+        <path
+          d="M5.25 7.5 10 12.25 14.75 7.5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </summary>
+    <div className="border-t border-white/10 px-4 py-4">
+      <div className="text-sm text-fd-muted-foreground !mb-3">
+        BigQuery returns raw rows. The UI transforms these into the Close Rate trend chart you see on the dashboard.
+      </div>
+
+      <pre>
+        <code className="language-json">{`[
+
+{ "close_date_week": "2026-01-06", "close_rate": 0.76 },
+{ "close_date_week": "2026-01-13", "close_rate": 0.71 },
+{ "close_date_week": "2026-01-20", "close_rate": 0.68 },
+{ "close_date_week": "2026-01-27", "close_rate": 0.73 },
+{ "close_date_week": "2026-02-03", "close_rate": 0.7 }
+]`}</code>
+
+</pre>
+
+    </div>
+
+  </details>
+
+</div>

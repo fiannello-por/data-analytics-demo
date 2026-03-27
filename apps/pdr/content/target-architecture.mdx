@@ -8,19 +8,23 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 
 ## 3.1 Architecture Overview
 
-```text
-+------------+     +---------+     +------------+     +------------+     +----------+
-| Salesforce |---->|  Stitch  |---->|  BigQuery  |---->| Lightdash  |<--->|  GitHub   |
-|  (source)  |     | (ingest) |     |(warehouse) |     |    (BI)    |     |  (CI/CD)  |
-+------------+     +---------+     +------------+     +------------+     +----------+
-   Existing          Existing         Existing              New               New
-```
+<FlowDiagram
+  steps={[
+    { label: 'Salesforce', sublabel: '(source)', tag: 'Existing' },
+    { label: 'Stitch', sublabel: '(ingest)', tag: 'Existing' },
+    { label: 'BigQuery', sublabel: '(warehouse)', tag: 'Existing' },
+    { label: 'dbt', sublabel: '(transform)', tag: 'Phase 2' },
+    { label: 'Lightdash', sublabel: '(BI)', tag: 'New', biArrow: true },
+    { label: 'GitHub', sublabel: '(CI/CD)', tag: 'New' },
+  ]}
+/>
 
 | Component                                    | Role                                           | Status                 |
 | -------------------------------------------- | ---------------------------------------------- | ---------------------- |
 | **Salesforce**                               | Source of truth for sales data                 | Existing — no changes  |
 | **Stitch**                                   | Data ingestion (Salesforce → BigQuery)         | Existing — no changes  |
 | **BigQuery**                                 | Data warehouse & transformation layer          | Existing — no changes  |
+| **[dbt](https://docs.getdbt.com/)**          | Version-controlled SQL transformations         | Phase 2                |
 | **[Lightdash](https://docs.lightdash.com/)** | Dashboards, semantic layer, data exploration   | New — hosted on Render |
 | **GitHub**                                   | Version control, CI/CD, code review, changelog | New — $4/user/month    |
 
@@ -65,14 +69,16 @@ We evaluated the major open-source BI platforms against our core requirements: *
 
 Every change to a dashboard, chart, or metric definition goes through an automated pipeline:
 
-```text
-Author       Push to      CI runs       Preview      Team        Merge to
-edits   ---> branch  ---> validation -> env     ---> reviews --> main
-YAML         on GitHub    checks        spins up     the PR      |
-                                                                 v
-                                                            Production
-                                                            updates
-```
+<FlowDiagram
+  steps={[
+    { label: 'Author edits', sublabel: 'YAML files' },
+    { label: 'Push to branch', sublabel: 'on GitHub' },
+    { label: 'CI validates', sublabel: 'automated checks' },
+    { label: 'Preview env', sublabel: 'spins up' },
+    { label: 'Team reviews', sublabel: 'the PR' },
+    { label: 'Production', sublabel: 'updates on merge', tag: 'New' },
+  ]}
+/>
 
 **What CI checks on every change:**
 
@@ -145,15 +151,18 @@ Lightdash provides an [official set of LLM skills](https://docs.lightdash.com/gu
 </Tab>
 </Tabs>
 
-```text
-"Add a close rate chart        Claude Code      Pull         CI
- to the expansion      ------> generates  ----> Request ---> validates
- scorecard"                     YAML            opened       auto
-                                                              |
-                                                              v
-                                                         Review &
-                                                         merge
-```
+<FlowDiagram
+  steps={[
+    {
+      label: '"Add a close rate chart to the expansion scorecard"',
+      sublabel: 'natural language',
+    },
+    { label: 'Claude Code', sublabel: 'generates YAML' },
+    { label: 'Pull Request', sublabel: 'opened' },
+    { label: 'CI validates', sublabel: 'automatically' },
+    { label: 'Review & merge', tag: 'New' },
+  ]}
+/>
 
 ## 3.8 The Semantic Layer
 

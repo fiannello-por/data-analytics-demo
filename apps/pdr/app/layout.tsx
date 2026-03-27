@@ -1,9 +1,9 @@
 import './global.css';
 import { RootProvider } from 'fumadocs-ui/provider';
-import { Inter } from 'next/font/google';
+import { Plus_Jakarta_Sans } from 'next/font/google';
 import type { ReactNode } from 'react';
 
-const inter = Inter({ subsets: ['latin'] });
+const font = Plus_Jakarta_Sans({ subsets: ['latin'] });
 
 export const metadata = {
   title: {
@@ -15,7 +15,7 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={inter.className} suppressHydrationWarning>
+    <html lang="en" className={font.className} suppressHydrationWarning>
       <body className="flex min-h-screen flex-col">
         <RootProvider search={{ enabled: false }}>{children}</RootProvider>
       </body>
