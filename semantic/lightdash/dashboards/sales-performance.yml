@@ -12,7 +12,6 @@ tiles:
       title: New Logo
       hideTitle: false
       content: '# New Logo'
-      hideFrame: true
   - x: 0
     'y': 0
     h: 1
@@ -23,7 +22,6 @@ tiles:
       title: ''
       hideTitle: false
       content: '# New Logo'
-      hideFrame: true
   - x: 7
     'y': 0
     h: 1
@@ -34,7 +32,6 @@ tiles:
       title: ''
       hideTitle: false
       content: '# Expansion'
-      hideFrame: true
   - x: 14
     'y': 0
     h: 1
@@ -45,7 +42,6 @@ tiles:
       title: ''
       hideTitle: false
       content: '# Migration'
-      hideFrame: true
   - x: 21
     'y': 0
     h: 1
@@ -56,7 +52,6 @@ tiles:
       title: ''
       hideTitle: false
       content: '# Renewals'
-      hideFrame: true
   - x: 28
     'y': 0
     h: 1
@@ -67,7 +62,6 @@ tiles:
       title: ''
       hideTitle: false
       content: '# Total'
-      hideFrame: true
   - x: 0
     'y': 1
     h: 2
@@ -306,7 +300,6 @@ tiles:
       title: ''
       hideTitle: false
       content: '# Expansion'
-      hideFrame: true
   - x: 0
     'y': 12
     h: 2
@@ -389,7 +382,6 @@ tiles:
       title: ''
       hideTitle: false
       content: '# Migration'
-      hideFrame: true
   - x: 0
     'y': 23
     h: 2
@@ -460,7 +452,6 @@ tiles:
       title: ''
       hideTitle: false
       content: '# Renewals'
-      hideFrame: true
   - x: 0
     'y': 34
     h: 2
@@ -519,7 +510,6 @@ tiles:
       title: ''
       hideTitle: false
       content: '# Total'
-      hideFrame: true
   - x: 0
     'y': 45
     h: 2
@@ -665,7 +655,6 @@ tiles:
         | **Won/MQL** | % of MQLs that ultimately become Closed Won. | - | - |
 
         | **Won/SQL** | % of SQLs that ultimately become Closed Won. | - | - |
-      hideFrame: false
   - x: 0
     'y': 55
     h: 9

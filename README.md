@@ -31,6 +31,8 @@ The current architecture is intentionally dbt-free. Lightdash metadata lives in 
 ├── semantic/
 │   ├── dbt/
 │   └── lightdash/
+│       ├── .lightdash-version
+│       ├── lightdash.config.yml
 │       ├── charts/
 │       ├── dashboards/
 │       └── models/
@@ -42,7 +44,7 @@ The current architecture is intentionally dbt-free. Lightdash metadata lives in 
 │   │       ├── lib/
 │   │       └── validators/
 │   └── tests/
-└── lightdash.config.yml
+└── skills.manifest.json
 ```
 
 ## Local Development

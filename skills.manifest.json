@@ -50,7 +50,7 @@
         "match": {
           "paths": [
             "semantic/lightdash/**",
-            "lightdash.config.yml",
+            "semantic/lightdash/lightdash.config.yml",
             "tooling/src/por_tooling/validators/**"
           ],
           "keywords": [

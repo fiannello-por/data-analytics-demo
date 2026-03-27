@@ -8,7 +8,6 @@ on:
       - reopened
     paths:
       - 'semantic/lightdash/**'
-      - 'lightdash.config.yml'
 
 permissions:
   contents: read
@@ -93,7 +92,7 @@ jobs:
           node-version-file: .nvmrc
 
       - name: Install Lightdash CLI
-        run: npm install -g "@lightdash/cli@$(cat .lightdash-version)"
+        run: npm install -g "@lightdash/cli@$(cat semantic/lightdash/.lightdash-version)"
 
       - name: Reset existing preview project
         run: |
@@ -102,8 +101,9 @@ jobs:
       - name: Create or update preview project
         run: |
           lightdash start-preview --name "$LIGHTDASH_PREVIEW_NAME" --skip-copy-content
+          cd semantic/lightdash
           lightdash deploy --no-warehouse-credentials
-          lightdash upload --path ./semantic/lightdash --force
+          lightdash upload --path . --force
 
       - name: Resolve preview project URL
         id: preview_url

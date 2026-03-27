@@ -2,7 +2,7 @@
 
 ## Current Mode
 
-This repo uses pure Lightdash YAML with [lightdash.config.yml](../lightdash.config.yml) and files under [semantic/lightdash/](../semantic/lightdash/). There is no dbt integration yet.
+This repo uses pure Lightdash YAML with [semantic/lightdash/lightdash.config.yml](../semantic/lightdash/lightdash.config.yml) and files under [semantic/lightdash/](../semantic/lightdash/). There is no dbt integration yet.
 
 ## Local Workflow
 
