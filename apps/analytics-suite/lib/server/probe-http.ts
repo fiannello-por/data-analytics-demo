@@ -33,7 +33,10 @@ export function applyProbeHeaders(
   startedAt: number,
 ) {
   response.headers.set('x-analytics-suite-source', meta.source);
-  response.headers.set('x-analytics-suite-query-count', String(meta.queryCount));
+  response.headers.set(
+    'x-analytics-suite-query-count',
+    String(meta.queryCount),
+  );
   response.headers.set('x-analytics-suite-cache-mode', meta.cacheMode);
 
   if (meta.bytesProcessed != null) {

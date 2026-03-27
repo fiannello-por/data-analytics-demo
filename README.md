@@ -54,6 +54,7 @@ Useful commands:
 
 - `pnpm lightdash:lint` validates Lightdash YAML.
 - `pnpm changelog:build` builds the Docusaurus changelog site.
+
 ## CI/CD
 
 - `ci.yml` enforces formatting, Markdown quality, Python type checking, linting, and tests, and site build integrity.

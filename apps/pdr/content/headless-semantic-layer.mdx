@@ -131,23 +131,23 @@ Reference docs: [Lightdash API reference](https://docs.lightdash.com/api-referen
 "metrics": ["sales_dashboard_v2_opportunity_base_close_rate"],
 "dimensions": ["sales_dashboard_v2_opportunity_base_close_date_week"],
 "filters": {
-  "dimensions": {
-    "and": [
-      {
-        "target": { "fieldId": "...dashboard_category" },
-        "operator": "equals",
-        "values": ["Expansion"]
-      },
-      {
-        "target": { "fieldId": "...close_date" },
-        "operator": "inBetween",
-        "values": ["2026-01-01", "2026-03-27"]
-      }
-    ]
-  }
+"dimensions": {
+"and": [
+{
+"target": { "fieldId": "...dashboard_category" },
+"operator": "equals",
+"values": ["Expansion"]
+},
+{
+"target": { "fieldId": "...close_date" },
+"operator": "inBetween",
+"values": ["2026-01-01", "2026-03-27"]
+}
+]
+}
 }
 }`}
-      />
+/>
 
     </div>
 
@@ -195,7 +195,7 @@ THEN \${TABLE}.opportunity_id END)
 )'
 label: 'Close Rate'
 format: percent`}
-      />
+/>
 
     </div>
 
@@ -244,7 +244,7 @@ WHERE dashboard_category = 'Expansion'
 AND close_date BETWEEN '2026-01-01' AND '2026-03-27'
 GROUP BY close_date_week
 ORDER BY close_date_week ASC`}
-      />
+/>
 
     </div>
 
@@ -289,7 +289,7 @@ ORDER BY close_date_week ASC`}
 { "close_date_week": "2026-01-27", "close_rate": 0.73 },
 { "close_date_week": "2026-02-03", "close_rate": 0.7 }
 ]`}
-      />
+/>
 
     </div>
 

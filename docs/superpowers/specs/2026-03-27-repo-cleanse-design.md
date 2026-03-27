@@ -291,6 +291,7 @@ Control:
 - remove `dbt` only after confirming retained Lightdash and CI paths still work
 
 ### 8.4 Risk: historical artifact purge removes something still relied upon by
+
 humans
 
 Control:
