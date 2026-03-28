@@ -80,7 +80,7 @@ export async function collectBrowserMetrics(
 
     const lcpEntries = performance.getEntriesByType(
       'largest-contentful-paint',
-    ) as PerformanceLargestContentfulPaint[];
+    ) as Array<{ startTime: number }>;
     const lcp = lcpEntries.length > 0 ? lcpEntries[lcpEntries.length - 1].startTime : 0;
 
     const jsResources = performance
