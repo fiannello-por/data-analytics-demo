@@ -32,6 +32,9 @@ importers:
       '@iconify/react':
         specifier: ^6.0.2
         version: 6.0.2(react@19.2.4)
+      '@por/dashboard-constants':
+        specifier: workspace:*
+        version: link:../../packages/dashboard-constants
       '@por/semantic-runtime':
         specifier: workspace:*
         version: link:../../packages/semantic-runtime
@@ -240,6 +243,12 @@ importers:
       vitest:
         specifier: ^3.0.0
         version: 3.2.4(@types/debug@4.1.12)(@types/node@22.19.15)(jiti@2.6.1)(jsdom@29.0.1(@noble/hashes@1.8.0))(lightningcss@1.31.1)(msw@2.12.13(@types/node@22.19.15)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.3)
+
+  packages/dashboard-constants:
+    devDependencies:
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
 
   packages/semantic-runtime:
     dependencies:

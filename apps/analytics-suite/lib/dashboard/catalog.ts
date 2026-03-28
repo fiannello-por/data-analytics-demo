@@ -1,17 +1,19 @@
-export const OVERVIEW_TAB = 'Overview' as const;
+import {
+  OVERVIEW_TAB,
+  CATEGORY_ORDER,
+  DASHBOARD_TAB_ORDER,
+  type Category,
+  type DashboardTab,
+} from '@por/dashboard-constants';
 
-export const CATEGORY_ORDER = [
-  'New Logo',
-  'Expansion',
-  'Migration',
-  'Renewal',
-  'Total',
-] as const;
-
-export type Category = (typeof CATEGORY_ORDER)[number];
-export type DashboardTab = typeof OVERVIEW_TAB | Category;
-
-export const DASHBOARD_TAB_ORDER = [OVERVIEW_TAB, ...CATEGORY_ORDER] as const;
+// Re-export for API compatibility
+export {
+  OVERVIEW_TAB,
+  CATEGORY_ORDER,
+  DASHBOARD_TAB_ORDER,
+  type Category,
+  type DashboardTab,
+};
 
 export type TileFormatType = 'currency' | 'number' | 'percent' | 'days';
 

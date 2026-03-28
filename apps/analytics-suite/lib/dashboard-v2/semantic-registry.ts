@@ -7,15 +7,15 @@ import {
   findTileDefinition,
   getCategoryTiles,
   type Category,
-  type GlobalFilterKey,
   type TileDefinition,
 } from '@/lib/dashboard/catalog';
+import {
+  FILTER_DIMENSIONS,
+  DASHBOARD_V2_BASE_MODEL,
+  DASHBOARD_V2_CLOSED_WON_MODEL,
+  type GlobalFilterKey
+} from '@por/dashboard-constants';
 import type { DashboardFilters, DateRange } from '@/lib/dashboard/contracts';
-
-export const DASHBOARD_V2_BASE_MODEL =
-  'sales_dashboard_v2_opportunity_base' as const;
-export const DASHBOARD_V2_CLOSED_WON_MODEL =
-  'sales_dashboard_v2_closed_won' as const;
 
 type DateRangeStrategy = 'selected' | 'ytd_to_end';
 
@@ -232,24 +232,6 @@ const TILE_SPECS: Record<string, TileSemanticSpec> = {
   },
 };
 
-const FILTER_DIMENSIONS: Record<GlobalFilterKey, string> = {
-  Division: 'division',
-  Owner: 'owner',
-  Segment: 'opportunity_segment',
-  Region: 'region',
-  SE: 'se',
-  'Booking Plan Opp Type': 'booking_plan_opp_type_2025',
-  'Product Family': 'product_family',
-  'SDR Source': 'sdr_source',
-  SDR: 'sdr',
-  'POR v R360': 'opp_record_type',
-  'Account Owner': 'account_owner',
-  'Owner Department': 'owner_department',
-  'Strategic Filter': 'strategic_filter',
-  Accepted: 'accepted',
-  'Gate 1 Criteria Met': 'gate1_criteria_met',
-  'Gate Met or Accepted': 'gate_met_or_accepted',
-};
 
 const CLOSED_WON_DIMENSIONS = [
   'account_name',
@@ -479,3 +461,6 @@ export function buildTrendQuery(
     limit: 500,
   };
 }
+
+// Re-export model constants to maintain API compatibility
+export { DASHBOARD_V2_BASE_MODEL, DASHBOARD_V2_CLOSED_WON_MODEL };
