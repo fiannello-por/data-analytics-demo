@@ -152,13 +152,14 @@ apps/perf-sandbox/
 3. **3-5 tiles only.** Fixed subset (one per category) to keep runs fast while
    exercising all code paths.
 
-4. **Cold and warm runs tracked explicitly.** Every run is tagged `isCold` or
-   `isWarm`. Cold runs clear all caches first. Both distributions are reported
-   separately. Cold is the primary metric.
+4. **Three run modes tracked explicitly.** See Section 6 "Definition of Run
+   Modes" for precise definitions. Every run is tagged with its mode. The
+   primary optimization target is `full-cold` (raw pipeline, no caching).
 
 5. **Benchmark runner modes:**
-   - `all-cold`: Clear caches before every run (N cold-start measurements)
-   - `cold-then-warm`: One cold run, then N-1 warm runs
+   - `all-full-cold`: Fresh process + `cacheMode=off` before every run
+   - `all-production-cold`: Fresh process only (Data Cache may be warm)
+   - `cold-then-warm`: One full-cold run, then N-1 warm runs
    - `all-warm`: Pre-warm caches, then N warm runs
 
 6. **A/B within a single session.** Benchmark route runs baseline + variant
@@ -190,8 +191,10 @@ success as a measurable assertion written before the code (TDD-style).
   `semantic-registry.ts:417`.
 - ~~E4a (longer dictionary TTL)~~: Filter dictionaries already use
   `unstable_cache` with `revalidate: 900` (15 min). "Longer TTL" is already the
-  baseline. Cold runs bypass `unstable_cache` entirely, so TTL changes cannot
-  improve the primary cold metric. Only "move off critical path" survives as E4.
+  baseline. Full-cold runs use `cacheMode=off` which bypasses `unstable_cache`,
+  so TTL changes cannot improve the primary full-cold metric. And on
+  production-cold runs, the 900s TTL already far exceeds the benchmark window.
+  Only "move off critical path" survives as E4.
   See `get-dashboard-filter-dictionary.ts:49`.
 
 ### E2a Prerequisite: New Runtime/Provider Contract
@@ -342,7 +345,7 @@ type ExperimentRunMetrics = {
 
   // Context
   experimentId: string;
-  isCold: boolean;
+  runMode: 'full-cold' | 'production-cold' | 'warm';
   runIndex: number;
   timestamp: string;
 };
@@ -363,7 +366,8 @@ type MetricDistribution = {
 
 type ExperimentSummary = {
   experimentId: string;
-  cold: Record<keyof ExperimentRunMetrics, MetricDistribution>;
+  fullCold: Record<keyof ExperimentRunMetrics, MetricDistribution>;
+  productionCold: Record<keyof ExperimentRunMetrics, MetricDistribution>;
   warm: Record<keyof ExperimentRunMetrics, MetricDistribution>;
   comparison?: {
     metric: string;
@@ -395,18 +399,20 @@ The harness uses Playwright to:
 1. Run `next build` once for the sandbox app
 2. Start `next start` (production server)
 3. For each experiment run:
-   a. Cold run: kill and restart the `next start` process (clears
-      `unstable_cache` and module-level singletons)
-   b. Navigate to the sandbox page with a `runId` query param
-   c. Collect `PerformanceObserver` entries via `page.evaluate()`:
+   a. **Full cold:** kill `next start`, restart it, navigate with
+      `?cacheMode=off&runId=<id>` (fresh process + Data Cache bypassed)
+   b. **Production cold:** kill `next start`, restart it, navigate with
+      `?runId=<id>` (fresh process, Data Cache may be warm)
+   c. **Warm:** navigate with `?runId=<id>` on same process
+   d. Collect `PerformanceObserver` entries via `page.evaluate()`:
       - `performance.timing.responseStart` → TTFB
       - `largest-contentful-paint` entry → LCP
       - `first-contentful-paint` entry → FCP
       - `performance.getEntriesByType('resource')` filtered to JS → bundle download
-   d. Read a `window.__SANDBOX_TELEMETRY__` global that the sandbox page populates
+   e. Read a `window.__SANDBOX_TELEMETRY__` global that the sandbox page populates
       with server-side span data (injected via a `<script>` tag in the HTML)
-   e. Merge server spans + browser metrics into a single `ExperimentRunMetrics`
-   f. Write to results JSON
+   f. Merge server spans + browser metrics into a single `ExperimentRunMetrics`
+   g. Write to results JSON
 
 This gives us end-to-end timing from a real browser against a production-grade
 server, correlated with server spans via the shared `runId`.
@@ -436,40 +442,44 @@ of the sandbox. The claim that improvements transfer to the full page is a
 hypothesis to be validated in Phase 4 (challenger app), not proven by the
 sandbox alone.
 
-### Definition of "Cold" and Baseline
+### Definition of Run Modes
 
-**Baseline = production-equivalent behavior.** The baseline uses the same code
-paths as the real page: `unstable_cache` active (60s/900s revalidation),
-`useQueryCache: true` on BigQuery, module-level runtime singleton cached after
-first creation. The baseline does NOT bypass any caches — it represents what a
-real user experiences.
+`unstable_cache` uses Next.js' **Data Cache**, which persists across requests
+and deployments. A process restart does NOT clear it. The only ways to force a
+cache miss are: time-based expiry (`revalidate` seconds elapse),
+`revalidateTag()`/`revalidatePath()`, or bypassing it entirely with the app's
+existing `cacheMode=off` probe parameter.
 
-**Cold = fresh process.** A cold run restarts the `next start` process, which:
-- Clears the module-level `cachedRuntime` singleton
-- Invalidates all `unstable_cache` entries (they are process-scoped)
-- Does NOT disable BigQuery's query cache (that would measure something
-  production never does)
+Three run modes, precisely defined:
 
-This means "cold" measures the first request after a server restart — the worst
-case a real user encounters (e.g., after a deployment). BigQuery's own query
-cache may still be warm, which is realistic: BQ cache is shared across all
-clients and cannot be controlled per-request in production.
+| Mode | Process | `unstable_cache` (Data Cache) | Module singleton | BigQuery query cache | Purpose |
+|------|---------|-------------------------------|-----------------|---------------------|---------|
+| **Full cold** | Fresh `next start` | Bypassed (`cacheMode=off`) | Cleared (new process) | Enabled (production-equivalent) | Measures raw pipeline latency with no application caching. Primary optimization target. |
+| **Production cold** | Fresh `next start` | Active (may be warm from prior runs) | Cleared (new process) | Enabled | Measures realistic post-deployment first request. Data Cache may serve stale-but-valid entries from prior process. |
+| **Warm** | Same process | Active + populated | Populated | Enabled | Measures steady-state performance with all caches warm. |
 
-**Warm = subsequent request on same process.** `unstable_cache` and the runtime
-singleton are populated from the cold run.
+**Primary optimization target = full cold.** This isolates the structural
+pipeline improvements (streaming SSR, fewer network hops, dictionaries off
+critical path) from caching effects. A 10x improvement here means the raw
+pipeline is 10x faster regardless of cache state.
 
-The production page (`page.tsx:59`) never passes execution options to its
-loaders, so the baseline must not either. Experiments that need to bypass
-caches for isolation (e.g., testing cache effectiveness) use variant-specific
-execution options, but the baseline always runs production-equivalent.
+**Production cold is the deployment-realistic check.** After a real deployment
+the Data Cache may partially survive (depending on hosting), so this mode
+validates that improvements hold in a realistic scenario.
+
+**Baseline = current architecture.** For full-cold runs the baseline passes
+`cacheMode=off` to match the mode definition. For production-cold and warm
+runs the baseline uses production-equivalent behavior (no `cacheMode`
+override). The baseline and variant always use the same mode within a
+comparison.
 
 ### Quantitative Thresholds
 
 | Metric | Baseline | Target (10x) | Stretch (20x) |
 |--------|----------|--------------|----------------|
-| Sandbox cold TTFB p50 | TBD | baseline / 10 | baseline / 20 |
-| Sandbox cold total page load p50 | TBD | baseline / 10 | baseline / 20 |
-| Sandbox cold SSR data fetch p50 | TBD | baseline / 10 | — |
+| Sandbox full-cold TTFB p50 | TBD | baseline / 10 | baseline / 20 |
+| Sandbox full-cold total page load p50 | TBD | baseline / 10 | baseline / 20 |
+| Sandbox full-cold SSR data fetch p50 | TBD | baseline / 10 | — |
 
 Baseline numbers will be established by the sandbox's first benchmark run.
 
@@ -477,8 +487,8 @@ Baseline numbers will be established by the sandbox's first benchmark run.
 
 "10x achieved" requires **all three**:
 
-1. Sandbox cold TTFB p50 ≤ 10% of baseline cold TTFB p50
-2. Sandbox cold total page load p50 ≤ 10% of baseline cold total page load p50
+1. Sandbox full-cold TTFB p50 ≤ 10% of baseline full-cold TTFB p50
+2. Sandbox full-cold total page load p50 ≤ 10% of baseline full-cold total page load p50
 3. No correctness regressions — variant produces identical row values as baseline
 
 ### Guardrails (Must Not Regress)
