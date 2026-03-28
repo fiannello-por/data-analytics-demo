@@ -1,4 +1,4 @@
-import type { DashboardBudgetPolicy } from '@por/analytics-adapter';
+import type { DashboardBudgetPolicy } from '@por/semantic-runtime';
 
 export type DashboardSurfaceSpec = {
   id: string;

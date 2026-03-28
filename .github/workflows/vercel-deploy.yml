@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy-changelog-site:
+  determine-targets:
     if: >
       github.event_name == 'workflow_dispatch' ||
       (
@@ -26,23 +26,147 @@ jobs:
         github.event.workflow_run.head_branch == 'main'
       )
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      targets: ${{ steps.select-targets.outputs.targets }}
+      has_targets: ${{ steps.select-targets.outputs.has_targets }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          fetch-depth: 2
+
+      - name: Resolve affected Vercel deploy targets
+        id: select-targets
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            changed_files="__manual_dispatch__"
+          elif git rev-parse --verify HEAD^ >/dev/null 2>&1; then
+            changed_files="$(git diff --name-only HEAD^ HEAD)"
+          else
+            changed_files="__initial_commit__"
+          fi
+
+          echo "Changed files:"
+          printf '%s\n' "$changed_files"
+
+          CHANGED_FILES="$changed_files" python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          import os
+
+          all_targets = [
+              {
+                  "app_name": "analytics-suite",
+                  "working_directory": "apps/analytics-suite",
+                  "project_id_secret": "VERCEL_PROJECT_ID_ANALYTICS_SUITE",
+              },
+              {
+                  "app_name": "docs-site",
+                  "working_directory": "apps/docs-site",
+                  "project_id_secret": "VERCEL_PROJECT_ID_DOCS_SITE",
+              },
+              {
+                  "app_name": "changelog",
+                  "working_directory": "apps/changelog",
+                  "project_id_secret": "VERCEL_PROJECT_ID_CHANGELOG",
+              },
+          ]
+
+          changed_files = os.environ["CHANGED_FILES"].splitlines()
+
+          deploy_all = "__manual_dispatch__" in changed_files or "__initial_commit__" in changed_files
+          selected = set()
+
+          shared_exact = {
+              "package.json",
+              "pnpm-lock.yaml",
+              "pnpm-workspace.yaml",
+          }
+          shared_prefixes = (
+              "tooling/",
+              "packages/semantic-runtime/",
+          )
+          app_prefixes = {
+              "analytics-suite": "apps/analytics-suite/",
+              "docs-site": "apps/docs-site/",
+              "changelog": "apps/changelog/",
+          }
+
+          for path in changed_files:
+              if path in shared_exact or path.startswith(shared_prefixes):
+                  deploy_all = True
+                  break
+              for app_name, prefix in app_prefixes.items():
+                  if path.startswith(prefix):
+                      selected.add(app_name)
+
+          if deploy_all:
+              targets = all_targets
+          else:
+              targets = [target for target in all_targets if target["app_name"] in selected]
+
+          print("targets<<EOF")
+          print(json.dumps(targets))
+          print("EOF")
+          print(f"has_targets={'true' if targets else 'false'}")
+          PY
+
+      - name: Publish target summary
+        run: |
+          echo "Resolved deployment targets: ${{ steps.select-targets.outputs.targets }}" \
+            >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    needs: determine-targets
+    if: needs.determine-targets.outputs.has_targets == 'true'
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: production
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.determine-targets.outputs.targets) }}
     env:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID || secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID || secrets.VERCEL_PROJECT_ID }}
+      VERCEL_PROJECT_ID_ANALYTICS_SUITE: ${{ vars.VERCEL_PROJECT_ID_ANALYTICS_SUITE || secrets.VERCEL_PROJECT_ID_ANALYTICS_SUITE }}
+      VERCEL_PROJECT_ID_DOCS_SITE: ${{ vars.VERCEL_PROJECT_ID_DOCS_SITE || secrets.VERCEL_PROJECT_ID_DOCS_SITE }}
+      VERCEL_PROJECT_ID_CHANGELOG: ${{ vars.VERCEL_PROJECT_ID_CHANGELOG || secrets.VERCEL_PROJECT_ID_CHANGELOG }}
     steps:
       - name: Check out repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
-      - name: Ensure Vercel credentials are configured
+      - name: Resolve app-specific Vercel project ID
+        shell: bash
         run: |
+          project_id_secret="${{ matrix.project_id_secret }}"
+
+          case "${{ matrix.app_name }}" in
+            analytics-suite)
+              project_id="$VERCEL_PROJECT_ID_ANALYTICS_SUITE"
+              ;;
+            docs-site)
+              project_id="$VERCEL_PROJECT_ID_DOCS_SITE"
+              ;;
+            changelog)
+              project_id="$VERCEL_PROJECT_ID_CHANGELOG"
+              ;;
+            *)
+              echo "::error::Unknown deploy target: ${{ matrix.app_name }}"
+              exit 1
+              ;;
+          esac
+
           test -n "$VERCEL_TOKEN" || (echo "::error::Missing VERCEL_TOKEN" && exit 1)
           test -n "$VERCEL_ORG_ID" || (echo "::error::Missing VERCEL_ORG_ID" && exit 1)
-          test -n "$VERCEL_PROJECT_ID" || (echo "::error::Missing VERCEL_PROJECT_ID" && exit 1)
+          test -n "$project_id" || \
+            (echo "::error::Missing $project_id_secret for ${{ matrix.app_name }}" && exit 1)
+
+          echo "VERCEL_PROJECT_ID=$project_id" >> "$GITHUB_ENV"
 
       - name: Set up pnpm
         uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
@@ -60,20 +184,21 @@ jobs:
         run: npm install --global vercel@latest
 
       - name: Pull production environment
-        working-directory: apps/changelog
+        working-directory: ${{ matrix.working_directory }}
         run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
 
       - name: Build production deployment
-        working-directory: apps/changelog
+        working-directory: ${{ matrix.working_directory }}
         run: vercel build --prod --token="$VERCEL_TOKEN"
 
       - name: Deploy to Vercel production
         id: deploy
-        working-directory: apps/changelog
+        working-directory: ${{ matrix.working_directory }}
         run: |
           url="$(vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN")"
           echo "deployment_url=$url" >> "$GITHUB_OUTPUT"
 
       - name: Publish deployment summary
         run: |
-          echo "Production deployment: ${{ steps.deploy.outputs.deployment_url }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- ${{ matrix.app_name }}: ${{ steps.deploy.outputs.deployment_url }}" \
+            >> "$GITHUB_STEP_SUMMARY"

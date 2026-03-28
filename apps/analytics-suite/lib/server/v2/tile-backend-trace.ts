@@ -7,7 +7,7 @@ import type {
   SemanticFilter,
   SemanticQueryRequest,
   SemanticQueryResult,
-} from '@por/analytics-adapter';
+} from '@por/semantic-runtime';
 import type {
   TileBackendExecution,
   TileBackendTrace,

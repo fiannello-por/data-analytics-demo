@@ -6,7 +6,9 @@ This repository is the operational home for the Point of Rental analytics stack:
 - `apps/analytics-suite/` is the retained analytics application surface.
 - `apps/docs-site/` is the retained planning and architecture documentation app.
 - `apps/changelog/` is a Docusaurus site published on Vercel for the public-facing analytics changelog.
-- `tooling/src/por_tooling/automation/` contains Codex-powered automation for changelog generation.
+- `apps/changelog/tooling/` contains changelog-owned automation logic.
+- `semantic/lightdash/tooling/` contains Lightdash-owned validation logic.
+- `tooling/src/lib/` contains shared Python support code reused by those domain tools.
 
 The current architecture is intentionally dbt-free. Lightdash metadata lives in standalone YAML so the BI layer can move quickly without coupling business logic to dbt project structure. When dbt is introduced, the semantic layer standards in this repo are designed to migrate cleanly into dbt `meta:` blocks.
 
@@ -39,10 +41,8 @@ The current architecture is intentionally dbt-free. Lightdash metadata lives in 
 ├── tooling/
 │   ├── pyproject.toml
 │   ├── src/
-│   │   └── por_tooling/
-│   │       ├── automation/
-│   │       ├── lib/
-│   │       └── validators/
+│   │   ├── lib/
+│   │   └── validators/
 │   └── tests/
 └── skills.manifest.json
 ```
@@ -66,6 +66,7 @@ Useful commands:
 
 - `ci.yml` enforces formatting, Markdown quality, Python type checking, linting, and tests, and site build integrity.
 - `lightdash-deploy.yml` deploys Lightdash metadata and content on merge to `main`.
+- `vercel-deploy.yml` deploys `analytics-suite`, `docs-site`, and `changelog` to their Vercel production projects after `CI` succeeds on `main`.
 - `codex-changelog.yml` generates a changelog entry from merged PR metadata and commits it back to `main`.
 
 ## Read Before Contributing

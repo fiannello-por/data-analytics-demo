@@ -5,7 +5,7 @@ import {
   createSemanticRuntime,
   type QueryExecutionResult,
   type SemanticQueryResult,
-} from '@por/analytics-adapter';
+} from '@por/semantic-runtime';
 import { getBigQueryClient } from '@/lib/bigquery/client';
 import { getSituationRoomEnv } from '@/lib/env.server';
 import {

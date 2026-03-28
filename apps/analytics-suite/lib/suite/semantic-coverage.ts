@@ -1,7 +1,7 @@
 import {
   findMissingCatalogFields,
   type RequiredCatalogField,
-} from '@por/analytics-adapter';
+} from '@por/semantic-runtime';
 
 import { dashboardModules } from '@/lib/suite/modules';
 import { suiteSemanticCatalogEntries } from '@/lib/suite/semantic-catalog';

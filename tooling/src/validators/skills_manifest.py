@@ -10,6 +10,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from lib.agent_utils import find_repo_root
+
 
 @dataclass(frozen=True)
 class SkillSource:
@@ -213,7 +215,7 @@ def _default_codex_home() -> Path:
 
 
 def _default_manifest_path() -> Path:
-    return Path(__file__).resolve().parents[4] / "skills.manifest.json"
+    return find_repo_root() / "skills.manifest.json"
 
 
 def _resolve_install_path(skill: SkillDefinition, codex_home: Path) -> Path:

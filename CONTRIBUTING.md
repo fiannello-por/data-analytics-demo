@@ -7,6 +7,7 @@
 3. Run `pnpm validate` before opening a PR.
 4. Fill out the PR template completely.
 5. Merge only after CI and human review pass.
+6. Production Vercel deploys happen automatically after `CI` succeeds on a push to `main`.
 
 ## Prerequisites
 
@@ -15,11 +16,9 @@
 - **Python** — version in `.python-version`
 - **uv** — `curl -LsSf https://astral.sh/uv/install.sh | sh`
 
-Run `pnpm check:versions` to verify your local setup matches.
-
 ## What Belongs In This Repo
 
-- The retained product surfaces: `analytics-suite`, `pdr`, and `changelog-site`.
+- The retained product surfaces: `analytics-suite`, `docs-site`, and `changelog`.
 - Lightdash models, charts, and dashboards as code.
 - Contributor standards for semantic modeling and analytics engineering.
 - Changelog content for externally visible analytics changes.

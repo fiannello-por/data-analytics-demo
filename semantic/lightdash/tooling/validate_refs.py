@@ -1,7 +1,6 @@
 """Validate chart -> model field references offline (no server needed).
 
 Catches missing explores and broken field IDs before expensive CI steps.
-Python port of scripts/validate-lightdash-refs.sh.
 """
 
 from __future__ import annotations
@@ -9,16 +8,10 @@ from __future__ import annotations
 import re
 import sys
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from pathlib import Path
 
 import yaml
 
-from por_tooling.lib.agent_utils import find_repo_root
-
-if TYPE_CHECKING:
-    from pathlib import Path
-
-# Time-interval suffixes generated at runtime by Lightdash
 TIME_SUFFIXES = ("_day", "_week", "_month", "_quarter", "_year")
 
 
@@ -83,8 +76,6 @@ def load_chart(chart_path: Path) -> ChartInfo | None:
         return None
 
     explore_name = str(explore_name)
-
-    # Extract all field IDs matching {explore}_* from the raw YAML content
     pattern = re.compile(rf"{re.escape(explore_name)}_[a-zA-Z0-9_]+")
     field_ids = sorted(set(pattern.findall(content)))
 
@@ -96,13 +87,9 @@ def load_chart(chart_path: Path) -> ChartInfo | None:
 
 
 def validate_refs(models_dir: Path, charts_dir: Path) -> list[str]:
-    """Validate all chart -> model field references.
-
-    Returns a list of error messages. Empty list means all references are valid.
-    """
+    """Validate all chart -> model field references."""
     errors: list[str] = []
 
-    # Load all models
     models: dict[str, ModelInfo] = {}
     for model_file in sorted(models_dir.glob("*.yml")):
         model = load_model(model_file)
@@ -113,9 +100,7 @@ def validate_refs(models_dir: Path, charts_dir: Path) -> list[str]:
     print(f"Found models: {model_names}")
     print()
 
-    # Validate each chart
     for chart_path in sorted(charts_dir.glob("*.yml")):
-        # Skip SQL runner charts
         if chart_path.name.endswith(".sql.yml"):
             continue
 
@@ -126,30 +111,25 @@ def validate_refs(models_dir: Path, charts_dir: Path) -> list[str]:
         explore = chart.explore_name
         chart_name = chart.file_path
 
-        # Check exploreName has a matching model
         if explore not in models:
-            errors.append(f"ERROR: {chart_name} \u2192 explore '{explore}' has no matching model")
+            errors.append(f"ERROR: {chart_name} → explore '{explore}' has no matching model")
             continue
 
         model = models[explore]
         model_file = models_dir / f"{explore}.yml"
 
         if not model_file.exists():
-            errors.append(f"ERROR: {chart_name} \u2192 model file '{model_file}' not found")
+            errors.append(f"ERROR: {chart_name} → model file '{model_file}' not found")
             continue
 
-        # Build set of all known fields
         all_fields = set(model.dimensions) | set(model.metrics)
 
-        # Check each field ID
         for fid in chart.field_ids:
-            field_name = fid[len(explore) + 1 :]  # Remove explore_ prefix
+            field_name = fid[len(explore) + 1 :]
 
-            # Skip if field exists directly
             if field_name in all_fields:
                 continue
 
-            # Strip time-interval suffix and check base field
             base_name = field_name
             for suffix in TIME_SUFFIXES:
                 if field_name.endswith(suffix):
@@ -160,7 +140,7 @@ def validate_refs(models_dir: Path, charts_dir: Path) -> list[str]:
                 continue
 
             errors.append(
-                f"ERROR: {chart_name} \u2192 field '{explore}_{field_name}' "
+                f"ERROR: {chart_name} → field '{explore}_{field_name}' "
                 f"not found in model ({model_file})"
             )
 
@@ -169,10 +149,9 @@ def validate_refs(models_dir: Path, charts_dir: Path) -> list[str]:
 
 def main() -> None:
     """CLI entry point for validate-refs."""
-    # Determine project root (walk up from this file to find semantic/lightdash/)
-    project_root = find_repo_root()
-    models_dir = project_root / "semantic" / "lightdash" / "models"
-    charts_dir = project_root / "semantic" / "lightdash" / "charts"
+    project_root = Path(__file__).resolve().parents[1]
+    models_dir = project_root / "models"
+    charts_dir = project_root / "charts"
 
     if not models_dir.is_dir():
         print(f"ERROR: Models directory not found: {models_dir}", file=sys.stderr)
@@ -191,8 +170,8 @@ def main() -> None:
         print()
         print(f"FAILED: {len(errors)} reference error(s) found")
         sys.exit(1)
-    else:
-        print("OK: All chart \u2192 model references valid")
+
+    print("OK: All chart → model references valid")
 
 
 if __name__ == "__main__":

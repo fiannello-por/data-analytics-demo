@@ -48,11 +48,7 @@
         "name": "lightdash",
         "description": "All Lightdash tasks must use the dedicated Lightdash skill.",
         "match": {
-          "paths": [
-            "semantic/lightdash/**",
-            "semantic/lightdash/lightdash.config.yml",
-            "tooling/src/por_tooling/validators/**"
-          ],
+          "paths": ["semantic/lightdash/**"],
           "keywords": [
             "lightdash",
             "semantic layer",

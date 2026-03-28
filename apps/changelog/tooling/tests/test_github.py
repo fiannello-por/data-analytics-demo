@@ -1,12 +1,11 @@
-"""Tests for por_tooling.lib.github."""
+"""Tests for changelog GitHub helpers."""
 
 from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
 import pytest
-
-from por_tooling.lib.github import (
+from github import (
     GitHubUser,
     PullRequestFile,
     fetch_github_user,
@@ -51,7 +50,7 @@ class TestParseRepository:
 
 
 class TestGithubRequest:
-    @patch("por_tooling.lib.github.httpx.request")
+    @patch("github.httpx.request")
     def test_success(self, mock_request: MagicMock) -> None:
         mock_response = MagicMock()
         mock_response.is_success = True
@@ -66,7 +65,7 @@ class TestGithubRequest:
         assert args[0] == "GET"
         assert "fake-token" in kwargs["headers"]["Authorization"]
 
-    @patch("por_tooling.lib.github.httpx.request")
+    @patch("github.httpx.request")
     def test_error_raises_runtime_error(self, mock_request: MagicMock) -> None:
         mock_response = MagicMock()
         mock_response.is_success = False
@@ -78,7 +77,7 @@ class TestGithubRequest:
         with pytest.raises(RuntimeError, match="GitHub request failed"):
             github_request("fake-token", "/repos/o/r")
 
-    @patch("por_tooling.lib.github.httpx.request")
+    @patch("github.httpx.request")
     def test_post_with_body(self, mock_request: MagicMock) -> None:
         mock_response = MagicMock()
         mock_response.is_success = True
@@ -98,7 +97,7 @@ class TestGithubRequest:
 
 
 class TestPaginateGithub:
-    @patch("por_tooling.lib.github.github_request")
+    @patch("github.github_request")
     def test_single_page(self, mock_req: MagicMock) -> None:
         mock_req.return_value = [{"id": i} for i in range(50)]
 
@@ -107,7 +106,7 @@ class TestPaginateGithub:
         assert len(results) == 50
         mock_req.assert_called_once()
 
-    @patch("por_tooling.lib.github.github_request")
+    @patch("github.github_request")
     def test_multi_page(self, mock_req: MagicMock) -> None:
         page1 = [{"id": i} for i in range(100)]
         page2 = [{"id": i} for i in range(100, 130)]
@@ -118,7 +117,7 @@ class TestPaginateGithub:
         assert len(results) == 130
         assert mock_req.call_count == 2
 
-    @patch("por_tooling.lib.github.github_request")
+    @patch("github.github_request")
     def test_stops_at_less_than_100(self, mock_req: MagicMock) -> None:
         page1 = [{"id": i} for i in range(100)]
         page2 = [{"id": i} for i in range(99)]
@@ -129,7 +128,7 @@ class TestPaginateGithub:
         assert len(results) == 199
         assert mock_req.call_count == 2
 
-    @patch("por_tooling.lib.github.github_request")
+    @patch("github.github_request")
     def test_stops_at_10_pages_max(self, mock_req: MagicMock) -> None:
         full_page = [{"id": i} for i in range(100)]
         mock_req.return_value = full_page
@@ -139,7 +138,7 @@ class TestPaginateGithub:
         assert mock_req.call_count == 10
         assert len(results) == 1000
 
-    @patch("por_tooling.lib.github.github_request")
+    @patch("github.github_request")
     def test_uses_ampersand_when_query_string_present(self, mock_req: MagicMock) -> None:
         mock_req.return_value = []
 
@@ -155,7 +154,7 @@ class TestPaginateGithub:
 
 
 class TestFetchGithubUser:
-    @patch("por_tooling.lib.github.github_request")
+    @patch("github.github_request")
     def test_returns_github_user(self, mock_req: MagicMock) -> None:
         mock_req.return_value = {
             "login": "octocat",
@@ -180,8 +179,8 @@ class TestFetchGithubUser:
 
 
 class TestUpsertIssueComment:
-    @patch("por_tooling.lib.github.github_request")
-    @patch("por_tooling.lib.github.paginate_github")
+    @patch("github.github_request")
+    @patch("github.paginate_github")
     def test_creates_new_comment_when_none_exists(
         self, mock_paginate: MagicMock, mock_req: MagicMock
     ) -> None:
@@ -201,8 +200,8 @@ class TestUpsertIssueComment:
         assert kwargs["method"] == "POST"
         assert kwargs["body"] == {"body": "hello"}
 
-    @patch("por_tooling.lib.github.github_request")
-    @patch("por_tooling.lib.github.paginate_github")
+    @patch("github.github_request")
+    @patch("github.paginate_github")
     def test_updates_existing_comment(self, mock_paginate: MagicMock, mock_req: MagicMock) -> None:
         mock_paginate.return_value = [
             {"id": 99, "body": "<!-- marker --> old content"},

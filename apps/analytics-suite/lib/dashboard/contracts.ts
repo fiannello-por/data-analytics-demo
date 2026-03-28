@@ -4,7 +4,7 @@ import type {
   GlobalFilterKey,
   TileFormatType,
 } from '@/lib/dashboard/catalog';
-import type { SemanticQueryRequest } from '@por/analytics-adapter';
+import type { SemanticQueryRequest } from '@por/semantic-runtime';
 
 export type DateRange = {
   startDate: string;

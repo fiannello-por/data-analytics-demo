@@ -1,21 +1,29 @@
-"""Tests for por_tooling.lib.agent_utils."""
+"""Tests for shared tooling helpers."""
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
-
-from por_tooling.automation.generate_changelog import sanitize_sections, sanitize_slug
 
 if TYPE_CHECKING:
     from pathlib import Path
-from por_tooling.lib.agent_utils import (
+from lib.agent_utils import (
     build_diff_summary,
     read_guidance_if_exists,
     sanitize_markdown,
     sanitize_plain_text,
     yaml_single_quoted,
 )
-from por_tooling.lib.github import PullRequestFile
+
+
+@dataclass
+class PullRequestFile:
+    filename: str
+    status: str
+    additions: int
+    deletions: int
+    changes: int
+    patch: str | None = None
 
 
 def test_build_diff_summary_truncates_file_list_and_patch_text() -> None:
@@ -105,23 +113,3 @@ def test_read_guidance_if_exists_truncates_to_max_chars(tmp_path: Path) -> None:
     result = read_guidance_if_exists("big.md", max_chars=10, workspace_root=tmp_path)
     assert result == "A" * 10
     assert len(result) == 10
-
-
-# ---------------------------------------------------------------------------
-# sanitize_slug / sanitize_sections (generate_changelog)
-# ---------------------------------------------------------------------------
-
-
-def test_sanitize_slug_converts_to_url_safe() -> None:
-    assert sanitize_slug("Hello World!") == "hello-world"
-    assert sanitize_slug("feat: add New Feature #123") == "feat-add-new-feature-123"
-
-
-def test_sanitize_slug_truncates_to_60_chars() -> None:
-    long_title = "a" * 100
-    assert len(sanitize_slug(long_title)) == 60
-
-
-def test_sanitize_sections_cleans_keys_and_values() -> None:
-    result = sanitize_sections({"  Key \0": "  Value \0 "})
-    assert result == {"Key": "Value"}

@@ -8,16 +8,9 @@ from __future__ import annotations
 
 import sys
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from pathlib import Path
 
 import yaml
-
-from por_tooling.lib.agent_utils import find_repo_root
-
-if TYPE_CHECKING:
-    from pathlib import Path
-
-# --- Configuration ---
 
 _PROJECT_SLUG = "point-of-rental-revops-analytics-demo"
 _SHARED_FOLDER_SLUG = "revenue"
@@ -30,22 +23,15 @@ LEGACY_SPACE_SLUGS = frozenset(
     {
         "sales-dashboard",
         "shared/demo",
-        # Items placed directly at the shared root before subfolders were created.
-        # Remove once opportunity-rev-by-closed-date.sql.yml and sales-performance.yml
-        # are moved into the correct subfolders.
         f"{_PROJECT_SLUG}/{_SHARED_FOLDER_SLUG}",
     }
 )
 
-# Derived paths
 SHARED_ROOT = f"{_PROJECT_SLUG}/{_SHARED_FOLDER_SLUG}"
 SHARED_CHARTS_SPACE = f"{SHARED_ROOT}/{_ALLOWED_SUBFOLDERS['charts']}"
 SHARED_DASHBOARDS_SPACE = f"{SHARED_ROOT}/{_ALLOWED_SUBFOLDERS['dashboards']}"
 
 _ALLOWED_SPACE_SLUGS = frozenset({SHARED_CHARTS_SPACE, SHARED_DASHBOARDS_SPACE})
-
-
-# --- Data classes ---
 
 
 @dataclass(frozen=True)
@@ -74,10 +60,8 @@ class ValidationError:
     rule: str
     file: str
     message: str
-    severity: str  # "error" or "warning"
+    severity: str
 
-
-# --- Rule descriptions ---
 
 RULE_DESCRIPTIONS: dict[str, str] = {
     "A1": "No charts in the Dashboards folder",
@@ -87,9 +71,6 @@ RULE_DESCRIPTIONS: dict[str, str] = {
     "D1": "No unexpected subfolders",
     "D2": "No content directly in the Shared Folder root",
 }
-
-
-# --- Loading functions ---
 
 
 def load_charts(charts_dir: Path) -> list[ChartFile]:
@@ -124,7 +105,6 @@ def load_dashboards(dashboards_dir: Path) -> list[DashboardFile]:
         slug = data.get("slug", "")
         space_slug = data.get("spaceSlug", "")
 
-        # Walk tiles array and collect chartSlug from saved_chart tiles
         chart_slugs: list[str] = []
         for tile in data.get("tiles") or []:
             if not isinstance(tile, dict):
@@ -148,11 +128,7 @@ def load_dashboards(dashboards_dir: Path) -> list[DashboardFile]:
     return dashboards
 
 
-# --- Validation functions ---
-
-
 def _is_in_shared_root(space_slug: str) -> bool:
-    """Check if a space slug is under the shared root."""
     return space_slug == SHARED_ROOT or space_slug.startswith(SHARED_ROOT + "/")
 
 
@@ -192,14 +168,10 @@ def validate_cross_references(
     dashboards: list[DashboardFile],
     charts_by_slug: dict[str, ChartFile],
 ) -> list[ValidationError]:
-    """Rule B1: shared dashboard chart refs must be in shared charts space.
-
-    Rule B2: warn on unresolvable chart references.
-    """
+    """Validate shared dashboard chart references."""
     errors: list[ValidationError] = []
 
     for dash in dashboards:
-        # Only check dashboards in the shared dashboards space
         if dash.space_slug != SHARED_DASHBOARDS_SPACE:
             continue
 
@@ -276,30 +248,23 @@ def validate_all(
     charts: list[ChartFile],
     dashboards: list[DashboardFile],
 ) -> list[ValidationError]:
-    """Run all validation rules on the provided charts and dashboards.
-
-    Items in legacy space slugs are excluded before validation.
-    """
-    # Filter out legacy items
+    """Run all validation rules on the provided charts and dashboards."""
     filtered_charts = [c for c in charts if c.space_slug not in LEGACY_SPACE_SLUGS]
     filtered_dashboards = [d for d in dashboards if d.space_slug not in LEGACY_SPACE_SLUGS]
-
-    # Build chart lookup (use ALL charts for cross-ref resolution, not just filtered)
     charts_by_slug: dict[str, ChartFile] = {c.slug: c for c in charts}
 
     all_errors: list[ValidationError] = []
     all_errors.extend(validate_content_types(filtered_charts, filtered_dashboards))
     all_errors.extend(validate_cross_references(filtered_dashboards, charts_by_slug))
     all_errors.extend(validate_folder_structure(filtered_charts, filtered_dashboards))
-
     return all_errors
 
 
 def main() -> None:
     """CLI entry point for validate-shared."""
-    project_root = find_repo_root()
-    charts_dir = project_root / "semantic" / "lightdash" / "charts"
-    dashboards_dir = project_root / "semantic" / "lightdash" / "dashboards"
+    project_root = Path(__file__).resolve().parents[1]
+    charts_dir = project_root / "charts"
+    dashboards_dir = project_root / "dashboards"
 
     if not charts_dir.is_dir():
         print(f"ERROR: Charts directory not found: {charts_dir}", file=sys.stderr)
@@ -321,7 +286,6 @@ def main() -> None:
         print("OK: All shared folder rules pass")
         sys.exit(0)
 
-    # Group by rule
     error_count = sum(1 for e in errors if e.severity == "error")
     warning_count = sum(1 for e in errors if e.severity == "warning")
 
@@ -331,10 +295,10 @@ def main() -> None:
 
     for rule in sorted(rules_seen.keys()):
         description = RULE_DESCRIPTIONS.get(rule, "")
-        print(f"\u2500\u2500 Rule {rule}: {description} \u2500\u2500")
+        print(f"── Rule {rule}: {description} ──")
         for err in rules_seen[rule]:
             label = err.severity.upper()
-            print(f"  {label}: {err.file} \u2192 {err.message}")
+            print(f"  {label}: {err.file} → {err.message}")
         print()
 
     print(f"FAILED: {error_count} error(s), {warning_count} warning(s)")

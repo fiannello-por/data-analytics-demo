@@ -33,7 +33,6 @@ jobs:
           filters: |
             lightdash:
               - 'semantic/lightdash/**'
-              - 'tooling/src/por_tooling/validators/**'
             code:
               - 'tooling/**'
               - 'apps/**'
@@ -68,10 +67,10 @@ jobs:
         run: cd tooling && uv sync
 
       - name: Validate Lightdash references
-        run: cd tooling && uv run validate-refs
+        run: cd tooling && uv run python ../semantic/lightdash/tooling/validate_refs.py
 
       - name: Validate shared folder rules
-        run: cd tooling && uv run validate-shared
+        run: cd tooling && uv run python ../semantic/lightdash/tooling/validate_shared.py
 
   lint-format:
     runs-on: ubuntu-latest

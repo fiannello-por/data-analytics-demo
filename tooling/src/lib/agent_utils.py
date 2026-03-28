@@ -4,10 +4,19 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
-    from .github import PullRequestFile
+    from collections.abc import Sequence
+
+
+class PullRequestFileLike(Protocol):
+    filename: str
+    status: str
+    additions: int
+    deletions: int
+    patch: str | None
+
 
 _SAFE_HTML_TAGS = frozenset({"details", "summary", "br"})
 
@@ -51,7 +60,7 @@ def read_guidance_if_exists(
 
 
 def build_diff_summary(
-    files: list[PullRequestFile],
+    files: Sequence[PullRequestFileLike],
     limit: int = 40,
     patch_chars: int = 12000,
 ) -> str:

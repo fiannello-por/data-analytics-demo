@@ -1,7 +1,7 @@
 import type {
   DashboardBudgetObservation,
   DashboardBudgetReport,
-} from '@por/analytics-adapter';
+} from '@por/semantic-runtime';
 import { createSuiteBudgetTracker } from '@/lib/suite/budgets';
 
 const seededObservations: Record<string, DashboardBudgetObservation[]> = {

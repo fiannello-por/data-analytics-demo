@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { unstable_cache } from 'next/cache';
-import type { SemanticQueryResult } from '@por/analytics-adapter';
+import type { SemanticQueryResult } from '@por/semantic-runtime';
 import {
   getSnapshotGroups,
   buildSnapshotGroupQuery,

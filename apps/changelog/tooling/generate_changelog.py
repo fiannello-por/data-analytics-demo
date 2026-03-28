@@ -16,9 +16,14 @@ import traceback
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
-from openai import OpenAI
-
-from por_tooling.lib.agent_utils import (
+from github import (
+    fetch_github_user,
+    github_request,
+    paginate_github,
+    parse_pr_file,
+    parse_repository,
+)
+from lib.agent_utils import (
     build_diff_summary,
     find_repo_root,
     read_guidance_if_exists,
@@ -26,14 +31,8 @@ from por_tooling.lib.agent_utils import (
     sanitize_plain_text,
     yaml_single_quoted,
 )
-from por_tooling.lib.github import (
-    fetch_github_user,
-    github_request,
-    paginate_github,
-    parse_pr_file,
-    parse_repository,
-)
-from por_tooling.lib.pr_template import (
+from openai import OpenAI
+from pr_template import (
     changelog_note,
     parse_template_sections,
     should_skip_changelog,
@@ -234,3 +233,7 @@ def main() -> None:
         traceback.print_exc()
         code = 1
     sys.exit(code)
+
+
+if __name__ == "__main__":
+    main()

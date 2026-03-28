@@ -47,9 +47,9 @@ PRs are expected to use the repository template and complete every section with 
 
 ## Automation Code
 
-Review and changelog agents live in `tooling/src/por_tooling/automation/`.
-Shared libraries are in `tooling/src/por_tooling/lib/` and validators in
-`tooling/src/por_tooling/validators/`.
+Changelog automation logic lives in `apps/changelog/tooling/`.
+Lightdash validation logic lives in `semantic/lightdash/tooling/`.
+Shared Python libraries remain in `tooling/src/lib/`.
 
 ## Changelog Rules
 

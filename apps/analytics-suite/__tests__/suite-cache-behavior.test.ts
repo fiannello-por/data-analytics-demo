@@ -4,7 +4,7 @@ import {
   createMemorySemanticResultCache,
   createSemanticRuntime,
   type SemanticProvider,
-} from '@por/analytics-adapter';
+} from '@por/semantic-runtime';
 
 describe('suite cache behavior', () => {
   it('separates persistent cache entries by dashboard namespace', async () => {
