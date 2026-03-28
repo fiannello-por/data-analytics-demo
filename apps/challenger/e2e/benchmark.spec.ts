@@ -106,6 +106,9 @@ test.describe('Challenger benchmark', () => {
       const server = await collectServerTelemetry(page);
       persistRun({ ...metrics, server, runMode: 'full-cold', runIndex: i + 1, timestamp: new Date().toISOString() });
       expect(metrics.ttfbMs).toBeGreaterThan(0);
+      // Full-cold must execute all queries (cacheMode=off bypasses unstable_cache)
+      expect(server.overviewActualQueryCount).toBe(10);  // 5 categories × 2 windows
+      expect(server.filterActualQueryCount).toBe(16);    // 16 filter dimensions
     });
   }
 
@@ -118,6 +121,11 @@ test.describe('Challenger benchmark', () => {
       const server = await collectServerTelemetry(page);
       persistRun({ ...metrics, server, runMode: 'production-cold', runIndex: i + 1, timestamp: new Date().toISOString() });
       expect(metrics.ttfbMs).toBeGreaterThan(0);
+      // Production-cold may serve from Data Cache — counts can be 0 to expected max
+      expect(server.overviewActualQueryCount).toBeGreaterThanOrEqual(0);
+      expect(server.overviewActualQueryCount).toBeLessThanOrEqual(10);
+      expect(server.filterActualQueryCount).toBeGreaterThanOrEqual(0);
+      expect(server.filterActualQueryCount).toBeLessThanOrEqual(16);
     });
   }
 
@@ -129,6 +137,9 @@ test.describe('Challenger benchmark', () => {
       const server = await collectServerTelemetry(page);
       persistRun({ ...metrics, server, runMode: 'warm', runIndex: i + 1, timestamp: new Date().toISOString() });
       expect(metrics.ttfbMs).toBeGreaterThan(0);
+      // Warm runs must hit cache — zero actual queries
+      expect(server.overviewActualQueryCount).toBe(0);
+      expect(server.filterActualQueryCount).toBe(0);
     });
   }
 });
