@@ -6,6 +6,7 @@ import { FilterBar } from '@/components/filter-bar';
 import { parseCacheMode } from '@/lib/cache-mode';
 
 export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
 
 type SearchParamsInput = Promise<
   Record<string, string | string[] | undefined> | undefined

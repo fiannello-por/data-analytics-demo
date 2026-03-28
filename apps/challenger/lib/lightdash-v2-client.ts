@@ -36,7 +36,7 @@ async function pollForResults(
 ): Promise<QueryResultPage> {
   const response = await fetch(
     `${baseUrl}/api/v2/projects/${projectUuid}/query/${queryUuid}?pageSize=500`,
-    { method: 'GET', headers: headers(apiKey) },
+    { method: 'GET', headers: headers(apiKey), cache: 'no-store' },
   );
 
   if (!response.ok) {
@@ -79,6 +79,7 @@ export async function executeMetricQuery(
       method: 'POST',
       headers: headers(env.apiKey),
       body: JSON.stringify(payload),
+      cache: 'no-store',
     },
   );
 
