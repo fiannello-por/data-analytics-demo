@@ -75,7 +75,7 @@ BROWSER
 ## 2. Bottleneck Hypotheses
 
 Ranked by expected impact on cold initial page load. Priority order:
-H1 → H3 → H4 → H9 → H2 → H5 → H7.
+H1 → H3 → H4 → H9 → H5 → H7. (H2 dropped — see below.)
 
 | # | Hypothesis | Category | Evidence | Expected Impact | Confidence |
 |---|-----------|----------|----------|----------------|------------|
@@ -83,7 +83,7 @@ H1 → H3 → H4 → H9 → H2 → H5 → H7.
 | **H3** | In-memory semantic cache + deduper not wired up | Caching | `createMemorySemanticResultCache()` and `createInFlightRequestDeduper()` exist in package but app doesn't use them | -20% to -40% on warm loads | High |
 | **H4** | Filter dictionaries are 16 separate queries on the critical path | Network | `Promise.all(16 × runtime.runQuery())` each hits Lightdash compile + BQ | -15% to -30% total SSR time | High |
 | **H9** | Lightdash v2 `executeMetricQuery` eliminates network hops | Semantic | Current: compileQuery + BQ (4 calls). v2: submit + poll (2 calls). Self-hosted = no LH cache, so benefit is hop reduction only | -10% to -25% per query | Medium |
-| **H2** | Redundant Lightdash compile calls for identical query shapes | Semantic | No compilation cache; overview fetches 5 categories that may share shapes | -30% to -50% compile time | Medium |
+| ~~**H2**~~ | ~~Redundant Lightdash compile calls for identical query shapes~~ | ~~Semantic~~ | **Dropped.** `compileQuery` includes full filter values (category, date range) in the compilation request. Each category produces distinct SQL. A "shape-based" cache would serve wrong SQL; a correct cache key eliminates cross-category sharing. See `lightdash.ts:166`, `semantic-registry.ts:417`. | N/A | N/A |
 | **H5** | BigQuery cold-start latency per job | Warehouse | 3 sequential API calls per query (createJob → getResults → getMetadata) | -10% to -25% per query | Medium |
 | **H7** | Client hydration cost for full component tree | Client | No code splitting, no dynamic imports, full DashboardShell hydrates at once | -5% to -15% TTI | Medium |
 
@@ -106,19 +106,23 @@ apps/perf-sandbox/
 │   │   ├── benchmark/route.ts  # Runs N iterations, returns stats
 │   │   └── telemetry/route.ts  # Accepts + stores telemetry events
 │   └── results/page.tsx        # Waterfall visualization
+├── e2e/
+│   └── benchmark.spec.ts       # Playwright harness for browser metrics
 ├── experiments/
 │   ├── baseline.ts             # Current architecture (control)
 │   ├── streaming-ssr.ts        # E1: Suspense boundaries
 │   ├── wired-cache.ts          # E3: SemanticResultCache + deduper
-│   ├── static-dictionaries.ts  # E4: Filter dicts cached longer
-│   ├── lh-execute-metric.ts    # E2a: v2 executeMetricQuery
-│   ├── compile-cache.ts        # E5: Compile-result caching
-│   └── combined-winner.ts      # E7: Best variants stacked
+│   ├── dicts-off-critical.ts   # E4: Filter dicts loaded after shell
+│   ├── lh-execute-metric.ts    # E2a: v2 executeMetricQuery (requires provider work)
+│   ├── bq-call-optimize.ts     # E5: BQ single-call or parallel metadata
+│   └── combined-winner.ts      # E6: Best variants stacked
 ├── lib/
 │   ├── telemetry.ts            # Hierarchical span collector
 │   ├── stats.ts                # Statistical summary
+│   ├── browser-harness.ts      # Playwright-based browser metric collection
 │   └── experiment-registry.ts  # Registry + standard interface
 ├── package.json
+├── playwright.config.ts
 └── next.config.mjs
 ```
 
@@ -164,27 +168,57 @@ success as a measurable assertion written before the code (TDD-style).
 | # | Hypothesis | Control | Variant | Primary Metric | Guardrails | Expected Impact | Deps |
 |---|-----------|---------|---------|---------------|------------|-----------------|------|
 | **E1** | SSR blocks on all data | Current `page.tsx`: await all → render | Suspense per tile group; shell streams, tiles fill progressively | TTFB p50 | LCP, total fetch time unchanged | -60% to -80% TTFB | None |
-| **E2a** | Lightdash v2 executeMetricQuery eliminates hops | `compileQuery` → BQ client (4 calls) | v2 `executeMetricQuery` submit + poll (2 calls) | Per-query wall-clock p50 | Row correctness, budget observability | -10% to -25% per query | None |
+| **E2a** | Lightdash v2 executeMetricQuery eliminates hops | `compileQuery` → BQ client (4 calls) | v2 `executeMetricQuery` submit + poll (2 calls) | Per-query wall-clock p50 | Row correctness, budget observability | -10% to -25% per query | E2a-prereq |
 | **E3** | App-level semantic cache not wired up | No `SemanticResultCache` or persistent `InFlightRequestDeduper` | Wire both into `createSemanticRuntime()` with semantic version key | Cold→warm ratio, cache hit rate | Memory usage | -20% to -40% warm loads | None |
-| **E4** | 16 filter dictionaries on critical path | 16 `runQuery` calls in SSR `Promise.all` | (a) Longer TTL (5min+); (b) Move off critical path (load after shell) | SSR total time, TTFB | Filter UX responsiveness | -15% to -30% SSR | None |
-| **E5** | Redundant Lightdash compile calls | Each group compiles independently | Compile-result cache keyed on `{model, measures, dimensions, filters}` hash | Total compile time | Correctness | -30% to -50% compile | None |
-| **E6** | BigQuery 3-call overhead per job | `createJob` → `getResults` → `getMetadata` | (a) `Promise.all([getResults, getMetadata])`; (b) BQ `query()` single-call | Per-query BQ time | `bytesProcessed` still captured | -10% to -25% | Skip if E2a wins |
-| **E7** | Combined winners | Baseline | Stack top 2-3 winning variants | Cold total page load p50 | No regressions | Target: 10x | E1-E6 results |
+| **E4** | 16 filter dictionaries on SSR critical path | 16 `runQuery` calls block SSR | Move dictionaries off the critical path: load after shell renders via streaming SSR or client-side fetch on mount | Cold SSR total time, TTFB | Filter UX responsiveness (dictionaries still available before user interacts) | -15% to -30% cold SSR | None |
+| **E5** | BigQuery 3-call overhead per job | `createJob` → `getResults` → `getMetadata` | (a) `Promise.all([getResults, getMetadata])`; (b) BQ `query()` single-call | Per-query BQ time | `bytesProcessed` still captured | -10% to -25% | Skip if E2a wins |
+| **E6** | Combined winners | Baseline | Stack top 2-3 winning variants | Cold total page load p50 | No regressions | Target: 10x | E1-E5 results |
+
+**Dropped experiments:**
+- ~~E5 (compile cache)~~: Lightdash `compileQuery` includes full filter values
+  (category, date range) in the compilation request, producing category-specific
+  SQL. A shape-based cache would return SQL compiled for wrong filters. A correct
+  cache key eliminates cross-category sharing. See `lightdash.ts:166`,
+  `semantic-registry.ts:417`.
+- ~~E4a (longer dictionary TTL)~~: Filter dictionaries already use
+  `unstable_cache` with `revalidate: 900` (15 min). "Longer TTL" is already the
+  baseline. Cold runs bypass `unstable_cache` entirely, so TTL changes cannot
+  improve the primary cold metric. Only "move off critical path" survives as E4.
+  See `get-dashboard-filter-dictionary.ts:49`.
+
+### E2a Prerequisite: New Runtime/Provider Contract
+
+E2a is **not** a simple transport swap. The current `SemanticProvider` interface
+only exposes `compileQuery() → CompiledSemanticQuery` (SQL string + aliases),
+and `SemanticRuntime` chains that to a separate `SemanticQueryExecutor`. There is
+no type, interface, or code path for "Lightdash executes and returns results."
+
+Before E2a can run as an experiment, the following must be designed and built:
+
+1. New `SemanticProvider` method (e.g., `executeQuery`) or alternative provider
+   type that wraps the v2 `executeMetricQuery` submit + poll pattern
+2. New result type bridging the v2 paginated response to `SemanticQueryResult`
+3. New execution path in `runtime.ts` that bypasses the `executeQuery` executor
+4. Telemetry fields for the async flow (`submitMs`, `pollMs`, `totalRoundTrips`)
+5. Decision on `bytesProcessed` — v2 does not expose it; either accept the loss
+   or run periodic observability-only queries through the direct BQ path
+
+This makes E2a higher effort than other experiments. It should be designed as a
+sub-project, not a simple toggle.
 
 ### Execution Order
 
 ```
 E1 (streaming SSR) ─────────────────┐
-E2a (LH executeMetricQuery) ────────┤
-E3 (wire cache + deduper) ──────────┼── all independent, run in parallel
-E4 (dictionary optimization) ───────┤
-E5 (compile cache) ─────────────────┘
+E3 (wire cache + deduper) ──────────┼── independent, run in parallel
+E4 (dictionaries off critical path) ┘
         │
         ▼
-E6 (BQ call optimization) ── only if E2a doesn't win decisively
+E2a (LH executeMetricQuery) ── requires provider contract work first
+E5 (BQ call optimization) ──── only if E2a doesn't win decisively
         │
         ▼
-E7 (combined winners) ───── stacks best variants
+E6 (combined winners) ───── stacks best variants
 ```
 
 ### TDD-Style Assertions
@@ -199,13 +233,10 @@ expect(variant.cold.perQueryMs.p50).toBeLessThan(baseline.cold.perQueryMs.p50 * 
 // E3: Cache + deduper (warm runs)
 expect(variant.warm.ssrDataFetchMs.p50).toBeLessThan(baseline.warm.ssrDataFetchMs.p50 * 0.6);
 
-// E4: Dictionary optimization
-expect(variant.cold.ssrDataFetchMs.p50).toBeLessThan(baseline.cold.ssrDataFetchMs.p50 * 0.85);
+// E4: Dictionaries off critical path
+expect(variant.cold.ttfbMs.p50).toBeLessThan(baseline.cold.ttfbMs.p50 * 0.85);
 
-// E5: Compile cache
-expect(variant.cold.totalCompileMs.p50).toBeLessThan(baseline.cold.totalCompileMs.p50 * 0.5);
-
-// E7: Combined — the 10x target
+// E6: Combined — the 10x target
 expect(combined.cold.totalPageLoadMs.p50).toBeLessThan(baseline.cold.totalPageLoadMs.p50 * 0.1);
 ```
 
@@ -337,6 +368,33 @@ type ExperimentSummary = {
 };
 ```
 
+### Browser Metrics Collection
+
+Server-side spans (SSR data fetch, compile, execute) are collected by
+in-process instrumentation. Browser metrics (TTFB, FCP, LCP, JS download,
+hydration) **cannot** be measured by a server-side benchmark route alone.
+
+**Design: Playwright harness** (`e2e/benchmark.spec.ts`)
+
+The harness uses Playwright to:
+1. Start the sandbox dev server
+2. For each experiment run:
+   a. Clear caches (if cold run): restart dev server process, set `cacheMode=off`
+      query param, optionally disable BigQuery query cache
+   b. Navigate to the sandbox page with a `runId` query param
+   c. Collect `PerformanceObserver` entries via `page.evaluate()`:
+      - `performance.timing.responseStart` → TTFB
+      - `largest-contentful-paint` entry → LCP
+      - `first-contentful-paint` entry → FCP
+      - `performance.getEntriesByType('resource')` filtered to JS → bundle download
+   d. Read a `window.__SANDBOX_TELEMETRY__` global that the sandbox page populates
+      with server-side span data (injected via a `<script>` tag in the HTML)
+   e. Merge server spans + browser metrics into a single `ExperimentRunMetrics`
+   f. Write to results JSON
+
+This gives us end-to-end timing from a real browser, correlated with server
+spans via the shared `runId`.
+
 ### Output Format
 
 ```
@@ -354,15 +412,34 @@ apps/perf-sandbox/results/
 
 ### Primary Goal
 
-10x improvement in cold initial page load time.
+10x improvement in cold initial page load time, measured in the sandbox.
+
+The sandbox is a **reduced surrogate** (3-5 tiles) exercising the same code
+paths as the production page (32 tiles). Success criteria are stated in terms
+of the sandbox. The claim that improvements transfer to the full page is a
+hypothesis to be validated in Phase 4 (challenger app), not proven by the
+sandbox alone.
+
+### Definition of "Cold"
+
+A cold run means **all three cache layers are cleared**:
+
+1. **Next.js `unstable_cache`**: bypassed via `cacheMode=off` query parameter
+2. **Node.js process state**: fresh dev server process (kills the module-level
+   `cachedRuntime` singleton and any in-memory caches)
+3. **BigQuery query cache**: `useQueryCache: false` on the BigQuery job config
+
+If any layer is warm, the run is tagged `isWarm` and reported separately.
+Partial-warm states (e.g., BQ cache warm but Next.js cold) are not part of the
+primary measurement — they are noise to be eliminated, not measured.
 
 ### Quantitative Thresholds
 
 | Metric | Baseline | Target (10x) | Stretch (20x) |
 |--------|----------|--------------|----------------|
-| Cold TTFB p50 | TBD | baseline / 10 | baseline / 20 |
-| Cold total page load p50 | TBD | baseline / 10 | baseline / 20 |
-| Cold SSR data fetch p50 | TBD | baseline / 10 | — |
+| Sandbox cold TTFB p50 | TBD | baseline / 10 | baseline / 20 |
+| Sandbox cold total page load p50 | TBD | baseline / 10 | baseline / 20 |
+| Sandbox cold SSR data fetch p50 | TBD | baseline / 10 | — |
 
 Baseline numbers will be established by the sandbox's first benchmark run.
 
@@ -370,15 +447,17 @@ Baseline numbers will be established by the sandbox's first benchmark run.
 
 "10x achieved" requires **all three**:
 
-1. Cold TTFB p50 ≤ 10% of baseline cold TTFB p50
-2. Cold total page load p50 ≤ 10% of baseline cold total page load p50
+1. Sandbox cold TTFB p50 ≤ 10% of baseline cold TTFB p50
+2. Sandbox cold total page load p50 ≤ 10% of baseline cold total page load p50
 3. No correctness regressions — variant produces identical row values as baseline
 
 ### Guardrails (Must Not Regress)
 
 - Warm load performance stays same or better
-- `bytesProcessed` per session within budget (sales-performance: 600 target, 900 degrade)
-- Query count per session within budget (2 target, 3 degrade)
+- `bytesProcessed` per session: variant must not exceed baseline (relative, not
+  absolute budget — the declared budget values in `budgets.ts` are aspirational
+  and do not match actual page query volume)
+- Total query count per session: variant must not exceed baseline
 - No new runtime dependencies inflating bundle size >10%
 
 ### Statistical Requirements
@@ -392,9 +471,9 @@ Baseline numbers will be established by the sandbox's first benchmark run.
 | Gate | Criteria | Unlocks |
 |------|----------|---------|
 | **G1** | Baseline: 5+ cold runs, CV < 20% | Proceed to experiments |
-| **G2** | Each experiment: 5+ runs, comparison computed | Proceed to E7 (combined) |
-| **G3** | Combined variant meets 10x criteria | Proceed to Phase 4 (challenger app) |
-| **G3-alt** | Combined < 10x | Reassess hypotheses, add experiments, or revise target |
+| **G2** | Each experiment: 5+ runs, comparison computed | Proceed to E6 (combined) |
+| **G3** | Combined variant meets 10x criteria in sandbox | Proceed to Phase 4 (challenger app with full 32-tile page) |
+| **G3-alt** | Combined < 10x in sandbox | Reassess hypotheses, add experiments, or revise target |
 
 ---
 
