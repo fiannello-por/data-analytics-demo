@@ -8,7 +8,15 @@ export async function FilterBar({
 }: {
   cacheMode: ProbeCacheMode;
 }) {
-  const dictionaries = await loadFilterDictionaries(cacheMode);
+  const startMs = performance.now();
+  const { dictionaries, stats } = await loadFilterDictionaries(cacheMode);
+  const durationMs = performance.now() - startMs;
+
+  const telemetry = {
+    filterDurationMs: Math.round(durationMs * 100) / 100,
+    filterActualQueryCount: stats.actualCallCount,
+    filterTotalExecutionMs: stats.totalExecutionMs,
+  };
 
   return (
     <div id="filter-bar" data-loaded="true">
@@ -28,6 +36,21 @@ export async function FilterBar({
           </span>
         ))}
       </div>
+      <script
+        id="filter-telemetry"
+        type="application/json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(telemetry) }}
+      />
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            window.__CHALLENGER_TELEMETRY__ = {
+              ...window.__CHALLENGER_TELEMETRY__,
+              ...JSON.parse(document.getElementById('filter-telemetry').textContent),
+            };
+          `,
+        }}
+      />
     </div>
   );
 }

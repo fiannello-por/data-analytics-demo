@@ -1,7 +1,11 @@
 // apps/challenger/lib/dictionary-loader.ts
 
 import { unstable_cache } from 'next/cache';
-import { executeMetricQuery } from './lightdash-v2-client';
+import {
+  executeMetricQuery,
+  createCallTracker,
+  type CallTracker,
+} from './lightdash-v2-client';
 import {
   GLOBAL_FILTER_KEYS,
   buildDictionaryQuery,
@@ -19,11 +23,20 @@ function extractDistinctValues(rows: ResultRow[]): string[] {
     .filter((v) => v.trim().length > 0);
 }
 
-async function fetchFilterDictionaries(): Promise<DictionaryResult[]> {
+export type DictionaryLoaderResult = {
+  dictionaries: DictionaryResult[];
+  stats: { actualCallCount: number; totalExecutionMs: number };
+};
+
+async function fetchFilterDictionaries(
+  tracker: CallTracker,
+): Promise<DictionaryResult[]> {
   return Promise.all(
     GLOBAL_FILTER_KEYS.map(
       async (key: GlobalFilterKey): Promise<DictionaryResult> => {
-        const result = await executeMetricQuery(buildDictionaryQuery(key));
+        const result = await tracker.track(
+          executeMetricQuery(buildDictionaryQuery(key)),
+        );
         return { key, options: extractDistinctValues(result.rows) };
       },
     ),
@@ -32,17 +45,22 @@ async function fetchFilterDictionaries(): Promise<DictionaryResult[]> {
 
 export async function loadFilterDictionaries(
   cacheMode: ProbeCacheMode = 'auto',
-): Promise<DictionaryResult[]> {
+): Promise<DictionaryLoaderResult> {
+  const tracker = createCallTracker();
+
   if (cacheMode === 'off') {
-    return fetchFilterDictionaries();
+    const dictionaries = await fetchFilterDictionaries(tracker);
+    return { dictionaries, stats: tracker.getStats() };
   }
 
-  return unstable_cache(
-    fetchFilterDictionaries,
+  const dictionaries = await unstable_cache(
+    () => fetchFilterDictionaries(tracker),
     ['challenger-filter-dictionaries'],
     {
       revalidate: 900,
       tags: ['challenger-filter-dictionaries'],
     },
   )();
+
+  return { dictionaries, stats: tracker.getStats() };
 }

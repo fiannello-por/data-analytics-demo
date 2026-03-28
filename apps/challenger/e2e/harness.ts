@@ -73,6 +73,9 @@ export type ServerTelemetry = {
   overviewDurationMs: number;
   overviewActualQueryCount: number;
   overviewTotalExecutionMs: number;
+  filterDurationMs: number;
+  filterActualQueryCount: number;
+  filterTotalExecutionMs: number;
   cacheMode: string;
 };
 
