@@ -8,6 +8,27 @@ import type {
   MetricQueryRequest,
 } from './types';
 
+// Concurrency limiter — prevents overwhelming the Lightdash server.
+// The Render instance (1 CPU, 2GB) handles ~8 concurrent executeMetricQuery
+// calls well but degrades badly at 26+.
+const MAX_CONCURRENT = 10;
+let activeCount = 0;
+const waitQueue: Array<() => void> = [];
+
+async function withConcurrencyLimit<T>(fn: () => Promise<T>): Promise<T> {
+  if (activeCount >= MAX_CONCURRENT) {
+    await new Promise<void>((resolve) => waitQueue.push(resolve));
+  }
+  activeCount++;
+  try {
+    return await fn();
+  } finally {
+    activeCount--;
+    const next = waitQueue.shift();
+    if (next) next();
+  }
+}
+
 function getLightdashEnv() {
   const url = process.env.LIGHTDASH_URL;
   const apiKey = process.env.LIGHTDASH_API_KEY;
@@ -32,10 +53,14 @@ async function pollForResults(
   projectUuid: string,
   apiKey: string,
   queryUuid: string,
-  backoffMs = 250,
+  backoffMs = 200,
 ): Promise<QueryResultPage> {
+  // Each poll must be a unique request — Next.js deduplicates concurrent
+  // fetch calls to the same URL even with cache:'no-store'. Adding a
+  // timestamp param ensures each poll is treated as a distinct request.
+  const bustParam = `&_t=${Date.now()}`;
   const response = await fetch(
-    `${baseUrl}/api/v2/projects/${projectUuid}/query/${queryUuid}?pageSize=500`,
+    `${baseUrl}/api/v2/projects/${projectUuid}/query/${queryUuid}?pageSize=500${bustParam}`,
     { method: 'GET', headers: headers(apiKey), cache: 'no-store' },
   );
 
@@ -51,7 +76,7 @@ async function pollForResults(
     result.status === 'queued' ||
     result.status === 'executing'
   ) {
-    const nextBackoff = Math.min(backoffMs * 2, 1000);
+    const nextBackoff = Math.min(backoffMs * 1.5, 800);
     await new Promise((r) => setTimeout(r, backoffMs));
     return pollForResults(baseUrl, projectUuid, apiKey, queryUuid, nextBackoff);
   }
@@ -66,31 +91,33 @@ async function pollForResults(
 export async function executeMetricQuery(
   request: MetricQueryRequest,
 ): Promise<QueryResultPage> {
-  const env = getLightdashEnv();
+  return withConcurrencyLimit(async () => {
+    const env = getLightdashEnv();
 
-  const payload: ExecuteMetricQueryPayload = {
-    query: request,
-    context: 'api',
-  };
+    const payload: ExecuteMetricQueryPayload = {
+      query: request,
+      context: 'api',
+    };
 
-  const submitResponse = await fetch(
-    `${env.url}/api/v2/projects/${env.projectUuid}/query/metric-query`,
-    {
-      method: 'POST',
-      headers: headers(env.apiKey),
-      body: JSON.stringify(payload),
-      cache: 'no-store',
-    },
-  );
+    const submitResponse = await fetch(
+      `${env.url}/api/v2/projects/${env.projectUuid}/query/metric-query`,
+      {
+        method: 'POST',
+        headers: headers(env.apiKey),
+        body: JSON.stringify(payload),
+        cache: 'no-store',
+      },
+    );
 
-  if (!submitResponse.ok) {
-    throw new Error(`executeMetricQuery submit failed: ${submitResponse.status}`);
-  }
+    if (!submitResponse.ok) {
+      throw new Error(`executeMetricQuery submit failed: ${submitResponse.status}`);
+    }
 
-  const submitData = (await submitResponse.json()) as SubmitResponse;
-  const queryUuid = submitData.results.queryUuid;
+    const submitData = (await submitResponse.json()) as SubmitResponse;
+    const queryUuid = submitData.results.queryUuid;
 
-  return pollForResults(env.url, env.projectUuid, env.apiKey, queryUuid);
+    return pollForResults(env.url, env.projectUuid, env.apiKey, queryUuid);
+  });
 }
 
 // Per-surface call tracker. Each loader creates its own instance so
