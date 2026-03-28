@@ -1,0 +1,116 @@
+// apps/perf-sandbox/lib/sandbox-runtime.ts
+import {
+  createLightdashProvider,
+  createSemanticRuntime,
+  type QueryExecutionResult,
+  type SemanticQueryRequest,
+  type SemanticQueryResult,
+} from '@por/semantic-runtime';
+import { BigQuery } from '@google-cloud/bigquery';
+import { SpanCollector } from './telemetry';
+
+type SandboxEnv = {
+  lightdashUrl: string;
+  lightdashProjectUuid: string;
+  lightdashApiKey: string;
+  bigqueryProjectId: string;
+  bigqueryDataset: string;
+  bigqueryLocation: string;
+  bigqueryCredentials: Record<string, unknown>;
+};
+
+function must(name: string): string {
+  const value = process.env[name];
+  if (!value) throw new Error(`Missing env var: ${name}`);
+  return value;
+}
+
+function getSandboxEnv(): SandboxEnv {
+  const saJson =
+    process.env.BIGQUERY_SERVICE_ACCOUNT_JSON ??
+    (process.env.BIGQUERY_SERVICE_ACCOUNT_PATH
+      ? require('node:fs').readFileSync(
+          process.env.BIGQUERY_SERVICE_ACCOUNT_PATH,
+          'utf8',
+        )
+      : undefined);
+  if (!saJson) throw new Error('Missing BigQuery service account credentials');
+
+  return {
+    lightdashUrl: must('LIGHTDASH_URL'),
+    lightdashProjectUuid: must('LIGHTDASH_PROJECT_UUID'),
+    lightdashApiKey: must('LIGHTDASH_API_KEY'),
+    bigqueryProjectId: must('BIGQUERY_PROJECT_ID'),
+    bigqueryDataset: process.env.BIGQUERY_DATASET ?? 'scorecard_test',
+    bigqueryLocation: process.env.BIGQUERY_LOCATION ?? 'US',
+    bigqueryCredentials: JSON.parse(saJson),
+  };
+}
+
+export type InstrumentedRuntime = {
+  runQuery(request: SemanticQueryRequest): Promise<SemanticQueryResult>;
+  collector: SpanCollector;
+};
+
+export function createSandboxRuntime(
+  collector: SpanCollector,
+): InstrumentedRuntime {
+  const env = getSandboxEnv();
+
+  const provider = createLightdashProvider({
+    baseUrl: env.lightdashUrl,
+    projectUuid: env.lightdashProjectUuid,
+    apiKey: env.lightdashApiKey,
+  });
+
+  const instrumentedProvider = {
+    compileQuery: async (
+      request: Parameters<typeof provider.compileQuery>[0],
+    ) => {
+      const spanId = collector.startSpan('lightdash_compile', undefined, {
+        model: request.model,
+      });
+      try {
+        const result = await provider.compileQuery(request);
+        collector.setMetadata(spanId, { sqlLength: result.sql.length });
+        return result;
+      } finally {
+        collector.endSpan(spanId);
+      }
+    },
+  };
+
+  const bigquery = new BigQuery({
+    projectId: env.bigqueryProjectId,
+    credentials: env.bigqueryCredentials,
+    location: env.bigqueryLocation,
+  });
+
+  const runtime = createSemanticRuntime({
+    provider: instrumentedProvider,
+    executeQuery: async ({ sql }) => {
+      const spanId = collector.startSpan('bigquery_execute');
+      try {
+        const [job] = await bigquery.createQueryJob({
+          query: sql,
+          location: env.bigqueryLocation,
+          useQueryCache: true,
+        });
+        const [rows] = await job.getQueryResults();
+        const [metadata] = await job.getMetadata();
+        const bytesProcessed = Number(
+          metadata.statistics?.query?.totalBytesProcessed ?? 0,
+        );
+        collector.setMetadata(spanId, {
+          bytesProcessed,
+          cacheHit: metadata.statistics?.query?.cacheHit ?? false,
+        });
+        return { rows: rows as Record<string, unknown>[], bytesProcessed };
+      } finally {
+        collector.endSpan(spanId);
+      }
+    },
+  });
+
+  return { runQuery: runtime.runQuery.bind(runtime), collector };
+}
