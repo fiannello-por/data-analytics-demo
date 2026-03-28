@@ -68,6 +68,40 @@ describe('SpanCollector', () => {
     expect(agg.totalBytesProcessed).toBe(800);
   });
 
+  it('inherits activeParent when no explicit parentId given', () => {
+    const collector = new SpanCollector();
+    const querySpan = collector.startSpan('query_current');
+    collector.setActiveParent(querySpan);
+    const compileSpan = collector.startSpan('lightdash_compile');
+    collector.endSpan(compileSpan);
+    const executeSpan = collector.startSpan('bigquery_execute');
+    collector.endSpan(executeSpan);
+    collector.setActiveParent(undefined);
+    collector.endSpan(querySpan);
+
+    const spans = collector.getSpans();
+    const compile = spans.find((s) => s.name === 'lightdash_compile');
+    const execute = spans.find((s) => s.name === 'bigquery_execute');
+    expect(compile?.parentId).toBe(querySpan);
+    expect(execute?.parentId).toBe(querySpan);
+  });
+
+  it('explicit parentId overrides activeParent', () => {
+    const collector = new SpanCollector();
+    const parent1 = collector.startSpan('parent1');
+    const parent2 = collector.startSpan('parent2');
+    collector.setActiveParent(parent1);
+    const child = collector.startSpan('child', parent2);
+    collector.endSpan(child);
+    collector.setActiveParent(undefined);
+    collector.endSpan(parent1);
+    collector.endSpan(parent2);
+
+    const spans = collector.getSpans();
+    const childSpan = spans.find((s) => s.name === 'child');
+    expect(childSpan?.parentId).toBe(parent2);
+  });
+
   it('resets for a new run', () => {
     const collector = new SpanCollector();
     const id = collector.startSpan('test');

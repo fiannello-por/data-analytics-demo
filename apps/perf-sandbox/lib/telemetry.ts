@@ -17,6 +17,7 @@ export class SpanCollector {
   private open = new Map<string, OpenSpan>();
   private closed: TelemetrySpan[] = [];
   private baseTime = performance.now();
+  private activeParentId: string | undefined;
 
   startSpan(
     name: string,
@@ -27,11 +28,15 @@ export class SpanCollector {
     this.open.set(id, {
       id,
       name,
-      parentId,
+      parentId: parentId ?? this.activeParentId,
       startMs: performance.now() - this.baseTime,
       metadata,
     });
     return id;
+  }
+
+  setActiveParent(parentId: string | undefined): void {
+    this.activeParentId = parentId;
   }
 
   endSpan(id: string): void {
@@ -121,6 +126,7 @@ export class SpanCollector {
     this.open.clear();
     this.closed = [];
     this.baseTime = performance.now();
+    this.activeParentId = undefined;
     nextId = 0;
   }
 }
