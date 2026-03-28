@@ -109,11 +109,33 @@ This matches Lightdash's own frontend implementation (verified from
 `packages/frontend/src/features/queryRunner/executeQuery.ts` in the
 Lightdash open source repo).
 
-### No `@por/semantic-runtime` integration
+### Semantic Layer Reuse Strategy
 
-The challenger app uses its own standalone client. No changes to the shared
-`@por/semantic-runtime` package. If the architecture proves out, the v2
-execution path can be backported into the semantic-runtime as a new provider.
+**Phase 4a:** The challenger uses its own standalone v2 client and a minimal
+`query-builder.ts` for the overview surface (5 `bookings_amount` metrics
+with simple category filters). This is acceptable because the overview only
+uses one measure per category with no extra filters or date normalization.
+
+**Phase 4b:** The challenger MUST reuse the production semantic definitions,
+not re-implement them. The existing `semantic-registry.ts` encodes ~50
+tile-specific rules: per-tile measure selection, date dimension selection,
+extra filters (`CLOSED_WON_FILTERS`, `WON_POSITIVE_ACV_FILTERS`),
+`ytd_to_end` date normalization, grouped snapshot queries, and trend
+dimension construction. Rebuilding these independently would create silent
+metric drift — exactly the risk this repo treats as high severity.
+
+Phase 4b will extract the query-building functions from `semantic-registry.ts`
+into a shared package (or import from the analytics-suite directly) so both
+apps derive `MetricQuery` payloads from the same tile specs. The only change
+is the execution backend: the production app sends `SemanticQueryRequest` to
+`compileQuery` + BQ client, while the challenger sends the equivalent
+Lightdash `MetricQuery` to `executeMetricQuery`. The tile definitions, filter
+logic, grouping, and date normalization are shared code, not duplicated.
+
+No changes to `@por/semantic-runtime` are required in Phase 4a. Phase 4b
+may extract shared query-building logic into a new shared package or into
+`@por/semantic-runtime` itself — that decision is deferred to the Phase 4b
+design.
 
 ### Overview Loader
 
