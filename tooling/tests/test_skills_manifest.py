@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 import pytest
+
 from validators.skills_manifest import (
     _default_manifest_path,
     check_installed_skills,

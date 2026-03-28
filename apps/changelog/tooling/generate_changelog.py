@@ -16,6 +16,8 @@ import traceback
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
+from openai import OpenAI
+
 from github import (
     fetch_github_user,
     github_request,
@@ -31,7 +33,6 @@ from lib.agent_utils import (
     sanitize_plain_text,
     yaml_single_quoted,
 )
-from openai import OpenAI
 from pr_template import (
     changelog_note,
     parse_template_sections,
