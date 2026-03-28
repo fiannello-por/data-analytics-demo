@@ -1,0 +1,24 @@
+{
+  "name": "@point-of-rental/challenger",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3500",
+    "build": "next build",
+    "start": "next start --port 3500",
+    "benchmark": "pnpm build && playwright test"
+  },
+  "dependencies": {
+    "@por/dashboard-constants": "workspace:*",
+    "next": "15.5.12",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "5.9.3"
+  }
+}
