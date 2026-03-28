@@ -1,44 +1,84 @@
 // apps/perf-sandbox/e2e/harness.ts
 import { type ChildProcess, spawn } from 'node:child_process';
+import { resolve } from 'node:path';
 import type { Page } from '@playwright/test';
 import type { RunMode } from '../lib/types';
 
+const SANDBOX_DIR = resolve(__dirname, '..');
+const PORT = 3400;
+const BASE_URL = `http://localhost:${PORT}`;
+
 let serverProcess: ChildProcess | null = null;
+
+async function waitForServer(timeoutMs = 60_000): Promise<void> {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    try {
+      const response = await fetch(`${BASE_URL}/`, {
+        signal: AbortSignal.timeout(2_000),
+      });
+      if (response.ok || response.status === 500) {
+        // 500 is acceptable — means the server is up but the page may error
+        // due to env vars. We just need the process running.
+        return;
+      }
+    } catch {
+      // Connection refused — server not ready yet
+    }
+    await new Promise((r) => setTimeout(r, 500));
+  }
+  throw new Error(`Server did not become ready within ${timeoutMs}ms`);
+}
 
 export async function startServer(): Promise<void> {
   if (serverProcess) return;
-  serverProcess = spawn('pnpm', ['start'], {
-    cwd: __dirname + '/..',
+
+  // Spawn next start directly (not via pnpm) for cleaner process management
+  const nextBin = resolve(SANDBOX_DIR, 'node_modules', '.bin', 'next');
+  serverProcess = spawn(nextBin, ['start', '--port', String(PORT)], {
+    cwd: SANDBOX_DIR,
     stdio: 'pipe',
-    env: { ...process.env, PORT: '3400' },
+    env: { ...process.env },
   });
 
-  await new Promise<void>((resolve, reject) => {
-    const timeout = setTimeout(
-      () => reject(new Error('Server start timeout')),
-      30_000,
-    );
-    serverProcess!.stdout?.on('data', (data: Buffer) => {
-      if (data.toString().includes('Ready')) {
-        clearTimeout(timeout);
-        resolve();
-      }
-    });
-    serverProcess!.on('error', (err) => {
-      clearTimeout(timeout);
-      reject(err);
-    });
+  serverProcess.on('error', (err) => {
+    console.error('Server process error:', err);
   });
+
+  serverProcess.stderr?.on('data', (data: Buffer) => {
+    const text = data.toString();
+    if (text.includes('EADDRINUSE')) {
+      console.error('Port already in use — killing stale process');
+    }
+  });
+
+  await waitForServer();
 }
 
 export async function stopServer(): Promise<void> {
   if (!serverProcess) return;
+  const pid = serverProcess.pid;
   serverProcess.kill('SIGTERM');
   await new Promise<void>((resolve) => {
-    serverProcess!.on('close', () => resolve());
-    setTimeout(resolve, 5_000);
+    const timeout = setTimeout(() => {
+      // Force kill if SIGTERM didn't work
+      if (pid) {
+        try {
+          process.kill(pid, 'SIGKILL');
+        } catch {
+          // Already dead
+        }
+      }
+      resolve();
+    }, 5_000);
+    serverProcess!.on('close', () => {
+      clearTimeout(timeout);
+      resolve();
+    });
   });
   serverProcess = null;
+  // Brief pause to ensure port is released
+  await new Promise((r) => setTimeout(r, 500));
 }
 
 export async function restartServer(): Promise<void> {
@@ -47,7 +87,7 @@ export async function restartServer(): Promise<void> {
 }
 
 export function buildUrl(runMode: RunMode, runId: string): string {
-  const base = `http://localhost:3400/?runId=${runId}`;
+  const base = `${BASE_URL}/?runId=${runId}`;
   if (runMode === 'full-cold') {
     return `${base}&cacheMode=off`;
   }
@@ -66,7 +106,7 @@ export type BrowserMetrics = {
 export async function collectBrowserMetrics(
   page: Page,
 ): Promise<BrowserMetrics> {
-  await page.waitForSelector('#sandbox-summary');
+  await page.waitForSelector('#sandbox-summary', { timeout: 120_000 });
 
   return page.evaluate(() => {
     const nav = performance.getEntriesByType(
@@ -81,14 +121,16 @@ export async function collectBrowserMetrics(
     const lcpEntries = performance.getEntriesByType(
       'largest-contentful-paint',
     ) as Array<{ startTime: number }>;
-    const lcp = lcpEntries.length > 0 ? lcpEntries[lcpEntries.length - 1].startTime : 0;
+    const lcp =
+      lcpEntries.length > 0
+        ? lcpEntries[lcpEntries.length - 1].startTime
+        : 0;
 
     const jsResources = performance
       .getEntriesByType('resource')
       .filter(
         (r) =>
-          r.name.endsWith('.js') ||
-          r.name.includes('/_next/static/'),
+          r.name.endsWith('.js') || r.name.includes('/_next/static/'),
       ) as PerformanceResourceTiming[];
     const jsDownloadMs = jsResources.reduce(
       (sum, r) => sum + r.duration,

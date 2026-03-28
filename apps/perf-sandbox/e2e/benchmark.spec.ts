@@ -84,7 +84,8 @@ test.describe('Baseline benchmark', () => {
       );
 
       expect(response.ok()).toBe(true);
-      expect(serverMetrics.totalQueryCount).toBeGreaterThan(0);
+      // No query count assertion — production-cold may serve entirely
+      // from the Data Cache if full-cold runs populated it earlier.
     });
   }
 
