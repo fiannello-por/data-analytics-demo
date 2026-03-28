@@ -79,9 +79,16 @@ export type ServerTelemetry = {
 export async function collectBrowserMetrics(
   page: Page,
 ): Promise<BrowserMetrics> {
-  await page.waitForSelector('#overview-data[data-loaded="true"]', {
-    timeout: 120_000,
-  });
+  // Wait for BOTH Suspense boundaries to resolve — the spec requires
+  // the filter bar to be validated alongside the overview board.
+  await Promise.all([
+    page.waitForSelector('#overview-data[data-loaded="true"]', {
+      timeout: 120_000,
+    }),
+    page.waitForSelector('#filter-bar[data-loaded="true"]', {
+      timeout: 120_000,
+    }),
+  ]);
 
   return page.evaluate(() => {
     const nav = performance.getEntriesByType(
