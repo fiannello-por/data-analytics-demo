@@ -70,9 +70,10 @@ Browser → Vercel (Next.js 15, streaming SSR)
               │       └─ Lightdash compiles + executes BQ internally
               │
               └─ Suspense: Filter Dictionaries
-                  └─ 1 executeSqlQuery call (batch: 16 dimensions)
-                      └─ POST /api/v2/.../query/sql
+                  └─ 16 × executeMetricQuery (one per filter dimension)
+                      └─ POST /api/v2/.../query/metric-query (submit)
                       └─ GET /api/v2/.../query/{uuid} (poll until ready)
+                      └─ Stays within semantic layer (no raw SQL)
 ```
 
 **No BigQuery client, credentials, or `@google-cloud/bigquery` on Vercel.**
@@ -84,7 +85,7 @@ Lightdash is the sole data gateway.
 
 ### Lightdash v2 Client
 
-Standalone ~100-line module. Two functions:
+Standalone ~80-line module. One function:
 
 ```typescript
 executeMetricQuery(request: {
@@ -95,11 +96,9 @@ executeMetricQuery(request: {
   sorts: MetricQuerySort[];
   limit: number;
 }): Promise<QueryResultPage>
-
-executeSqlQuery(sql: string): Promise<QueryResultPage>
 ```
 
-Both follow the same pattern:
+Follows the pattern:
 1. `POST` to submit endpoint → receive `queryUuid`
 2. `GET` poll endpoint with exponential backoff (250ms → 500ms → 1000ms cap)
    until status is `ready`
@@ -141,42 +140,42 @@ in Lightdash's `dimensions.and[]` format.
 
 ### Dictionary Loader
 
-Filter dictionaries are loaded via a single `executeSqlQuery` call, but the
-SQL is **generated dynamically from the semantic registry**, not hardcoded.
-
-The dictionary loader imports the model name and filter dimension mapping
-from shared constants that the production app also uses:
+Filter dictionaries are loaded via 16 `executeMetricQuery` calls, one per
+dimension — the same approach the production analytics-suite uses. Each call
+requests a single dimension with `sorts` and `limit: 500`:
 
 ```typescript
-import {
-  DASHBOARD_V2_BASE_MODEL,
-} from '@/lib/semantic-constants';
-import {
-  GLOBAL_FILTER_KEYS,
-  FILTER_DIMENSIONS,
-} from '@/lib/semantic-constants';
-
-function buildBatchDictionarySQL(): string {
-  const table = getModelTable(DASHBOARD_V2_BASE_MODEL);
-  return GLOBAL_FILTER_KEYS
-    .map((key) => {
-      const col = FILTER_DIMENSIONS[key];
-      return `SELECT '${col}' AS dim, CAST(${col} AS STRING) AS val FROM ${table} WHERE ${col} IS NOT NULL GROUP BY ${col}`;
+async function loadFilterDictionaries(): Promise<DictionaryResult[]> {
+  return Promise.all(
+    GLOBAL_FILTER_KEYS.map(async (key) => {
+      const dimension = FILTER_DIMENSIONS[key];
+      const result = await executeMetricQuery({
+        exploreName: DASHBOARD_V2_BASE_MODEL,
+        dimensions: [buildFieldId(DASHBOARD_V2_BASE_MODEL, dimension)],
+        metrics: [],
+        filters: { dimensions: { id: 'root', and: [] } },
+        sorts: [{ fieldId: buildFieldId(DASHBOARD_V2_BASE_MODEL, dimension), descending: false }],
+        limit: 500,
+      });
+      return { key, options: extractDistinctValues(result) };
     })
-    .join('\nUNION ALL\n') + '\nORDER BY dim, val';
+  );
 }
 ```
 
-The `semantic-constants.ts` module is extracted from the existing analytics-
-suite's `semantic-registry.ts` and `catalog.ts`. Both apps import from the
-same source of truth. If models, table names, or filter dimensions change,
-both apps see the update.
+This stays **fully within the semantic layer**: Lightdash resolves table
+names from model YAML (`sql_from`), applies dimension definitions, and
+handles all SQL generation. No raw SQL, no hardcoded table references, no
+`getModelTable()` helper. The constants imported (`DASHBOARD_V2_BASE_MODEL`,
+`GLOBAL_FILTER_KEYS`, `FILTER_DIMENSIONS`) are the same model name and
+field mappings the production app uses — they do not include warehouse
+table paths.
 
-**Why raw SQL instead of 16 `executeMetricQuery` calls:** Each
-`executeMetricQuery` triggers a full model compilation on the Lightdash
-server (~400ms+ per call). 16 parallel calls saturate the single-CPU Render
-instance. One `executeSqlQuery` call bypasses compilation entirely and
-executes directly against BigQuery through Lightdash's warehouse adapter.
+**Trade-off:** 16 parallel `executeMetricQuery` calls add compile+execute
+load to the Lightdash instance. This is the same cost the production app
+pays today (via `compileQuery` + BQ). Mitigation: dictionaries run in their
+own Suspense boundary (streaming SSR), so they don't block the overview.
+The Render upgrade (R4) directly reduces per-call latency under concurrency.
 
 ---
 
@@ -193,10 +192,10 @@ apps/challenger/
 │       └── sales-performance/
 │           └── page.tsx           # Phase 4b: full dashboard with all tabs
 ├── lib/
-│   ├── lightdash-v2-client.ts     # executeMetricQuery + executeSqlQuery + poll
-│   ├── overview-loader.ts         # 5 categories × 2 windows
-│   ├── dictionary-loader.ts       # Batch SQL from semantic constants
-│   ├── semantic-constants.ts      # Shared model/filter definitions (from analytics-suite)
+│   ├── lightdash-v2-client.ts     # executeMetricQuery + poll
+│   ├── overview-loader.ts         # 5 categories × 2 windows via executeMetricQuery
+│   ├── dictionary-loader.ts       # 16 dictionaries via executeMetricQuery
+│   ├── query-builder.ts           # Builds MetricQuery payloads (model name, field IDs, filters)
 │   └── types.ts                   # v2 API response types
 ├── components/
 │   ├── overview-board.tsx         # Async server component: 5 category cards
@@ -323,9 +322,18 @@ full 32-tile page" achieving target performance.
 - No interactive filter changes (filter bar is read-only)
 - No authentication
 - No `@por/semantic-runtime` integration
-- No `unstable_cache` (measure raw v2 performance first)
 
 These are all Phase 4b scope.
+
+### What IS in Phase 4a
+
+- `unstable_cache` wrapping on all loaders (matching production patterns).
+  Overview board: 60s revalidation. Dictionaries: 900s revalidation.
+  This is required for the three run modes to be meaningful: full-cold
+  bypasses `unstable_cache` via `cacheMode=off`, production-cold leaves
+  it active, warm reuses populated cache. Without `unstable_cache`, the
+  production-cold and warm modes collapse into full-cold, invalidating
+  the benchmark contract.
 
 ---
 
@@ -343,10 +351,13 @@ No BigQuery variables. Three env vars total.
 
 ## Risks
 
-- **Lightdash Render instance throughput:** 10 parallel `executeMetricQuery`
-  calls will hit the same compile+execute bottleneck we measured. Tail latency
-  at 10 concurrent: ~1.5s. Mitigation: R3 (batch dictionaries) reduces to 10
-  Lightdash calls; R4 (Render upgrade) improves throughput.
+- **Lightdash Render instance throughput:** 26 parallel `executeMetricQuery`
+  calls (10 overview + 16 dictionaries) will hit the compile+execute
+  bottleneck. Tail latency at 26 concurrent: ~2.8s (measured). Mitigation:
+  streaming SSR means dictionaries don't block overview rendering; R4
+  (Render upgrade) improves throughput. Future optimization: batch
+  dictionary queries via `executeSqlQuery` if semantic-layer parity can
+  be maintained through model metadata.
 - **v2 poll latency:** Exponential backoff adds 250-1000ms per poll round.
   Most queries complete in 1-2 poll rounds based on measured execution times.
 - **Lightdash API stability:** v2 endpoints are the current recommended path
