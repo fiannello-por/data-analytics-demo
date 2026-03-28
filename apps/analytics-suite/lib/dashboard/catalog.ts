@@ -320,26 +320,11 @@ export const TILE_CATALOG = {
   ],
 } as const satisfies Record<Category, readonly TileDefinition[]>;
 
-export const GLOBAL_FILTER_KEYS = [
-  'Division',
-  'Owner',
-  'Segment',
-  'Region',
-  'SE',
-  'Booking Plan Opp Type',
-  'Product Family',
-  'SDR Source',
-  'SDR',
-  'POR v R360',
-  'Account Owner',
-  'Owner Department',
-  'Strategic Filter',
-  'Accepted',
-  'Gate 1 Criteria Met',
-  'Gate Met or Accepted',
-] as const;
-
-export type GlobalFilterKey = (typeof GLOBAL_FILTER_KEYS)[number];
+// Re-export filter constants from shared package
+export {
+  GLOBAL_FILTER_KEYS,
+  type GlobalFilterKey,
+} from '@por/dashboard-constants';
 
 export function isCategory(value: string): value is Category {
   return CATEGORY_ORDER.includes(value as Category);
