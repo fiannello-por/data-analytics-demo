@@ -2,9 +2,9 @@
 
 **Date:** 2026-03-28
 **Status:** Draft
-**Goal:** Build a challenger dashboard app that matches Lightdash's native dashboard performance (~4s full load) by using the same v2 API execution path Lightdash's own UI uses, with streaming SSR and no BigQuery client on Vercel.
-**Scope:** Overview tab only (5 category cards + filter bar). Proves the architecture before full parity.
-**Prerequisite:** Performance analysis from [issue #72](https://github.com/fiannello-por/data-analytics-demo/issues/72).
+**Goal:** Build a challenger dashboard app achieving full 32-tile parity with the production analytics-suite, using Lightdash's v2 API execution path, streaming SSR, and no BigQuery client on Vercel.
+**Scope:** Phased delivery. Phase 4a: overview tab (architecture validation). Phase 4b: full parity (all tabs, tile tables, trends, closed-won). Success is declared only at Phase 4b completion.
+**Prerequisite:** Performance analysis from [issue #72](https://github.com/fiannello-por/data-analytics-demo/issues/72). Sandbox benchmark infrastructure from `apps/perf-sandbox/`.
 
 ---
 
@@ -29,6 +29,33 @@ streaming SSR for progressive rendering, no BigQuery dependency on Vercel.
 
 ---
 
+## Delivery Phases
+
+### Phase 4a: Architecture Validation (Overview Tab)
+
+Proves the v2 execution path works end-to-end with measurable performance:
+- 5 category cards with bookings metrics
+- Filter bar (read-only, proves dictionary loading)
+- Streaming SSR with Suspense boundaries
+- Benchmark harness from `apps/perf-sandbox/` adapted for the challenger
+
+**Gate:** Phase 4a measurements collected. Architecture proven viable.
+
+### Phase 4b: Full Parity
+
+Achieves full feature parity with the production analytics-suite:
+- All tabs: Overview + New Logo + Expansion + Migration + Renewal + Total
+- Tile tables with all metrics per category
+- Trend charts with weekly granularity
+- Closed-won opportunities tables
+- Interactive filter changes
+- All 32+ chart tiles from the production dashboard
+
+**Gate:** Full-cold total load < 4s for the complete 32-tile dashboard.
+This satisfies the original Phase 4 gate from the perf framework spec.
+
+---
+
 ## Architecture
 
 ```
@@ -43,7 +70,7 @@ Browser → Vercel (Next.js 15, streaming SSR)
               │       └─ Lightdash compiles + executes BQ internally
               │
               └─ Suspense: Filter Dictionaries
-                  └─ 1 executeSqlQuery call (batch: 16 dimensions in one query)
+                  └─ 1 executeSqlQuery call (batch: 16 dimensions)
                       └─ POST /api/v2/.../query/sql
                       └─ GET /api/v2/.../query/{uuid} (poll until ready)
 ```
@@ -114,25 +141,42 @@ in Lightdash's `dimensions.and[]` format.
 
 ### Dictionary Loader
 
-Single SQL query via `executeSqlQuery`:
+Filter dictionaries are loaded via a single `executeSqlQuery` call, but the
+SQL is **generated dynamically from the semantic registry**, not hardcoded.
 
-```sql
-SELECT 'division' AS dim, CAST(division AS STRING) AS val
-FROM `data-analytics-306119.scorecard_test.sales_dashboard_v2_opportunity_base`
-WHERE division IS NOT NULL
-GROUP BY division
-UNION ALL
-SELECT 'owner' AS dim, CAST(owner AS STRING) AS val
-FROM `data-analytics-306119.scorecard_test.sales_dashboard_v2_opportunity_base`
-WHERE owner IS NOT NULL
-GROUP BY owner
-UNION ALL
-... (16 dimensions total)
-ORDER BY dim, val
+The dictionary loader imports the model name and filter dimension mapping
+from shared constants that the production app also uses:
+
+```typescript
+import {
+  DASHBOARD_V2_BASE_MODEL,
+} from '@/lib/semantic-constants';
+import {
+  GLOBAL_FILTER_KEYS,
+  FILTER_DIMENSIONS,
+} from '@/lib/semantic-constants';
+
+function buildBatchDictionarySQL(): string {
+  const table = getModelTable(DASHBOARD_V2_BASE_MODEL);
+  return GLOBAL_FILTER_KEYS
+    .map((key) => {
+      const col = FILTER_DIMENSIONS[key];
+      return `SELECT '${col}' AS dim, CAST(${col} AS STRING) AS val FROM ${table} WHERE ${col} IS NOT NULL GROUP BY ${col}`;
+    })
+    .join('\nUNION ALL\n') + '\nORDER BY dim, val';
+}
 ```
 
-One Lightdash API call. No semantic compilation. Raw SQL executed by
-Lightdash's warehouse adapter.
+The `semantic-constants.ts` module is extracted from the existing analytics-
+suite's `semantic-registry.ts` and `catalog.ts`. Both apps import from the
+same source of truth. If models, table names, or filter dimensions change,
+both apps see the update.
+
+**Why raw SQL instead of 16 `executeMetricQuery` calls:** Each
+`executeMetricQuery` triggers a full model compilation on the Lightdash
+server (~400ms+ per call). 16 parallel calls saturate the single-CPU Render
+instance. One `executeSqlQuery` call bypasses compilation entirely and
+executes directly against BigQuery through Lightdash's warehouse adapter.
 
 ---
 
@@ -144,17 +188,24 @@ Lightdash's warehouse adapter.
 apps/challenger/
 ├── app/
 │   ├── layout.tsx                 # Bare shell (Inter font, tailwind)
-│   └── page.tsx                   # Streaming SSR with Suspense
+│   ├── page.tsx                   # Streaming SSR with Suspense (Phase 4a: overview)
+│   └── dashboards/
+│       └── sales-performance/
+│           └── page.tsx           # Phase 4b: full dashboard with all tabs
 ├── lib/
 │   ├── lightdash-v2-client.ts     # executeMetricQuery + executeSqlQuery + poll
 │   ├── overview-loader.ts         # 5 categories × 2 windows
-│   ├── dictionary-loader.ts       # Batch SQL for 16 dictionaries
+│   ├── dictionary-loader.ts       # Batch SQL from semantic constants
+│   ├── semantic-constants.ts      # Shared model/filter definitions (from analytics-suite)
 │   └── types.ts                   # v2 API response types
 ├── components/
 │   ├── overview-board.tsx         # Async server component: 5 category cards
 │   ├── category-card.tsx          # Current value, previous value, % change
-│   └── filter-bar.tsx             # Renders dictionary options (read-only)
+│   └── filter-bar.tsx             # Renders dictionary options (read-only in 4a)
+├── e2e/
+│   └── benchmark.spec.ts         # Playwright harness (adapted from perf-sandbox)
 ├── package.json
+├── playwright.config.ts
 ├── next.config.mjs
 └── tsconfig.json
 ```
@@ -167,6 +218,10 @@ apps/challenger/
     "next": "15.5.12",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "typescript": "5.9.3"
   }
 }
 ```
@@ -175,7 +230,7 @@ Notably absent: `@google-cloud/bigquery`, `@por/semantic-runtime`,
 `server-only`. The only external dependency beyond Next.js/React is the
 Lightdash API (HTTP calls via `fetch`).
 
-### SSR Page
+### SSR Page (Phase 4a)
 
 ```tsx
 export default function Page() {
@@ -198,26 +253,79 @@ Each Suspense boundary resolves independently.
 
 ---
 
-## What's NOT in the MVP
+## Measurement
+
+The challenger app reuses the benchmark infrastructure from `apps/perf-sandbox/`:
+
+### Playwright Harness
+
+Adapted from `apps/perf-sandbox/e2e/benchmark.spec.ts`:
+- Runs against `next build` + `next start` (production build, not dev)
+- Three run modes: full-cold (fresh process + no `unstable_cache`),
+  production-cold (fresh process), warm (same process)
+- 5 runs per mode = 15 total per benchmark suite
+- Collects browser metrics via Performance API (TTFB, FCP, LCP)
+- Collects server telemetry via `window.__CHALLENGER_TELEMETRY__`
+
+### Statistical Analysis
+
+Reuses `apps/perf-sandbox/lib/stats.ts`:
+- `computeDistribution()` for per-mode metric distributions
+- `bootstrapP50CI()` for significance testing (10K resamples, 95% CI)
+
+### Run Mode Definitions
+
+Same as the approved perf framework spec:
+
+| Mode | Process | `unstable_cache` | Purpose |
+|------|---------|-------------------|---------|
+| Full cold | Fresh `next start` | Bypassed | Raw pipeline latency |
+| Production cold | Fresh `next start` | Active | Post-deployment realistic |
+| Warm | Same process | Active + populated | Steady state |
+
+---
+
+## Success Criteria
+
+### Phase 4a Gate (Architecture Validation)
+
+| Metric | Target | How measured |
+|--------|--------|-------------|
+| TTFB (full-cold p50) | < 50ms | Playwright harness, 5 full-cold runs |
+| Total load (full-cold p50) | < 4s | Playwright harness, 5 full-cold runs |
+| BQ credentials on Vercel | Zero | Verify package.json + env vars |
+| Data correctness | Identical overview values | Compare to analytics-suite for same date range |
+| CV for TTFB | < 20% | Same G1 gate as perf sandbox |
+
+Phase 4a does NOT declare success for the overall 10x goal. It validates
+that the v2 architecture achieves Lightdash-native performance for the
+overview surface.
+
+### Phase 4b Gate (Full Parity — Satisfies Original Phase 4)
+
+| Metric | Target | How measured |
+|--------|--------|-------------|
+| TTFB (full-cold p50) | < 50ms | Playwright harness |
+| Total load (full-cold p50) | < 4s | Playwright harness, full 32-tile page |
+| All tabs functional | 6 tabs render correctly | Manual + automated verification |
+| Data correctness | All tiles match analytics-suite | Comparison script |
+| Query count | ≤ baseline analytics-suite | Telemetry from Playwright |
+
+Phase 4b satisfies the original perf framework gate: "challenger app with
+full 32-tile page" achieving target performance.
+
+---
+
+## What's NOT in Phase 4a
 
 - No category tab navigation (overview only)
 - No tile table, trend chart, or closed-won table
 - No interactive filter changes (filter bar is read-only)
 - No authentication
 - No `@por/semantic-runtime` integration
-- No telemetry/budget tracking
 - No `unstable_cache` (measure raw v2 performance first)
 
----
-
-## Success Criteria
-
-| Metric | Target | Rationale |
-|--------|--------|-----------|
-| TTFB | < 50ms | Streaming shell, proven in sandbox |
-| Full-cold total load | < 4s | Match Lightdash native dashboard |
-| BigQuery credentials on Vercel | Zero | Lightdash handles all execution |
-| Data correctness | Identical values to analytics-suite | Same model, same date range |
+These are all Phase 4b scope.
 
 ---
 
@@ -246,3 +354,7 @@ No BigQuery variables. Three env vars total.
 - **Data format differences:** v2 returns `{ value: { raw, formatted } }` per
   field, which differs from our current `SemanticFieldValue` shape. The
   challenger app handles this directly without compatibility layers.
+- **Semantic constant drift:** The `semantic-constants.ts` module must stay in
+  sync with the analytics-suite's `semantic-registry.ts`. If extracted as a
+  shared module, both apps import from the same source. If duplicated, drift
+  risk exists.
