@@ -7,6 +7,15 @@ import {
 
 export const dynamic = 'force-dynamic';
 
+// NOTE: The sandbox does not wrap queries in unstable_cache. In the production
+// analytics-suite, unstable_cache uses the Next.js Data Cache which persists
+// across requests and deployments. The sandbox intentionally omits this layer
+// to measure raw pipeline latency. This means production-cold and full-cold
+// modes produce equivalent measurements in the sandbox. The cacheMode param
+// is still read and recorded in telemetry for downstream tooling, but it does
+// not change sandbox behavior. Production-cold vs full-cold differentiation
+// requires the unstable_cache layer, which will be added in Phase 4.
+
 type SearchParamsInput = Promise<
   Record<string, string | string[] | undefined> | undefined
 >;

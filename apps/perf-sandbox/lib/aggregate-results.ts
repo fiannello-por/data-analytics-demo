@@ -69,6 +69,9 @@ export function aggregateResults(resultsDir: string): ExperimentSummary[] {
     });
   }
 
+  // Comparisons are generated for full-cold mode only since that is the
+  // primary optimization target. Experiments targeting warm mode (e.g., E3
+  // wired cache) will need warm-mode comparisons added when implemented.
   const baseline = summaries.find((s) => s.experimentId === 'baseline');
   if (baseline) {
     const baselineFullColdRuns = runs

@@ -1,4 +1,14 @@
 // apps/perf-sandbox/lib/sandbox-runtime.ts
+//
+// NOTE on span hierarchy: lightdash_compile and bigquery_execute spans are
+// emitted at the root level (no parentId) because the instrumented provider
+// and executor are created once at runtime construction time and have no
+// knowledge of the per-query parent spans (query_current/query_previous)
+// created by the loaders. The timing data is accurate; only the parent-child
+// nesting in the span tree is flat. This is a known Phase 1 limitation.
+// The spec's hierarchical span tree can be reconstructed by correlating
+// timestamps if needed.
+
 import {
   createLightdashProvider,
   createSemanticRuntime,
@@ -104,6 +114,7 @@ export function createSandboxRuntime(
         collector.setMetadata(spanId, {
           bytesProcessed,
           cacheHit: metadata.statistics?.query?.cacheHit ?? false,
+          slotMs: Number(metadata.statistics?.query?.totalSlotMs ?? 0),
         });
         return { rows: rows as Record<string, unknown>[], bytesProcessed };
       } finally {
