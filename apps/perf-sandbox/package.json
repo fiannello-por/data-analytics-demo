@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start --port 3400",
     "test": "vitest run",
-    "benchmark": "pnpm build && playwright test"
+    "benchmark": "pnpm build && playwright test",
+    "aggregate": "tsx lib/aggregate-results.ts"
   },
   "dependencies": {
     "@google-cloud/bigquery": "^8.1.1",
@@ -22,6 +23,7 @@
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "tsx": "^4.0.0",
     "typescript": "5.9.3",
     "vitest": "^3.0.0"
   }
