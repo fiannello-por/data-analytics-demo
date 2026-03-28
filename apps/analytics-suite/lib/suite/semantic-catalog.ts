@@ -1,4 +1,4 @@
-import type { SemanticCatalogEntry } from '@por/analytics-adapter';
+import type { SemanticCatalogEntry } from '@por/semantic-runtime';
 
 export const suiteSemanticCatalogEntries: SemanticCatalogEntry[] = [
   {

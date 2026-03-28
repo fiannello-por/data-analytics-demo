@@ -32,9 +32,9 @@ importers:
       '@iconify/react':
         specifier: ^6.0.2
         version: 6.0.2(react@19.2.4)
-      '@por/analytics-adapter':
+      '@por/semantic-runtime':
         specifier: workspace:*
-        version: link:../../packages/analytics-adapter
+        version: link:../../packages/semantic-runtime
       '@tanstack/react-table':
         specifier: ^8.21.3
         version: 8.21.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -198,7 +198,7 @@ importers:
         specifier: 5.9.3
         version: 5.9.3
 
-  packages/analytics-adapter:
+  packages/semantic-runtime:
     dependencies:
       '@google-cloud/bigquery':
         specifier: ^8.1.1

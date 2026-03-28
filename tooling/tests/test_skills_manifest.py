@@ -5,18 +5,18 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING, Any, cast
 
+if TYPE_CHECKING:
+    from pathlib import Path
+
 import pytest
 
-from por_tooling.validators.skills_manifest import (
+from validators.skills_manifest import (
     _default_manifest_path,
     check_installed_skills,
     compute_skill_tree_sha256,
     load_manifest,
     validate_manifest,
 )
-
-if TYPE_CHECKING:
-    from pathlib import Path
 
 
 def _manifest_dict() -> dict[str, Any]:
@@ -66,8 +66,6 @@ def _manifest_dict() -> dict[str, Any]:
                     "match": {
                         "paths": [
                             "semantic/lightdash/**",
-                            "lightdash.config.yml",
-                            "tooling/src/por_tooling/validators/**",
                         ],
                         "keywords": ["lightdash", "semantic layer", "dashboard as code"],
                     },

@@ -1,7 +1,7 @@
 import {
   createDashboardBudgetTracker,
   type DashboardBudgetPolicy,
-} from '@por/analytics-adapter';
+} from '@por/semantic-runtime';
 
 export const suiteBudgetPolicies: Record<string, DashboardBudgetPolicy> = {
   'sales-performance': {

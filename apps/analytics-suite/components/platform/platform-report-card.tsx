@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { DashboardBudgetReport } from '@por/analytics-adapter';
+import type { DashboardBudgetReport } from '@por/semantic-runtime';
 
 import { Badge } from '@/components/ui/badge';
 import {

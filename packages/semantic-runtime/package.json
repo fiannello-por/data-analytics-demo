@@ -1,5 +1,5 @@
 {
-  "name": "@por/analytics-adapter",
+  "name": "@por/semantic-runtime",
   "version": "0.1.0",
   "private": true,
   "type": "module",

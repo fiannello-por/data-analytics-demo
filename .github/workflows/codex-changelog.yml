@@ -50,7 +50,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_CODEX_MODEL: ${{ vars.OPENAI_CODEX_MODEL || 'gpt-5.2-codex' }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: cd tooling && uv run generate-changelog
+        run: cd tooling && uv run python ../apps/changelog/tooling/generate_changelog.py
 
       - name: Commit generated changelog
         id: commit_changelog

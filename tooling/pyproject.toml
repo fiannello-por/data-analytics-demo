@@ -9,34 +9,33 @@ dependencies = [
 ]
 
 [project.scripts]
-validate-refs = "por_tooling.validators.lightdash_refs:main"
-validate-shared = "por_tooling.validators.shared_folder:main"
-generate-changelog = "por_tooling.automation.generate_changelog:main"
-check-skills = "por_tooling.validators.skills_manifest:main"
+check-skills = "validators.skills_manifest:main"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/por_tooling"]
+packages = ["src/lib", "src/validators"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["tests", "../apps/changelog/tooling/tests", "../semantic/lightdash/tooling/tests"]
 
 [tool.mypy]
 python_version = "3.12"
 strict = true
-packages = ["por_tooling", "tests"]
 mypy_path = "src"
 
 [tool.ruff]
 target-version = "py312"
 line-length = 99
-src = ["src", "tests"]
+src = ["src", "tests", "../apps/changelog/tooling", "../semantic/lightdash/tooling"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "B", "A", "SIM", "TCH"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["github", "pr_template", "lib", "validators"]
 
 [tool.ruff.format]
 quote-style = "double"

@@ -2,7 +2,7 @@ import type {
   SemanticFilter,
   SemanticQueryRequest,
   SemanticSort,
-} from '@por/analytics-adapter';
+} from '@por/semantic-runtime';
 import {
   findTileDefinition,
   getCategoryTiles,

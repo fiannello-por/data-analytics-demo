@@ -33,5 +33,5 @@ structure and will be migrated in a follow-up.
 ```bash
 pnpm lightdash:validate-shared
 # or directly:
-uv run validate-shared
+cd tooling && uv run python ../semantic/lightdash/tooling/validate_shared.py
 ```

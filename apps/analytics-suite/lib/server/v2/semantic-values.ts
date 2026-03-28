@@ -1,4 +1,4 @@
-import type { SemanticRow } from '@por/analytics-adapter';
+import type { SemanticRow } from '@por/semantic-runtime';
 
 export function getSemanticNumber(
   row: SemanticRow | undefined,

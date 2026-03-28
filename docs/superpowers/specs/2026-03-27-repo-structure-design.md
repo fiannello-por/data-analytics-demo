@@ -65,12 +65,9 @@ The semantic area must support both:
 ### 3.3 Tooling
 
 Internal validators, automation, and related engineering code should live under
-`tooling/`, not under a generic root `src/` and not under `scripts/`.
+`tooling/`, not under a generic root `src/`.
 
 `tooling/` should be treated as real maintained software.
-
-`scripts/` should remain reserved for small shell helpers and thin task
-wrappers.
 
 ### 3.4 Tests
 
@@ -100,7 +97,7 @@ The approved target structure is:
 │   ├── dbt/                        # future reserved location
 │   └── lightdash/
 ├── packages/
-│   └── analytics-adapter/
+│   └── semantic-runtime/
 ├── tooling/
 │   ├── pyproject.toml
 │   ├── src/
@@ -110,7 +107,6 @@ The approved target structure is:
 │   │       └── validators/
 │   └── tests/
 ├── docs/
-├── scripts/
 └── package.json
 ```
 
@@ -128,8 +124,7 @@ The following renames are part of the approved structure:
 The following areas remain conceptually stable:
 
 - `apps/analytics-suite`
-- `packages/analytics-adapter`
-- `scripts/` for lightweight shell helpers only
+- `packages/semantic-runtime`
 - `docs/` for repository documentation, not deployable sites
 
 ## 6. Why This Layout
@@ -163,7 +158,7 @@ Separating it from `apps/` makes the dependency direction clearer:
 
 It also creates a natural future home for `dbt`.
 
-### 6.4 Why `tooling/` is better than `scripts/`
+### 6.4 Why `tooling/` stands alone
 
 The validator and automation code in this repo is not one-off script glue.
 
@@ -174,7 +169,7 @@ It has:
 - entrypoints
 - long-term operational ownership
 
-That should be represented as maintained tooling, not miscellaneous scripts.
+That should be represented as maintained tooling, not miscellaneous glue.
 
 ## 7. Structural Boundaries
 
@@ -185,7 +180,6 @@ After reorganization, the expected ownership boundaries are:
 - `packages/`: reusable runtime libraries consumed by applications
 - `tooling/`: internal operational code such as validation and automation
 - `docs/`: repository documentation and design artifacts
-- `scripts/`: minimal shell helpers only
 
 ## 8. Migration Constraints
 
@@ -248,7 +242,6 @@ The reorganization is successful when:
 - Lightdash content lives under `semantic/lightdash/`
 - tooling code lives under `tooling/` with its own `src/` and `tests/`
 - root `tests/` is gone
-- root `scripts/` contains only thin helper scripts
 - workspace, packaging, and validation commands all pass after the move
 
 ## 11. Out Of Scope
