@@ -5,6 +5,9 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING, Any, cast
 
+if TYPE_CHECKING:
+    from pathlib import Path
+
 import pytest
 from validators.skills_manifest import (
     _default_manifest_path,
@@ -13,9 +16,6 @@ from validators.skills_manifest import (
     load_manifest,
     validate_manifest,
 )
-
-if TYPE_CHECKING:
-    from pathlib import Path
 
 
 def _manifest_dict() -> dict[str, Any]:
