@@ -3,7 +3,7 @@
 **Date:** 2026-03-28
 **Status:** Draft
 **Goal:** Reduce cold initial page load time by 10x through systematic measurement and experimentation.
-**Scope:** Phase 1 — design the experimental framework, sandbox, and telemetry. No production code changes.
+**Scope:** Phase 1 — design the experimental framework, sandbox, and telemetry. No production **behavior** changes. Shared workspace packages (e.g., `@por/semantic-runtime`) may gain new interfaces to support experiments, but the production app's wiring and behavior are unchanged until Phase 4.
 
 ---
 
@@ -92,8 +92,16 @@ H1 → H3 → H4 → H9 → H5 → H7. (H2 dropped — see below.)
 ## 3. Sandbox Architecture
 
 A minimal Next.js app that exercises the real pipeline with full telemetry. No
-styling, no auth, no dashboard filters. Focused entirely on measuring data
+styling, no auth, no interactive filter UI. Focused entirely on measuring data
 pipeline performance.
+
+**Filter dictionaries are included.** The sandbox loads all 16 filter
+dictionaries on the SSR critical path, matching the production page contract.
+The dictionaries are fetched with a fixed (empty) filter state — users cannot
+interactively change filters, but the dictionary loading code path is fully
+exercised. This is required because (a) dictionaries are 16 queries on the
+critical path that E4 targets, and (b) `DashboardShell` requires
+`initialDictionaries` to render. See `page.tsx:92`, `dashboard-shell.tsx:57`.
 
 ### Directory Structure
 
@@ -363,7 +371,9 @@ type ExperimentSummary = {
     variantP50: number;
     absoluteDelta: number;
     percentDelta: number;
-    significant: boolean;
+    ciLower95: number;      // bootstrap 95% CI lower bound on p50 delta
+    ciUpper95: number;      // bootstrap 95% CI upper bound on p50 delta
+    significant: boolean;   // true if 95% CI excludes zero
   }[];
 };
 ```
@@ -376,11 +386,17 @@ hydration) **cannot** be measured by a server-side benchmark route alone.
 
 **Design: Playwright harness** (`e2e/benchmark.spec.ts`)
 
+The harness runs against a **production build** (`next build` + `next start`),
+not `next dev`. Dev mode includes HMR, compilation, and tooling overhead that
+does not represent production SSR timing. The build step runs once before the
+benchmark suite; only `next start` is restarted between cold runs.
+
 The harness uses Playwright to:
-1. Start the sandbox dev server
-2. For each experiment run:
-   a. Clear caches (if cold run): restart dev server process, set `cacheMode=off`
-      query param, optionally disable BigQuery query cache
+1. Run `next build` once for the sandbox app
+2. Start `next start` (production server)
+3. For each experiment run:
+   a. Cold run: kill and restart the `next start` process (clears
+      `unstable_cache` and module-level singletons)
    b. Navigate to the sandbox page with a `runId` query param
    c. Collect `PerformanceObserver` entries via `page.evaluate()`:
       - `performance.timing.responseStart` → TTFB
@@ -392,8 +408,8 @@ The harness uses Playwright to:
    e. Merge server spans + browser metrics into a single `ExperimentRunMetrics`
    f. Write to results JSON
 
-This gives us end-to-end timing from a real browser, correlated with server
-spans via the shared `runId`.
+This gives us end-to-end timing from a real browser against a production-grade
+server, correlated with server spans via the shared `runId`.
 
 ### Output Format
 
@@ -420,18 +436,32 @@ of the sandbox. The claim that improvements transfer to the full page is a
 hypothesis to be validated in Phase 4 (challenger app), not proven by the
 sandbox alone.
 
-### Definition of "Cold"
+### Definition of "Cold" and Baseline
 
-A cold run means **all three cache layers are cleared**:
+**Baseline = production-equivalent behavior.** The baseline uses the same code
+paths as the real page: `unstable_cache` active (60s/900s revalidation),
+`useQueryCache: true` on BigQuery, module-level runtime singleton cached after
+first creation. The baseline does NOT bypass any caches — it represents what a
+real user experiences.
 
-1. **Next.js `unstable_cache`**: bypassed via `cacheMode=off` query parameter
-2. **Node.js process state**: fresh dev server process (kills the module-level
-   `cachedRuntime` singleton and any in-memory caches)
-3. **BigQuery query cache**: `useQueryCache: false` on the BigQuery job config
+**Cold = fresh process.** A cold run restarts the `next start` process, which:
+- Clears the module-level `cachedRuntime` singleton
+- Invalidates all `unstable_cache` entries (they are process-scoped)
+- Does NOT disable BigQuery's query cache (that would measure something
+  production never does)
 
-If any layer is warm, the run is tagged `isWarm` and reported separately.
-Partial-warm states (e.g., BQ cache warm but Next.js cold) are not part of the
-primary measurement — they are noise to be eliminated, not measured.
+This means "cold" measures the first request after a server restart — the worst
+case a real user encounters (e.g., after a deployment). BigQuery's own query
+cache may still be warm, which is realistic: BQ cache is shared across all
+clients and cannot be controlled per-request in production.
+
+**Warm = subsequent request on same process.** `unstable_cache` and the runtime
+singleton are populated from the cold run.
+
+The production page (`page.tsx:59`) never passes execution options to its
+loaders, so the baseline must not either. Experiments that need to bypass
+caches for isolation (e.g., testing cache effectiveness) use variant-specific
+execution options, but the baseline always runs production-equivalent.
 
 ### Quantitative Thresholds
 
@@ -463,7 +493,10 @@ Baseline numbers will be established by the sandbox's first benchmark run.
 ### Statistical Requirements
 
 - Minimum 5 cold runs and 5 warm runs per experiment
-- p50 improvement must exceed 2x combined stddev to be significant
+- **Significance test:** Bootstrap confidence intervals on the p50 delta.
+  Resample run-level measurements 10,000 times, compute the p50 delta
+  distribution, and check whether the 95% CI excludes zero. This is valid for
+  medians (unlike stddev-based rules which assume normality and test means).
 - Full distributions reported, not just averages
 
 ### Phase Gates
@@ -486,3 +519,7 @@ Baseline numbers will be established by the sandbox's first benchmark run.
 - Sandbox requires real Lightdash + BigQuery credentials to run.
 - Experiments must be independently runnable and togglable.
 - The sandbox is local-dev only — no deployment.
+- Benchmarks run against a **production build** (`next build` + `next start`),
+  not `next dev`, to avoid measuring dev-mode compilation overhead.
+- Shared workspace packages may gain new interfaces (e.g., E2a provider
+  contract) but the production app's wiring is not changed until Phase 4.
