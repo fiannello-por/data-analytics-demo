@@ -235,20 +235,20 @@ E6 (combined winners) ───── stacks best variants
 ### TDD-Style Assertions
 
 ```typescript
-// E1: Streaming SSR
-expect(variant.cold.ttfbMs.p50).toBeLessThan(baseline.cold.ttfbMs.p50 * 0.4);
+// E1: Streaming SSR (full-cold)
+expect(variant.fullCold.ttfbMs.p50).toBeLessThan(baseline.fullCold.ttfbMs.p50 * 0.4);
 
-// E2a: Lightdash executeMetricQuery
-expect(variant.cold.perQueryMs.p50).toBeLessThan(baseline.cold.perQueryMs.p50 * 0.75);
+// E2a: Lightdash executeMetricQuery (full-cold)
+expect(variant.fullCold.perQueryMs.p50).toBeLessThan(baseline.fullCold.perQueryMs.p50 * 0.75);
 
-// E3: Cache + deduper (warm runs)
+// E3: Cache + deduper (warm — this experiment targets cache effectiveness)
 expect(variant.warm.ssrDataFetchMs.p50).toBeLessThan(baseline.warm.ssrDataFetchMs.p50 * 0.6);
 
-// E4: Dictionaries off critical path
-expect(variant.cold.ttfbMs.p50).toBeLessThan(baseline.cold.ttfbMs.p50 * 0.85);
+// E4: Dictionaries off critical path (full-cold)
+expect(variant.fullCold.ttfbMs.p50).toBeLessThan(baseline.fullCold.ttfbMs.p50 * 0.85);
 
-// E6: Combined — the 10x target
-expect(combined.cold.totalPageLoadMs.p50).toBeLessThan(baseline.cold.totalPageLoadMs.p50 * 0.1);
+// E6: Combined — the 10x target (full-cold)
+expect(combined.fullCold.totalPageLoadMs.p50).toBeLessThan(baseline.fullCold.totalPageLoadMs.p50 * 0.1);
 ```
 
 ---
@@ -306,7 +306,7 @@ page_request
 
 | Span type | Metadata fields |
 |-----------|----------------|
-| `page_request` | `experimentId`, `runIndex`, `isCold`, `variant` |
+| `page_request` | `experimentId`, `runIndex`, `runMode`, `variant` |
 | `category_snapshot` | `category`, `groupCount`, `tileCount` |
 | `query_current/previous` | `model`, `measures[]`, `filterCount` |
 | `semantic_cache_lookup` | `cacheKey`, `hit: boolean` |
@@ -421,11 +421,12 @@ server, correlated with server spans via the shared `runId`.
 
 ```
 apps/perf-sandbox/results/
-├── baseline_cold_001.json
-├── baseline_cold_002.json
+├── baseline_full-cold_001.json
+├── baseline_full-cold_002.json
+├── baseline_production-cold_001.json
 ├── baseline_warm_001.json
-├── streaming-ssr_cold_001.json
-└── summary.json              # aggregated ExperimentSummary[]
+├── streaming-ssr_full-cold_001.json
+└── summary.json                      # aggregated ExperimentSummary[]
 ```
 
 ---
@@ -502,7 +503,7 @@ Baseline numbers will be established by the sandbox's first benchmark run.
 
 ### Statistical Requirements
 
-- Minimum 5 cold runs and 5 warm runs per experiment
+- Minimum 5 full-cold runs and 5 warm runs per experiment
 - **Significance test:** Bootstrap confidence intervals on the p50 delta.
   Resample run-level measurements 10,000 times, compute the p50 delta
   distribution, and check whether the 95% CI excludes zero. This is valid for
@@ -513,7 +514,7 @@ Baseline numbers will be established by the sandbox's first benchmark run.
 
 | Gate | Criteria | Unlocks |
 |------|----------|---------|
-| **G1** | Baseline: 5+ cold runs, CV < 20% | Proceed to experiments |
+| **G1** | Baseline: 5+ full-cold runs, CV < 20% | Proceed to experiments |
 | **G2** | Each experiment: 5+ runs, comparison computed | Proceed to E6 (combined) |
 | **G3** | Combined variant meets 10x criteria in sandbox | Proceed to Phase 4 (challenger app with full 32-tile page) |
 | **G3-alt** | Combined < 10x in sandbox | Reassess hypotheses, add experiments, or revise target |
