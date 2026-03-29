@@ -31,7 +31,7 @@ streaming SSR for progressive rendering, no BigQuery dependency on Vercel.
 
 ## Delivery Phases
 
-### Phase 4a: Architecture Validation (Overview Tab)
+### Phase 4a: Architecture Validation (Overview Tab) — COMPLETE
 
 Proves the v2 execution path works end-to-end with measurable performance:
 - 5 category cards with bookings metrics
@@ -40,19 +40,55 @@ Proves the v2 execution path works end-to-end with measurable performance:
 - Benchmark harness from `apps/perf-sandbox/` adapted for the challenger
 
 **Gate:** Phase 4a measurements collected. Architecture proven viable.
+**Result:** 65ms TTFB, ~8.2s total (2x faster than production's 15-20s).
 
-### Phase 4b: Full Parity
+### Phase 4b: Full Parity (Three Sub-Phases)
 
-Achieves full feature parity with the production analytics-suite:
-- All tabs: Overview + New Logo + Expansion + Migration + Renewal + Total
-- Tile tables with all metrics per category
-- Trend charts with weekly granularity
-- Closed-won opportunities tables
-- Interactive filter changes
-- All 32+ chart tiles from the production dashboard
+Phase 4b is delivered incrementally. Each sub-phase builds on the previous
+and can be validated independently.
 
-**Gate:** Full-cold total load < 4s for the complete 32-tile dashboard.
-This satisfies the original Phase 4 gate from the perf framework spec.
+#### Phase 4b-1: Data Layer Parity
+
+Proves every production query shape works through v2 `executeMetricQuery`.
+Spartan server-rendered UI — no client-side state, no tabs, no charts.
+
+- Extract tile specs (`TILE_SPECS`, filter constants, grouping logic) into
+  `@por/dashboard-constants` so both apps share one source of truth
+- Build v2 query builder that translates shared tile specs into Lightdash
+  `MetricQuery` format
+- Render all 5 category scorecards (all tiles, not just bookings)
+- Render default trend for each category as HTML tables
+- Render closed-won opportunities for each category as HTML tables
+- Validate output matches production API responses tile-by-tile
+
+**Gate:** All ~50 tile queries execute correctly. Values match production
+for the same date range. No query shape unsupported.
+
+#### Phase 4b-2: Streaming Architecture
+
+Builds a streaming-first dashboard shell on top of the proven data layer.
+Server components with per-section Suspense boundaries.
+
+- Tab navigation (Overview + 5 categories) via URL params
+- Per-tab Suspense boundaries that stream independently
+- Interactive filter bar with server-side re-render
+- Trend charts (recharts or lightweight alternative)
+- Closed-won table with sorting
+
+**Gate:** Full-cold total load < 4s for complete dashboard. TTFB < 50ms.
+
+#### Phase 4b-3: Full UI Parity
+
+Matches the production dashboard experience:
+
+- Client-side state management with optimistic updates
+- URL-driven navigation with history support
+- TanStack table for closed-won drilldown
+- Filter draft state with apply/cancel
+- Prefetching and request deduplication
+
+**Gate:** Feature parity with production analytics-suite. Drop-in
+replacement candidate.
 
 ---
 
@@ -116,26 +152,57 @@ Lightdash open source repo).
 with simple category filters). This is acceptable because the overview only
 uses one measure per category with no extra filters or date normalization.
 
-**Phase 4b:** The challenger MUST reuse the production semantic definitions,
-not re-implement them. The existing `semantic-registry.ts` encodes ~50
-tile-specific rules: per-tile measure selection, date dimension selection,
-extra filters (`CLOSED_WON_FILTERS`, `WON_POSITIVE_ACV_FILTERS`),
-`ytd_to_end` date normalization, grouped snapshot queries, and trend
-dimension construction. Rebuilding these independently would create silent
-metric drift — exactly the risk this repo treats as high severity.
+**Phase 4b-1: Shared tile spec extraction into `@por/dashboard-constants`.**
 
-Phase 4b will extract the query-building functions from `semantic-registry.ts`
-into a shared package (or import from the analytics-suite directly) so both
-apps derive `MetricQuery` payloads from the same tile specs. The only change
-is the execution backend: the production app sends `SemanticQueryRequest` to
-`compileQuery` + BQ client, while the challenger sends the equivalent
-Lightdash `MetricQuery` to `executeMetricQuery`. The tile definitions, filter
-logic, grouping, and date normalization are shared code, not duplicated.
+The existing `semantic-registry.ts` encodes ~50 tile-specific rules: per-tile
+measure selection, date dimension selection, extra filters, `ytd_to_end` date
+normalization, grouped snapshot queries, and trend dimension construction.
+Both apps need these definitions. The extraction puts tile specs into the
+shared package so both apps derive queries from the same source.
 
-No changes to `@por/semantic-runtime` are required in Phase 4a. Phase 4b
-may extract shared query-building logic into a new shared package or into
-`@por/semantic-runtime` itself — that decision is deferred to the Phase 4b
-design.
+**What moves to `@por/dashboard-constants`:**
+
+- `TILE_SPECS` record and `TileSemanticSpec` type (`measure`, `dateDimension`,
+  `extraFilters`, `dateRangeStrategy`)
+- Filter constant arrays: `CLOSED_WON_FILTERS`,
+  `CLOSED_WON_POSITIVE_ACV_FILTERS`, `WON_POSITIVE_ACV_FILTERS`
+- `CLOSED_WON_DIMENSIONS` array
+- `SemanticFilter` type (just `{field, operator, values}` — no runtime dep)
+- Pure functions: `getEffectiveDateRange()`, `getSnapshotGroups()`,
+  `buildFilterSignature()`, `buildSemanticFilters()`
+- `getSemanticTileSpec()` lookup function
+
+**What stays in analytics-suite `semantic-registry.ts`:**
+
+Thin wrapper that imports specs from the shared package and builds
+`SemanticQueryRequest` objects for `@por/semantic-runtime`. Functions like
+`buildSnapshotGroupQuery()`, `buildTrendQuery()`, `buildClosedWonQuery()`,
+`buildFilterDictionaryQuery()` stay because they produce the
+`SemanticQueryRequest` shape specific to the production execution path.
+
+**What the challenger builds (`lib/v2-query-builder.ts`):**
+
+Parallel set of query builders that import the same shared tile specs and
+produce Lightdash `MetricQuery` objects:
+
+- `buildV2SnapshotGroupQuery(category, filters, dateRange, group)` →
+  `MetricQuery` with explore-prefixed field IDs
+- `buildV2TrendQuery(category, tileId, filters, dateRange)` → `MetricQuery`
+  with `_week` dimension suffix
+- `buildV2ClosedWonQuery(category, filters, dateRange)` → `MetricQuery` with
+  all 19 closed-won dimensions
+- `buildV2FilterDictionaryQuery(key)` → `MetricQuery` for a single dimension
+
+The translation between `SemanticFilter` format and Lightdash
+`MetricQueryFilters` format is mechanical:
+- `model` → `exploreName`
+- `measures` → `metrics` (prefix with `{exploreName}_`)
+- `dimensions` → same (prefix with `{exploreName}_`)
+- `field` → `target.fieldId` (prefix with `{exploreName}_`)
+- `between` → `inBetween`
+- `equals`/`greaterThan` → same operator names
+
+No changes to `@por/semantic-runtime` are required.
 
 ### Overview Loader
 
@@ -272,6 +339,78 @@ export default function Page() {
 `force-dynamic` ensures SSR on every request. Shell streams in ~20ms.
 Each Suspense boundary resolves independently.
 
+### SSR Page (Phase 4b-1: Data Layer Parity)
+
+Single long page that streams all query results. No tabs, no client state.
+Every section is a server component wrapped in its own Suspense boundary.
+
+```tsx
+export default function Page() {
+  return (
+    <main>
+      <h1>Sales Performance — Full Data Parity</h1>
+
+      <Suspense fallback="Loading filters...">
+        <FilterBar />
+      </Suspense>
+
+      <Suspense fallback="Loading overview...">
+        <OverviewBoard />
+      </Suspense>
+
+      {CATEGORY_ORDER.map((category) => (
+        <section key={category}>
+          <h2>{category}</h2>
+          <Suspense fallback={`Loading ${category} scorecard...`}>
+            <CategoryScorecard category={category} />
+          </Suspense>
+          <Suspense fallback={`Loading ${category} trend...`}>
+            <CategoryTrend category={category} />
+          </Suspense>
+          <Suspense fallback={`Loading ${category} closed-won...`}>
+            <ClosedWonTable category={category} />
+          </Suspense>
+        </section>
+      ))}
+    </main>
+  );
+}
+```
+
+This produces 1 (filters) + 1 (overview) + 15 (5 categories × 3 sections)
+= 17 Suspense boundaries. Each streams independently as its queries resolve.
+
+### Phase 4b-1 File Layout Additions
+
+```
+apps/challenger/
+├── lib/
+│   ├── v2-query-builder.ts      # Translates shared tile specs → MetricQuery
+│   ├── scorecard-loader.ts      # Loads all tiles for a category via snapshot groups
+│   ├── trend-loader.ts          # Loads default tile trend for a category
+│   └── closed-won-loader.ts     # Loads closed-won opportunities for a category
+├── components/
+│   ├── category-scorecard.tsx   # Async server component: HTML table of all tiles
+│   ├── category-trend.tsx       # Async server component: HTML table of weekly trend
+│   └── closed-won-table.tsx     # Async server component: HTML table of opportunities
+```
+
+### Phase 4b-1 Query Volume
+
+| Section | Queries per category | Total |
+|---------|---------------------|-------|
+| Overview (existing) | 2 (current + previous) | 10 |
+| Category scorecard | ~2-4 snapshot groups × 2 windows | ~30 |
+| Trend | 2 (current + previous window) | 10 |
+| Closed-won | 1 | 5 |
+| Filter dictionaries (existing) | — | 16 |
+| **Total** | | **~71** |
+
+All queries go through the existing `MAX_CONCURRENT=10` limiter, batched
+into ~7 waves. Expected total load time: ~20-25s full-cold (all data on
+one page). This is acceptable for 4b-1 validation — the performance gate
+applies to 4b-2 where tabs reduce the per-page query count.
+
 ---
 
 ## Measurement
@@ -322,22 +461,45 @@ Phase 4a does NOT declare success for the overall 10x goal. It validates
 that the v2 architecture achieves Lightdash-native performance for the
 overview surface.
 
-### Phase 4b Gate (Full Parity — Satisfies Original Phase 4)
+### Phase 4b-1 Gate (Data Layer Parity)
+
+| Metric | Target | How measured |
+|--------|--------|-------------|
+| All tile queries execute | 50+ tiles return data | Automated page render |
+| Data correctness | All tile values match analytics-suite | Side-by-side comparison for same date range |
+| All query shapes covered | Snapshots, trends, closed-won, dictionaries | Each section renders without errors |
+| Shared specs used | Zero tile specs duplicated | Code review: challenger imports from `@por/dashboard-constants` |
+| Production tests pass | analytics-suite test suite green | `pnpm suite:test` after extraction refactor |
+
+No performance gate for 4b-1. The full page renders ~71 queries which will
+be slow (~20-25s). Performance is gated at 4b-2 where tabs reduce per-page
+query count.
+
+### Phase 4b-2 Gate (Streaming Architecture)
 
 | Metric | Target | How measured |
 |--------|--------|-------------|
 | TTFB (full-cold p50) | < 50ms | Playwright harness |
-| Total load (full-cold p50) | < 4s | Playwright harness, full 32-tile page |
-| All tabs functional | 6 tabs render correctly | Manual + automated verification |
-| Data correctness | All tiles match analytics-suite | Comparison script |
-| Query count | ≤ baseline analytics-suite | Telemetry from Playwright |
+| Total load (full-cold p50) | < 4s | Playwright harness, single tab |
+| All tabs functional | 6 tabs render correctly | Automated navigation test |
+| Interactive filters | Filter changes re-render data | Manual verification |
 
-Phase 4b satisfies the original perf framework gate: "challenger app with
-full 32-tile page" achieving target performance.
+### Phase 4b-3 Gate (Full UI Parity — Satisfies Original Phase 4)
+
+| Metric | Target | How measured |
+|--------|--------|-------------|
+| Feature parity | All production features present | Feature checklist comparison |
+| Performance maintained | < 4s total load per tab | Playwright harness |
+| Query count | ≤ baseline analytics-suite per tab | Telemetry from Playwright |
+
+Phase 4b-3 satisfies the original perf framework gate: "challenger app with
+full dashboard" achieving target performance and feature parity.
 
 ---
 
-## What's NOT in Phase 4a
+## Phase Scope Boundaries
+
+### What's NOT in Phase 4a
 
 - No category tab navigation (overview only)
 - No tile table, trend chart, or closed-won table
@@ -345,7 +507,24 @@ full 32-tile page" achieving target performance.
 - No authentication
 - No `@por/semantic-runtime` integration
 
-These are all Phase 4b scope.
+### What's in Phase 4b-1 (Data Layer Parity)
+
+- Extract shared tile specs into `@por/dashboard-constants`
+- Refactor production `semantic-registry.ts` to import from shared package
+- Build v2 query builder (`v2-query-builder.ts`)
+- Category scorecards: all tiles per category as HTML tables
+- Trend tables: default tile weekly trend per category as HTML tables
+- Closed-won tables: opportunity rows per category as HTML tables
+- Streaming SSR with per-section Suspense boundaries
+- Data correctness validation against production
+
+### What's NOT in Phase 4b-1
+
+- No tabs or client-side navigation (single long page)
+- No interactive filters (read-only filter bar from 4a)
+- No charts or visualizations (HTML tables only)
+- No URL state management
+- No performance gate (deferred to 4b-2)
 
 ### What IS in Phase 4a
 
@@ -387,7 +566,18 @@ No BigQuery variables. Three env vars total.
 - **Data format differences:** v2 returns `{ value: { raw, formatted } }` per
   field, which differs from our current `SemanticFieldValue` shape. The
   challenger app handles this directly without compatibility layers.
-- **Semantic constant drift:** The `semantic-constants.ts` module must stay in
-  sync with the analytics-suite's `semantic-registry.ts`. If extracted as a
-  shared module, both apps import from the same source. If duplicated, drift
-  risk exists.
+- **Semantic constant drift:** Resolved by Phase 4b-1 extraction — both apps
+  import tile specs from `@por/dashboard-constants`. No duplication.
+- **Extraction refactor breaks production:** The analytics-suite's
+  `semantic-registry.ts` refactor (importing from shared package instead of
+  defining inline) must pass the existing test suite. Pure refactor — no
+  behavioral change. Verified by `pnpm suite:test`.
+- **Query volume on single page:** Phase 4b-1 renders ~71 queries on one page
+  (all categories, all sections). This will be slow (~20-25s) but is
+  acceptable for data validation. The concurrency limiter prevents server
+  overload. Performance is addressed in 4b-2 via tab-based query scoping.
+- **v2 MetricQuery format gaps:** Some production query shapes may not
+  translate cleanly to v2 `MetricQuery` format (e.g., the `between` →
+  `inBetween` operator mapping, field ID prefixing conventions). The 4b-1
+  validation page exists specifically to catch these gaps before building
+  the full UI on top.
