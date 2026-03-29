@@ -5,6 +5,7 @@ import {
   executeMetricQuery,
   createCallTracker,
   type CallTracker,
+  type QueryInstrumentation,
 } from './lightdash-v2-client';
 import {
   buildV2TrendQuery,
@@ -16,6 +17,7 @@ import {
 } from './v2-query-builder';
 import type { ProbeCacheMode } from './cache-mode';
 import type { ResultRow } from './types';
+import type { WaterfallCollector } from './waterfall-types';
 
 export type TrendPoint = { week: string; value: string };
 
@@ -46,20 +48,32 @@ async function fetchTrend(
   filters: DashboardFilters,
   dateRange: DateRange,
   previousDateRange: DateRange,
+  collector?: WaterfallCollector,
 ): Promise<{ currentPoints: TrendPoint[]; previousPoints: TrendPoint[] }> {
   const spec = getSemanticTileSpec(tileId);
   const weekFieldId = `${DASHBOARD_V2_BASE_MODEL}_${spec.dateDimension}_week`;
   const measureFieldId = `${DASHBOARD_V2_BASE_MODEL}_${spec.measure}`;
 
+  const mkInstrumentation = (
+    suffix: string,
+  ): QueryInstrumentation | undefined =>
+    collector
+      ? { collector, id: `trend/${category}/${tileId}/${suffix}`, section: 'trend', priority: 2 }
+      : undefined;
+
   const [current, previous] = await Promise.all([
     tracker.track(
       executeMetricQuery(
         buildV2TrendQuery(category, tileId, filters, dateRange),
+        undefined,
+        mkInstrumentation('current'),
       ),
     ),
     tracker.track(
       executeMetricQuery(
         buildV2TrendQuery(category, tileId, filters, previousDateRange),
+        undefined,
+        mkInstrumentation('previous'),
       ),
     ),
   ]);
@@ -77,6 +91,7 @@ export async function loadTrend(
   dateRange: DateRange,
   previousDateRange: DateRange,
   cacheMode: ProbeCacheMode = 'auto',
+  collector?: WaterfallCollector,
 ): Promise<TrendResult> {
   const tracker = createCallTracker();
   const start = performance.now();
@@ -89,6 +104,7 @@ export async function loadTrend(
       filters,
       dateRange,
       previousDateRange,
+      collector,
     );
     const durationMs = performance.now() - start;
     const { actualCallCount } = tracker.getStats();
@@ -111,6 +127,7 @@ export async function loadTrend(
         filters,
         dateRange,
         previousDateRange,
+        collector,
       ),
     [`challenger-trend-${category}`],
     {

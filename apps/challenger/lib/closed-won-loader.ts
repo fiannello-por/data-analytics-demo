@@ -5,6 +5,7 @@ import {
   executeMetricQuery,
   createCallTracker,
   type CallTracker,
+  type QueryInstrumentation,
 } from './lightdash-v2-client';
 import {
   buildV2ClosedWonQuery,
@@ -15,6 +16,7 @@ import {
   type DashboardFilters,
 } from './v2-query-builder';
 import type { ProbeCacheMode } from './cache-mode';
+import type { WaterfallCollector } from './waterfall-types';
 
 export type ClosedWonRow = Record<string, string>;
 
@@ -46,11 +48,17 @@ async function fetchClosedWon(
   pageSize: number = 50,
   sortField: string = 'close_date',
   sortDescending: boolean = true,
+  collector?: WaterfallCollector,
 ): Promise<FetchClosedWonResult> {
+  const instrumentation: QueryInstrumentation | undefined = collector
+    ? { collector, id: `closedWon/${category}`, section: 'closedWon', priority: 3 }
+    : undefined;
+
   const result = await tracker.track(
     executeMetricQuery(
       buildV2ClosedWonQuery(category, filters, dateRange, sortField, sortDescending),
       { pageSize, page },
+      instrumentation,
     ),
   );
 
@@ -81,13 +89,14 @@ export async function loadClosedWon(
   sortField: string = 'close_date',
   sortDescending: boolean = true,
   cacheMode: ProbeCacheMode = 'auto',
+  collector?: WaterfallCollector,
 ): Promise<ClosedWonResult> {
   const tracker = createCallTracker();
   const start = performance.now();
 
   if (cacheMode === 'off') {
     const fetched = await fetchClosedWon(
-      tracker, category, filters, dateRange, page, pageSize, sortField, sortDescending,
+      tracker, category, filters, dateRange, page, pageSize, sortField, sortDescending, collector,
     );
     const durationMs = performance.now() - start;
     const { actualCallCount } = tracker.getStats();
@@ -96,7 +105,7 @@ export async function loadClosedWon(
 
   const fetched = await unstable_cache(
     () => fetchClosedWon(
-      tracker, category, filters, dateRange, page, pageSize, sortField, sortDescending,
+      tracker, category, filters, dateRange, page, pageSize, sortField, sortDescending, collector,
     ),
     [`challenger-closed-won-${category}-p${page}-ps${pageSize}-s${sortField}-${sortDescending}`],
     {

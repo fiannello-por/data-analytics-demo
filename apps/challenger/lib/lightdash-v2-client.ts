@@ -7,6 +7,14 @@ import type {
   QueryResultPage,
   MetricQueryRequest,
 } from './types';
+import type { WaterfallCollector, QuerySpan } from './waterfall-types';
+
+export type QueryInstrumentation = {
+  collector: WaterfallCollector;
+  id: string;
+  section: string;
+  priority: number;
+};
 
 // Concurrency limiter — required for performance, not just stability.
 // Tested with Infinity: 26 parallel calls take ~20s (server contention).
@@ -96,8 +104,12 @@ async function pollForResults(
 export async function executeMetricQuery(
   request: MetricQueryRequest,
   options?: { pageSize?: number; page?: number },
+  instrumentation?: QueryInstrumentation,
 ): Promise<QueryResultPage> {
+  const entryTime = performance.now();
+
   return withConcurrencyLimit(async () => {
+    const limiterWaitMs = performance.now() - entryTime;
     const env = getLightdashEnv();
     const pageSize = options?.pageSize ?? 500;
     const page = options?.page ?? 1;
@@ -107,6 +119,7 @@ export async function executeMetricQuery(
       context: 'api',
     };
 
+    const submitStart = performance.now();
     const submitResponse = await fetch(
       `${env.url}/api/v2/projects/${env.projectUuid}/query/metric-query`,
       {
@@ -122,9 +135,33 @@ export async function executeMetricQuery(
     }
 
     const submitData = (await submitResponse.json()) as SubmitResponse;
+    const submitMs = performance.now() - submitStart;
     const queryUuid = submitData.results.queryUuid;
+    const cacheHit = submitData.results.cacheMetadata.cacheHit;
 
-    return pollForResults(env.url, env.projectUuid, env.apiKey, queryUuid, pageSize, page);
+    const pollStart = performance.now();
+    const result = await pollForResults(env.url, env.projectUuid, env.apiKey, queryUuid, pageSize, page);
+    const pollMs = performance.now() - pollStart;
+
+    if (instrumentation) {
+      const { collector, id, section, priority } = instrumentation;
+      const span: QuerySpan = {
+        id,
+        section,
+        priority,
+        limiterWaitMs,
+        submitMs,
+        pollMs,
+        lightdashExecMs: result.initialQueryExecutionMs ?? 0,
+        lightdashPageMs: result.resultsPageExecutionMs ?? 0,
+        cacheHit,
+        startMs: entryTime - collector.getEpoch(),
+        endMs: performance.now() - collector.getEpoch(),
+      };
+      collector.record(span);
+    }
+
+    return result;
   });
 }
 

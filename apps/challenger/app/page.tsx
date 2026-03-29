@@ -10,6 +10,7 @@ import { CategoryScorecard } from '@/components/category-scorecard';
 import { CategoryTrend } from '@/components/category-trend';
 import { ClosedWonTable } from '@/components/closed-won-table';
 import { TabBar } from '@/components/tab-bar';
+import { WaterfallInjector } from '@/components/waterfall-injector';
 import { parseCacheMode } from '@/lib/cache-mode';
 import { parseDashboardUrl } from '@/lib/url-state';
 import { loadOverviewBoard } from '@/lib/overview-loader';
@@ -17,6 +18,7 @@ import { loadFilterDictionaries } from '@/lib/dictionary-loader';
 import { loadScorecard } from '@/lib/scorecard-loader';
 import { loadTrend } from '@/lib/trend-loader';
 import { loadClosedWon } from '@/lib/closed-won-loader';
+import { WaterfallCollector } from '@/lib/waterfall-types';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -41,8 +43,10 @@ export default async function ChallengerPage({
 
   if (state.tab === 'Overview') {
     // OVERVIEW_MANIFEST priority: overview(1), filters(2)
-    const overviewPromise = loadOverviewBoard(cacheMode);
-    const filtersPromise = loadFilterDictionaries(cacheMode);
+    const collector = new WaterfallCollector();
+    const overviewPromise = loadOverviewBoard(cacheMode, collector);
+    const filtersPromise = loadFilterDictionaries(cacheMode, collector, 2);
+    const allPromises: Promise<unknown>[] = [overviewPromise, filtersPromise];
 
     return (
       <main>
@@ -78,12 +82,17 @@ export default async function ChallengerPage({
             `,
           }}
         />
+
+        <Suspense fallback={null}>
+          <WaterfallInjector collector={collector} allPromises={allPromises} />
+        </Suspense>
       </main>
     );
   }
 
   // ── Category tab ─────────────────────────────────────────────────────────
   const category = state.tab as Category;
+  const collector = new WaterfallCollector();
 
   // CATEGORY_MANIFEST priority: scorecard(1), trend(2), closedWon(3), filters(4)
   const tileIds = getCategoryTiles(category).map((t) => t.tileId);
@@ -96,6 +105,7 @@ export default async function ChallengerPage({
     state.dateRange,
     state.previousDateRange,
     cacheMode,
+    collector,
   );
   const trendPromise = loadTrend(
     category,
@@ -104,6 +114,7 @@ export default async function ChallengerPage({
     state.dateRange,
     state.previousDateRange,
     cacheMode,
+    collector,
   );
   const closedWonPromise = loadClosedWon(
     category,
@@ -114,8 +125,15 @@ export default async function ChallengerPage({
     state.cwSort.field,
     state.cwSort.direction === 'desc',
     cacheMode,
+    collector,
   );
-  const filtersPromise = loadFilterDictionaries(cacheMode);
+  const filtersPromise = loadFilterDictionaries(cacheMode, collector, 4);
+  const allPromises: Promise<unknown>[] = [
+    scorecardPromise,
+    trendPromise,
+    closedWonPromise,
+    filtersPromise,
+  ];
 
   return (
     <main>
@@ -171,6 +189,10 @@ export default async function ChallengerPage({
           `,
         }}
       />
+
+      <Suspense fallback={null}>
+        <WaterfallInjector collector={collector} allPromises={allPromises} />
+      </Suspense>
     </main>
   );
 }

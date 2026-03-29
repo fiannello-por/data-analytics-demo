@@ -61,6 +61,7 @@ export type QueryResultPage = {
   pageSize: number;
   totalPageCount: number;
   initialQueryExecutionMs?: number;
+  resultsPageExecutionMs?: number;
   error?: string;
 };
 

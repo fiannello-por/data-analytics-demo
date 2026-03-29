@@ -5,6 +5,7 @@ import {
   executeMetricQuery,
   createCallTracker,
   type CallTracker,
+  type QueryInstrumentation,
 } from './lightdash-v2-client';
 import {
   GLOBAL_FILTER_KEYS,
@@ -13,6 +14,7 @@ import {
 } from './query-builder';
 import type { DictionaryResult, ResultRow } from './types';
 import type { ProbeCacheMode } from './cache-mode';
+import type { WaterfallCollector } from './waterfall-types';
 
 function extractDistinctValues(rows: ResultRow[]): string[] {
   return rows
@@ -30,12 +32,18 @@ export type DictionaryLoaderResult = {
 
 async function fetchFilterDictionaries(
   tracker: CallTracker,
+  collector?: WaterfallCollector,
+  filterPriority = 4,
 ): Promise<DictionaryResult[]> {
   return Promise.all(
     GLOBAL_FILTER_KEYS.map(
       async (key: GlobalFilterKey): Promise<DictionaryResult> => {
+        const instrumentation: QueryInstrumentation | undefined = collector
+          ? { collector, id: `filters/${key}`, section: 'filters', priority: filterPriority }
+          : undefined;
+
         const result = await tracker.track(
-          executeMetricQuery(buildDictionaryQuery(key)),
+          executeMetricQuery(buildDictionaryQuery(key), undefined, instrumentation),
         );
         return { key, options: extractDistinctValues(result.rows) };
       },
@@ -45,16 +53,18 @@ async function fetchFilterDictionaries(
 
 export async function loadFilterDictionaries(
   cacheMode: ProbeCacheMode = 'auto',
+  collector?: WaterfallCollector,
+  filterPriority = 4,
 ): Promise<DictionaryLoaderResult> {
   const tracker = createCallTracker();
 
   if (cacheMode === 'off') {
-    const dictionaries = await fetchFilterDictionaries(tracker);
+    const dictionaries = await fetchFilterDictionaries(tracker, collector, filterPriority);
     return { dictionaries, stats: tracker.getStats() };
   }
 
   const dictionaries = await unstable_cache(
-    () => fetchFilterDictionaries(tracker),
+    () => fetchFilterDictionaries(tracker, collector, filterPriority),
     ['challenger-filter-dictionaries'],
     {
       revalidate: 900,
