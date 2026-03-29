@@ -52,8 +52,9 @@ and can be validated independently.
 Proves every production query shape works through v2 `executeMetricQuery`.
 Spartan server-rendered UI — no client-side state, no tabs, no charts.
 
-- Extract tile specs (`TILE_SPECS`, filter constants, grouping logic) into
-  `@por/dashboard-constants` so both apps share one source of truth
+- Extract tile specs (`TILE_SPECS`, filter constants, `getSnapshotGroups()`)
+  into `@por/dashboard-constants` so both apps share the semantic contract
+  that determines query shapes
 - Build v2 query builder that translates shared tile specs into Lightdash
   `MetricQuery` format
 - Render all 5 category scorecards (all tiles, not just bookings)
@@ -175,20 +176,37 @@ Data and types (no dependencies):
 - `getEffectiveDateRange()` (pure date math, depends only on `DateRange`)
 - `buildSemanticFilters()` (depends on `Category`, `DashboardFilters`,
   `FILTER_DIMENSIONS` — all in the shared package)
+- `buildFilterSignature()` (pure JSON serialization of filter arrays)
 
-**Not moved** (has catalog dependency):
-- `getSnapshotGroups()` — depends on `getCategoryTiles()` from the tile
-  catalog. Each app implements its own grouping using shared tile specs.
-  The production app already has this in `semantic-registry.ts`. The
-  challenger builds its own version in `v2-query-builder.ts`.
+Grouping logic (parameterized to remove catalog dependency):
+- `getSnapshotGroups(tileIds: string[])` — accepts a list of tile IDs
+  rather than calling `getCategoryTiles()` internally. Groups tiles by
+  their `(dateDimension, dateRangeStrategy, extraFilters)` signature
+  using `TILE_SPECS` lookups. This is the semantic contract that
+  determines query shape — it must be shared. Each app provides its own
+  tile ID list from its own catalog or equivalent.
+
+  Current production signature: `getSnapshotGroups(category: Category)`
+  calls `getCategoryTiles(category)` to get IDs.
+
+  New shared signature: `getSnapshotGroups(tileIds: string[])` takes IDs
+  directly. Production callers change from `getSnapshotGroups(category)`
+  to `getSnapshotGroups(getCategoryTiles(category).map(t => t.tileId))`.
+
+  The `SnapshotGroup` type's `tiles` array changes from
+  `(TileDefinition & TileSemanticSpec)[]` to `(TileSemanticSpec & { tileId: string })[]`
+  since the shared package doesn't know about display metadata. Callers
+  that need labels/formatType join the group output with their own catalog.
 
 **What stays in analytics-suite `semantic-registry.ts`:**
 
-Thin wrapper that imports specs from the shared package and builds
-`SemanticQueryRequest` objects for `@por/semantic-runtime`. Functions like
+Thin wrapper that imports specs and grouping from the shared package and
+builds `SemanticQueryRequest` objects for `@por/semantic-runtime`. Functions
 `buildSnapshotGroupQuery()`, `buildTrendQuery()`, `buildClosedWonQuery()`,
 `buildFilterDictionaryQuery()` stay because they produce the
-`SemanticQueryRequest` shape specific to the production execution path.
+`SemanticQueryRequest` shape specific to the production execution path. The
+call to `getSnapshotGroups()` changes from passing a category to passing
+tile IDs: `getSnapshotGroups(getCategoryTiles(category).map(t => t.tileId))`.
 
 **What the challenger builds (`lib/v2-query-builder.ts`):**
 
