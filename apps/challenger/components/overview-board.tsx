@@ -19,7 +19,7 @@ export async function OverviewBoard({
   };
 
   return (
-    <div id="overview-data" data-loaded="true">
+    <div id="overview-data" data-loaded="true" data-testid="section-ready">
       <h2>Overview — Bookings by Category</h2>
       <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
         {results.map((result) => (

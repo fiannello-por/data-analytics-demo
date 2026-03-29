@@ -16,7 +16,7 @@ export async function ClosedWonTable({
   const result = await data;
 
   return (
-    <div>
+    <div data-testid="section-ready">
       <h3 style={{ marginBottom: 4 }}>
         {result.category} Closed Won — page {result.page} of {result.totalPageCount} ({result.totalResults} total), {result.queryCount}{' '}
         queries, {result.durationMs.toFixed(0)}ms

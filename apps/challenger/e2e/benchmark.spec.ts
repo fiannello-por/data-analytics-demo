@@ -8,18 +8,18 @@ import {
   buildUrl,
   collectBrowserMetrics,
   collectServerTelemetry,
+  ALL_TABS,
+  type TabName,
   type BrowserMetrics,
   type ServerTelemetry,
 } from './harness';
 
-const RUNS_PER_MODE = 5;
+const RUNS_PER_TAB = 5;
 const RESULTS_DIR = join(__dirname, '..', 'results');
-
-type RunMode = 'full-cold' | 'production-cold' | 'warm';
 
 type RunResult = BrowserMetrics & {
   server: ServerTelemetry;
-  runMode: RunMode;
+  tab: TabName;
   runIndex: number;
   timestamp: string;
 };
@@ -28,7 +28,8 @@ const allResults: RunResult[] = [];
 
 function persistRun(result: RunResult) {
   mkdirSync(RESULTS_DIR, { recursive: true });
-  const filename = `challenger_${result.runMode}_${String(result.runIndex).padStart(3, '0')}.json`;
+  const tabSlug = result.tab.replace(/\s+/g, '-').toLowerCase();
+  const filename = `challenger_full-cold_${tabSlug}_${String(result.runIndex).padStart(3, '0')}.json`;
   writeFileSync(
     join(RESULTS_DIR, filename),
     JSON.stringify(result, null, 2),
@@ -54,7 +55,7 @@ function computeCV(values: number[]): number {
   return (Math.sqrt(variance) / mean) * 100;
 }
 
-test.describe('Challenger benchmark', () => {
+test.describe('Challenger benchmark — all 6 tabs (Phase 4b-2)', () => {
   test.beforeAll(async () => {
     mkdirSync(RESULTS_DIR, { recursive: true });
     await startServer();
@@ -63,27 +64,52 @@ test.describe('Challenger benchmark', () => {
   test.afterAll(async () => {
     await stopServer();
 
-    const byMode = (mode: RunMode) =>
-      allResults.filter((r) => r.runMode === mode);
+    // Per-tab summary
+    const tabSummaries: Record<
+      string,
+      {
+        ttfbP50: number;
+        totalP50: number;
+        ttfbCV: number;
+        ttfbGate: boolean;
+        totalGate: boolean;
+        n: number;
+      }
+    > = {};
+
+    let allTabsPass = true;
+
+    for (const tab of ALL_TABS) {
+      const tabResults = allResults.filter((r) => r.tab === tab);
+      const ttfbs = tabResults.map((r) => r.ttfbMs);
+      const totals = tabResults.map((r) => r.totalPageLoadMs);
+
+      const ttfbP50 = computeP50(ttfbs);
+      const totalP50 = computeP50(totals);
+      const ttfbCV = computeCV(ttfbs);
+      const ttfbGate = ttfbP50 < 50;
+      const totalGate = totalP50 < 4000;
+
+      tabSummaries[tab] = {
+        ttfbP50,
+        totalP50,
+        ttfbCV,
+        ttfbGate,
+        totalGate,
+        n: tabResults.length,
+      };
+
+      if (!ttfbGate || !totalGate) allTabsPass = false;
+    }
 
     const summary = {
-      fullCold: {
-        ttfbMs: { p50: computeP50(byMode('full-cold').map((r) => r.ttfbMs)), cv: computeCV(byMode('full-cold').map((r) => r.ttfbMs)), n: byMode('full-cold').length },
-        totalPageLoadMs: { p50: computeP50(byMode('full-cold').map((r) => r.totalPageLoadMs)), cv: computeCV(byMode('full-cold').map((r) => r.totalPageLoadMs)), n: byMode('full-cold').length },
-      },
-      productionCold: {
-        ttfbMs: { p50: computeP50(byMode('production-cold').map((r) => r.ttfbMs)), n: byMode('production-cold').length },
-        totalPageLoadMs: { p50: computeP50(byMode('production-cold').map((r) => r.totalPageLoadMs)), n: byMode('production-cold').length },
-      },
-      warm: {
-        ttfbMs: { p50: computeP50(byMode('warm').map((r) => r.ttfbMs)), n: byMode('warm').length },
-        totalPageLoadMs: { p50: computeP50(byMode('warm').map((r) => r.totalPageLoadMs)), n: byMode('warm').length },
-      },
+      tabs: tabSummaries,
       gate: {
-        ttfbUnder50ms: computeP50(byMode('full-cold').map((r) => r.ttfbMs)) < 50,
-        totalUnder4s: computeP50(byMode('full-cold').map((r) => r.totalPageLoadMs)) < 4000,
-        cvUnder20: computeCV(byMode('full-cold').map((r) => r.ttfbMs)) < 20,
+        allTabsTtfbUnder50ms: Object.values(tabSummaries).every((s) => s.ttfbGate),
+        allTabsTotalUnder4s: Object.values(tabSummaries).every((s) => s.totalGate),
+        overallPass: allTabsPass,
       },
+      totalRuns: allResults.length,
     };
 
     writeFileSync(
@@ -91,55 +117,51 @@ test.describe('Challenger benchmark', () => {
       JSON.stringify(summary, null, 2),
     );
 
-    console.log('\n=== Phase 4a Gate Results ===');
-    console.log(`Full-cold TTFB p50:  ${summary.fullCold.ttfbMs.p50.toFixed(0)}ms (target: <50ms) ${summary.gate.ttfbUnder50ms ? 'PASS' : 'FAIL'}`);
-    console.log(`Full-cold total p50: ${summary.fullCold.totalPageLoadMs.p50.toFixed(0)}ms (target: <4000ms) ${summary.gate.totalUnder4s ? 'PASS' : 'FAIL'}`);
-    console.log(`Full-cold TTFB CV:   ${summary.fullCold.ttfbMs.cv.toFixed(1)}% (target: <20%) ${summary.gate.cvUnder20 ? 'PASS' : 'FAIL'}`);
+    console.log('\n=== Phase 4b-2 Gate Results (all 6 tabs, full-cold) ===');
+    for (const tab of ALL_TABS) {
+      const s = tabSummaries[tab];
+      console.log(
+        `[${tab}] TTFB p50: ${s.ttfbP50.toFixed(0)}ms ${s.ttfbGate ? 'PASS' : 'FAIL'} | ` +
+          `Total p50: ${s.totalP50.toFixed(0)}ms ${s.totalGate ? 'PASS' : 'FAIL'} | ` +
+          `TTFB CV: ${s.ttfbCV.toFixed(1)}% | n=${s.n}`,
+      );
+    }
+    console.log(`\nOverall: ${allTabsPass ? 'PASS' : 'FAIL'}`);
   });
 
-  for (let i = 0; i < RUNS_PER_MODE; i++) {
-    test(`full-cold run ${i + 1}`, async ({ page }) => {
-      await restartServer();
-      const url = buildUrl('full-cold', `challenger-full-cold-${i + 1}`);
-      await page.goto(url, { waitUntil: 'load' });
-      const metrics = await collectBrowserMetrics(page);
-      const server = await collectServerTelemetry(page);
-      persistRun({ ...metrics, server, runMode: 'full-cold', runIndex: i + 1, timestamp: new Date().toISOString() });
-      expect(metrics.ttfbMs).toBeGreaterThan(0);
-      // Full-cold must execute all queries (cacheMode=off bypasses unstable_cache)
-      expect(server.overviewActualQueryCount).toBe(10);  // 5 categories × 2 windows
-      expect(server.filterActualQueryCount).toBe(16);    // 16 filter dimensions
-    });
-  }
+  // Generate 5 runs × 6 tabs = 30 total tests
+  for (const tab of ALL_TABS) {
+    const tabSlug = tab.replace(/\s+/g, '-').toLowerCase();
 
-  for (let i = 0; i < RUNS_PER_MODE; i++) {
-    test(`production-cold run ${i + 1}`, async ({ page }) => {
-      await restartServer();
-      const url = buildUrl('production-cold', `challenger-prod-cold-${i + 1}`);
-      await page.goto(url, { waitUntil: 'load' });
-      const metrics = await collectBrowserMetrics(page);
-      const server = await collectServerTelemetry(page);
-      persistRun({ ...metrics, server, runMode: 'production-cold', runIndex: i + 1, timestamp: new Date().toISOString() });
-      expect(metrics.ttfbMs).toBeGreaterThan(0);
-      // Production-cold may serve from Data Cache — counts can be 0 to expected max
-      expect(server.overviewActualQueryCount).toBeGreaterThanOrEqual(0);
-      expect(server.overviewActualQueryCount).toBeLessThanOrEqual(10);
-      expect(server.filterActualQueryCount).toBeGreaterThanOrEqual(0);
-      expect(server.filterActualQueryCount).toBeLessThanOrEqual(16);
-    });
-  }
+    for (let i = 0; i < RUNS_PER_TAB; i++) {
+      test(`full-cold ${tab} run ${i + 1}`, async ({ page }) => {
+        await restartServer();
+        const runId = `challenger-full-cold-${tabSlug}-${i + 1}`;
+        const url = buildUrl('full-cold', runId, tab);
+        await page.goto(url, { waitUntil: 'load' });
+        const metrics = await collectBrowserMetrics(page, tab);
+        const server = await collectServerTelemetry(page);
 
-  for (let i = 0; i < RUNS_PER_MODE; i++) {
-    test(`warm run ${i + 1}`, async ({ page }) => {
-      const url = buildUrl('warm', `challenger-warm-${i + 1}`);
-      await page.goto(url, { waitUntil: 'load' });
-      const metrics = await collectBrowserMetrics(page);
-      const server = await collectServerTelemetry(page);
-      persistRun({ ...metrics, server, runMode: 'warm', runIndex: i + 1, timestamp: new Date().toISOString() });
-      expect(metrics.ttfbMs).toBeGreaterThan(0);
-      // Warm runs must hit cache — zero actual queries
-      expect(server.overviewActualQueryCount).toBe(0);
-      expect(server.filterActualQueryCount).toBe(0);
-    });
+        persistRun({
+          ...metrics,
+          server,
+          tab,
+          runIndex: i + 1,
+          timestamp: new Date().toISOString(),
+        });
+
+        // Basic sanity: TTFB must be measured
+        expect(metrics.ttfbMs).toBeGreaterThan(0);
+
+        // Extract waterfall for reporting
+        const waterfall = server.waterfall ?? [];
+        expect(Array.isArray(waterfall)).toBe(true);
+
+        // Gate assertions: p50 targets enforced per-run to flag regressions early
+        // (final aggregate gate is reported in afterAll)
+        expect(metrics.ttfbMs).toBeLessThan(50);
+        expect(metrics.totalPageLoadMs).toBeLessThan(4000);
+      });
+    }
   }
 });

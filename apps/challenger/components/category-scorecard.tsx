@@ -10,7 +10,7 @@ export async function CategoryScorecard({
   const result = await data;
 
   return (
-    <div>
+    <div data-testid="section-ready">
       <h3 style={{ marginBottom: 4 }}>
         {result.category} Scorecard — {result.tiles.length} tiles, {result.queryCount}{' '}
         queries, {result.durationMs.toFixed(0)}ms
