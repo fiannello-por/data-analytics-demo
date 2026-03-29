@@ -56,6 +56,8 @@ async function pollForResults(
   projectUuid: string,
   apiKey: string,
   queryUuid: string,
+  pageSize = 500,
+  page = 1,
   backoffMs = 200,
 ): Promise<QueryResultPage> {
   // Each poll must be a unique request — Next.js deduplicates concurrent
@@ -63,7 +65,7 @@ async function pollForResults(
   // timestamp param ensures each poll is treated as a distinct request.
   const bustParam = `&_t=${Date.now()}`;
   const response = await fetch(
-    `${baseUrl}/api/v2/projects/${projectUuid}/query/${queryUuid}?pageSize=500${bustParam}`,
+    `${baseUrl}/api/v2/projects/${projectUuid}/query/${queryUuid}?pageSize=${pageSize}&page=${page}${bustParam}`,
     { method: 'GET', headers: headers(apiKey), cache: 'no-store' },
   );
 
@@ -81,7 +83,7 @@ async function pollForResults(
   ) {
     const nextBackoff = Math.min(backoffMs * 1.5, 800);
     await new Promise((r) => setTimeout(r, backoffMs));
-    return pollForResults(baseUrl, projectUuid, apiKey, queryUuid, nextBackoff);
+    return pollForResults(baseUrl, projectUuid, apiKey, queryUuid, pageSize, page, nextBackoff);
   }
 
   if (result.status === 'error' || result.status === 'expired') {
@@ -93,9 +95,12 @@ async function pollForResults(
 
 export async function executeMetricQuery(
   request: MetricQueryRequest,
+  options?: { pageSize?: number; page?: number },
 ): Promise<QueryResultPage> {
   return withConcurrencyLimit(async () => {
     const env = getLightdashEnv();
+    const pageSize = options?.pageSize ?? 500;
+    const page = options?.page ?? 1;
 
     const payload: ExecuteMetricQueryPayload = {
       query: request,
@@ -119,7 +124,7 @@ export async function executeMetricQuery(
     const submitData = (await submitResponse.json()) as SubmitResponse;
     const queryUuid = submitData.results.queryUuid;
 
-    return pollForResults(env.url, env.projectUuid, env.apiKey, queryUuid);
+    return pollForResults(env.url, env.projectUuid, env.apiKey, queryUuid, pageSize, page);
   });
 }
 

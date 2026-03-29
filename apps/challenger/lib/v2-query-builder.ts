@@ -161,13 +161,15 @@ export function buildV2TrendQuery(
 
 /**
  * Build the closed-won detail query. Uses DASHBOARD_V2_CLOSED_WON_MODEL,
- * returns all 19 CLOSED_WON_DIMENSIONS with no metrics, sorted by close_date
- * descending.
+ * returns all 19 CLOSED_WON_DIMENSIONS with no metrics, sorted by the given
+ * field (defaults to close_date descending).
  */
 export function buildV2ClosedWonQuery(
   category: Category,
   filters: DashboardFilters,
   dateRange: DateRange,
+  sortField: string = 'close_date',
+  sortDescending: boolean = true,
 ): MetricQueryRequest {
   const categoryAndDashboardFilters = buildSemanticFilters(filters, category);
 
@@ -186,9 +188,9 @@ export function buildV2ClosedWonQuery(
     buildFieldId(DASHBOARD_V2_CLOSED_WON_MODEL, dim),
   );
 
-  const closeDateFieldId = buildFieldId(
+  const sortFieldId = buildFieldId(
     DASHBOARD_V2_CLOSED_WON_MODEL,
-    'close_date',
+    sortField,
   );
 
   return {
@@ -196,7 +198,7 @@ export function buildV2ClosedWonQuery(
     metrics: [],
     dimensions,
     filters: toMetricQueryFilters(DASHBOARD_V2_CLOSED_WON_MODEL, allFilters),
-    sorts: [{ fieldId: closeDateFieldId, descending: true }],
+    sorts: [{ fieldId: sortFieldId, descending: sortDescending }],
     limit: 500,
     tableCalculations: [],
   };

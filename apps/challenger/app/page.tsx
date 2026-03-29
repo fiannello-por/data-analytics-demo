@@ -109,6 +109,10 @@ export default async function ChallengerPage({
     category,
     state.filters,
     state.dateRange,
+    state.cwPage,
+    state.cwPageSize,
+    state.cwSort.field,
+    state.cwSort.direction === 'desc',
     cacheMode,
   );
   const filtersPromise = loadFilterDictionaries(cacheMode);
@@ -150,7 +154,7 @@ export default async function ChallengerPage({
           <Suspense
             fallback={<div>Loading {category} closed won...</div>}
           >
-            <ClosedWonTable data={closedWonPromise} />
+            <ClosedWonTable data={closedWonPromise} state={state} />
           </Suspense>
         </div>
       </section>
