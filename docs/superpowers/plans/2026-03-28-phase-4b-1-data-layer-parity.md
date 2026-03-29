@@ -1711,6 +1711,7 @@ closed-won rows, and filter dictionaries.
 import {
   CATEGORY_ORDER,
   GLOBAL_FILTER_KEYS,
+  FILTER_DIMENSIONS,
   getCategoryTiles,
   getDefaultTileId,
   getSnapshotGroups,
@@ -1801,9 +1802,16 @@ async function validateScorecard(category: Category): Promise<void> {
 }
 
 // --- Trend parity ---
+// Compares bucket keys and values, not just point count.
 async function validateTrend(category: Category): Promise<void> {
   const tileId = getDefaultTileId(category);
-  const surface = `trend/${category}/${tileId}`;
+  const baseSurface = `trend/${category}/${tileId}`;
+
+  const { getSemanticTileSpec } = await import('../lib/v2-query-builder');
+  const spec = getSemanticTileSpec(tileId);
+  const model = 'sales_dashboard_v2_opportunity_base';
+  const weekField = `${model}_${spec.dateDimension}_week`;
+  const measureField = `${model}_${spec.measure}`;
 
   const challengerResult = await executeMetricQuery(
     buildV2TrendQuery(category, tileId, FILTERS, DATE_RANGE),
@@ -1819,25 +1827,69 @@ async function validateTrend(category: Category): Promise<void> {
     `/trend/${encodeURIComponent(tileId)}?category=${encodeURIComponent(category)}&${params}`,
   )) as { points: Array<{ bucketKey: string; currentValue: number | null }> };
 
-  const challengerPointCount = challengerResult.rows.length;
-  const prodPointCount = prod.points.length;
+  // Build challenger points as (bucketKey, value) pairs
+  const challengerPoints = challengerResult.rows.map((row) => ({
+    bucketKey: row[weekField]?.value?.formatted ?? '',
+    value: row[measureField]?.value?.raw,
+  }));
 
-  if (challengerPointCount === 0 && prodPointCount === 0) {
-    results.push({ surface, status: 'pass', detail: 'both empty' });
-  } else if (challengerPointCount === prodPointCount) {
-    results.push({ surface, status: 'pass', detail: `${challengerPointCount} points` });
-  } else {
+  if (challengerPoints.length !== prod.points.length) {
     results.push({
-      surface,
+      surface: baseSurface,
       status: 'fail',
-      detail: `challenger=${challengerPointCount} points vs production=${prodPointCount} points`,
+      detail: `point count: challenger=${challengerPoints.length} vs production=${prod.points.length}`,
+    });
+    return;
+  }
+
+  // Compare each point's bucket key and value
+  let mismatches = 0;
+  for (let i = 0; i < prod.points.length; i++) {
+    const cp = challengerPoints[i]!;
+    const pp = prod.points[i]!;
+    // Bucket keys may differ in format (date string vs formatted label),
+    // so normalize to the first 10 chars (YYYY-MM-DD) for comparison
+    const cpKey = String(cp.bucketKey).slice(0, 10);
+    const ppKey = String(pp.bucketKey).slice(0, 10);
+    const cpVal = cp.value != null ? Number(cp.value) : null;
+    const ppVal = pp.currentValue;
+
+    if (cpKey !== ppKey || cpVal !== ppVal) {
+      mismatches++;
+      if (mismatches <= 3) {
+        results.push({
+          surface: `${baseSurface}/point[${i}]`,
+          status: 'fail',
+          detail: `key: "${cpKey}" vs "${ppKey}", value: ${cpVal} vs ${ppVal}`,
+        });
+      }
+    }
+  }
+
+  if (mismatches === 0) {
+    results.push({
+      surface: baseSurface,
+      status: 'pass',
+      detail: `${prod.points.length} points, all match`,
+    });
+  } else if (mismatches > 3) {
+    results.push({
+      surface: `${baseSurface}/summary`,
+      status: 'fail',
+      detail: `${mismatches} total mismatches (first 3 shown above)`,
     });
   }
 }
 
 // --- Closed-won parity ---
+// Compares row count and a deterministic projection (account_name + close_date + acv)
+// sorted by close_date desc. Full row-level value comparison is not practical because
+// the production API camelCases field names and formats values differently. Instead
+// we compare a stable identity projection that catches query-shape issues (wrong model,
+// missing filters, wrong dimensions).
 async function validateClosedWon(category: Category): Promise<void> {
   const surface = `closed-won/${category}`;
+  const model = 'sales_dashboard_v2_closed_won';
 
   const challengerResult = await executeMetricQuery(
     buildV2ClosedWonQuery(category, FILTERS, DATE_RANGE),
@@ -1849,42 +1901,126 @@ async function validateClosedWon(category: Category): Promise<void> {
   });
   const prod = (await fetchProduction(
     `/closed-won/${encodeURIComponent(category)}?${params}`,
-  )) as { rows: unknown[] };
+  )) as { rows: Array<{ accountName: string; closeDate: string; acv: string }> };
 
   const challengerCount = challengerResult.rows.length;
   const prodCount = prod.rows.length;
 
-  if (challengerCount === prodCount) {
-    results.push({ surface, status: 'pass', detail: `${challengerCount} rows` });
-  } else {
+  if (challengerCount !== prodCount) {
     results.push({
       surface,
       status: 'fail',
-      detail: `challenger=${challengerCount} rows vs production=${prodCount} rows`,
+      detail: `row count: challenger=${challengerCount} vs production=${prodCount}`,
+    });
+    return;
+  }
+
+  // Build projection: (accountName, closeDate, acv) from both sources
+  const challengerProjection = challengerResult.rows.map((row) => {
+    const acctField = `${model}_account_name`;
+    const dateField = `${model}_close_date`;
+    const acvField = `${model}_acv`;
+    return [
+      row[acctField]?.value?.formatted ?? '',
+      String(row[dateField]?.value?.raw ?? '').slice(0, 10),
+      row[acvField]?.value?.formatted ?? '',
+    ].join('|');
+  });
+
+  const prodProjection = prod.rows.map((row) => {
+    return [
+      row.accountName ?? '',
+      String(row.closeDate ?? '').slice(0, 10),
+      row.acv ?? '',
+    ].join('|');
+  });
+
+  // Compare sorted projections (both should be sorted by close_date desc,
+  // but sort again to handle ties deterministically)
+  challengerProjection.sort();
+  prodProjection.sort();
+
+  let mismatches = 0;
+  for (let i = 0; i < prodProjection.length; i++) {
+    if (challengerProjection[i] !== prodProjection[i]) {
+      mismatches++;
+      if (mismatches <= 3) {
+        results.push({
+          surface: `${surface}/row[${i}]`,
+          status: 'fail',
+          detail: `challenger="${challengerProjection[i]}" vs production="${prodProjection[i]}"`,
+        });
+      }
+    }
+  }
+
+  if (mismatches === 0) {
+    results.push({
+      surface,
+      status: 'pass',
+      detail: `${prodCount} rows, all projections match`,
+    });
+  } else if (mismatches > 3) {
+    results.push({
+      surface: `${surface}/summary`,
+      status: 'fail',
+      detail: `${mismatches} projection mismatches (first 3 shown above)`,
     });
   }
 }
 
 // --- Dictionary parity ---
+// Compares sorted option values, not just count.
 async function validateDictionaries(): Promise<void> {
   for (const key of GLOBAL_FILTER_KEYS) {
     const surface = `dictionary/${key}`;
+    const dimension = FILTER_DIMENSIONS[key];
+    const model = 'sales_dashboard_v2_opportunity_base';
+    const fieldId = `${model}_${dimension}`;
+
     const challengerResult = await executeMetricQuery(buildDictionaryQuery(key));
 
     const prod = (await fetchProduction(
       `/filter-dictionaries/${encodeURIComponent(key)}`,
-    )) as { options: unknown[] };
+    )) as { options: Array<{ value: string }> };
 
-    const challengerCount = challengerResult.rows.length;
-    const prodCount = prod.options.length;
+    // Extract challenger values from v2 result rows
+    const challengerValues = challengerResult.rows
+      .map((row) => row[fieldId]?.value?.formatted ?? '')
+      .filter(Boolean)
+      .sort();
 
-    if (challengerCount === prodCount) {
-      results.push({ surface, status: 'pass', detail: `${challengerCount} options` });
+    // Extract production values
+    const prodValues = prod.options
+      .map((opt) => opt.value)
+      .filter(Boolean)
+      .sort();
+
+    if (challengerValues.length !== prodValues.length) {
+      results.push({
+        surface,
+        status: 'fail',
+        detail: `count: challenger=${challengerValues.length} vs production=${prodValues.length}`,
+      });
+      continue;
+    }
+
+    // Compare sorted value lists
+    const mismatched = challengerValues.filter(
+      (v, i) => v !== prodValues[i],
+    );
+
+    if (mismatched.length === 0) {
+      results.push({
+        surface,
+        status: 'pass',
+        detail: `${prodValues.length} options, all match`,
+      });
     } else {
       results.push({
         surface,
         status: 'fail',
-        detail: `challenger=${challengerCount} vs production=${prodCount}`,
+        detail: `${mismatched.length}/${prodValues.length} values differ (first: challenger="${mismatched[0]}" at index ${challengerValues.indexOf(mismatched[0]!)})`,
       });
     }
   }
