@@ -1,8 +1,21 @@
 // packages/dashboard-constants/src/semantic-types.ts
 
+export type SemanticFilterOperator =
+  | 'equals'
+  | 'notEquals'
+  | 'contains'
+  | 'notContains'
+  | 'greaterThan'
+  | 'lessThan'
+  | 'between'
+  | 'isTrue'
+  | 'isFalse'
+  | 'isNull'
+  | 'isNotNull';
+
 export type SemanticFilter = {
   field: string;
-  operator: string;
+  operator: SemanticFilterOperator;
   values: Array<string | number | boolean | null>;
 };
 

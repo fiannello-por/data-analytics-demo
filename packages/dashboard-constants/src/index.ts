@@ -18,6 +18,7 @@ export {
 } from './filters';
 
 export type {
+  SemanticFilterOperator,
   SemanticFilter,
   DateRange,
   DateRangeStrategy,
