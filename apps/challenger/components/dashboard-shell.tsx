@@ -19,6 +19,7 @@ import { parseDashboardUrl } from '@/lib/url-state';
 import { createInitialState } from '@/lib/dashboard-reducer';
 
 import { TabBar } from './tab-bar';
+import { OverviewTab } from './overview-tab';
 
 // ─── Action classification ──────────────────────────────────────────────────
 
@@ -198,9 +199,11 @@ export function DashboardShell({
 
       {/* Tab content */}
       {state.activeTab === 'Overview' ? (
-        <div data-testid="overview-tab-placeholder">
-          Overview tab (Task 10) — orchestrated: {String(orchestrated)}
-        </div>
+        <OverviewTab
+          filters={state.committedFilters}
+          dateRange={state.committedDateRange}
+          enabled={orchestrated}
+        />
       ) : (
         <div data-testid="category-tab-placeholder">
           Category tab: {state.activeTab} (Task 11-12) — orchestrated:{' '}
