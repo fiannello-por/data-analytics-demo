@@ -44,3 +44,13 @@ export {
   buildSemanticFilters,
   type DashboardFilters,
 } from './semantic-filters';
+
+export {
+  TILE_CATALOG,
+  getCategoryTiles,
+  getDefaultTileId,
+  findTileDefinition,
+  findCategoryForTileId,
+  type TileDefinition,
+  type TileFormatType,
+} from './tile-catalog';
