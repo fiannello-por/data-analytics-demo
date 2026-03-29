@@ -11,6 +11,26 @@ import type { ScorecardResult } from './scorecard-loader';
 import type { TrendResult } from './trend-loader';
 import type { ClosedWonResult } from './closed-won-loader';
 import type { DictionaryLoaderResult } from './dictionary-loader';
+import type { QuerySpan } from './waterfall-types';
+
+// ─── Client-side timing store ────────────────────────────────────────────────
+
+/** Accumulated timing spans for the current page load. Cleared on reset. */
+const timingSpans: QuerySpan[] = [];
+
+/** Epoch used to compute relative start/end times. */
+let timingEpoch = typeof performance !== 'undefined' ? performance.now() : 0;
+
+/** Reset the timing store (called when orchestration starts). */
+export function resetTimingStore(): void {
+  timingSpans.length = 0;
+  timingEpoch = typeof performance !== 'undefined' ? performance.now() : 0;
+}
+
+/** Return a snapshot of accumulated timing spans. */
+export function getTimingSpans(): QuerySpan[] {
+  return [...timingSpans];
+}
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -34,6 +54,32 @@ async function fetchJson<T>(url: string): Promise<T> {
     );
   }
   return res.json() as Promise<T>;
+}
+
+/** Wraps a fetchJson call, recording a QuerySpan with client-side timing. */
+async function timedFetch<T>(
+  label: string,
+  section: string,
+  priority: number,
+  url: string,
+): Promise<T> {
+  const start = performance.now() - timingEpoch;
+  const result = await fetchJson<T>(url);
+  const end = performance.now() - timingEpoch;
+  timingSpans.push({
+    id: label,
+    section,
+    priority,
+    startMs: start,
+    endMs: end,
+    limiterWaitMs: 0,
+    submitMs: 0,
+    pollMs: end - start,
+    lightdashExecMs: 0,
+    lightdashPageMs: 0,
+    cacheHit: false,
+  });
+  return result;
 }
 
 const enc = encodeURIComponent;
@@ -69,19 +115,30 @@ export function buildApiParams(
 export const queryFns = {
   overview:
     (filters: DashboardFilters, dateRange: DateRange) => (): Promise<OverviewBoardResult> =>
-      fetchJson<OverviewBoardResult>(`/api/overview?${buildApiParams(filters, dateRange)}`),
+      timedFetch<OverviewBoardResult>(
+        'overview',
+        'overview',
+        1,
+        `/api/overview?${buildApiParams(filters, dateRange)}`,
+      ),
 
   scorecard:
     (category: string, filters: DashboardFilters, dateRange: DateRange) =>
     (): Promise<ScorecardResult> =>
-      fetchJson<ScorecardResult>(
+      timedFetch<ScorecardResult>(
+        `scorecard/${category}`,
+        'scorecard',
+        1,
         `/api/scorecard/${enc(category)}?${buildApiParams(filters, dateRange)}`,
       ),
 
   trend:
     (category: string, tileId: string, filters: DashboardFilters, dateRange: DateRange) =>
     (): Promise<TrendResult> =>
-      fetchJson<TrendResult>(
+      timedFetch<TrendResult>(
+        `trend/${category}/${tileId}`,
+        'trend',
+        2,
         `/api/trend/${enc(category)}/${enc(tileId)}?${buildApiParams(filters, dateRange)}`,
       ),
 
@@ -94,11 +151,14 @@ export const queryFns = {
       sort: ClosedWonSort,
     ) =>
     (): Promise<ClosedWonResult> =>
-      fetchJson<ClosedWonResult>(
+      timedFetch<ClosedWonResult>(
+        `closedWon/${category}/page${page}`,
+        'closedWon',
+        3,
         `/api/closed-won/${enc(category)}?${buildApiParams(filters, dateRange)}&page=${page}&pageSize=50&sortField=${enc(sort.field)}&sortDir=${enc(sort.direction)}`,
       ),
 
   filters:
     () => (): Promise<DictionaryLoaderResult> =>
-      fetchJson<DictionaryLoaderResult>('/api/filters'),
+      timedFetch<DictionaryLoaderResult>('filters', 'filters', 0, '/api/filters'),
 };

@@ -20,6 +20,7 @@ import { pushDashboardState, replaceDashboardState } from '@/lib/url-sync';
 import { orchestratePrefetch, prefetchAdjacentTab } from '@/lib/fetch-orchestrator';
 import { parseDashboardUrl } from '@/lib/url-state';
 import { createInitialState } from '@/lib/dashboard-reducer';
+import { getTimingSpans, resetTimingStore } from '@/lib/query-fns';
 
 import { CategoryTab } from './category-tab';
 import { ClearCacheButton } from './clear-cache-button';
@@ -148,6 +149,7 @@ export function DashboardShell({
     let cancelled = false;
 
     setOrchestrated(false);
+    resetTimingStore();
 
     orchestratePrefetch(queryClient, state).then(() => {
       if (!cancelled) {
@@ -162,6 +164,64 @@ export function DashboardShell({
     // state fields so a single effect fires per committed-state change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stateKey, queryClient]);
+
+  // ── Idle-time adjacent tab prefetch ───────────────────────────────────
+  // After active-tab data settles, speculatively prefetch the next tab in
+  // CATEGORY_ORDER so that navigating there feels instant.
+
+  useEffect(() => {
+    if (!orchestrated) return;
+
+    const activeTab = state.activeTab;
+    const allTabs = [...CATEGORY_ORDER] as Category[];
+
+    // Find the next category tab after the active one
+    const activeIndex = isCategory(activeTab) ? allTabs.indexOf(activeTab as Category) : -1;
+    const nextTab: Category | undefined = allTabs[(activeIndex + 1) % allTabs.length];
+
+    if (!nextTab || nextTab === activeTab) return;
+
+    let handle: ReturnType<typeof setTimeout> | number | null = null;
+    let idleHandle: number | null = null;
+
+    function doIdlePrefetch() {
+      void prefetchAdjacentTab(queryClient, nextTab!, state);
+    }
+
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      idleHandle = (window as Window & { requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback(doIdlePrefetch, { timeout: 2000 });
+    } else {
+      // Fallback: setTimeout after 500ms
+      handle = setTimeout(doIdlePrefetch, 500);
+    }
+
+    return () => {
+      if (idleHandle !== null && typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
+        (window as Window & { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(idleHandle);
+      }
+      if (handle !== null) {
+        clearTimeout(handle as ReturnType<typeof setTimeout>);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orchestrated, stateKey, queryClient]);
+
+  // ── Waterfall telemetry ────────────────────────────────────────────────
+  // After orchestration, snapshot client-side timing into sessionStorage
+  // so the /waterfall page can visualize it.
+
+  useEffect(() => {
+    if (!orchestrated) return;
+
+    const spans = getTimingSpans();
+    if (spans.length === 0) return;
+
+    try {
+      sessionStorage.setItem('challenger-waterfall', JSON.stringify(spans));
+    } catch {
+      // sessionStorage may be unavailable (e.g. private browsing quota)
+    }
+  }, [orchestrated, stateKey]);
 
   // ── Dispatch wrapper ───────────────────────────────────────────────────
 
