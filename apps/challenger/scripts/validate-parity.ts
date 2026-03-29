@@ -36,6 +36,29 @@ import type { ResultRow } from '../lib/types';
 
 const PROD_BASE = 'http://localhost:3300';
 
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function formatPctChange(
+  currentValue: number | null,
+  previousValue: number | null,
+): string {
+  if (
+    currentValue == null ||
+    previousValue == null ||
+    previousValue === 0 ||
+    Number.isNaN(currentValue) ||
+    Number.isNaN(previousValue)
+  ) {
+    return '—';
+  }
+
+  return new Intl.NumberFormat('en-US', {
+    style: 'percent',
+    maximumFractionDigits: 1,
+    signDisplay: 'always',
+  }).format((currentValue - previousValue) / Math.abs(previousValue));
+}
+
 function buildDateRanges(): {
   current: DateRange;
   previous: DateRange;
@@ -53,8 +76,6 @@ function buildDateRanges(): {
     },
   };
 }
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
 
 async function fetchProd<T>(path: string): Promise<T> {
   const url = `${PROD_BASE}${path}`;
@@ -85,6 +106,7 @@ async function validateScorecard(
   // Collect v2 current and previous values per tile by running each snapshot group query
   const v2CurrentValues = new Map<string, string>();
   const v2PreviousValues = new Map<string, string>();
+  const v2PctChangeValues = new Map<string, string>();
   for (const group of groups) {
     const currentQuery = buildV2SnapshotGroupQuery(category, {}, dateRange, group);
     const previousQuery = buildV2SnapshotGroupQuery(category, {}, previousDateRange, group);
@@ -108,11 +130,22 @@ async function validateScorecard(
           v2PreviousValues.set(tile.tileId, cell.value.formatted);
         }
       }
+      const currentRawCell = currentRow?.[fieldId];
+      const previousRawCell = previousRow?.[fieldId];
+      const currentRaw =
+        currentRawCell?.value?.raw != null
+          ? Number(currentRawCell.value.raw)
+          : null;
+      const previousRaw =
+        previousRawCell?.value?.raw != null
+          ? Number(previousRawCell.value.raw)
+          : null;
+      v2PctChangeValues.set(tile.tileId, formatPctChange(currentRaw, previousRaw));
     }
   }
 
   // Fetch production values
-  type ProdScorecardRow = { tileId: string; currentValue: string; previousValue: string };
+  type ProdScorecardRow = { tileId: string; currentValue: string; previousValue: string; pctChange: string };
   type ProdScorecardResponse = { rows: ProdScorecardRow[] };
   const params = new URLSearchParams({
     startDate: dateRange.startDate,
@@ -129,8 +162,11 @@ async function validateScorecard(
   const prodPreviousValues = new Map(
     prodData.rows.map((r) => [r.tileId, r.previousValue]),
   );
+  const prodPctChangeValues = new Map(
+    prodData.rows.map((r) => [r.tileId, r.pctChange]),
+  );
 
-  // Compare per tile (both current and previous values)
+  // Compare per tile (current value, previous value, and pctChange)
   const mismatches: string[] = [];
   for (const tile of tiles) {
     const v2Current = v2CurrentValues.get(tile.tileId) ?? '(missing)';
@@ -142,6 +178,11 @@ async function validateScorecard(
     const prodPrevious = prodPreviousValues.get(tile.tileId) ?? '(missing)';
     if (v2Previous !== prodPrevious) {
       mismatches.push(`  ${tile.tileId} previousValue: v2="${v2Previous}" prod="${prodPrevious}"`);
+    }
+    const v2PctChange = v2PctChangeValues.get(tile.tileId) ?? '(missing)';
+    const prodPctChange = prodPctChangeValues.get(tile.tileId) ?? '(missing)';
+    if (v2PctChange !== prodPctChange) {
+      mismatches.push(`  ${tile.tileId} pctChange: v2="${v2PctChange}" prod="${prodPctChange}"`);
     }
   }
 

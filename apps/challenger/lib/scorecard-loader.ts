@@ -31,6 +31,27 @@ export type ScorecardResult = {
   queryCount: number;
 };
 
+function computePctChange(
+  currentValue: number | null,
+  previousValue: number | null,
+): string {
+  if (
+    currentValue == null ||
+    previousValue == null ||
+    previousValue === 0 ||
+    Number.isNaN(currentValue) ||
+    Number.isNaN(previousValue)
+  ) {
+    return '—';
+  }
+
+  return new Intl.NumberFormat('en-US', {
+    style: 'percent',
+    maximumFractionDigits: 1,
+    signDisplay: 'always',
+  }).format((currentValue - previousValue) / Math.abs(previousValue));
+}
+
 async function fetchScorecard(
   tracker: CallTracker,
   category: Category,
@@ -71,21 +92,13 @@ async function fetchScorecard(
         const previousFormatted =
           previousRow[fieldId]?.value?.formatted ?? '';
 
-        const currentRaw = Number(currentRow[fieldId]?.value?.raw ?? 0);
-        const previousRaw = Number(previousRow[fieldId]?.value?.raw ?? 0);
+        const currentRaw = Number(currentRow[fieldId]?.value?.raw ?? null);
+        const previousRaw = Number(previousRow[fieldId]?.value?.raw ?? null);
 
-        let pctChange = '';
-        if (
-          previousFormatted === '—' ||
-          previousFormatted === '' ||
-          Number.isNaN(previousRaw)
-        ) {
-          pctChange = '—';
-        } else if (previousRaw !== 0) {
-          const pct =
-            ((currentRaw - previousRaw) / Math.abs(previousRaw)) * 100;
-          pctChange = pct.toFixed(1);
-        }
+        const pctChange = computePctChange(
+          currentRow[fieldId]?.value?.raw != null ? currentRaw : null,
+          previousRow[fieldId]?.value?.raw != null ? previousRaw : null,
+        );
 
         return {
           tileId: tile.tileId,
