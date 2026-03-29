@@ -8,6 +8,8 @@ import type { Category } from '@por/dashboard-constants';
 
 import {
   dashboardReducer,
+  getActiveSelectedTileId,
+  getActiveCwSort,
   isCategory,
   type DashboardAction,
   type DashboardState,
@@ -18,6 +20,7 @@ import { orchestratePrefetch, prefetchAdjacentTab } from '@/lib/fetch-orchestrat
 import { parseDashboardUrl } from '@/lib/url-state';
 import { createInitialState } from '@/lib/dashboard-reducer';
 
+import { CategoryTab } from './category-tab';
 import { TabBar } from './tab-bar';
 import { OverviewTab } from './overview-tab';
 
@@ -205,10 +208,16 @@ export function DashboardShell({
           enabled={orchestrated}
         />
       ) : (
-        <div data-testid="category-tab-placeholder">
-          Category tab: {state.activeTab} (Task 11-12) — orchestrated:{' '}
-          {String(orchestrated)}
-        </div>
+        <CategoryTab
+          category={state.activeTab}
+          filters={state.committedFilters}
+          dateRange={state.committedDateRange}
+          selectedTileId={getActiveSelectedTileId(state) || undefined}
+          cwPage={state.cwPage}
+          cwSort={getActiveCwSort(state)}
+          enabled={orchestrated}
+          dispatch={handleDispatch}
+        />
       )}
     </main>
   );
