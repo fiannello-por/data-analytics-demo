@@ -923,22 +923,32 @@ This is the core architectural change. The shell is the central client component
 A `"use client"` component that:
 1. Receives `initialState: DashboardState` as a prop
 2. Initializes `useReducer(dashboardReducer, initialState)`
-3. Sets up URL sync:
+3. Maintains an `orchestrated` boolean state (starts `false`):
+   ```tsx
+   const [orchestrated, setOrchestrated] = useState(false);
+   ```
+4. Sets up URL sync:
    - `useEffect` listens to `popstate` → dispatches `RESTORE_URL_STATE`
    - After dispatch of `SWITCH_TAB`, `APPLY_FILTERS`, `SELECT_TILE` → `pushDashboardState`
    - After dispatch of `SET_CW_PAGE`, `SET_CW_SORT` → `replaceDashboardState`
-4. Sets up fetch orchestration:
-   - `useEffect` on committed state changes → calls `orchestrateFetches(queryClient, state)`
+5. Sets up fetch orchestration:
+   - `useEffect` on committed state changes:
+     1. Sets `orchestrated` to `false` (reset on state change)
+     2. Calls `await orchestrateFetches(queryClient, state)`
+     3. Sets `orchestrated` to `true` (enables hooks to read cache)
    - Adjacent-tab prefetch on tab hover via `prefetchAdjacentTab`
-5. Renders:
+6. Passes `orchestrated` as a prop to all active-tab surface components:
+   - `<OverviewTab ... enabled={orchestrated} />`
+   - `<CategoryTab ... enabled={orchestrated} />`
+   The surface components pass `enabled` to their hooks.
+7. Renders:
    - `TabBar` (with onTabClick, onTabHover)
    - `FilterBarClient` (with draft state, apply/cancel)
    - `ClearCacheButton`
    - `OverviewTab` or `CategoryTab` based on `activeTab`
 
-Read each of the components it needs to render (they'll be created in Tasks 10-13) to understand their props. For now, define the shell's interface and leave TODO placeholders for child components that don't exist yet — they'll be wired in subsequent tasks.
-
-Actually, since all tasks build on the shell, implement the shell with all child component references and create stub components in the same task if needed. The cleaner approach: implement the shell fully and render placeholder divs where components don't exist yet. Each subsequent task replaces a placeholder with the real component.
+Render placeholder divs for components not yet created. Each subsequent
+task replaces a placeholder with the real component.
 
 - [ ] **Step 2: Rewrite page.tsx as thin server component**
 
@@ -1026,9 +1036,20 @@ git commit -m "feat(challenger): client-side dashboard shell with reducer, URL s
 
 - [ ] **Step 1: Create overview-tab.tsx**
 
-A `"use client"` component that uses `useOverviewBoard(filters, dateRange)` to render the overview cards. Shows skeleton while loading, error with retry on failure, refreshing indicator on stale refetch. Renders `CategoryCard` for each category (reuse existing `category-card.tsx`).
+A `"use client"` component. Props include `enabled: boolean` (from the
+shell's `orchestrated` state).
 
-Read `apps/challenger/components/category-card.tsx` for its current props. It may need updating to accept data as props instead of from a promise.
+Calls `useOverviewBoard(filters, dateRange, { enabled })`. The hook
+passes `enabled` to TanStack Query's `useQuery`. When `enabled` is
+`false` (orchestrator hasn't finished staging), the hook does not fetch.
+When `true`, it reads from the cache the orchestrator already populated.
+
+Shows skeleton while loading (`isPending`), error with retry on failure,
+refreshing indicator on stale refetch (`isFetching && !isPending`).
+Renders `CategoryCard` for each category (reuse existing `category-card.tsx`).
+
+Read `apps/challenger/components/category-card.tsx` for its current props.
+It may need updating to accept data as props instead of from a promise.
 
 - [ ] **Step 2: Wire into dashboard-shell.tsx**
 
@@ -1057,8 +1078,10 @@ git commit -m "feat(challenger): overview tab component with TanStack Query hook
 
 - [ ] **Step 1: Create scorecard-section.tsx**
 
-A `"use client"` component that:
-- Uses `useScorecard(category, filters, dateRange)`
+A `"use client"` component. Props include `enabled: boolean` (from the
+shell's `orchestrated` state, passed through `CategoryTab`).
+
+- Uses `useScorecard(category, filters, dateRange, { enabled })`
 - Renders tiles in an HTML table (reusing existing table structure)
 - Each tile row is clickable — dispatches `SELECT_TILE`
 - Highlights the selected tile
@@ -1066,15 +1089,21 @@ A `"use client"` component that:
 
 - [ ] **Step 2: Create trend-section.tsx**
 
-A `"use client"` component that:
-- Uses `useTrend(category, tileId, filters, dateRange, { enabled: !!tileId })`
+A `"use client"` component. Props include `enabled: boolean`.
+
+- Uses `useTrend(category, tileId, filters, dateRange, { enabled: enabled && !!tileId })`
+  — gated on both orchestration AND tile selection
 - Renders the existing `TrendChart` client component
 - Shows skeleton/error/refreshing states
-- On tile selection, tileId changes → query key changes → new fetch
+- On tile selection, tileId changes → query key changes → orchestrator
+  re-runs → hook reads new cache entry
 
 - [ ] **Step 3: Create category-tab.tsx**
 
-Composes `ScorecardSection`, `TrendSection`, and the closed-won section (Task 12). Each is an independent render boundary.
+Receives `enabled: boolean` from the shell and passes it through to all
+three surface sections. Composes `ScorecardSection`, `TrendSection`,
+and the closed-won section (Task 12). Each is an independent render
+boundary.
 
 - [ ] **Step 4: Wire into dashboard-shell.tsx**
 
@@ -1101,8 +1130,10 @@ git commit -m "feat(challenger): scorecard, trend, and category tab components w
 
 - [ ] **Step 1: Create closed-won-section.tsx**
 
-A `"use client"` component that:
-- Uses `useClosedWon(category, filters, dateRange, page, sort)`
+A `"use client"` component. Props include `enabled: boolean` (from the
+shell's `orchestrated` state, passed through `CategoryTab`).
+
+- Uses `useClosedWon(category, filters, dateRange, page, sort, { enabled })`
 - Renders a TanStack Table with all 19 CLOSED_WON_DIMENSIONS as columns
 - Column definitions: each dimension becomes a column with `accessorKey: dim`
 - Sorting: TanStack Table in controlled mode. `onSortingChange` dispatches `SET_CW_SORT` to the reducer. Reducer owns sort state, table reflects it.
