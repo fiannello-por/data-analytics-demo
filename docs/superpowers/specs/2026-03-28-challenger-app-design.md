@@ -159,9 +159,11 @@ query execution, and priority-ordered loading.
    the Y-axis. Time from page start on the X-axis. Concurrency waves
    visible as clusters of bars starting together.
 
-   Data injected into `window.__CHALLENGER_TELEMETRY__.waterfall` as JSON.
-   The `/waterfall` page is a `"use client"` component that reads and
-   renders it. Also extractable by the Playwright harness for reports.
+   Data injected into `window.__CHALLENGER_TELEMETRY__.waterfall` as JSON
+   and mirrored to `sessionStorage` so it survives navigation. The
+   `/waterfall` route is a `"use client"` component that reads from
+   `sessionStorage` and renders the chart. Also extractable by the
+   Playwright harness for reports (reads from `window` before navigating).
 
    Note: Lightdash does not expose compile vs BQ execution as separate
    timings — `initialQueryExecutionMs` bundles both. This is a Lightdash
