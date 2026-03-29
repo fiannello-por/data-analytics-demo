@@ -488,14 +488,33 @@ Create `apps/challenger/lib/query-hooks.ts` with custom hooks per surface. Each 
 Read `apps/challenger/lib/url-state.ts` for the existing param serialization helpers (or write a simple `buildApiUrl` helper for constructing fetch URLs with repeated filter params).
 
 Hooks to create:
-- `useOverviewBoard(filters, dateRange)` — fetches `/api/overview`, staleTime 60s
-- `useScorecard(category, filters, dateRange)` — fetches `/api/scorecard/{category}`, staleTime 60s
-- `useTrend(category, tileId, filters, dateRange, options: { enabled })` — fetches `/api/trend/{category}/{tileId}`, staleTime 60s
-- `useClosedWon(category, filters, dateRange, page, sort)` — fetches `/api/closed-won/{category}`, staleTime 60s. Use `placeholderData` to keep previous page visible during page changes. Do NOT use placeholder for sort changes.
-- `useFilterDictionaries()` — fetches `/api/filters`, staleTime 900s (15 min)
-- `prefetchTab(queryClient, tab, filters, dateRange)` — imperative helper that calls `queryClient.prefetchQuery` for the target tab's scorecard + trend (default tile). Does NOT prefetch closed-won.
+- `useOverviewBoard(filters, dateRange)` — staleTime 60s
+- `useScorecard(category, filters, dateRange)` — staleTime 60s
+- `useTrend(category, tileId, filters, dateRange, { enabled })` — staleTime 60s
+- `useClosedWon(category, filters, dateRange, page, sort)` — staleTime 60s. Use `placeholderData` to keep previous page visible during page changes. Do NOT use placeholder for sort changes.
+- `useFilterDictionaries()` — staleTime 900s (15 min)
+- `prefetchTab(queryClient, tab, filters, dateRange)` — imperative helper for hover prefetch. Does NOT prefetch closed-won.
 
-Each hook should build the API URL with the same repeated-params encoding as the existing URL state. Create a shared `buildApiParams` helper for filter/dateRange serialization into `URLSearchParams`.
+**Fetch priority contract:** The hooks and the orchestrator (Task 7)
+share the same `queryKey` + `queryFn` pairs. TanStack Query deduplicates
+— if the orchestrator starts a fetch and the hook mounts and requests
+the same key, TanStack returns the in-flight promise rather than
+starting a second request.
+
+The orchestrator enforces priority by **awaiting** each priority level
+before starting the next (see Task 7). This means when hook components
+mount and fire their queries, the orchestrator has already started the
+higher-priority fetches. Lower-priority hooks that mount simultaneously
+may trigger their own fetch if the orchestrator hasn't reached them
+yet — but the server-side concurrency limiter (MAX_CONCURRENT=10) still
+batches them into waves, so the priority ordering holds at the server
+level even if client-side launch order is not perfectly sequential.
+
+The net effect: scorecard queries are guaranteed to be in-flight before
+trend queries enter the server limiter queue, and trend before closed-won.
+This is a best-effort priority mechanism, not strict sequential gating.
+
+Each hook should build the API URL with the same repeated-params encoding as the existing URL state. Create a shared `buildApiParams` helper for filter/dateRange serialization into `URLSearchParams`. The `queryFn` must be defined identically in hooks and orchestrator — extract into shared `queryFns` object to avoid duplication.
 
 - [ ] **Step 3: Verify TypeScript compilation**
 
@@ -616,7 +635,17 @@ git commit -m "feat(challenger): add URL sync module with pushState/replaceState
 **Files:**
 - Create: `apps/challenger/lib/fetch-orchestrator.ts`
 
-The shell calls this on state changes to fire prefetches in priority order.
+The shell calls this on state changes to fire prefetches in staged
+priority order. The orchestrator **awaits** each priority level before
+starting the next, ensuring higher-priority queries enter the server-side
+concurrency limiter first. TanStack Query deduplicates — hooks that
+mount and request the same key get the in-flight promise, not a second
+request.
+
+The `queryFns` object is shared with query-hooks.ts so both the
+orchestrator and hooks use identical queryKey + queryFn pairs. Extract
+`queryFns` into a shared module (e.g., within query-hooks.ts or a
+dedicated query-fns.ts) and import in both places.
 
 - [ ] **Step 1: Create fetch-orchestrator.ts**
 
@@ -628,87 +657,65 @@ import type { DashboardState } from './dashboard-reducer';
 import {
   getActiveSelectedTileId,
   getActiveCwSort,
-  derivePreviousDateRange,
   isCategory,
 } from './dashboard-reducer';
 import { queryKeys } from './query-keys';
-import { getDefaultTileId, getCategoryTiles, type Category } from '@por/dashboard-constants';
+import { queryFns } from './query-fns'; // shared with query-hooks.ts
+import { getDefaultTileId, type Category } from '@por/dashboard-constants';
 
-type FetchFn = (url: string) => Promise<unknown>;
+export type DashboardTab = 'Overview' | Category;
 
-function buildApiUrl(path: string, state: DashboardState): string {
-  const params = new URLSearchParams();
-  // Filters as repeated params
-  for (const [key, values] of Object.entries(state.committedFilters)) {
-    if (values?.length) {
-      for (const v of values) {
-        params.append(key, v);
-      }
-    }
-  }
-  params.set('startDate', state.committedDateRange.startDate);
-  params.set('endDate', state.committedDateRange.endDate);
-  const prevDateRange = derivePreviousDateRange(state.committedDateRange);
-  params.set('previousStartDate', prevDateRange.startDate);
-  params.set('previousEndDate', prevDateRange.endDate);
-  return `${path}?${params.toString()}`;
-}
-
-async function fetchJson(url: string): Promise<unknown> {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`API ${url} returned ${res.status}`);
-  return res.json();
-}
-
-export function orchestrateFetches(
+/**
+ * Orchestrate fetches for the active tab in staged priority order.
+ * Each priority level is awaited before the next starts, ensuring
+ * higher-priority queries enter the server-side concurrency limiter
+ * queue first.
+ *
+ * Called from the shell's useEffect on committed state changes.
+ * Returns a promise that resolves when all fetches are initiated
+ * (not when they complete — completion is handled by the hooks).
+ */
+export async function orchestrateFetches(
   queryClient: QueryClient,
   state: DashboardState,
-): void {
+): Promise<void> {
   const { committedFilters: filters, committedDateRange: dateRange } = state;
-  const prevDateRange = derivePreviousDateRange(dateRange);
 
   if (state.activeTab === 'Overview') {
-    // Priority 1: overview board
+    // Single priority level: overview board
     queryClient.prefetchQuery({
       queryKey: queryKeys.overview(filters, dateRange),
-      queryFn: () => fetchJson(buildApiUrl('/api/overview', state)),
+      queryFn: queryFns.overview(filters, dateRange),
       staleTime: 60_000,
     });
-  } else {
-    const category = state.activeTab as Category;
-    const tileId = getActiveSelectedTileId(state)!;
-    const sort = getActiveCwSort(state);
-
-    // Priority 1: scorecard
-    queryClient.prefetchQuery({
-      queryKey: queryKeys.scorecard(category, filters, dateRange),
-      queryFn: () => fetchJson(buildApiUrl(`/api/scorecard/${encodeURIComponent(category)}`, state)),
-      staleTime: 60_000,
-    });
-
-    // Priority 2: trend
-    queryClient.prefetchQuery({
-      queryKey: queryKeys.trend(category, tileId, filters, dateRange),
-      queryFn: () =>
-        fetchJson(
-          buildApiUrl(`/api/trend/${encodeURIComponent(category)}/${encodeURIComponent(tileId)}`, state),
-        ),
-      staleTime: 60_000,
-    });
-
-    // Priority 3: closed-won
-    const cwUrl = buildApiUrl(`/api/closed-won/${encodeURIComponent(category)}`, state);
-    const cwParams = new URLSearchParams(cwUrl.split('?')[1]);
-    cwParams.set('page', String(state.cwPage));
-    cwParams.set('pageSize', '50');
-    cwParams.set('sortField', sort.field);
-    cwParams.set('sortDir', sort.direction);
-    queryClient.prefetchQuery({
-      queryKey: queryKeys.closedWon(category, filters, dateRange, state.cwPage, sort),
-      queryFn: () => fetchJson(`/api/closed-won/${encodeURIComponent(category)}?${cwParams.toString()}`),
-      staleTime: 60_000,
-    });
+    return;
   }
+
+  const category = state.activeTab as Category;
+  const tileId = getActiveSelectedTileId(state)!;
+  const sort = getActiveCwSort(state);
+
+  // Priority 1: scorecard — await ensures scorecard queries enter the
+  // server limiter before trend/closed-won queries are even initiated
+  await queryClient.prefetchQuery({
+    queryKey: queryKeys.scorecard(category, filters, dateRange),
+    queryFn: queryFns.scorecard(category, filters, dateRange),
+    staleTime: 60_000,
+  });
+
+  // Priority 2: trend — awaited before closed-won
+  await queryClient.prefetchQuery({
+    queryKey: queryKeys.trend(category, tileId, filters, dateRange),
+    queryFn: queryFns.trend(category, tileId, filters, dateRange),
+    staleTime: 60_000,
+  });
+
+  // Priority 3: closed-won — fire and forget (lowest priority)
+  queryClient.prefetchQuery({
+    queryKey: queryKeys.closedWon(category, filters, dateRange, state.cwPage, sort),
+    queryFn: queryFns.closedWon(category, filters, dateRange, state.cwPage, sort),
+    staleTime: 60_000,
+  });
 }
 
 export function prefetchAdjacentTab(
@@ -926,9 +933,16 @@ Actually, since all tasks build on the shell, implement the shell with all child
 - [ ] **Step 2: Rewrite page.tsx as thin server component**
 
 The page should:
-1. Parse URL params (same as 4b-2 `parseDashboardUrl`)
-2. Build `initialState` via `createInitialState()`
+1. Parse URL params via `parseDashboardUrl` — update it to also parse
+   `tile` (selected tile ID, category tabs only) if not already present.
+   Read `apps/challenger/lib/url-state.ts` to check. Add `tile?: string`
+   to `DashboardUrlState` and parse it from `params.tile`.
+2. Build `initialState` via `createInitialState()` with full URL mapping
 3. Render `DashboardQueryProvider` → `DashboardShell` with `initialState`
+
+Import `getCategoryTiles` and `Category` from `@por/dashboard-constants`
+and `ClosedWonSort` from the reducer for the tile validation and sort
+type.
 
 ```tsx
 // apps/challenger/app/page.tsx
@@ -946,12 +960,31 @@ type Props = {
 export default async function Page({ searchParams }: Props) {
   const params = (await searchParams) ?? {};
   const urlState = parseDashboardUrl(params);
+
+  // Full URL → initialState mapping. Every field that appears in the
+  // URL must be reconstructed here for correct hydration and
+  // back/forward round-trip behavior.
+  const selectedTileByCategory: Partial<Record<string, string>> = {};
+  if (urlState.tab !== 'Overview' && urlState.tile) {
+    // Validate tile belongs to this category's catalog
+    const validTiles = getCategoryTiles(urlState.tab as Category).map(t => t.tileId);
+    if (validTiles.includes(urlState.tile)) {
+      selectedTileByCategory[urlState.tab] = urlState.tile;
+    }
+  }
+
+  const cwSortByCategory: Partial<Record<string, ClosedWonSort>> = {};
+  if (urlState.tab !== 'Overview' && urlState.cwSort) {
+    cwSortByCategory[urlState.tab] = urlState.cwSort;
+  }
+
   const initialState = createInitialState({
-    activeTab: urlState.tab as any,
+    activeTab: urlState.tab,
     committedFilters: urlState.filters,
     committedDateRange: urlState.dateRange,
+    selectedTileByCategory,
+    cwSortByCategory,
     cwPage: urlState.cwPage,
-    // ... map other URL state to initial state
   });
 
   return (
