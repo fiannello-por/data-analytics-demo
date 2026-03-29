@@ -20,6 +20,7 @@
 | `packages/dashboard-constants/src/semantic-specs.ts` | `TILE_SPECS`, filter constant arrays, `CLOSED_WON_DIMENSIONS`, `getSemanticTileSpec()` |
 | `packages/dashboard-constants/src/semantic-grouping.ts` | `getSnapshotGroups(tileIds)`, `buildFilterSignature()`, `getEffectiveDateRange()` |
 | `packages/dashboard-constants/src/semantic-filters.ts` | `buildSemanticFilters(filters, category)` |
+| `packages/dashboard-constants/src/tile-catalog.ts` | `TILE_CATALOG`, `TileDefinition`, `getCategoryTiles()`, `getDefaultTileId()`, `findTileDefinition()` |
 | `packages/dashboard-constants/src/index.ts` | Re-exports (add new modules) |
 
 ### Analytics-suite (modified files)
@@ -28,6 +29,7 @@
 |------|--------|
 | `apps/analytics-suite/lib/dashboard-v2/semantic-registry.ts` | Import from `@por/dashboard-constants` instead of defining inline |
 | `apps/analytics-suite/lib/dashboard/contracts.ts` | `DateRange` and `DashboardFilters` imported from shared; re-exported for backward compat |
+| `apps/analytics-suite/lib/dashboard/catalog.ts` | Refactor to import `TILE_CATALOG`, `TileDefinition`, helpers from shared; re-export for backward compat |
 | `apps/analytics-suite/__tests__/semantic-registry-*.test.ts` | Update `getSnapshotGroups()` calls to pass tile IDs |
 
 ### Challenger app (new files)
@@ -42,6 +44,7 @@
 | `apps/challenger/components/category-trend.tsx` | Server component: HTML table of weekly trend |
 | `apps/challenger/components/closed-won-table.tsx` | Server component: HTML table of opportunities |
 | `apps/challenger/app/page.tsx` | Updated to render all categories with Suspense |
+| `apps/challenger/scripts/validate-parity.ts` | Automated side-by-side comparison against production API |
 
 ---
 
@@ -508,7 +511,205 @@ git commit -m "feat(dashboard-constants): extract grouping logic and semantic fi
 
 ---
 
-## Task 4: Refactor Production semantic-registry.ts to Import from Shared Package
+## Task 4: Extract Tile Catalog into Shared Package
+
+**Files:**
+- Create: `packages/dashboard-constants/src/tile-catalog.ts`
+- Modify: `packages/dashboard-constants/src/index.ts`
+- Modify: `apps/analytics-suite/lib/dashboard/catalog.ts`
+
+- [ ] **Step 1: Create tile-catalog.ts in the shared package**
+
+Move `TILE_CATALOG`, `TileDefinition`, `TileFormatType`, `getCategoryTiles()`, `getDefaultTileId()`, `findTileDefinition()`, and `findCategoryForTileId()` from `apps/analytics-suite/lib/dashboard/catalog.ts` into the shared package. These are pure data and lookup functions with no external dependencies beyond `Category` (already in the shared package).
+
+```typescript
+// packages/dashboard-constants/src/tile-catalog.ts
+
+import { CATEGORY_ORDER, type Category } from './categories';
+
+export type TileFormatType = 'currency' | 'number' | 'percent' | 'days';
+
+export type TileDefinition = {
+  tileId: string;
+  label: string;
+  sortOrder: number;
+  formatType: TileFormatType;
+};
+
+export const TILE_CATALOG: Record<Category, readonly TileDefinition[]> = {
+  'New Logo': [
+    { tileId: 'new_logo_bookings_amount', label: 'Bookings $', sortOrder: 1, formatType: 'currency' },
+    { tileId: 'new_logo_bookings_count', label: 'Bookings #', sortOrder: 2, formatType: 'number' },
+    { tileId: 'new_logo_annual_pacing_ytd', label: 'Annual Pacing (YTD)', sortOrder: 3, formatType: 'number' },
+    { tileId: 'new_logo_close_rate', label: 'Close Rate', sortOrder: 4, formatType: 'percent' },
+    { tileId: 'new_logo_avg_age', label: 'Avg Age', sortOrder: 5, formatType: 'days' },
+    { tileId: 'new_logo_avg_booked_deal', label: 'Avg Booked Deal', sortOrder: 6, formatType: 'currency' },
+    { tileId: 'new_logo_avg_quoted_deal', label: 'Avg Quoted Deal', sortOrder: 7, formatType: 'currency' },
+    { tileId: 'new_logo_pipeline_created', label: 'Pipeline Created', sortOrder: 8, formatType: 'number' },
+    { tileId: 'new_logo_sql', label: 'SQL', sortOrder: 9, formatType: 'number' },
+    { tileId: 'new_logo_sqo', label: 'SQO', sortOrder: 10, formatType: 'number' },
+    { tileId: 'new_logo_gate_1_complete', label: 'Gate 1 Complete', sortOrder: 11, formatType: 'number' },
+    { tileId: 'new_logo_sdr_points', label: 'SDR Points', sortOrder: 12, formatType: 'number' },
+    { tileId: 'new_logo_sqo_users', label: 'SQO Users', sortOrder: 13, formatType: 'number' },
+  ],
+  Expansion: [
+    { tileId: 'expansion_bookings_amount', label: 'Bookings $', sortOrder: 1, formatType: 'currency' },
+    { tileId: 'expansion_bookings_count', label: 'Bookings #', sortOrder: 2, formatType: 'number' },
+    { tileId: 'expansion_annual_pacing_ytd', label: 'Annual Pacing (YTD)', sortOrder: 3, formatType: 'number' },
+    { tileId: 'expansion_close_rate', label: 'Close Rate', sortOrder: 4, formatType: 'percent' },
+    { tileId: 'expansion_avg_age', label: 'Avg Age', sortOrder: 5, formatType: 'days' },
+    { tileId: 'expansion_avg_booked_deal', label: 'Avg Booked Deal', sortOrder: 6, formatType: 'currency' },
+    { tileId: 'expansion_avg_quoted_deal', label: 'Avg Quoted Deal', sortOrder: 7, formatType: 'currency' },
+    { tileId: 'expansion_pipeline_created', label: 'Pipeline Created', sortOrder: 8, formatType: 'number' },
+    { tileId: 'expansion_sql', label: 'SQL', sortOrder: 9, formatType: 'number' },
+    { tileId: 'expansion_sqo', label: 'SQO', sortOrder: 10, formatType: 'number' },
+  ],
+  Migration: [
+    { tileId: 'migration_bookings_amount', label: 'Bookings $', sortOrder: 1, formatType: 'currency' },
+    { tileId: 'migration_bookings_count', label: 'Bookings #', sortOrder: 2, formatType: 'number' },
+    { tileId: 'migration_annual_pacing_ytd', label: 'Annual Pacing (YTD)', sortOrder: 3, formatType: 'number' },
+    { tileId: 'migration_close_rate', label: 'Close Rate', sortOrder: 4, formatType: 'percent' },
+    { tileId: 'migration_avg_age', label: 'Avg Age', sortOrder: 5, formatType: 'days' },
+    { tileId: 'migration_avg_booked_deal', label: 'Avg Booked Deal', sortOrder: 6, formatType: 'currency' },
+    { tileId: 'migration_avg_quoted_deal', label: 'Avg Quoted Deal', sortOrder: 7, formatType: 'currency' },
+    { tileId: 'migration_pipeline_created', label: 'Pipeline Created', sortOrder: 8, formatType: 'number' },
+    { tileId: 'migration_sql', label: 'SQL', sortOrder: 9, formatType: 'number' },
+    { tileId: 'migration_sqo', label: 'SQO', sortOrder: 10, formatType: 'number' },
+    { tileId: 'migration_sal', label: 'SAL', sortOrder: 11, formatType: 'number' },
+    { tileId: 'migration_avg_users', label: 'Avg Users', sortOrder: 12, formatType: 'number' },
+  ],
+  Renewal: [
+    { tileId: 'renewal_bookings_amount', label: 'Bookings $', sortOrder: 1, formatType: 'currency' },
+    { tileId: 'renewal_bookings_count', label: 'Bookings #', sortOrder: 2, formatType: 'number' },
+    { tileId: 'renewal_annual_pacing_ytd', label: 'Annual Pacing (YTD)', sortOrder: 3, formatType: 'number' },
+    { tileId: 'renewal_close_rate', label: 'Close Rate', sortOrder: 4, formatType: 'percent' },
+    { tileId: 'renewal_avg_age', label: 'Avg Age', sortOrder: 5, formatType: 'days' },
+    { tileId: 'renewal_avg_booked_deal', label: 'Avg Booked Deal', sortOrder: 6, formatType: 'currency' },
+    { tileId: 'renewal_avg_quoted_deal', label: 'Avg Quoted Deal', sortOrder: 7, formatType: 'currency' },
+    { tileId: 'renewal_pipeline_created', label: 'Pipeline Created', sortOrder: 8, formatType: 'number' },
+    { tileId: 'renewal_sql', label: 'SQL', sortOrder: 9, formatType: 'number' },
+  ],
+  Total: [
+    { tileId: 'total_bookings_amount', label: 'Bookings $', sortOrder: 1, formatType: 'currency' },
+    { tileId: 'total_bookings_count', label: 'Bookings #', sortOrder: 2, formatType: 'number' },
+    { tileId: 'total_annual_pacing_ytd', label: 'Annual Pacing (YTD)', sortOrder: 3, formatType: 'number' },
+    { tileId: 'total_one_time_revenue', label: 'One-time Revenue', sortOrder: 4, formatType: 'currency' },
+  ],
+};
+
+export function getCategoryTiles(category: Category): readonly TileDefinition[] {
+  return TILE_CATALOG[category];
+}
+
+export function getDefaultTileId(category: Category): string {
+  return getCategoryTiles(category)[0]?.tileId ?? '';
+}
+
+export function findTileDefinition(
+  category: Category,
+  tileId: string,
+): TileDefinition | undefined {
+  return getCategoryTiles(category).find((tile) => tile.tileId === tileId);
+}
+
+export function findCategoryForTileId(tileId: string): Category | undefined {
+  return CATEGORY_ORDER.find((category) =>
+    getCategoryTiles(category).some((tile) => tile.tileId === tileId),
+  );
+}
+```
+
+- [ ] **Step 2: Add re-exports to index.ts**
+
+Add to `packages/dashboard-constants/src/index.ts`:
+
+```typescript
+export {
+  TILE_CATALOG,
+  getCategoryTiles,
+  getDefaultTileId,
+  findTileDefinition,
+  findCategoryForTileId,
+  type TileDefinition,
+  type TileFormatType,
+} from './tile-catalog';
+```
+
+- [ ] **Step 3: Refactor production catalog.ts to import from shared**
+
+Replace the local definitions in `apps/analytics-suite/lib/dashboard/catalog.ts` with imports from the shared package. Keep re-exports for backward compatibility so all existing imports from `@/lib/dashboard/catalog` continue to work:
+
+```typescript
+// apps/analytics-suite/lib/dashboard/catalog.ts
+
+import {
+  OVERVIEW_TAB,
+  CATEGORY_ORDER,
+  DASHBOARD_TAB_ORDER,
+  type Category,
+  type DashboardTab,
+} from '@por/dashboard-constants';
+
+// Re-export for API compatibility
+export {
+  OVERVIEW_TAB,
+  CATEGORY_ORDER,
+  DASHBOARD_TAB_ORDER,
+  type Category,
+  type DashboardTab,
+};
+
+// Tile catalog and helpers — now from shared package
+export {
+  TILE_CATALOG,
+  getCategoryTiles,
+  getDefaultTileId,
+  findTileDefinition,
+  findCategoryForTileId,
+  type TileDefinition,
+  type TileFormatType,
+} from '@por/dashboard-constants';
+
+// Re-export filter constants from shared package
+export {
+  GLOBAL_FILTER_KEYS,
+  type GlobalFilterKey,
+} from '@por/dashboard-constants';
+
+export function isCategory(value: string): value is Category {
+  return CATEGORY_ORDER.includes(value as Category);
+}
+
+export function isOverviewTab(value: string): value is typeof OVERVIEW_TAB {
+  return value === OVERVIEW_TAB;
+}
+
+export function isDashboardTab(value: string): value is DashboardTab {
+  return isOverviewTab(value) || isCategory(value);
+}
+```
+
+- [ ] **Step 4: Verify TypeScript compilation**
+
+Run: `cd packages/dashboard-constants && npx tsc --noEmit`
+Expected: No errors
+
+- [ ] **Step 5: Run analytics-suite tests**
+
+Run: `pnpm suite:test`
+Expected: All tests pass — this is a pure refactor
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add packages/dashboard-constants/src/tile-catalog.ts packages/dashboard-constants/src/index.ts apps/analytics-suite/lib/dashboard/catalog.ts
+git commit -m "feat(dashboard-constants): extract TILE_CATALOG and helpers from analytics-suite catalog"
+```
+
+---
+
+## Task 5: Refactor Production semantic-registry.ts to Import from Shared Package
+
 
 **Files:**
 - Modify: `apps/analytics-suite/lib/dashboard-v2/semantic-registry.ts`
@@ -556,7 +757,7 @@ git commit -m "refactor(analytics-suite): import tile specs from @por/dashboard-
 
 ---
 
-## Task 5: Update Analytics-Suite Tests for New getSnapshotGroups Signature
+## Task 6: Update Analytics-Suite Tests for New getSnapshotGroups Signature
 
 **Files:**
 - Modify: `apps/analytics-suite/__tests__/semantic-registry-total-metrics.test.ts`
@@ -594,7 +795,7 @@ git commit -m "test(analytics-suite): update tests for parameterized getSnapshot
 
 ---
 
-## Task 6: Build v2 Query Builder in Challenger
+## Task 7: Build v2 Query Builder in Challenger
 
 **Files:**
 - Create: `apps/challenger/lib/v2-query-builder.ts`
@@ -784,7 +985,7 @@ git commit -m "feat(challenger): add v2 query builder using shared tile specs"
 
 ---
 
-## Task 7: Build Scorecard Loader
+## Task 8: Build Scorecard Loader
 
 **Files:**
 - Create: `apps/challenger/lib/scorecard-loader.ts`
@@ -958,7 +1159,7 @@ git commit -m "feat(challenger): add scorecard loader using shared snapshot grou
 
 ---
 
-## Task 8: Build Trend Loader
+## Task 9: Build Trend Loader
 
 **Files:**
 - Create: `apps/challenger/lib/trend-loader.ts`
@@ -1092,7 +1293,7 @@ git commit -m "feat(challenger): add trend loader for weekly tile trends"
 
 ---
 
-## Task 9: Build Closed-Won Loader
+## Task 10: Build Closed-Won Loader
 
 **Files:**
 - Create: `apps/challenger/lib/closed-won-loader.ts`
@@ -1188,7 +1389,7 @@ git commit -m "feat(challenger): add closed-won opportunities loader"
 
 ---
 
-## Task 10: Build Server Components for Scorecard, Trend, and Closed-Won
+## Task 11: Build Server Components for Scorecard, Trend, and Closed-Won
 
 **Files:**
 - Create: `apps/challenger/components/category-scorecard.tsx`
@@ -1201,15 +1402,14 @@ git commit -m "feat(challenger): add closed-won opportunities loader"
 // apps/challenger/components/category-scorecard.tsx
 
 import { loadScorecard } from '../lib/scorecard-loader';
-import { TILE_CATALOG } from '../lib/tile-catalog';
 import { defaultDateRange, defaultPreviousDateRange } from '../lib/query-builder';
 import type { CacheMode } from '../lib/cache-mode';
-import type { Category } from '@por/dashboard-constants';
+import { getCategoryTiles, type Category } from '@por/dashboard-constants';
 
 type Props = { category: Category; cacheMode: CacheMode };
 
 export async function CategoryScorecard({ category, cacheMode }: Props) {
-  const tileIds = TILE_CATALOG[category].map((t) => t.tileId);
+  const tileIds = getCategoryTiles(category).map((t) => t.tileId);
   const result = await loadScorecard(
     category,
     tileIds,
@@ -1250,95 +1450,15 @@ export async function CategoryScorecard({ category, cacheMode }: Props) {
 }
 ```
 
-- [ ] **Step 2: Create a local tile catalog for the challenger**
-
-The challenger needs tile IDs per category to pass to `getSnapshotGroups()` and to know which default tile to use for trends. Create a minimal catalog:
-
-```typescript
-// apps/challenger/lib/tile-catalog.ts
-
-import type { Category } from '@por/dashboard-constants';
-
-type TileCatalogEntry = { tileId: string; label: string };
-
-// Mirrors apps/analytics-suite/lib/dashboard/catalog.ts TILE_CATALOG
-// Only tileId and label — no formatType/sortOrder needed for 4b-1
-export const TILE_CATALOG: Record<Category, TileCatalogEntry[]> = {
-  'New Logo': [
-    { tileId: 'new_logo_bookings_amount', label: 'Bookings $' },
-    { tileId: 'new_logo_bookings_count', label: 'Bookings #' },
-    { tileId: 'new_logo_annual_pacing_ytd', label: 'Annual Pacing (YTD)' },
-    { tileId: 'new_logo_close_rate', label: 'Close Rate' },
-    { tileId: 'new_logo_avg_age', label: 'Avg Age' },
-    { tileId: 'new_logo_avg_booked_deal', label: 'Avg Booked Deal' },
-    { tileId: 'new_logo_avg_quoted_deal', label: 'Avg Quoted Deal' },
-    { tileId: 'new_logo_pipeline_created', label: 'Pipeline Created' },
-    { tileId: 'new_logo_sql', label: 'SQL' },
-    { tileId: 'new_logo_sqo', label: 'SQO' },
-    { tileId: 'new_logo_gate_1_complete', label: 'Gate 1 Complete' },
-    { tileId: 'new_logo_sdr_points', label: 'SDR Points' },
-    { tileId: 'new_logo_sqo_users', label: 'SQO Users' },
-  ],
-  Expansion: [
-    { tileId: 'expansion_bookings_amount', label: 'Bookings $' },
-    { tileId: 'expansion_bookings_count', label: 'Bookings #' },
-    { tileId: 'expansion_annual_pacing_ytd', label: 'Annual Pacing (YTD)' },
-    { tileId: 'expansion_close_rate', label: 'Close Rate' },
-    { tileId: 'expansion_avg_age', label: 'Avg Age' },
-    { tileId: 'expansion_avg_booked_deal', label: 'Avg Booked Deal' },
-    { tileId: 'expansion_avg_quoted_deal', label: 'Avg Quoted Deal' },
-    { tileId: 'expansion_pipeline_created', label: 'Pipeline Created' },
-    { tileId: 'expansion_sql', label: 'SQL' },
-    { tileId: 'expansion_sqo', label: 'SQO' },
-  ],
-  Migration: [
-    { tileId: 'migration_bookings_amount', label: 'Bookings $' },
-    { tileId: 'migration_bookings_count', label: 'Bookings #' },
-    { tileId: 'migration_annual_pacing_ytd', label: 'Annual Pacing (YTD)' },
-    { tileId: 'migration_close_rate', label: 'Close Rate' },
-    { tileId: 'migration_avg_age', label: 'Avg Age' },
-    { tileId: 'migration_avg_booked_deal', label: 'Avg Booked Deal' },
-    { tileId: 'migration_avg_quoted_deal', label: 'Avg Quoted Deal' },
-    { tileId: 'migration_pipeline_created', label: 'Pipeline Created' },
-    { tileId: 'migration_sql', label: 'SQL' },
-    { tileId: 'migration_sqo', label: 'SQO' },
-    { tileId: 'migration_sal', label: 'SAL' },
-    { tileId: 'migration_avg_users', label: 'Avg Users' },
-  ],
-  Renewal: [
-    { tileId: 'renewal_bookings_amount', label: 'Bookings $' },
-    { tileId: 'renewal_bookings_count', label: 'Bookings #' },
-    { tileId: 'renewal_annual_pacing_ytd', label: 'Annual Pacing (YTD)' },
-    { tileId: 'renewal_close_rate', label: 'Close Rate' },
-    { tileId: 'renewal_avg_age', label: 'Avg Age' },
-    { tileId: 'renewal_avg_booked_deal', label: 'Avg Booked Deal' },
-    { tileId: 'renewal_avg_quoted_deal', label: 'Avg Quoted Deal' },
-    { tileId: 'renewal_pipeline_created', label: 'Pipeline Created' },
-    { tileId: 'renewal_sql', label: 'SQL' },
-  ],
-  Total: [
-    { tileId: 'total_bookings_amount', label: 'Bookings $' },
-    { tileId: 'total_bookings_count', label: 'Bookings #' },
-    { tileId: 'total_annual_pacing_ytd', label: 'Annual Pacing (YTD)' },
-    { tileId: 'total_one_time_revenue', label: 'One-time Revenue' },
-  ],
-};
-
-export function getDefaultTileId(category: Category): string {
-  return TILE_CATALOG[category][0]?.tileId ?? '';
-}
-```
-
-- [ ] **Step 3: Create category-trend.tsx**
+- [ ] **Step 2: Create category-trend.tsx**
 
 ```tsx
 // apps/challenger/components/category-trend.tsx
 
 import { loadTrend } from '../lib/trend-loader';
-import { getDefaultTileId } from '../lib/tile-catalog';
 import { defaultDateRange, defaultPreviousDateRange } from '../lib/query-builder';
 import type { CacheMode } from '../lib/cache-mode';
-import type { Category } from '@por/dashboard-constants';
+import { getDefaultTileId, type Category } from '@por/dashboard-constants';
 
 type Props = { category: Category; cacheMode: CacheMode };
 
@@ -1464,13 +1584,13 @@ Expected: No errors
 - [ ] **Step 6: Commit**
 
 ```bash
-git add apps/challenger/components/category-scorecard.tsx apps/challenger/components/category-trend.tsx apps/challenger/components/closed-won-table.tsx apps/challenger/lib/tile-catalog.ts
+git add apps/challenger/components/category-scorecard.tsx apps/challenger/components/category-trend.tsx apps/challenger/components/closed-won-table.tsx
 git commit -m "feat(challenger): add scorecard, trend, and closed-won server components"
 ```
 
 ---
 
-## Task 11: Update Challenger Page to Render Full Data Parity
+## Task 12: Update Challenger Page to Render Full Data Parity
 
 **Files:**
 - Modify: `apps/challenger/app/page.tsx`
@@ -1566,7 +1686,262 @@ git commit -m "feat(challenger): render full data parity page with all categorie
 
 ---
 
-## Task 12: Run Full Validation
+## Task 13: Build Automated Parity Validation Script
+
+**Files:**
+- Create: `apps/challenger/scripts/validate-parity.ts`
+
+This script is the gate enforcement for Phase 4b-1. It programmatically
+compares challenger v2 query results against production API responses for
+every query surface: all scorecard tiles, default trend per category,
+closed-won rows, and filter dictionaries.
+
+- [ ] **Step 1: Write the validation script**
+
+```typescript
+// apps/challenger/scripts/validate-parity.ts
+//
+// Usage: npx tsx apps/challenger/scripts/validate-parity.ts
+//
+// Requires both apps running:
+//   - Production analytics-suite on port 3300
+//   - No challenger server needed — this script calls the v2 query builder
+//     and executeMetricQuery directly, then compares against production API.
+
+import {
+  CATEGORY_ORDER,
+  GLOBAL_FILTER_KEYS,
+  getCategoryTiles,
+  getDefaultTileId,
+  getSnapshotGroups,
+  CLOSED_WON_DIMENSIONS,
+  type Category,
+} from '@por/dashboard-constants';
+import {
+  buildV2SnapshotGroupQuery,
+  buildV2TrendQuery,
+  buildV2ClosedWonQuery,
+} from '../lib/v2-query-builder';
+import { buildDictionaryQuery } from '../lib/query-builder';
+import { executeMetricQuery } from '../lib/lightdash-v2-client';
+import type { DateRange, DashboardFilters } from '@por/dashboard-constants';
+
+const PRODUCTION_BASE = 'http://localhost:3300/api/dashboard-v2';
+
+const DATE_RANGE: DateRange = {
+  startDate: `${new Date().getFullYear()}-01-01`,
+  endDate: new Date().toISOString().slice(0, 10),
+};
+const PREV_DATE_RANGE: DateRange = {
+  startDate: `${new Date().getFullYear() - 1}-01-01`,
+  endDate: `${new Date().getFullYear() - 1}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`,
+};
+const FILTERS: DashboardFilters = {};
+
+type Result = { surface: string; status: 'pass' | 'fail'; detail?: string };
+const results: Result[] = [];
+
+function qs(params: Record<string, string>): string {
+  return new URLSearchParams(params).toString();
+}
+
+async function fetchProduction(path: string): Promise<unknown> {
+  const url = `${PRODUCTION_BASE}${path}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Production ${url} returned ${res.status}`);
+  return res.json();
+}
+
+// --- Scorecard parity ---
+async function validateScorecard(category: Category): Promise<void> {
+  const tileIds = getCategoryTiles(category).map((t) => t.tileId);
+  const groups = getSnapshotGroups(tileIds);
+
+  // Get challenger values via direct v2 queries
+  const challengerValues = new Map<string, string>();
+  for (const group of groups) {
+    const result = await executeMetricQuery(
+      buildV2SnapshotGroupQuery(category, FILTERS, DATE_RANGE, group),
+    );
+    const row = result.rows[0];
+    if (!row) continue;
+    for (const tile of group.tiles) {
+      const fieldId = `sales_dashboard_v2_opportunity_base_${tile.measure}`;
+      challengerValues.set(tile.tileId, row[fieldId]?.value?.formatted ?? '—');
+    }
+  }
+
+  // Get production values via API
+  const params = qs({
+    startDate: DATE_RANGE.startDate,
+    endDate: DATE_RANGE.endDate,
+    previousStartDate: PREV_DATE_RANGE.startDate,
+    previousEndDate: PREV_DATE_RANGE.endDate,
+  });
+  const prod = (await fetchProduction(
+    `/category/${encodeURIComponent(category)}?${params}`,
+  )) as { rows: Array<{ tileId: string; currentValue: string }> };
+
+  for (const prodRow of prod.rows) {
+    const challengerVal = challengerValues.get(prodRow.tileId);
+    const surface = `scorecard/${category}/${prodRow.tileId}`;
+
+    if (!challengerVal) {
+      results.push({ surface, status: 'fail', detail: 'missing from challenger' });
+    } else if (challengerVal === prodRow.currentValue) {
+      results.push({ surface, status: 'pass' });
+    } else {
+      results.push({
+        surface,
+        status: 'fail',
+        detail: `challenger="${challengerVal}" vs production="${prodRow.currentValue}"`,
+      });
+    }
+  }
+}
+
+// --- Trend parity ---
+async function validateTrend(category: Category): Promise<void> {
+  const tileId = getDefaultTileId(category);
+  const surface = `trend/${category}/${tileId}`;
+
+  const challengerResult = await executeMetricQuery(
+    buildV2TrendQuery(category, tileId, FILTERS, DATE_RANGE),
+  );
+
+  const params = qs({
+    startDate: DATE_RANGE.startDate,
+    endDate: DATE_RANGE.endDate,
+    previousStartDate: PREV_DATE_RANGE.startDate,
+    previousEndDate: PREV_DATE_RANGE.endDate,
+  });
+  const prod = (await fetchProduction(
+    `/trend/${encodeURIComponent(tileId)}?category=${encodeURIComponent(category)}&${params}`,
+  )) as { points: Array<{ bucketKey: string; currentValue: number | null }> };
+
+  const challengerPointCount = challengerResult.rows.length;
+  const prodPointCount = prod.points.length;
+
+  if (challengerPointCount === 0 && prodPointCount === 0) {
+    results.push({ surface, status: 'pass', detail: 'both empty' });
+  } else if (challengerPointCount === prodPointCount) {
+    results.push({ surface, status: 'pass', detail: `${challengerPointCount} points` });
+  } else {
+    results.push({
+      surface,
+      status: 'fail',
+      detail: `challenger=${challengerPointCount} points vs production=${prodPointCount} points`,
+    });
+  }
+}
+
+// --- Closed-won parity ---
+async function validateClosedWon(category: Category): Promise<void> {
+  const surface = `closed-won/${category}`;
+
+  const challengerResult = await executeMetricQuery(
+    buildV2ClosedWonQuery(category, FILTERS, DATE_RANGE),
+  );
+
+  const params = qs({
+    startDate: DATE_RANGE.startDate,
+    endDate: DATE_RANGE.endDate,
+  });
+  const prod = (await fetchProduction(
+    `/closed-won/${encodeURIComponent(category)}?${params}`,
+  )) as { rows: unknown[] };
+
+  const challengerCount = challengerResult.rows.length;
+  const prodCount = prod.rows.length;
+
+  if (challengerCount === prodCount) {
+    results.push({ surface, status: 'pass', detail: `${challengerCount} rows` });
+  } else {
+    results.push({
+      surface,
+      status: 'fail',
+      detail: `challenger=${challengerCount} rows vs production=${prodCount} rows`,
+    });
+  }
+}
+
+// --- Dictionary parity ---
+async function validateDictionaries(): Promise<void> {
+  for (const key of GLOBAL_FILTER_KEYS) {
+    const surface = `dictionary/${key}`;
+    const challengerResult = await executeMetricQuery(buildDictionaryQuery(key));
+
+    const prod = (await fetchProduction(
+      `/filter-dictionaries/${encodeURIComponent(key)}`,
+    )) as { options: unknown[] };
+
+    const challengerCount = challengerResult.rows.length;
+    const prodCount = prod.options.length;
+
+    if (challengerCount === prodCount) {
+      results.push({ surface, status: 'pass', detail: `${challengerCount} options` });
+    } else {
+      results.push({
+        surface,
+        status: 'fail',
+        detail: `challenger=${challengerCount} vs production=${prodCount}`,
+      });
+    }
+  }
+}
+
+// --- Main ---
+async function main() {
+  console.log('Phase 4b-1 Parity Validation');
+  console.log(`Date range: ${DATE_RANGE.startDate} to ${DATE_RANGE.endDate}`);
+  console.log('---');
+
+  for (const category of CATEGORY_ORDER) {
+    console.log(`\nValidating ${category}...`);
+    await validateScorecard(category);
+    await validateTrend(category);
+    await validateClosedWon(category);
+  }
+
+  console.log('\nValidating dictionaries...');
+  await validateDictionaries();
+
+  // Summary
+  console.log('\n=== RESULTS ===');
+  const passed = results.filter((r) => r.status === 'pass');
+  const failed = results.filter((r) => r.status === 'fail');
+
+  console.log(`Passed: ${passed.length}`);
+  console.log(`Failed: ${failed.length}`);
+  console.log(`Total:  ${results.length}`);
+
+  if (failed.length > 0) {
+    console.log('\nFAILURES:');
+    for (const f of failed) {
+      console.log(`  FAIL ${f.surface}: ${f.detail}`);
+    }
+    process.exit(1);
+  }
+
+  console.log('\nAll surfaces match production. Phase 4b-1 gate passed.');
+}
+
+main().catch((err) => {
+  console.error('Validation script error:', err);
+  process.exit(1);
+});
+```
+
+- [ ] **Step 2: Commit the validation script**
+
+```bash
+git add apps/challenger/scripts/validate-parity.ts
+git commit -m "feat(challenger): add automated parity validation script for Phase 4b-1 gate"
+```
+
+---
+
+## Task 14: Run Full Validation
 
 **Files:** No new files
 
@@ -1580,27 +1955,46 @@ Expected: All tests pass (57/57 or more)
 Run: `pnpm challenger:build`
 Expected: Build succeeds
 
-- [ ] **Step 3: Start challenger and verify page renders**
+- [ ] **Step 3: Start both apps**
 
-Run: `cd apps/challenger && npx next start -p 3500`
-Then in a separate terminal: `curl -s http://localhost:3500/?cacheMode=off | head -100`
-Expected: HTML output with category scorecard tables, trend tables, and closed-won tables streaming in
+In terminal 1: `cd apps/analytics-suite && npx next start -p 3300`
+In terminal 2: `cd apps/challenger && npx next start -p 3500`
 
-- [ ] **Step 4: Spot-check data correctness**
+Verify both are running:
+- `curl -s http://localhost:3300/api/dashboard-v2/overview?startDate=2026-01-01&endDate=2026-03-28&previousStartDate=2025-01-01&previousEndDate=2025-03-28 | head -50` — should return JSON
+- `curl -s http://localhost:3500/?cacheMode=off | head -50` — should return HTML
 
-Start both apps and compare a few tile values:
-- Production: `curl -s 'http://localhost:3300/api/dashboard-v2/category/New%20Logo?startDate=2026-01-01&endDate=2026-03-28&previousStartDate=2025-01-01&previousEndDate=2025-03-28'`
-- Challenger: Check the rendered HTML for New Logo scorecard
+- [ ] **Step 4: Run the automated parity validation**
 
-Verify at least:
-1. `new_logo_bookings_amount` current and previous values match
-2. `expansion_bookings_amount` includes closed-won filters (value differs from unfiltered)
-3. `total_annual_pacing_ytd` uses YTD date normalization (Jan 1 start)
-4. Closed-won table has rows with account_name, close_date, acv columns
+Run: `npx tsx apps/challenger/scripts/validate-parity.ts`
+
+Expected output:
+```
+Phase 4b-1 Parity Validation
+Date range: 2026-01-01 to 2026-03-28
+---
+
+Validating New Logo...
+Validating Expansion...
+Validating Migration...
+Validating Renewal...
+Validating Total...
+
+Validating dictionaries...
+
+=== RESULTS ===
+Passed: <N>
+Failed: 0
+Total:  <N>
+
+All surfaces match production. Phase 4b-1 gate passed.
+```
+
+If any failures: investigate the mismatches (likely operator mapping or field ID prefixing issues in `v2-query-builder.ts`), fix, and re-run until all pass.
 
 - [ ] **Step 5: Commit any fixes, then final commit**
 
 ```bash
 git add -A
-git commit -m "feat(challenger): Phase 4b-1 data layer parity complete"
+git commit -m "feat(challenger): Phase 4b-1 data layer parity validated"
 ```
