@@ -24,6 +24,15 @@ type TrendSectionProps = {
  * Merge currentPoints and previousPoints arrays (aligned by index)
  * into the `{ week, current, previous }` format that TrendChart expects.
  */
+function parseFormattedNumber(value: string | undefined): number | null {
+  if (!value) return null;
+  // Strip currency symbols, commas, percent signs, and other formatting
+  const cleaned = value.replace(/[^0-9.\-]/g, '');
+  if (!cleaned) return null;
+  const num = parseFloat(cleaned);
+  return Number.isNaN(num) ? null : num;
+}
+
 function mergeTrendPoints(
   currentPoints: TrendPoint[],
   previousPoints: TrendPoint[],
@@ -39,13 +48,11 @@ function mergeTrendPoints(
     const cp = currentPoints[i];
     const pp = previousPoints[i];
     const week = cp?.week ?? pp?.week ?? `W${i + 1}`;
-    const currentVal = cp?.value ? Number(cp.value) : null;
-    const previousVal = pp?.value ? Number(pp.value) : null;
 
     merged.push({
       week,
-      current: currentVal != null && !Number.isNaN(currentVal) ? currentVal : null,
-      previous: previousVal != null && !Number.isNaN(previousVal) ? previousVal : null,
+      current: parseFormattedNumber(cp?.value),
+      previous: parseFormattedNumber(pp?.value),
     });
   }
 
