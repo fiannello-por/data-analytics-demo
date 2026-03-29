@@ -8,6 +8,7 @@ import {
   FILTER_DIMENSIONS,
   type Category,
   type GlobalFilterKey,
+  type DashboardFilters,
 } from '@por/dashboard-constants';
 
 // Re-export for convenience within the challenger app
@@ -18,6 +19,7 @@ export {
   FILTER_DIMENSIONS,
   type Category,
   type GlobalFilterKey,
+  type DashboardFilters,
 };
 
 export type DateRange = {
@@ -79,6 +81,7 @@ function getExtraFiltersForCategory(category: Category): LightdashFilterRule[] {
 export function buildCategoryQuery(
   category: Category,
   dateRange: DateRange,
+  filters: DashboardFilters = {},
 ): MetricQueryRequest {
   const categoryFilter =
     category !== 'Total'
@@ -108,6 +111,21 @@ export function buildCategoryQuery(
 
   const extraFilters = getExtraFiltersForCategory(category);
 
+  // Dashboard-level filters (Division, Owner, etc.)
+  const dashboardFilters: LightdashFilterRule[] = [];
+  let dashIdx = 0;
+  for (const [key, values] of Object.entries(filters)) {
+    if (!values?.length) continue;
+    const dimension = FILTER_DIMENSIONS[key as GlobalFilterKey];
+    if (!dimension) continue;
+    dashboardFilters.push({
+      id: `df${dashIdx++}`,
+      target: { fieldId: buildFieldId(DASHBOARD_V2_BASE_MODEL, dimension) },
+      operator: 'equals',
+      values,
+    });
+  }
+
   return {
     exploreName: DASHBOARD_V2_BASE_MODEL,
     metrics: [buildFieldId(DASHBOARD_V2_BASE_MODEL, 'bookings_amount')],
@@ -115,7 +133,7 @@ export function buildCategoryQuery(
     filters: {
       dimensions: {
         id: 'root',
-        and: [...categoryFilter, dateFilter, ...extraFilters],
+        and: [...categoryFilter, dateFilter, ...extraFilters, ...dashboardFilters],
       },
     },
     sorts: [],

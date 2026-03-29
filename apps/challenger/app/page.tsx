@@ -44,7 +44,13 @@ export default async function ChallengerPage({
   if (state.tab === 'Overview') {
     // OVERVIEW_MANIFEST priority: overview(1), filters(2)
     const collector = new WaterfallCollector();
-    const overviewPromise = loadOverviewBoard(cacheMode, collector);
+    const overviewPromise = loadOverviewBoard(
+      state.filters,
+      state.dateRange,
+      state.previousDateRange,
+      cacheMode,
+      collector,
+    );
 
     // Create 16 per-filter promises — each streams independently
     const filterPromises = GLOBAL_FILTER_KEYS.map((key: GlobalFilterKey) =>
@@ -174,7 +180,7 @@ export default async function ChallengerPage({
       <section style={{ marginTop: 32 }}>
         <h2>{category}</h2>
 
-        <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 13 }} data-testid="section-ready">
+        <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 13 }}>
           <thead>
             <tr>
               {['Tile ID', 'Current', 'Previous', '% Change'].map((h) => (

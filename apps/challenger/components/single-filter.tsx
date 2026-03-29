@@ -16,11 +16,13 @@ export async function SingleFilter({ data, state }: Props) {
   const { key, options } = await data;
 
   return (
-    <FilterDropdown
-      filterKey={key}
-      options={options}
-      selected={state.filters[key] ?? []}
-      state={state}
-    />
+    <span data-testid="filter-loaded">
+      <FilterDropdown
+        filterKey={key}
+        options={options}
+        selected={state.filters[key] ?? []}
+        state={state}
+      />
+    </span>
   );
 }

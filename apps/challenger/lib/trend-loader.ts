@@ -15,6 +15,7 @@ import {
   type DateRange,
   type DashboardFilters,
 } from './v2-query-builder';
+import { cacheFingerprint } from './cache-utils';
 import type { ProbeCacheMode } from './cache-mode';
 import type { ResultRow } from './types';
 import type { WaterfallCollector } from './waterfall-types';
@@ -118,6 +119,8 @@ export async function loadTrend(
     };
   }
 
+  const fp = cacheFingerprint(filters, dateRange, previousDateRange);
+
   const { currentPoints, previousPoints } = await unstable_cache(
     () =>
       fetchTrend(
@@ -129,7 +132,7 @@ export async function loadTrend(
         previousDateRange,
         collector,
       ),
-    [`challenger-trend-${category}`],
+    [`challenger-trend-${category}-${tileId}-${fp}`],
     {
       revalidate: 60,
       tags: [`challenger-trend-${category}`],

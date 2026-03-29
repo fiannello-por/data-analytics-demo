@@ -15,6 +15,7 @@ import {
   type DateRange,
   type DashboardFilters,
 } from './v2-query-builder';
+import { cacheFingerprint } from './cache-utils';
 import type { ProbeCacheMode } from './cache-mode';
 import type { WaterfallCollector } from './waterfall-types';
 
@@ -107,7 +108,7 @@ export async function loadClosedWon(
     () => fetchClosedWon(
       tracker, category, filters, dateRange, page, pageSize, sortField, sortDescending, collector,
     ),
-    [`challenger-closed-won-${category}-p${page}-ps${pageSize}-s${sortField}-${sortDescending}`],
+    [`challenger-closed-won-${category}-p${page}-ps${pageSize}-s${sortField}-${sortDescending}-${cacheFingerprint(filters, dateRange)}`],
     {
       revalidate: 60,
       tags: [`challenger-closed-won-${category}`],

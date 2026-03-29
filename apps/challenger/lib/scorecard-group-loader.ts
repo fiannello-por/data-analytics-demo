@@ -19,6 +19,7 @@ import {
 } from './v2-query-builder';
 import type { SnapshotGroup } from '@por/dashboard-constants';
 import { findTileDefinition } from '@por/dashboard-constants';
+import { cacheFingerprint } from './cache-utils';
 import type { ProbeCacheMode } from './cache-mode';
 import type { WaterfallCollector } from './waterfall-types';
 
@@ -158,10 +159,12 @@ export async function loadScorecardGroup(
       collector,
     );
 
+  const fp = cacheFingerprint(filters, dateRange, previousDateRange);
+
   const tiles =
     cacheMode === 'off'
       ? await load()
-      : await unstable_cache(load, [`challenger-scorecard-${category}-g${groupIndex}`], {
+      : await unstable_cache(load, [`challenger-scorecard-${category}-g${groupIndex}-${fp}`], {
           revalidate: 60,
           tags: [`challenger-scorecard-${category}`],
         })();

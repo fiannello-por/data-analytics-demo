@@ -12,16 +12,18 @@ export async function WaterfallInjector({ collector, allPromises }: Props) {
   const spans = collector.getSpans();
 
   return (
-    <script
-      dangerouslySetInnerHTML={{
-        __html: `
-      window.__CHALLENGER_TELEMETRY__ = {
-        ...window.__CHALLENGER_TELEMETRY__,
-        waterfall: ${JSON.stringify(spans)},
-      };
-      try { sessionStorage.setItem('challenger-waterfall', ${JSON.stringify(JSON.stringify(spans))}); } catch {}
-    `,
-      }}
-    />
+    <div data-testid="all-data-loaded" style={{ display: 'none' }}>
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+        window.__CHALLENGER_TELEMETRY__ = {
+          ...window.__CHALLENGER_TELEMETRY__,
+          waterfall: ${JSON.stringify(spans)},
+        };
+        try { sessionStorage.setItem('challenger-waterfall', ${JSON.stringify(JSON.stringify(spans))}); } catch {}
+      `,
+        }}
+      />
+    </div>
   );
 }

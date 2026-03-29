@@ -103,28 +103,13 @@ export async function collectBrowserMetrics(
   page: Page,
   tab: TabName = 'Overview',
 ): Promise<BrowserMetrics> {
-  // Wait for all Suspense boundaries to resolve for the given tab.
-  // Overview: overview board + filter options loaded.
-  // Category tabs: scorecard, trend, closed-won sections + filter options loaded.
-  const filterWaiter = page.waitForSelector('#filter-bar-options[data-loaded="true"]', {
+  // Wait for the WaterfallInjector's all-data-loaded marker, which fires
+  // after Promise.allSettled on every loader promise (filters, overview,
+  // scorecard groups, trend, closed-won). This is a single robust signal
+  // that all data has streamed in for any tab.
+  await page.waitForSelector('[data-testid="all-data-loaded"]', {
     timeout: 120_000,
   });
-
-  let sectionWaiter: Promise<unknown>;
-  if (tab === 'Overview') {
-    sectionWaiter = page.waitForSelector('#overview-data[data-loaded="true"]', {
-      timeout: 120_000,
-    });
-  } else {
-    // Category tabs render 3 section-ready sections: scorecard, trend, closed-won.
-    // Wait for the third (nth=2, 0-indexed) to ensure all have streamed in.
-    sectionWaiter = page
-      .locator('[data-testid="section-ready"]')
-      .nth(2)
-      .waitFor({ state: 'attached', timeout: 120_000 });
-  }
-
-  await Promise.all([filterWaiter, sectionWaiter]);
 
   return page.evaluate(() => {
     const nav = performance.getEntriesByType(
