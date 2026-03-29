@@ -32,11 +32,13 @@ import {
 /**
  * Orchestrates all prefetches for the current dashboard state.
  *
- * - Overview tab: prefetches the overview board.
- * - Category tabs: stages fetches with `await` between priority levels:
- *     1. `await` scorecard  (priority 1)
- *     2. `await` trend      (priority 2)
- *     3. fire-and-forget closed-won (priority 3)
+ * All fetches for the active tab start immediately to maximize parallelism.
+ * The server-side concurrency limiter (MAX_CONCURRENT=10) handles batching.
+ * Submission order ensures scorecard queries enter the limiter first, but
+ * all queries run concurrently on the server.
+ *
+ * Returns a promise that resolves when ALL active-tab queries are populated
+ * in the TanStack Query cache (used by the shell to flip `orchestrated`).
  */
 export async function orchestratePrefetch(
   queryClient: QueryClient,
@@ -45,7 +47,7 @@ export async function orchestratePrefetch(
   const { committedFilters, committedDateRange, activeTab, cwPage } = state;
 
   if (!isCategory(activeTab)) {
-    // Overview tab
+    // Overview tab — single fetch
     await prefetchOverview(queryClient, committedFilters, committedDateRange);
     return;
   }
@@ -54,16 +56,16 @@ export async function orchestratePrefetch(
   const tileId = getActiveSelectedTileId(state);
   const sort = getActiveCwSort(state);
 
-  // Priority 1: scorecard
-  await prefetchScorecard(
+  // Start all three in submission order (scorecard first into the limiter
+  // queue) but don't await sequentially — run in parallel for speed.
+  const scorecardPromise = prefetchScorecard(
     queryClient,
     category,
     committedFilters,
     committedDateRange,
   );
 
-  // Priority 2: trend
-  await prefetchTrend(
+  const trendPromise = prefetchTrend(
     queryClient,
     category,
     tileId,
@@ -71,8 +73,7 @@ export async function orchestratePrefetch(
     committedDateRange,
   );
 
-  // Priority 3: closed-won (fire-and-forget)
-  void prefetchClosedWon(
+  const closedWonPromise = prefetchClosedWon(
     queryClient,
     category,
     committedFilters,
@@ -80,6 +81,9 @@ export async function orchestratePrefetch(
     cwPage,
     sort,
   );
+
+  // Wait for all to complete before signaling `orchestrated = true`
+  await Promise.all([scorecardPromise, trendPromise, closedWonPromise]);
 }
 
 // ─── Hover prefetch ───────────────────────────────────────────────────────────
