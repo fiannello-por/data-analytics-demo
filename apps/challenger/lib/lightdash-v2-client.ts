@@ -8,9 +8,12 @@ import type {
   MetricQueryRequest,
 } from './types';
 
-// Concurrency limiter — prevents overwhelming the Lightdash server.
-// The Render instance (1 CPU, 2GB) handles ~8 concurrent executeMetricQuery
-// calls well but degrades badly at 26+.
+// Concurrency limiter — required for performance, not just stability.
+// Tested with Infinity: 26 parallel calls take ~20s (server contention).
+// Tested with 10: same 26 queries take ~8.2s (less contention per wave).
+// The Lightdash Render instance (1 CPU) degrades under high concurrency:
+// per-query compile time goes from ~400ms (sequential) to ~2.6s (26 parallel).
+// Batching into waves of 10 reduces contention and improves total throughput.
 const MAX_CONCURRENT = 10;
 let activeCount = 0;
 const waitQueue: Array<() => void> = [];
