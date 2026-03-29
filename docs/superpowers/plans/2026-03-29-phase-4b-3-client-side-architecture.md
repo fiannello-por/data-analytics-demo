@@ -495,26 +495,36 @@ Hooks to create:
 - `useFilterDictionaries()` — staleTime 900s (15 min)
 - `prefetchTab(queryClient, tab, filters, dateRange)` — imperative helper for hover prefetch. Does NOT prefetch closed-won.
 
-**Fetch priority contract:** The hooks and the orchestrator (Task 7)
-share the same `queryKey` + `queryFn` pairs. TanStack Query deduplicates
-— if the orchestrator starts a fetch and the hook mounts and requests
-the same key, TanStack returns the in-flight promise rather than
-starting a second request.
+**Fetch priority contract:** The shell is the sole fetch orchestrator.
+Active-tab data hooks do NOT initiate fetches on mount. Instead:
 
-The orchestrator enforces priority by **awaiting** each priority level
-before starting the next (see Task 7). This means when hook components
-mount and fire their queries, the orchestrator has already started the
-higher-priority fetches. Lower-priority hooks that mount simultaneously
-may trigger their own fetch if the orchestrator hasn't reached them
-yet — but the server-side concurrency limiter (MAX_CONCURRENT=10) still
-batches them into waves, so the priority ordering holds at the server
-level even if client-side launch order is not perfectly sequential.
+1. All active-tab hooks (`useOverviewBoard`, `useScorecard`, `useTrend`,
+   `useClosedWon`) accept an `enabled` option. On mount, they are
+   disabled (`enabled: false`).
+2. The shell's effect calls `orchestrateFetches()`, which stages
+   `prefetchQuery` calls in priority order with `await` between levels
+   (scorecard → await → trend → await → closed-won). This populates
+   the TanStack Query cache.
+3. After `orchestrateFetches` completes, the shell sets a state flag
+   (e.g., `orchestrated: true`) that enables the hooks. The hooks then
+   read from the already-populated cache — they do not initiate new
+   fetches (TanStack Query sees the cache is fresh and returns it).
+4. On subsequent state changes (filter apply, tile select, etc.), the
+   shell calls `orchestrateFetches` again. The hooks' query keys
+   change, but since the orchestrator ran first, the cache is populated
+   before the hooks re-fire.
 
-The net effect: scorecard queries are guaranteed to be in-flight before
-trend queries enter the server limiter queue, and trend before closed-won.
-This is a best-effort priority mechanism, not strict sequential gating.
+This means: hooks never race the orchestrator. The shell owns fetch
+initiation. Hooks own cache subscription and re-rendering.
 
-Each hook should build the API URL with the same repeated-params encoding as the existing URL state. Create a shared `buildApiParams` helper for filter/dateRange serialization into `URLSearchParams`. The `queryFn` must be defined identically in hooks and orchestrator — extract into shared `queryFns` object to avoid duplication.
+Exception: `useFilterDictionaries()` is always enabled (mount-driven).
+Filter dictionaries are independent of tab state, have 15-min staleTime,
+and rarely re-fetch. They don't participate in priority ordering.
+
+The `queryFn` for each surface must be defined identically in hooks and
+orchestrator — extract into a shared `queryFns` object to avoid
+duplication. Create a shared `buildApiParams` helper for filter/dateRange
+serialization into `URLSearchParams`.
 
 - [ ] **Step 3: Verify TypeScript compilation**
 
