@@ -317,6 +317,30 @@ architecture for instant interactions and smart caching.
      (tab switches, page changes). Brief loading state where stale data
      would be misleading (sort changes).
 
+   **Fetch priority mechanism:** Component-level hooks alone do not
+   guarantee ordering — they all fire when their components mount. The
+   shell enforces priority by staging fetches imperatively:
+
+   1. On state change (tab switch, filter apply, etc.), the shell calls
+      `queryClient.prefetchQuery(...)` for the active tab's surfaces
+      in priority order (scorecard → trend → closed-won for category
+      tabs; overview board for overview tab). These are imperative calls
+      in the shell's effect handler, not driven by component mount.
+   2. Component-level hooks (`useScorecard`, `useTrend`, etc.) then
+      pick up the prefetched/in-flight queries from the cache — they
+      don't initiate redundant fetches (TanStack Query deduplicates).
+   3. Filter dictionaries use a normal hook (mount-driven). They have
+      lower server-side priority via the concurrency limiter and 15-min
+      staleTime, so they rarely re-fetch.
+   4. Adjacent-tab prefetch fires via `requestIdleCallback` or a
+      settle delay after all active-tab queries are in-flight. Uses
+      the same `queryClient.prefetchQuery` with committed state +
+      default tile/page/sort for the target tab.
+
+   This means the shell is the fetch orchestrator, components are
+   consumers. The hooks exist for reactive re-rendering and cache
+   subscription, not for initiating fetches.
+
 7. **Tab switching** — Three cases:
    - Cached fresh: instant, no fetch.
    - Cached stale: instant stale render + background refetch + subtle
@@ -861,14 +885,14 @@ query count.
 
 | Metric | Target | How measured |
 |--------|--------|-------------|
-| Client-side state | All interactions client-driven | No full-page server re-renders on tab/filter/page/sort |
-| Tab switch (cached) | < 100ms | TanStack Query cache hit, no network |
-| Filter apply | Data refreshes without page reload | TanStack Query refetch via key change |
-| Closed-won pagination | Page change without full re-render | Client-side fetch only |
-| Draft filters | Apply/cancel works correctly | Draft does not affect data until applied |
+| Client-side state | All interactions client-driven | Playwright: no full-page navigations on tab/filter/page/sort (monitor network for document requests) |
+| Tab switch (cached) | < 100ms | Playwright: measure time from tab click to content visible on cached tab |
+| Filter apply | Data refreshes without page reload | Playwright: apply filter, verify data changes without document navigation |
+| Closed-won pagination | Page change without full re-render | Playwright: click next page, verify only closed-won section updates |
+| Draft filters | Apply/cancel works correctly | Playwright: edit draft, verify no data change; apply, verify data change; cancel, verify revert |
 | Performance maintained | < 4s per tab initial load | Playwright harness, all 6 tabs |
-| Error resilience | Surface-local errors, stale data preserved | Manual verification |
-| URL round-trip | Back/forward restores committed state | Manual verification |
+| Error resilience | Surface-local errors, stale data preserved | Playwright: mock API error for one surface, verify other surfaces still show data and error surface shows banner + retry |
+| URL round-trip | Back/forward restores committed state | Playwright: navigate tabs, apply filters, use `page.goBack()` / `page.goForward()`, verify URL and visible state match |
 
 ### Phase 4b-4 Gate (Visual Parity — Satisfies Original Phase 4)
 
