@@ -17,24 +17,33 @@ export function FilterBarSkeleton() {
       aria-label="Filters loading"
     >
       {GLOBAL_FILTER_KEYS.map((key) => (
-        <button
-          key={key}
-          disabled
-          aria-disabled="true"
-          style={{
-            padding: '0.25rem 0.75rem',
-            background: '#e0e0e0',
-            border: '1px solid #ccc',
-            borderRadius: '4px',
-            fontSize: '0.8rem',
-            cursor: 'not-allowed',
-            opacity: 0.6,
-          }}
-        >
-          {key}
-        </button>
+        <FilterButtonSkeleton key={key} label={key} />
       ))}
     </div>
+  );
+}
+
+/**
+ * Single disabled placeholder button for one filter key.
+ * Used as Suspense fallback for individual per-filter Suspense boundaries.
+ */
+export function FilterButtonSkeleton({ label }: { label: string }) {
+  return (
+    <button
+      disabled
+      aria-disabled="true"
+      style={{
+        padding: '0.25rem 0.75rem',
+        background: '#e0e0e0',
+        border: '1px solid #ccc',
+        borderRadius: '4px',
+        fontSize: '0.8rem',
+        cursor: 'not-allowed',
+        opacity: 0.6,
+      }}
+    >
+      {label}
+    </button>
   );
 }
 

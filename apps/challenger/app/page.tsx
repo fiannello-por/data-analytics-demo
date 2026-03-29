@@ -1,11 +1,11 @@
 // apps/challenger/app/page.tsx
 
 import { Suspense } from 'react';
-import { getCategoryTiles, getDefaultTileId } from '@por/dashboard-constants';
-import type { Category } from '@por/dashboard-constants';
+import { getCategoryTiles, getDefaultTileId, GLOBAL_FILTER_KEYS } from '@por/dashboard-constants';
+import type { Category, GlobalFilterKey } from '@por/dashboard-constants';
 import { OverviewBoard } from '@/components/overview-board';
-import { FilterBarShell, FilterBarSkeleton } from '@/components/filter-bar-shell';
-import { FilterBarOptions } from '@/components/filter-bar-options';
+import { FilterBarShell, FilterButtonSkeleton } from '@/components/filter-bar-shell';
+import { SingleFilter } from '@/components/single-filter';
 import { CategoryScorecard } from '@/components/category-scorecard';
 import { CategoryTrend } from '@/components/category-trend';
 import { ClosedWonTable } from '@/components/closed-won-table';
@@ -14,7 +14,7 @@ import { WaterfallInjector } from '@/components/waterfall-injector';
 import { parseCacheMode } from '@/lib/cache-mode';
 import { parseDashboardUrl } from '@/lib/url-state';
 import { loadOverviewBoard } from '@/lib/overview-loader';
-import { loadFilterDictionaries } from '@/lib/dictionary-loader';
+import { loadSingleFilter } from '@/lib/single-filter-loader';
 import { loadScorecard } from '@/lib/scorecard-loader';
 import { loadTrend } from '@/lib/trend-loader';
 import { loadClosedWon } from '@/lib/closed-won-loader';
@@ -45,8 +45,12 @@ export default async function ChallengerPage({
     // OVERVIEW_MANIFEST priority: overview(1), filters(2)
     const collector = new WaterfallCollector();
     const overviewPromise = loadOverviewBoard(cacheMode, collector);
-    const filtersPromise = loadFilterDictionaries(cacheMode, collector, 2);
-    const allPromises: Promise<unknown>[] = [overviewPromise, filtersPromise];
+
+    // Create 16 per-filter promises — each streams independently
+    const filterPromises = GLOBAL_FILTER_KEYS.map((key: GlobalFilterKey) =>
+      loadSingleFilter(key, cacheMode, collector, 2),
+    );
+    const allPromises: Promise<unknown>[] = [overviewPromise, ...filterPromises];
 
     return (
       <main>
@@ -59,9 +63,13 @@ export default async function ChallengerPage({
         <TabBar state={state} />
 
         <FilterBarShell>
-          <Suspense fallback={<FilterBarSkeleton />}>
-            <FilterBarOptions data={filtersPromise} state={state} />
-          </Suspense>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            {GLOBAL_FILTER_KEYS.map((key: GlobalFilterKey, i: number) => (
+              <Suspense key={key} fallback={<FilterButtonSkeleton label={key} />}>
+                <SingleFilter data={filterPromises[i]!} state={state} />
+              </Suspense>
+            ))}
+          </div>
         </FilterBarShell>
 
         <Suspense
@@ -127,12 +135,15 @@ export default async function ChallengerPage({
     cacheMode,
     collector,
   );
-  const filtersPromise = loadFilterDictionaries(cacheMode, collector, 4);
+  // Create 16 per-filter promises — each streams independently
+  const filterPromises = GLOBAL_FILTER_KEYS.map((key: GlobalFilterKey) =>
+    loadSingleFilter(key, cacheMode, collector, 4),
+  );
   const allPromises: Promise<unknown>[] = [
     scorecardPromise,
     trendPromise,
     closedWonPromise,
-    filtersPromise,
+    ...filterPromises,
   ];
 
   return (
@@ -146,9 +157,13 @@ export default async function ChallengerPage({
       <TabBar state={state} />
 
       <FilterBarShell>
-        <Suspense fallback={<FilterBarSkeleton />}>
-          <FilterBarOptions data={filtersPromise} state={state} />
-        </Suspense>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          {GLOBAL_FILTER_KEYS.map((key: GlobalFilterKey, i: number) => (
+            <Suspense key={key} fallback={<FilterButtonSkeleton label={key} />}>
+              <SingleFilter data={filterPromises[i]!} state={state} />
+            </Suspense>
+          ))}
+        </div>
       </FilterBarShell>
 
       <section style={{ marginTop: 32 }}>
