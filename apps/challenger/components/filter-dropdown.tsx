@@ -2,21 +2,28 @@
 
 // apps/challenger/components/filter-dropdown.tsx
 // Interactive dropdown for a single filter key. Client component.
+// Builds apply URLs locally from serializable state — no function props.
 
 import { useState, useRef, useEffect } from 'react';
+import {
+  buildFilterApplyUrl,
+  type DashboardUrlState,
+  type DashboardFilters,
+} from '../lib/url-state';
+import type { GlobalFilterKey } from '@por/dashboard-constants';
 
 export interface FilterDropdownProps {
-  filterKey: string;
+  filterKey: GlobalFilterKey;
   options: string[];
   selected: string[];
-  buildApplyUrl: (key: string, values: string[]) => string;
+  state: DashboardUrlState;
 }
 
 export function FilterDropdown({
   filterKey,
   options,
   selected,
-  buildApplyUrl,
+  state,
 }: FilterDropdownProps) {
   const [open, setOpen] = useState(false);
   const [checked, setChecked] = useState<Set<string>>(new Set(selected));
@@ -66,7 +73,14 @@ export function FilterDropdown({
     setChecked(new Set());
   }
 
-  const applyUrl = buildApplyUrl(filterKey, [...checked]);
+  // Build the apply URL locally from serializable state
+  const newFilters: DashboardFilters = { ...state.filters };
+  if (checked.size > 0) {
+    newFilters[filterKey] = [...checked];
+  } else {
+    delete newFilters[filterKey];
+  }
+  const applyUrl = buildFilterApplyUrl(state, newFilters);
 
   return (
     <div
