@@ -162,15 +162,25 @@ shared package so both apps derive queries from the same source.
 
 **What moves to `@por/dashboard-constants`:**
 
+Data and types (no dependencies):
 - `TILE_SPECS` record and `TileSemanticSpec` type (`measure`, `dateDimension`,
   `extraFilters`, `dateRangeStrategy`)
 - Filter constant arrays: `CLOSED_WON_FILTERS`,
   `CLOSED_WON_POSITIVE_ACV_FILTERS`, `WON_POSITIVE_ACV_FILTERS`
 - `CLOSED_WON_DIMENSIONS` array
 - `SemanticFilter` type (just `{field, operator, values}` — no runtime dep)
-- Pure functions: `getEffectiveDateRange()`, `getSnapshotGroups()`,
-  `buildFilterSignature()`, `buildSemanticFilters()`
+- `DateRange` type (just `{startDate, endDate}` — currently in contracts.ts)
+- `DashboardFilters` type (just `Partial<Record<GlobalFilterKey, string[]>>`)
 - `getSemanticTileSpec()` lookup function
+- `getEffectiveDateRange()` (pure date math, depends only on `DateRange`)
+- `buildSemanticFilters()` (depends on `Category`, `DashboardFilters`,
+  `FILTER_DIMENSIONS` — all in the shared package)
+
+**Not moved** (has catalog dependency):
+- `getSnapshotGroups()` — depends on `getCategoryTiles()` from the tile
+  catalog. Each app implements its own grouping using shared tile specs.
+  The production app already has this in `semantic-registry.ts`. The
+  challenger builds its own version in `v2-query-builder.ts`.
 
 **What stays in analytics-suite `semantic-registry.ts`:**
 
