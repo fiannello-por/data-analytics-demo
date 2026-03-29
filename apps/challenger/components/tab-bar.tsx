@@ -43,9 +43,6 @@ export function TabBar({
               fontSize: '0.9rem',
               fontWeight: isActive ? '600' : '400',
               color: isActive ? '#2563eb' : '#6b7280',
-              borderBottom: isActive
-                ? '2px solid #2563eb'
-                : '2px solid transparent',
               marginBottom: '-1px',
               whiteSpace: 'nowrap',
               background: 'none',
