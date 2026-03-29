@@ -24,3 +24,12 @@ export type {
   TileSemanticSpec,
   SnapshotGroup,
 } from './semantic-types';
+
+export {
+  CLOSED_WON_FILTERS,
+  CLOSED_WON_POSITIVE_ACV_FILTERS,
+  WON_POSITIVE_ACV_FILTERS,
+  CLOSED_WON_DIMENSIONS,
+  TILE_SPECS,
+  getSemanticTileSpec,
+} from './semantic-specs';
