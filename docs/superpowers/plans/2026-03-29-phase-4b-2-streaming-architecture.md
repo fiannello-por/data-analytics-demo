@@ -602,9 +602,9 @@ Update `filter-bar-options.tsx` to render dropdowns:
 
 ```tsx
 // apps/challenger/components/filter-bar-options.tsx
-import { GLOBAL_FILTER_KEYS } from '@por/dashboard-constants';
+import { GLOBAL_FILTER_KEYS, type GlobalFilterKey } from '@por/dashboard-constants';
 import type { DictionaryLoaderResult } from '../lib/dictionary-loader';
-import type { DashboardUrlState } from '../lib/url-state';
+import { buildFilterApplyUrl, type DashboardUrlState } from '../lib/url-state';
 import { FilterDropdown } from './filter-dropdown';
 
 type Props = {
@@ -619,19 +619,17 @@ export async function FilterBarOptions({ data, state }: Props) {
     result.dictionaries.map((d) => [d.key, d.options]),
   );
 
-  function buildApplyUrl(key: string, values: string[]): string {
-    const newFilters = { ...state.filters, [key]: values.length > 0 ? values : undefined };
-    // Clean up undefined entries
-    const clean: Record<string, string[]> = {};
-    for (const [k, v] of Object.entries(newFilters)) {
-      if (v?.length) clean[k] = v;
+  // Reuses the shared URL builder from url-state.ts which preserves all
+  // dashboard state (tab, dateRange, cwPage, cwSort, cwDir) when applying
+  // a filter change. Only the specified filter key is updated.
+  function buildApplyUrl(key: GlobalFilterKey, values: string[]): string {
+    const newFilters = { ...state.filters };
+    if (values.length > 0) {
+      newFilters[key] = values;
+    } else {
+      delete newFilters[key];
     }
-    const params = new URLSearchParams();
-    params.set('tab', state.tab);
-    for (const [k, v] of Object.entries(clean)) {
-      params.set(k, v.join(','));
-    }
-    return `/?${params.toString()}`;
+    return buildFilterApplyUrl(state, newFilters);
   }
 
   return (
@@ -974,6 +972,17 @@ git commit -m "feat(challenger): closed-won server-side pagination and column so
 
 - [ ] **Step 1: Create waterfall-types.ts**
 
+The collector must be **per-request**, not module-global. Module-global state
+is not request-scoped — concurrent SSR requests would contaminate each
+other's spans, and the page returns JSX before Suspense children resolve,
+so a global array would be empty or partial at serialization time.
+
+Instead: create a `WaterfallCollector` class that the page instantiates per
+request and passes to loaders. Each loader records spans into the collector
+it received. The collector is referenced by the final Suspense boundary
+(a `WaterfallInjector` component) that serializes all spans after every
+loader has resolved.
+
 ```typescript
 // apps/challenger/lib/waterfall-types.ts
 
@@ -991,30 +1000,69 @@ export type QuerySpan = {
   endMs: number;
 };
 
-let pageEpoch = 0;
-const spans: QuerySpan[] = [];
+export class WaterfallCollector {
+  private epoch: number;
+  private spans: QuerySpan[] = [];
 
-export function resetWaterfall(): void {
-  pageEpoch = performance.now();
-  spans.length = 0;
-}
+  constructor() {
+    this.epoch = performance.now();
+  }
 
-export function getPageEpoch(): number {
-  return pageEpoch;
-}
+  getEpoch(): number {
+    return this.epoch;
+  }
 
-export function recordSpan(span: QuerySpan): void {
-  spans.push(span);
-}
+  record(span: QuerySpan): void {
+    this.spans.push(span);
+  }
 
-export function getWaterfallSpans(): QuerySpan[] {
-  return [...spans];
+  getSpans(): QuerySpan[] {
+    return [...this.spans];
+  }
 }
 ```
 
-- [ ] **Step 2: Instrument executeMetricQuery**
+- [ ] **Step 2: Create a WaterfallInjector server component**
 
-Read `apps/challenger/lib/lightdash-v2-client.ts`. Add timing instrumentation inside `withConcurrencyLimit` and the submit/poll phases. The function should accept an optional `spanMetadata` parameter with `section` and `priority` fields, and record a `QuerySpan` via `recordSpan()`.
+This is an async server component that awaits ALL loader promises (ensuring
+every span has been recorded), then serializes the collector's spans into
+the client HTML. It lives in its own Suspense boundary at the END of the
+page — it resolves last because it waits for everything else.
+
+```tsx
+// apps/challenger/components/waterfall-injector.tsx
+
+import type { WaterfallCollector } from '../lib/waterfall-types';
+
+type Props = {
+  collector: WaterfallCollector;
+  allPromises: Promise<unknown>[];
+};
+
+export async function WaterfallInjector({ collector, allPromises }: Props) {
+  // Wait for every loader to finish so all spans are recorded
+  await Promise.allSettled(allPromises);
+
+  const spans = collector.getSpans();
+
+  return (
+    <script dangerouslySetInnerHTML={{ __html: `
+      window.__CHALLENGER_TELEMETRY__ = {
+        ...window.__CHALLENGER_TELEMETRY__,
+        waterfall: ${JSON.stringify(spans)},
+      };
+      try { sessionStorage.setItem('challenger-waterfall', ${JSON.stringify(JSON.stringify(spans))}); } catch {}
+    ` }} />
+  );
+}
+```
+
+- [ ] **Step 3: Instrument executeMetricQuery**
+
+Read `apps/challenger/lib/lightdash-v2-client.ts`. Add an optional
+`instrumentation` parameter that accepts a `WaterfallCollector` and span
+metadata (`section`, `priority`, `id`). When provided, the function records
+timing at each phase:
 
 Key timing points:
 - `limiterWaitMs`: time from function entry to when the concurrency slot opens
@@ -1023,26 +1071,26 @@ Key timing points:
 - `lightdashExecMs`: from `result.initialQueryExecutionMs`
 - `lightdashPageMs`: from `result.resultsPageExecutionMs`
 - `cacheHit`: from `submitData.results.cacheMetadata.cacheHit`
-- `startMs` / `endMs`: relative to page epoch
+- `startMs` / `endMs`: relative to `collector.getEpoch()`
 
-- [ ] **Step 3: Update page.tsx to inject waterfall into telemetry**
+When `instrumentation` is not provided, the function behaves exactly as
+before (no overhead). This keeps the existing CallTracker pattern and
+loaders backward-compatible — waterfall is opt-in.
 
-At the top of the page's async function, call `resetWaterfall()`. After all Suspense boundaries, inject the waterfall spans into `window.__CHALLENGER_TELEMETRY__.waterfall` and `sessionStorage`.
+- [ ] **Step 4: Update page.tsx**
 
-Add a script tag after all content:
+At the top of the page, create a `WaterfallCollector` instance. Pass it
+to each loader (which passes it to `executeMetricQuery`). Collect all
+loader promises into an array. At the end of the JSX, render:
 
 ```tsx
-<script dangerouslySetInnerHTML={{ __html: `
-  const spans = ${JSON.stringify(getWaterfallSpans())};
-  window.__CHALLENGER_TELEMETRY__ = {
-    ...window.__CHALLENGER_TELEMETRY__,
-    waterfall: spans,
-  };
-  try { sessionStorage.setItem('challenger-waterfall', JSON.stringify(spans)); } catch {}
-` }} />
+<Suspense fallback={null}>
+  <WaterfallInjector collector={collector} allPromises={allPromises} />
+</Suspense>
 ```
 
-Note: Since spans are recorded during SSR (server-side), they're available at render time and can be serialized into the HTML. The injection script runs on the client and populates both `window` and `sessionStorage`.
+This Suspense boundary resolves last (after all data), injecting the
+complete waterfall into the client HTML.
 
 - [ ] **Step 4: Verify build**
 
@@ -1137,7 +1185,13 @@ git commit -m "feat(challenger): Playwright benchmark harness for all 6 tabs"
 Read the existing script. Add these new validation surfaces:
 
 1. **Per-tab URL navigation:** For each of the 6 tabs, verify `/?tab={tabName}&cacheMode=off` renders without errors (via HTTP fetch of the HTML, check for error markers)
-2. **Filter smoke test:** For one category (New Logo), fetch with and without a filter (`?tab=New+Logo` vs `?tab=New+Logo&Division=East`). Verify at least one tile value differs.
+2. **Filter smoke test:** First, fetch the Division dictionary via the
+   existing `buildDictionaryQuery('Division')` + `executeMetricQuery` to
+   get real option values. Pick the first option dynamically (e.g., if
+   the dictionary returns `['East', 'West', ...]`, use `'East'`). Then
+   compare `?tab=New+Logo` vs `?tab=New+Logo&Division={firstOption}`.
+   Verify at least one tile value differs. This avoids hardcoding a
+   warehouse-dependent value that may not exist in every environment.
 3. **Closed-won pagination:** Submit a closed-won query, verify page 1 and page 2 return different rows (re-use the pattern from our earlier live test)
 4. **Dictionary completeness:** Verify all 16 filter keys return > 0 options
 
