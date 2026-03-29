@@ -40,7 +40,7 @@ function getServerCacheTags(
   return [];
 }
 
-async function purgeAndRefetchClientQueries(
+async function invalidateAndRefetchClientQueries(
   queryClient: ReturnType<typeof useQueryClient>,
   activeTab: DashboardTab,
   category: Category | undefined,
@@ -54,18 +54,16 @@ async function purgeAndRefetchClientQueries(
     prefixes.push(['closed-won', category]);
   }
 
-  // Remove all cached data for the active tab surfaces
-  for (const prefix of prefixes) {
-    queryClient.removeQueries({ queryKey: prefix });
-  }
-
-  // Force immediate refetch of all queries matching these prefixes.
-  // After removeQueries the cache is empty so hooks will be in isPending
-  // state. refetchQueries ensures the re-fetch starts immediately rather
-  // than waiting for a React re-render cycle.
-  for (const prefix of prefixes) {
-    await queryClient.refetchQueries({ queryKey: prefix });
-  }
+  // Invalidate all cached data for the active tab surfaces.
+  // This marks queries as stale and triggers an immediate refetch
+  // for any mounted query observers. Unlike removeQueries, the query
+  // stays in the cache so components remain mounted and the refetch
+  // is visible via isFetching.
+  await Promise.all(
+    prefixes.map((prefix) =>
+      queryClient.invalidateQueries({ queryKey: prefix, refetchType: 'all' }),
+    ),
+  );
 }
 
 // ─── Component ──────────────────────────────────────────────────────────────
@@ -88,8 +86,8 @@ export function ClearCacheButton({ activeTab, category, onRefreshComplete }: Cle
         });
       }
 
-      // Step 2: purge client cache + force refetch
-      await purgeAndRefetchClientQueries(queryClient, activeTab, category);
+      // Step 2: invalidate client cache + trigger refetch
+      await invalidateAndRefetchClientQueries(queryClient, activeTab, category);
 
       // Step 3: trigger re-orchestration if needed
       onRefreshComplete?.();
