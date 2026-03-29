@@ -1,61 +1,11 @@
 // apps/challenger/components/category-trend.tsx
 
-import type { TrendPoint, TrendResult } from '@/lib/trend-loader';
+import type { TrendResult } from '@/lib/trend-loader';
+import { TrendChart } from './trend-chart';
 
-function TrendTable({ points, label }: { points: TrendPoint[]; label: string }) {
-  return (
-    <div style={{ flex: 1, minWidth: 0 }}>
-      <h4 style={{ marginBottom: 4 }}>{label}</h4>
-      <table
-        style={{ borderCollapse: 'collapse', width: '100%', fontSize: 13 }}
-      >
-        <thead>
-          <tr>
-            {['Week', 'Value'].map((h) => (
-              <th
-                key={h}
-                style={{
-                  border: '1px solid #ccc',
-                  padding: '4px 8px',
-                  textAlign: 'left',
-                  background: '#f5f5f5',
-                }}
-              >
-                {h}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {points.length === 0 ? (
-            <tr>
-              <td
-                colSpan={2}
-                style={{
-                  border: '1px solid #ccc',
-                  padding: '4px 8px',
-                  color: '#999',
-                }}
-              >
-                No data
-              </td>
-            </tr>
-          ) : (
-            points.map((pt, i) => (
-              <tr key={i}>
-                <td style={{ border: '1px solid #ccc', padding: '4px 8px' }}>
-                  {pt.week}
-                </td>
-                <td style={{ border: '1px solid #ccc', padding: '4px 8px' }}>
-                  {pt.value}
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-    </div>
-  );
+function parseValue(formatted: string): number | null {
+  const num = parseFloat(formatted.replace(/[^0-9.-]/g, ''));
+  return isNaN(num) ? null : num;
 }
 
 export async function CategoryTrend({
@@ -66,16 +16,27 @@ export async function CategoryTrend({
   const result = await data;
   const { category, tileId } = result;
 
+  const len = Math.max(result.currentPoints.length, result.previousPoints.length);
+  const chartData = Array.from({ length: len }, (_, i) => ({
+    week: result.currentPoints[i]?.week ?? result.previousPoints[i]?.week ?? '',
+    current: result.currentPoints[i] ? parseValue(result.currentPoints[i].value) : null,
+    previous: result.previousPoints[i] ? parseValue(result.previousPoints[i].value) : null,
+  }));
+
+  const currentYear = result.currentPoints[0]?.week?.slice(0, 4) ?? 'Current';
+  const previousYear = result.previousPoints[0]?.week?.slice(0, 4) ?? 'Previous';
+
   return (
-    <div>
+    <div data-testid="section-ready">
       <h3 style={{ marginBottom: 4 }}>
         {category} Trend ({tileId}) — {result.queryCount} queries,{' '}
         {result.durationMs.toFixed(0)}ms
       </h3>
-      <div style={{ display: 'flex', gap: 16 }}>
-        <TrendTable points={result.currentPoints} label="Current" />
-        <TrendTable points={result.previousPoints} label="Previous" />
-      </div>
+      <TrendChart
+        data={chartData}
+        currentLabel={currentYear}
+        previousLabel={previousYear}
+      />
     </div>
   );
 }
