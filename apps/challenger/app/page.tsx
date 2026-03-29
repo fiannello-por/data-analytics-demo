@@ -4,7 +4,8 @@ import { Suspense } from 'react';
 import { getCategoryTiles, getDefaultTileId } from '@por/dashboard-constants';
 import type { Category } from '@por/dashboard-constants';
 import { OverviewBoard } from '@/components/overview-board';
-import { FilterBar } from '@/components/filter-bar';
+import { FilterBarShell, FilterBarSkeleton } from '@/components/filter-bar-shell';
+import { FilterBarOptions } from '@/components/filter-bar-options';
 import { CategoryScorecard } from '@/components/category-scorecard';
 import { CategoryTrend } from '@/components/category-trend';
 import { ClosedWonTable } from '@/components/closed-won-table';
@@ -53,9 +54,11 @@ export default async function ChallengerPage({
 
         <TabBar state={state} />
 
-        <Suspense fallback={<div id="filter-loading">Loading filters...</div>}>
-          <FilterBar data={filtersPromise} />
-        </Suspense>
+        <FilterBarShell>
+          <Suspense fallback={<FilterBarSkeleton />}>
+            <FilterBarOptions data={filtersPromise} state={state} />
+          </Suspense>
+        </FilterBarShell>
 
         <Suspense
           fallback={<div id="overview-loading">Loading overview...</div>}
@@ -120,9 +123,11 @@ export default async function ChallengerPage({
 
       <TabBar state={state} />
 
-      <Suspense fallback={<div id="filter-loading">Loading filters...</div>}>
-        <FilterBar data={filtersPromise} />
-      </Suspense>
+      <FilterBarShell>
+        <Suspense fallback={<FilterBarSkeleton />}>
+          <FilterBarOptions data={filtersPromise} state={state} />
+        </Suspense>
+      </FilterBarShell>
 
       <section style={{ marginTop: 32 }}>
         <h2>{category}</h2>
