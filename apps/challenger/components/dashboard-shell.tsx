@@ -77,6 +77,7 @@ export function DashboardShell({
 }) {
   const [state, dispatch] = useReducer(dashboardReducer, initialState);
   const [orchestrated, setOrchestrated] = useState(false);
+  const [refreshToken, setRefreshToken] = useState(0);
   const queryClient = useQueryClient();
 
   // Track the last action's URL sync mode so the URL-sync effect knows
@@ -162,8 +163,9 @@ export function DashboardShell({
     };
     // We deliberately depend on the serialized key instead of individual
     // state fields so a single effect fires per committed-state change.
+    // refreshToken forces re-orchestration after cache clear.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stateKey, queryClient]);
+  }, [stateKey, refreshToken, queryClient]);
 
   // ── Idle-time adjacent tab prefetch ───────────────────────────────────
   // After active-tab data settles, speculatively prefetch the next tab in
@@ -272,6 +274,7 @@ export function DashboardShell({
         <ClearCacheButton
           activeTab={state.activeTab}
           category={isCategory(state.activeTab) ? state.activeTab : undefined}
+          onRefreshComplete={() => setRefreshToken((t) => t + 1)}
         />
       </div>
 

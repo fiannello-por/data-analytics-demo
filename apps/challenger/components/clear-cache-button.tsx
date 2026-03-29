@@ -18,6 +18,7 @@ import type { DashboardTab } from '@/lib/dashboard-reducer';
 export type ClearCacheButtonProps = {
   activeTab: DashboardTab;
   category: Category | undefined;
+  onRefreshComplete?: () => void;
 };
 
 // ─── Cache tag / query key helpers ──────────────────────────────────────────
@@ -55,7 +56,7 @@ function removeClientQueries(
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
-export function ClearCacheButton({ activeTab, category }: ClearCacheButtonProps) {
+export function ClearCacheButton({ activeTab, category, onRefreshComplete }: ClearCacheButtonProps) {
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
 
@@ -73,14 +74,17 @@ export function ClearCacheButton({ activeTab, category }: ClearCacheButtonProps)
         });
       }
 
-      // Step 2: purge client cache — queries re-mount automatically
+      // Step 2: purge client cache
       removeClientQueries(queryClient, activeTab, category);
+
+      // Step 3: trigger re-orchestration so hooks refetch
+      onRefreshComplete?.();
     } catch {
       // Silently ignore — data will still be stale but user can retry
     } finally {
       setRefreshing(false);
     }
-  }, [activeTab, category, queryClient]);
+  }, [activeTab, category, queryClient, onRefreshComplete]);
 
   return (
     <button

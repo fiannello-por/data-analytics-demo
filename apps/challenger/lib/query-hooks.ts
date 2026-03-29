@@ -10,6 +10,7 @@
 // Exception: `useFilterDictionaries()` is always enabled — it runs on
 // mount independently of priority ordering.
 
+import { useEffect, useRef } from 'react';
 import {
   keepPreviousData,
   useQuery,
@@ -84,13 +85,25 @@ export function useClosedWon(
   sort: ClosedWonSort,
   opts: { enabled: boolean },
 ) {
+  // Track previous category so we only use keepPreviousData for
+  // same-category page changes, not cross-category tab switches.
+  const prevCategoryRef = useRef(category);
+  const isSameCategory = prevCategoryRef.current === category;
+
+  // Update ref after the comparison
+  useEffect(() => {
+    prevCategoryRef.current = category;
+  }, [category]);
+
   return useQuery<ClosedWonResult>({
     queryKey: queryKeys.closedWon(category, filters, dateRange, page, sort),
     queryFn: queryFns.closedWon(category, filters, dateRange, page, sort),
     staleTime: STALE_1_MIN,
     enabled: opts.enabled,
-    // Keep previous page data visible while the next page loads
-    placeholderData: keepPreviousData,
+    // Keep previous page data visible only for same-category page changes.
+    // Cross-category switches should show a loading state, not stale data
+    // from the wrong category.
+    placeholderData: isSameCategory ? keepPreviousData : undefined,
   });
 }
 
