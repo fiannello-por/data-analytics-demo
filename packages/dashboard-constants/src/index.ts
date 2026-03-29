@@ -16,3 +16,11 @@ export {
   FILTER_DIMENSIONS,
   type GlobalFilterKey,
 } from './filters';
+
+export type {
+  SemanticFilter,
+  DateRange,
+  DateRangeStrategy,
+  TileSemanticSpec,
+  SnapshotGroup,
+} from './semantic-types';
