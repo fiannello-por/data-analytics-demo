@@ -1,11 +1,6 @@
 // apps/challenger/components/category-trend.tsx
 
-import { getDefaultTileId } from '@por/dashboard-constants';
-import type { Category } from '@por/dashboard-constants';
-import { loadTrend } from '@/lib/trend-loader';
-import { defaultDateRange, defaultPreviousDateRange } from '@/lib/query-builder';
-import type { ProbeCacheMode } from '@/lib/cache-mode';
-import type { TrendPoint } from '@/lib/trend-loader';
+import type { TrendPoint, TrendResult } from '@/lib/trend-loader';
 
 function TrendTable({ points, label }: { points: TrendPoint[]; label: string }) {
   return (
@@ -64,21 +59,12 @@ function TrendTable({ points, label }: { points: TrendPoint[]; label: string }) 
 }
 
 export async function CategoryTrend({
-  category,
-  cacheMode,
+  data,
 }: {
-  category: Category;
-  cacheMode: ProbeCacheMode;
+  data: Promise<TrendResult>;
 }) {
-  const tileId = getDefaultTileId(category);
-  const result = await loadTrend(
-    category,
-    tileId,
-    {},
-    defaultDateRange(),
-    defaultPreviousDateRange(),
-    cacheMode,
-  );
+  const result = await data;
+  const { category, tileId } = result;
 
   return (
     <div>

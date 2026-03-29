@@ -1,24 +1,19 @@
 // apps/challenger/components/closed-won-table.tsx
 
 import { CLOSED_WON_DIMENSIONS } from '@por/dashboard-constants';
-import type { Category } from '@por/dashboard-constants';
-import { loadClosedWon } from '@/lib/closed-won-loader';
-import { defaultDateRange } from '@/lib/query-builder';
-import type { ProbeCacheMode } from '@/lib/cache-mode';
+import type { ClosedWonResult } from '@/lib/closed-won-loader';
 
 export async function ClosedWonTable({
-  category,
-  cacheMode,
+  data,
 }: {
-  category: Category;
-  cacheMode: ProbeCacheMode;
+  data: Promise<ClosedWonResult>;
 }) {
-  const result = await loadClosedWon(category, {}, defaultDateRange(), cacheMode);
+  const result = await data;
 
   return (
     <div>
       <h3 style={{ marginBottom: 4 }}>
-        {category} Closed Won — {result.rows.length} rows, {result.queryCount}{' '}
+        {result.category} Closed Won — {result.rows.length} rows, {result.queryCount}{' '}
         queries, {result.durationMs.toFixed(0)}ms
       </h3>
       <div style={{ overflowX: 'auto' }}>

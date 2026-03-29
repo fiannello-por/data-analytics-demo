@@ -1,16 +1,15 @@
 // apps/challenger/components/overview-board.tsx
 
-import { loadOverviewBoard } from '@/lib/overview-loader';
 import { CategoryCard } from './category-card';
-import type { ProbeCacheMode } from '@/lib/cache-mode';
+import type { OverviewBoardResult } from '@/lib/overview-loader';
 
 export async function OverviewBoard({
-  cacheMode,
+  data,
 }: {
-  cacheMode: ProbeCacheMode;
+  data: Promise<OverviewBoardResult>;
 }) {
   const startMs = performance.now();
-  const { categories: results, stats } = await loadOverviewBoard(cacheMode);
+  const { categories: results, stats } = await data;
   const durationMs = performance.now() - startMs;
 
   const telemetry = {

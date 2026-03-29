@@ -1,15 +1,14 @@
 // apps/challenger/components/filter-bar.tsx
 
-import { loadFilterDictionaries } from '@/lib/dictionary-loader';
-import type { ProbeCacheMode } from '@/lib/cache-mode';
+import type { DictionaryLoaderResult } from '@/lib/dictionary-loader';
 
 export async function FilterBar({
-  cacheMode,
+  data,
 }: {
-  cacheMode: ProbeCacheMode;
+  data: Promise<DictionaryLoaderResult>;
 }) {
   const startMs = performance.now();
-  const { dictionaries, stats } = await loadFilterDictionaries(cacheMode);
+  const { dictionaries, stats } = await data;
   const durationMs = performance.now() - startMs;
 
   const telemetry = {
