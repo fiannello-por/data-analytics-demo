@@ -10,6 +10,7 @@ import {
   dashboardReducer,
   getActiveSelectedTileId,
   getActiveCwSort,
+  hasPendingDraftChanges,
   isCategory,
   type DashboardAction,
   type DashboardState,
@@ -21,6 +22,8 @@ import { parseDashboardUrl } from '@/lib/url-state';
 import { createInitialState } from '@/lib/dashboard-reducer';
 
 import { CategoryTab } from './category-tab';
+import { ClearCacheButton } from './clear-cache-button';
+import { FilterBarClient } from './filter-bar-client';
 import { TabBar } from './tab-bar';
 import { OverviewTab } from './overview-tab';
 
@@ -194,11 +197,23 @@ export function DashboardShell({
         onTabHover={handleTabHover}
       />
 
-      {/* Filter bar placeholder — Task 13 */}
-      <div data-testid="filter-bar-placeholder">Filter bar (Task 13)</div>
+      {/* Filter bar with draft state */}
+      <FilterBarClient
+        draftFilters={state.draftFilters}
+        draftDateRange={state.draftDateRange}
+        committedFilters={state.committedFilters}
+        committedDateRange={state.committedDateRange}
+        hasPendingChanges={hasPendingDraftChanges(state)}
+        dispatch={handleDispatch}
+      />
 
-      {/* Clear cache button placeholder — Task 14 */}
-      <div data-testid="clear-cache-placeholder">Clear cache (Task 14)</div>
+      {/* Clear cache button — scoped to the active tab */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0.25rem 0' }}>
+        <ClearCacheButton
+          activeTab={state.activeTab}
+          category={isCategory(state.activeTab) ? state.activeTab : undefined}
+        />
+      </div>
 
       {/* Tab content */}
       {state.activeTab === 'Overview' ? (
