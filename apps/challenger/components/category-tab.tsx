@@ -6,6 +6,7 @@ import type { Category, DashboardFilters, DateRange } from '@por/dashboard-const
 
 import type { ClosedWonSort, DashboardAction } from '@/lib/dashboard-reducer';
 
+import { ClosedWonSection } from './closed-won-section';
 import { ScorecardSection } from './scorecard-section';
 import { TrendSection } from './trend-section';
 
@@ -53,8 +54,15 @@ export function CategoryTab({
         enabled={enabled}
       />
 
-      {/* Closed-won table — Task 12 */}
-      <div data-testid="closed-won-placeholder">Closed Won (Task 12)</div>
+      <ClosedWonSection
+        category={category}
+        filters={filters}
+        dateRange={dateRange}
+        page={cwPage}
+        sort={cwSort}
+        enabled={enabled}
+        dispatch={dispatch}
+      />
     </div>
   );
 }
