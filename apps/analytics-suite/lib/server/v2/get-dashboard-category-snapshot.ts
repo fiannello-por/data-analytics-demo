@@ -6,7 +6,10 @@ import {
   getSnapshotGroups,
   buildSnapshotGroupQuery,
 } from '@/lib/dashboard-v2/semantic-registry';
-import type { Category } from '@/lib/dashboard/catalog';
+import {
+  type Category,
+  findTileDefinition,
+} from '@/lib/dashboard/catalog';
 import { formatDateRange } from '@/lib/dashboard/date-range';
 import { serializeDashboardStateKey } from '@/lib/dashboard/query-inputs';
 import type {
@@ -89,7 +92,11 @@ export async function getDashboardV2CategorySnapshot(
 
         const backendTrace = await buildTileBackendTrace({
           kind: 'composite',
-          includes: group.tiles.map((tile) => tile.label),
+          includes: group.tiles.map(
+            (tile) =>
+              findTileDefinition(input.activeCategory, tile.tileId)?.label ??
+              tile.tileId,
+          ),
           executions: [
             {
               label: 'Current window',
@@ -111,6 +118,12 @@ export async function getDashboardV2CategorySnapshot(
     const rows = groupResults.flatMap(
       ({ group, current, previous, backendTrace }) =>
         group.tiles.map((tile) => {
+          const tileDef = findTileDefinition(input.activeCategory, tile.tileId);
+          if (!tileDef) {
+            throw new Error(
+              `Tile definition not found for tileId "${tile.tileId}" in category "${input.activeCategory}"`,
+            );
+          }
           const currentRow = current.rows[0];
           const previousRow = previous.rows[0];
           const currentValue = getSemanticNumber(currentRow, tile.measure);
@@ -118,11 +131,11 @@ export async function getDashboardV2CategorySnapshot(
 
           return {
             tileId: tile.tileId,
-            label: tile.label,
-            sortOrder: tile.sortOrder,
-            formatType: tile.formatType,
-            currentValue: formatMetricValue(currentValue, tile.formatType),
-            previousValue: formatMetricValue(previousValue, tile.formatType),
+            label: tileDef.label,
+            sortOrder: tileDef.sortOrder,
+            formatType: tileDef.formatType,
+            currentValue: formatMetricValue(currentValue, tileDef.formatType),
+            previousValue: formatMetricValue(previousValue, tileDef.formatType),
             pctChange: formatPctChange(currentValue, previousValue),
             backendTrace,
             durationMs: current.totalDurationMs + previous.totalDurationMs,
