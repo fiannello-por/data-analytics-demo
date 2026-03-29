@@ -79,16 +79,38 @@ query execution, and priority-ordered loading.
    plain `<a>` tags — no client-side routing. Single `page.tsx` reads
    `searchParams.tab` and conditionally renders the active tab's content.
 
-2. **Query priority system** — Declarative per-tab manifest controls the
-   order loaders are submitted to the FIFO concurrency limiter. No limiter
-   changes needed — submission order is the priority mechanism.
+2. **Query priority system** — The page component eagerly creates loader
+   promises in manifest order before rendering any Suspense boundaries.
+   This is the priority mechanism: by calling loaders sequentially at the
+   top of the page's async function, higher-priority loaders submit their
+   queries to the FIFO concurrency limiter first. The resulting promises
+   are then passed as props to child server components, which `await` them
+   inside their Suspense boundaries.
+
+   ```tsx
+   // page.tsx (simplified)
+   const scorecardPromise = loadScorecard(category, ...);  // submits first
+   const trendPromise = loadTrend(category, ...);          // submits second
+   const closedWonPromise = loadClosedWon(category, ...);  // submits third
+   const filtersPromise = loadFilters(...);                 // submits last
+
+   return (
+     <>
+       <Suspense fallback={...}><Scorecard data={scorecardPromise} /></Suspense>
+       <Suspense fallback={...}><Trend data={trendPromise} /></Suspense>
+       ...
+     </>
+   );
+   ```
+
+   This avoids relying on React's render traversal order. The page owns
+   submission order explicitly. Components receive promises, not loaders.
 
    Overview tab: overview board (1) → filters (2).
    Category tabs: scorecard (1) → trend (2) → closed-won (3) → filters (4).
 
-   The manifest is a plain config array. Reordering for 4b-3 is changing a
-   number. The page starts loaders in manifest order; Suspense boundaries
-   render independently as data arrives.
+   The manifest is a plain config array. Reordering for 4b-3 is changing
+   the call sequence.
 
 3. **Filter bar shell-then-data** — The filter bar layout (labels +
    disabled dropdown buttons) renders synchronously as part of the shell
@@ -137,12 +159,13 @@ query execution, and priority-ordered loading.
    | Metric | Target | How measured |
    |--------|--------|-------------|
    | TTFB (full-cold p50) | < 50ms | Playwright harness |
-   | Total load per tab (full-cold p50) | < 4s | Playwright, overview + one category tab |
+   | Total load per tab (full-cold p50) | < 4s | Playwright, all 6 tabs measured |
    | Tab content complete | All Suspense resolved | Playwright waits for data-testid markers |
    | Filter dictionaries populated | All 16 | Playwright checks dropdown option counts |
 
-   5 runs per mode × 2 tabs = 10 runs minimum. Both tabs must independently
-   meet the < 4s gate.
+   5 runs per mode × 6 tabs = 30 runs minimum. Every tab must independently
+   meet the < 4s gate. Category tabs have different tile counts (New Logo
+   has 13 tiles, Total has 4) — measuring all 6 ensures the worst case passes.
 
 9. **Telemetry waterfall visualization** — Per-query timing captured and
    rendered as a horizontal bar chart on a dev-only `/waterfall` route.
@@ -429,6 +452,7 @@ apps/challenger/
 
 ### Dependencies
 
+Phase 4a/4b-1 dependencies:
 ```json
 {
   "dependencies": {
@@ -443,9 +467,18 @@ apps/challenger/
 }
 ```
 
+Phase 4b-2 adds:
+```json
+{
+  "dependencies": {
+    "recharts": "^2.15.0"
+  }
+}
+```
+
 Notably absent: `@google-cloud/bigquery`, `@por/semantic-runtime`,
-`server-only`. The only external dependency beyond Next.js/React is the
-Lightdash API (HTTP calls via `fetch`).
+`server-only`. External dependencies beyond Next.js/React are recharts
+(trend charts, Phase 4b-2) and the Lightdash API (HTTP calls via `fetch`).
 
 ### SSR Page (Phase 4a)
 
@@ -609,7 +642,7 @@ query count.
 | Metric | Target | How measured |
 |--------|--------|-------------|
 | TTFB (full-cold p50) | < 50ms | Playwright harness |
-| Total load per tab (full-cold p50) | < 4s | Playwright harness, overview + one category tab |
+| Total load per tab (full-cold p50) | < 4s | Playwright harness, all 6 tabs measured independently |
 | All tabs functional | 6 tabs render correctly | Automated URL navigation |
 | Interactive filters | Filter changes produce different values | Parity script smoke test |
 | Closed-won pagination | Pages return correct subsets | Parity script page navigation |
