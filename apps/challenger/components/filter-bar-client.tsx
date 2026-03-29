@@ -224,7 +224,6 @@ function FilterBarSkeleton() {
 export function FilterBarClient({
   draftFilters,
   draftDateRange,
-  committedDateRange,
   hasPendingChanges,
   dispatch,
 }: FilterBarClientProps) {
@@ -243,6 +242,26 @@ export function FilterBarClient({
     [draftFilters, dispatch],
   );
 
+  const handleStartDateChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      dispatch({
+        type: 'SET_DRAFT_DATE_RANGE',
+        dateRange: { ...draftDateRange, startDate: e.target.value },
+      });
+    },
+    [draftDateRange, dispatch],
+  );
+
+  const handleEndDateChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      dispatch({
+        type: 'SET_DRAFT_DATE_RANGE',
+        dateRange: { ...draftDateRange, endDate: e.target.value },
+      });
+    },
+    [draftDateRange, dispatch],
+  );
+
   function handleApply() {
     dispatch({ type: 'APPLY_FILTERS' });
   }
@@ -259,31 +278,50 @@ export function FilterBarClient({
     }
   }
 
-  const dateLabel = `${committedDateRange.startDate} - ${committedDateRange.endDate}`;
+  const inputStyle: React.CSSProperties = {
+    fontSize: '0.8rem',
+    padding: '0.25rem 0.5rem',
+    border: '1px solid #ccc',
+    borderRadius: '4px',
+    background: '#fff',
+  };
+
+  const labelStyle: React.CSSProperties = {
+    fontSize: '0.75rem',
+    color: '#555',
+    marginRight: '0.25rem',
+  };
 
   return (
     <div data-testid="filter-bar" style={{ padding: '0.5rem 0' }}>
-      {/* Date range display */}
+      {/* Date range inputs */}
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
           gap: '0.75rem',
           marginBottom: '0.5rem',
+          flexWrap: 'wrap',
         }}
       >
-        <span
-          style={{
-            fontSize: '0.8rem',
-            color: '#555',
-            background: '#f5f5f5',
-            padding: '0.25rem 0.75rem',
-            borderRadius: '4px',
-            border: '1px solid #ddd',
-          }}
-        >
-          {dateLabel}
-        </span>
+        <label style={{ display: 'flex', alignItems: 'center' }}>
+          <span style={labelStyle}>Start Date</span>
+          <input
+            type="date"
+            value={draftDateRange.startDate}
+            onChange={handleStartDateChange}
+            style={inputStyle}
+          />
+        </label>
+        <label style={{ display: 'flex', alignItems: 'center' }}>
+          <span style={labelStyle}>End Date</span>
+          <input
+            type="date"
+            value={draftDateRange.endDate}
+            onChange={handleEndDateChange}
+            style={inputStyle}
+          />
+        </label>
 
         {/* Pending changes indicator + Apply / Cancel */}
         {hasPendingChanges && (

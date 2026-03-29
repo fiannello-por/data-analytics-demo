@@ -49,13 +49,6 @@ export async function stopServer(): Promise<void> {
   await new Promise((r) => setTimeout(r, 500));
 }
 
-export async function restartServer(): Promise<void> {
-  await stopServer();
-  await startServer();
-}
-
-type RunMode = 'full-cold' | 'production-cold' | 'warm';
-
 export type TabName = 'Overview' | 'New Logo' | 'Expansion' | 'Migration' | 'Renewal' | 'Total';
 
 export const ALL_TABS: TabName[] = [
@@ -75,14 +68,7 @@ export const CATEGORY_TABS: TabName[] = [
   'Total',
 ];
 
-export function buildUrl(runMode: RunMode, runId: string, tab?: TabName): string {
-  const tabParam = tab ? `&tab=${encodeURIComponent(tab)}` : '';
-  const base = `${BASE_URL}/?runId=${runId}${tabParam}`;
-  if (runMode === 'full-cold') return `${base}&cacheMode=off`;
-  return base;
-}
-
-/** Build a simple URL with only a tab parameter (for 4b-3 client-side tests). */
+/** Build a simple URL with only a tab parameter (for client-side tests). */
 export function buildTabUrl(tab?: TabName): string {
   if (!tab || tab === 'Overview') return `${BASE_URL}/`;
   return `${BASE_URL}/?tab=${encodeURIComponent(tab)}`;
@@ -97,64 +83,7 @@ export type BrowserMetrics = {
   totalPageLoadMs: number;
 };
 
-export type WaterfallSpan = {
-  name: string;
-  startMs: number;
-  durationMs: number;
-};
-
-export type ServerTelemetry = {
-  overviewDurationMs?: number;
-  overviewActualQueryCount?: number;
-  overviewTotalExecutionMs?: number;
-  filterDurationMs: number;
-  filterActualQueryCount: number;
-  filterTotalExecutionMs: number;
-  cacheMode: string;
-  tab?: string;
-  waterfall?: WaterfallSpan[];
-};
-
-/**
- * Collect browser metrics (4b-2 style) — waits for the server-rendered
- * WaterfallInjector's `all-data-loaded` marker.
- */
-export async function collectBrowserMetrics(
-  page: Page,
-  tab: TabName = 'Overview',
-): Promise<BrowserMetrics> {
-  // Wait for the WaterfallInjector's all-data-loaded marker, which fires
-  // after Promise.allSettled on every loader promise (filters, overview,
-  // scorecard groups, trend, closed-won). This is a single robust signal
-  // that all data has streamed in for any tab.
-  await page.waitForSelector('[data-testid="all-data-loaded"]', {
-    timeout: 120_000,
-  });
-
-  return page.evaluate(() => {
-    const nav = performance.getEntriesByType(
-      'navigation',
-    )[0] as PerformanceNavigationTiming;
-    const paintEntries = performance.getEntriesByType('paint');
-    const fcp = paintEntries.find(
-      (e) => e.name === 'first-contentful-paint',
-    )?.startTime;
-    const lcpEntries = performance.getEntriesByType(
-      'largest-contentful-paint',
-    ) as Array<{ startTime: number }>;
-    const lcp =
-      lcpEntries.length > 0 ? lcpEntries[lcpEntries.length - 1].startTime : 0;
-
-    return {
-      ttfbMs: nav.responseStart - nav.requestStart,
-      fcpMs: fcp ?? 0,
-      lcpMs: lcp,
-      totalPageLoadMs: nav.loadEventEnd - nav.requestStart,
-    };
-  });
-}
-
-// ─── 4b-3 client-side helpers ─────────────────────────────────────────────────
+// ─── Client-side helpers ──────────────────────────────────────────────────────
 
 /**
  * Wait for section-ready markers to appear in the active tab.
@@ -267,11 +196,3 @@ export async function getActiveTabName(page: Page): Promise<string> {
   });
 }
 
-export async function collectServerTelemetry(
-  page: Page,
-): Promise<ServerTelemetry> {
-  return page.evaluate(() => {
-    return (window as unknown as { __CHALLENGER_TELEMETRY__: ServerTelemetry })
-      .__CHALLENGER_TELEMETRY__;
-  });
-}

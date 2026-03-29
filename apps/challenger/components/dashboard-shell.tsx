@@ -141,25 +141,23 @@ export function DashboardShell({
   }, []);
 
   // ── Fetch orchestration ────────────────────────────────────────────────
-  // When committed state changes, orchestrate prefetches. All fetches run
-  // in parallel — submission order gives scorecard priority in the server
-  // concurrency limiter, but no fetch blocks another. Each section renders
-  // independently as its query resolves (no orchestrated gate).
+  // Called synchronously during render (before hooks in child components
+  // fire) so that prefetch queries enter the TanStack Query cache first.
+  // `prefetchQuery` initiation is synchronous — it adds the query to the
+  // cache and starts the fetch immediately. Hooks in children will
+  // deduplicate against these in-flight queries.
 
   const stateKey = committedStateKey(state);
-  const orchestratedRef = useRef(false);
+  const fullKey = `${stateKey}:${refreshToken}`;
+  const prevOrchestrateKeyRef = useRef('');
 
-  useEffect(() => {
-    orchestratedRef.current = false;
+  if (prevOrchestrateKeyRef.current !== fullKey) {
+    prevOrchestrateKeyRef.current = fullKey;
     resetTimingStore();
-
-    orchestratePrefetch(queryClient, state).then(() => {
-      orchestratedRef.current = true;
-    });
-
-    // refreshToken forces re-orchestration after cache clear.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stateKey, refreshToken, queryClient]);
+    // Fire-and-forget: initiation is synchronous, starts the fetch.
+    // Hooks will deduplicate against these in-flight queries.
+    void orchestratePrefetch(queryClient, state);
+  }
 
   // ── Idle-time adjacent tab prefetch ───────────────────────────────────
   // After active-tab data settles, speculatively prefetch the next tab in
