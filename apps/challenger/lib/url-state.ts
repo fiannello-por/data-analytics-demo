@@ -25,6 +25,7 @@ export type DashboardUrlState = {
   filters: DashboardFilters;
   dateRange: DateRange;
   previousDateRange: DateRange;
+  tile?: string;
   cwPage: number;
   cwPageSize: number;
   cwSort: ClosedWonSort;
@@ -120,11 +121,15 @@ export function parseDashboardUrl(params: SearchParams): DashboardUrlState {
     rawCwDir === 'asc' || rawCwDir === 'desc' ? rawCwDir : 'desc';
   const cwSort: ClosedWonSort = { field: cwSortField, direction: cwDir };
 
+  // tile — optional selected tile ID
+  const tile = getParam(params, 'tile');
+
   return {
     tab,
     filters,
     dateRange,
     previousDateRange,
+    tile,
     cwPage,
     cwPageSize,
     cwSort,

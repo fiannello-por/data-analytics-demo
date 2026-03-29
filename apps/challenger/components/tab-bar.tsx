@@ -1,7 +1,9 @@
 // apps/challenger/components/tab-bar.tsx
 
+'use client';
+
 import { CATEGORY_ORDER } from '@por/dashboard-constants';
-import { buildTabUrl, type DashboardTab, type DashboardUrlState } from '@/lib/url-state';
+import type { DashboardTab } from '@/lib/dashboard-reducer';
 
 const ALL_TABS: DashboardTab[] = ['Overview', ...CATEGORY_ORDER];
 
@@ -9,7 +11,15 @@ function toSlug(tab: DashboardTab): string {
   return tab.toLowerCase().replace(/\s+/g, '-');
 }
 
-export function TabBar({ state }: { state: DashboardUrlState }) {
+export function TabBar({
+  activeTab,
+  onTabClick,
+  onTabHover,
+}: {
+  activeTab: DashboardTab;
+  onTabClick: (tab: DashboardTab) => void;
+  onTabHover: (tab: DashboardTab) => void;
+}) {
   return (
     <nav
       style={{
@@ -19,11 +29,13 @@ export function TabBar({ state }: { state: DashboardUrlState }) {
       }}
     >
       {ALL_TABS.map((tab) => {
-        const isActive = state.tab === tab;
+        const isActive = activeTab === tab;
         return (
-          <a
+          <button
             key={tab}
-            href={buildTabUrl(tab, state)}
+            type="button"
+            onClick={() => onTabClick(tab)}
+            onMouseEnter={() => onTabHover(tab)}
             data-testid={`tab-${toSlug(tab)}`}
             style={{
               padding: '0.75rem 1.25rem',
@@ -31,13 +43,21 @@ export function TabBar({ state }: { state: DashboardUrlState }) {
               fontSize: '0.9rem',
               fontWeight: isActive ? '600' : '400',
               color: isActive ? '#2563eb' : '#6b7280',
-              borderBottom: isActive ? '2px solid #2563eb' : '2px solid transparent',
+              borderBottom: isActive
+                ? '2px solid #2563eb'
+                : '2px solid transparent',
               marginBottom: '-1px',
               whiteSpace: 'nowrap',
+              background: 'none',
+              border: 'none',
+              borderBottomWidth: '2px',
+              borderBottomStyle: 'solid',
+              borderBottomColor: isActive ? '#2563eb' : 'transparent',
+              cursor: 'pointer',
             }}
           >
             {tab}
-          </a>
+          </button>
         );
       })}
     </nav>
