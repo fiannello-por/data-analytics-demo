@@ -1,12 +1,12 @@
 // apps/challenger/app/page.tsx
 
 import { Suspense } from 'react';
-import { getCategoryTiles, getDefaultTileId, GLOBAL_FILTER_KEYS } from '@por/dashboard-constants';
+import { getCategoryTiles, getDefaultTileId, getSnapshotGroups, GLOBAL_FILTER_KEYS } from '@por/dashboard-constants';
 import type { Category, GlobalFilterKey } from '@por/dashboard-constants';
 import { OverviewBoard } from '@/components/overview-board';
 import { FilterBarShell, FilterButtonSkeleton } from '@/components/filter-bar-shell';
 import { SingleFilter } from '@/components/single-filter';
-import { CategoryScorecard } from '@/components/category-scorecard';
+import { ScorecardGroup } from '@/components/scorecard-group';
 import { CategoryTrend } from '@/components/category-trend';
 import { ClosedWonTable } from '@/components/closed-won-table';
 import { TabBar } from '@/components/tab-bar';
@@ -15,7 +15,7 @@ import { parseCacheMode } from '@/lib/cache-mode';
 import { parseDashboardUrl } from '@/lib/url-state';
 import { loadOverviewBoard } from '@/lib/overview-loader';
 import { loadSingleFilter } from '@/lib/single-filter-loader';
-import { loadScorecard } from '@/lib/scorecard-loader';
+import { loadScorecardGroup } from '@/lib/scorecard-group-loader';
 import { loadTrend } from '@/lib/trend-loader';
 import { loadClosedWon } from '@/lib/closed-won-loader';
 import { WaterfallCollector } from '@/lib/waterfall-types';
@@ -105,15 +105,20 @@ export default async function ChallengerPage({
   // CATEGORY_MANIFEST priority: scorecard(1), trend(2), closedWon(3), filters(4)
   const tileIds = getCategoryTiles(category).map((t) => t.tileId);
   const defaultTileId = getDefaultTileId(category);
+  const snapshotGroups = getSnapshotGroups(tileIds);
 
-  const scorecardPromise = loadScorecard(
-    category,
-    tileIds,
-    state.filters,
-    state.dateRange,
-    state.previousDateRange,
-    cacheMode,
-    collector,
+  // Per-group scorecard promises — each streams independently
+  const scorecardGroupPromises = snapshotGroups.map((group, i) =>
+    loadScorecardGroup(
+      category,
+      group,
+      i,
+      state.filters,
+      state.dateRange,
+      state.previousDateRange,
+      cacheMode,
+      collector,
+    ),
   );
   const trendPromise = loadTrend(
     category,
@@ -140,7 +145,7 @@ export default async function ChallengerPage({
     loadSingleFilter(key, cacheMode, collector, 4),
   );
   const allPromises: Promise<unknown>[] = [
-    scorecardPromise,
+    ...scorecardGroupPromises,
     trendPromise,
     closedWonPromise,
     ...filterPromises,
@@ -169,11 +174,41 @@ export default async function ChallengerPage({
       <section style={{ marginTop: 32 }}>
         <h2>{category}</h2>
 
-        <Suspense
-          fallback={<div>Loading {category} scorecard...</div>}
-        >
-          <CategoryScorecard data={scorecardPromise} />
-        </Suspense>
+        <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 13 }} data-testid="section-ready">
+          <thead>
+            <tr>
+              {['Tile ID', 'Current', 'Previous', '% Change'].map((h) => (
+                <th
+                  key={h}
+                  style={{
+                    border: '1px solid #ccc',
+                    padding: '4px 8px',
+                    textAlign: 'left',
+                    background: '#f5f5f5',
+                  }}
+                >
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {scorecardGroupPromises.map((promise, i) => (
+              <Suspense
+                key={i}
+                fallback={
+                  <tr>
+                    <td colSpan={4} style={{ border: '1px solid #ccc', padding: '4px 8px', color: '#999' }}>
+                      Loading group {i + 1}...
+                    </td>
+                  </tr>
+                }
+              >
+                <ScorecardGroup data={promise} />
+              </Suspense>
+            ))}
+          </tbody>
+        </table>
 
         <div style={{ marginTop: 16 }}>
           <Suspense
