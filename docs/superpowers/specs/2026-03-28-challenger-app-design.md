@@ -67,16 +67,115 @@ for the same date range. No query shape unsupported.
 
 #### Phase 4b-2: Streaming Architecture
 
-Builds a streaming-first dashboard shell on top of the proven data layer.
-Server components with per-section Suspense boundaries.
+Builds a streaming-first dashboard on top of the proven data layer.
+Server components with per-section Suspense boundaries, tab-scoped
+query execution, and priority-ordered loading.
 
-- Tab navigation (Overview + 5 categories) via URL params
-- Per-tab Suspense boundaries that stream independently
-- Interactive filter bar with server-side re-render
-- Trend charts (recharts or lightweight alternative)
-- Closed-won table with sorting
+**Topics (implementation order):**
 
-**Gate:** Full-cold total load < 4s for complete dashboard. TTFB < 50ms.
+1. **Tab navigation** — URL search params (`?tab=New+Logo`) + server
+   re-render. Overview tab shows 5 category cards (10 queries). Category
+   tabs show scorecard + trend + closed-won (8-15 queries). Tab links are
+   plain `<a>` tags — no client-side routing. Single `page.tsx` reads
+   `searchParams.tab` and conditionally renders the active tab's content.
+
+2. **Query priority system** — Declarative per-tab manifest controls the
+   order loaders are submitted to the FIFO concurrency limiter. No limiter
+   changes needed — submission order is the priority mechanism.
+
+   Overview tab: overview board (1) → filters (2).
+   Category tabs: scorecard (1) → trend (2) → closed-won (3) → filters (4).
+
+   The manifest is a plain config array. Reordering for 4b-3 is changing a
+   number. The page starts loaders in manifest order; Suspense boundaries
+   render independently as data arrives.
+
+3. **Filter bar shell-then-data** — The filter bar layout (labels +
+   disabled dropdown buttons) renders synchronously as part of the shell
+   HTML. A nested Suspense loads the 16 dictionary queries at lowest
+   priority. Dropdowns become enabled when options arrive. No "Loading..."
+   text — just inactive UI that comes alive.
+
+4. **Interactive filters** — Filter selections serialize into URL params
+   (`?tab=New+Logo&Division=East,West`). Applying filters navigates to
+   the new URL, triggering a full server re-render of the active tab with
+   filtered data. Date range is also URL-driven (`?startDate=...&endDate=...`),
+   defaulting to current YTD if omitted.
+
+   One small `"use client"` component handles dropdown interaction
+   (checking options, constructing the apply URL). This is presentation JS,
+   not data-fetching state. The URL is the single source of truth.
+
+5. **Trend charts** — Replace HTML trend tables with recharts line charts.
+   Two series: current window (solid) and previous window (dashed).
+   Data loading stays in a server component (`CategoryTrend`); the chart
+   itself is a `"use client"` leaf component (`TrendChart`) receiving
+   points as props. recharts is already a production dependency.
+
+6. **Closed-won server-side pagination** — Lightdash v2 caches query
+   results and supports `pageSize` + `page` on the poll endpoint without
+   re-scanning BigQuery (confirmed via live test: 138 rows paginated into
+   3 pages of 50, different rows per page, instant response).
+
+   Implementation: submit the query once, poll page 1 (50 rows). Page
+   navigation adds `?cwPage=2` to the URL, triggering a server re-render.
+   The loader re-submits the same query (Lightdash cache hit, ~100ms),
+   then polls the requested page. `unstable_cache` wraps the submission
+   so repeated page navigations within 60s skip the submit entirely.
+
+   Loader signature: `loadClosedWon(category, filters, dateRange, page,
+   pageSize, cacheMode)`.
+
+7. **Closed-won table sorting** — Column-header clicks add sort params
+   to the URL (`?cwSort=close_date&cwDir=desc`). The loader passes sort
+   field and direction to `buildV2ClosedWonQuery`. Changing sort resets
+   to page 1. Lightdash handles numeric vs lexicographic sorting based
+   on dimension type definitions. Default: `close_date` descending.
+
+8. **Performance gate** — Per-tab measurement:
+
+   | Metric | Target | How measured |
+   |--------|--------|-------------|
+   | TTFB (full-cold p50) | < 50ms | Playwright harness |
+   | Total load per tab (full-cold p50) | < 4s | Playwright, overview + one category tab |
+   | Tab content complete | All Suspense resolved | Playwright waits for data-testid markers |
+   | Filter dictionaries populated | All 16 | Playwright checks dropdown option counts |
+
+   5 runs per mode × 2 tabs = 10 runs minimum. Both tabs must independently
+   meet the < 4s gate.
+
+9. **Telemetry waterfall visualization** — Per-query timing captured and
+   rendered as a horizontal bar chart on a dev-only `/waterfall` route.
+
+   Per-query span data:
+   - Concurrency limiter wait time (queued → slot opened)
+   - App-side submit latency (POST round-trip)
+   - App-side poll latency (first poll → "ready")
+   - Lightdash `initialQueryExecutionMs` (from response)
+   - Lightdash `resultsPageExecutionMs` (from response)
+   - Lightdash `cacheHit` (boolean)
+
+   Spans grouped by section (scorecard, trend, closed-won, filters) on
+   the Y-axis. Time from page start on the X-axis. Concurrency waves
+   visible as clusters of bars starting together.
+
+   Data injected into `window.__CHALLENGER_TELEMETRY__.waterfall` as JSON.
+   The `/waterfall` page is a `"use client"` component that reads and
+   renders it. Also extractable by the Playwright harness for reports.
+
+   Note: Lightdash does not expose compile vs BQ execution as separate
+   timings — `initialQueryExecutionMs` bundles both. This is a Lightdash
+   internals limitation.
+
+10. **Metric completeness pass** — After topics 1-9 pass, audit the
+    challenger against the production dashboard to verify every metric in
+    `TILE_CATALOG` renders with correct data on the correct tab. Extend
+    the parity validation script to verify: each tab renders without
+    errors via direct URL navigation, filter application changes values,
+    and closed-won pagination returns correct page counts.
+
+**Gate:** Full-cold total load < 4s per tab. TTFB < 50ms. All metrics
+present. Waterfall report generated.
 
 #### Phase 4b-3: Full UI Parity
 
@@ -508,9 +607,14 @@ query count.
 | Metric | Target | How measured |
 |--------|--------|-------------|
 | TTFB (full-cold p50) | < 50ms | Playwright harness |
-| Total load (full-cold p50) | < 4s | Playwright harness, single tab |
-| All tabs functional | 6 tabs render correctly | Automated navigation test |
-| Interactive filters | Filter changes re-render data | Manual verification |
+| Total load per tab (full-cold p50) | < 4s | Playwright harness, overview + one category tab |
+| All tabs functional | 6 tabs render correctly | Automated URL navigation |
+| Interactive filters | Filter changes produce different values | Parity script smoke test |
+| Closed-won pagination | Pages return correct subsets | Parity script page navigation |
+| Trend charts render | recharts line chart visible | Playwright screenshot |
+| Filter bar shell-then-data | Dropdowns disabled → enabled | Playwright timing |
+| Telemetry waterfall | Report generated | Playwright extracts waterfall JSON |
+| Metric completeness | All TILE_CATALOG tiles present | Parity script per-tab audit |
 
 ### Phase 4b-3 Gate (Full UI Parity — Satisfies Original Phase 4)
 
@@ -553,6 +657,28 @@ full dashboard" achieving target performance and feature parity.
 - No charts or visualizations (HTML tables only)
 - No URL state management
 - No performance gate (deferred to 4b-2)
+
+### What's in Phase 4b-2 (Streaming Architecture)
+
+- Tab navigation via URL params (server re-render per tab change)
+- Query priority manifest (scorecard → trend → closed-won → filters)
+- Filter bar shell-then-data (layout immediate, options streamed last)
+- Interactive filters via URL params (apply = navigate to new URL)
+- Trend charts via recharts (client component receiving server data)
+- Closed-won server-side pagination (v2 cursor-based, 50 rows/page)
+- Closed-won column sorting via URL params
+- Performance gate: < 4s per tab, < 50ms TTFB
+- Telemetry waterfall visualization (per-query spans, dev-only route)
+- Metric completeness audit (all TILE_CATALOG tiles on correct tabs)
+
+### What's NOT in Phase 4b-2
+
+- No client-side state management (URL is single source of truth)
+- No optimistic updates (every interaction is a server round-trip)
+- No prefetching of adjacent tabs
+- No TanStack table (plain HTML table with sort links)
+- No filter draft state (selections apply immediately)
+- No production component naming conventions (own structure)
 
 ### What IS in Phase 4a
 
