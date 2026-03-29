@@ -119,7 +119,7 @@ query execution, and priority-ordered loading.
    text — just inactive UI that comes alive.
 
 4. **Interactive filters** — Filter selections serialize into URL params
-   (`?tab=New+Logo&Division=East,West`). Applying filters navigates to
+   (`?tab=New+Logo&Division=East&Division=West`). Applying filters navigates to
    the new URL, triggering a full server re-render of the active tab with
    filtered data. Date range is also URL-driven (`?startDate=...&endDate=...`),
    defaulting to current YTD if omitted.

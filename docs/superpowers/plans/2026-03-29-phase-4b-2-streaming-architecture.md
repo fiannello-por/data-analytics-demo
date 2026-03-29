@@ -117,9 +117,13 @@ function parseFilters(
   for (const key of GLOBAL_FILTER_KEYS) {
     const raw = params[key];
     if (!raw) continue;
-    const str = typeof raw === 'string' ? raw : raw[0];
-    if (!str) continue;
-    filters[key] = str.split(',').filter(Boolean);
+    // Next.js gives string for single value, string[] for repeated params
+    // e.g. ?Division=East&Division=West → ['East', 'West']
+    const values = Array.isArray(raw) ? raw : [raw];
+    const filtered = values.filter(Boolean);
+    if (filtered.length > 0) {
+      filters[key] = filtered;
+    }
   }
   return filters;
 }
@@ -153,23 +157,37 @@ export function parseDashboardUrl(
   };
 }
 
+// Shared helper: appends the common state (tab, filters, dateRange) to params.
+// Filters use repeated params (e.g. ?Division=East&Division=West) to avoid
+// comma-splitting ambiguity with values that contain commas.
+function appendBaseState(
+  params: URLSearchParams,
+  state: DashboardUrlState,
+  tab?: DashboardTab,
+): void {
+  params.set('tab', tab ?? state.tab);
+  const defRange = defaultDateRange();
+  if (state.dateRange.startDate !== defRange.startDate ||
+      state.dateRange.endDate !== defRange.endDate) {
+    params.set('startDate', state.dateRange.startDate);
+    params.set('endDate', state.dateRange.endDate);
+  }
+  for (const key of GLOBAL_FILTER_KEYS) {
+    const values = state.filters[key];
+    if (values?.length) {
+      for (const v of values) {
+        params.append(key, v);
+      }
+    }
+  }
+}
+
 export function buildTabUrl(
   tab: DashboardTab,
   current: DashboardUrlState,
 ): string {
   const params = new URLSearchParams();
-  params.set('tab', tab);
-  if (current.dateRange.startDate !== defaultDateRange().startDate ||
-      current.dateRange.endDate !== defaultDateRange().endDate) {
-    params.set('startDate', current.dateRange.startDate);
-    params.set('endDate', current.dateRange.endDate);
-  }
-  for (const key of GLOBAL_FILTER_KEYS) {
-    const values = current.filters[key];
-    if (values?.length) {
-      params.set(key, values.join(','));
-    }
-  }
+  appendBaseState(params, current, tab);
   return `/?${params.toString()}`;
 }
 
@@ -185,16 +203,7 @@ export function buildCwPageUrl(
   page: number,
 ): string {
   const params = new URLSearchParams();
-  params.set('tab', current.tab);
-  for (const key of GLOBAL_FILTER_KEYS) {
-    const values = current.filters[key];
-    if (values?.length) params.set(key, values.join(','));
-  }
-  if (current.dateRange.startDate !== defaultDateRange().startDate ||
-      current.dateRange.endDate !== defaultDateRange().endDate) {
-    params.set('startDate', current.dateRange.startDate);
-    params.set('endDate', current.dateRange.endDate);
-  }
+  appendBaseState(params, current);
   params.set('cwPage', String(page));
   params.set('cwSort', current.cwSort.field);
   params.set('cwDir', current.cwSort.descending ? 'desc' : 'asc');
@@ -207,16 +216,7 @@ export function buildCwSortUrl(
 ): string {
   const descending = current.cwSort.field === field ? !current.cwSort.descending : true;
   const params = new URLSearchParams();
-  params.set('tab', current.tab);
-  for (const key of GLOBAL_FILTER_KEYS) {
-    const values = current.filters[key];
-    if (values?.length) params.set(key, values.join(','));
-  }
-  if (current.dateRange.startDate !== defaultDateRange().startDate ||
-      current.dateRange.endDate !== defaultDateRange().endDate) {
-    params.set('startDate', current.dateRange.startDate);
-    params.set('endDate', current.dateRange.endDate);
-  }
+  appendBaseState(params, current);
   params.set('cwSort', field);
   params.set('cwDir', descending ? 'desc' : 'asc');
   // Sort change resets to page 1 — no cwPage param
