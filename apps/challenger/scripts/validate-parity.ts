@@ -82,24 +82,37 @@ async function validateScorecard(
   const tileIds = tiles.map((t) => t.tileId);
   const groups = getSnapshotGroups(tileIds);
 
-  // Collect v2 values per tile by running each snapshot group query
-  const v2Values = new Map<string, string>();
+  // Collect v2 current and previous values per tile by running each snapshot group query
+  const v2CurrentValues = new Map<string, string>();
+  const v2PreviousValues = new Map<string, string>();
   for (const group of groups) {
-    const query = buildV2SnapshotGroupQuery(category, {}, dateRange, group);
-    const result = await executeMetricQuery(query);
-    const row = result.rows[0];
-    if (!row) continue;
+    const currentQuery = buildV2SnapshotGroupQuery(category, {}, dateRange, group);
+    const previousQuery = buildV2SnapshotGroupQuery(category, {}, previousDateRange, group);
+    const [currentResult, previousResult] = await Promise.all([
+      executeMetricQuery(currentQuery),
+      executeMetricQuery(previousQuery),
+    ]);
+    const currentRow = currentResult.rows[0];
+    const previousRow = previousResult.rows[0];
     for (const tile of group.tiles) {
       const fieldId = `${DASHBOARD_V2_BASE_MODEL}_${tile.measure}`;
-      const cell = row[fieldId];
-      if (cell) {
-        v2Values.set(tile.tileId, cell.value.formatted);
+      if (currentRow) {
+        const cell = currentRow[fieldId];
+        if (cell) {
+          v2CurrentValues.set(tile.tileId, cell.value.formatted);
+        }
+      }
+      if (previousRow) {
+        const cell = previousRow[fieldId];
+        if (cell) {
+          v2PreviousValues.set(tile.tileId, cell.value.formatted);
+        }
       }
     }
   }
 
   // Fetch production values
-  type ProdScorecardRow = { tileId: string; currentValue: string };
+  type ProdScorecardRow = { tileId: string; currentValue: string; previousValue: string };
   type ProdScorecardResponse = { rows: ProdScorecardRow[] };
   const params = new URLSearchParams({
     startDate: dateRange.startDate,
@@ -110,17 +123,25 @@ async function validateScorecard(
   const prodData = await fetchProd<ProdScorecardResponse>(
     `/api/dashboard-v2/category/${encodeURIComponent(category)}?${params}`,
   );
-  const prodValues = new Map(
+  const prodCurrentValues = new Map(
     prodData.rows.map((r) => [r.tileId, r.currentValue]),
   );
+  const prodPreviousValues = new Map(
+    prodData.rows.map((r) => [r.tileId, r.previousValue]),
+  );
 
-  // Compare per tile
+  // Compare per tile (both current and previous values)
   const mismatches: string[] = [];
   for (const tile of tiles) {
-    const v2Val = v2Values.get(tile.tileId) ?? '(missing)';
-    const prodVal = prodValues.get(tile.tileId) ?? '(missing)';
-    if (v2Val !== prodVal) {
-      mismatches.push(`  ${tile.tileId}: v2="${v2Val}" prod="${prodVal}"`);
+    const v2Current = v2CurrentValues.get(tile.tileId) ?? '(missing)';
+    const prodCurrent = prodCurrentValues.get(tile.tileId) ?? '(missing)';
+    if (v2Current !== prodCurrent) {
+      mismatches.push(`  ${tile.tileId} currentValue: v2="${v2Current}" prod="${prodCurrent}"`);
+    }
+    const v2Previous = v2PreviousValues.get(tile.tileId) ?? '(missing)';
+    const prodPrevious = prodPreviousValues.get(tile.tileId) ?? '(missing)';
+    if (v2Previous !== prodPrevious) {
+      mismatches.push(`  ${tile.tileId} previousValue: v2="${v2Previous}" prod="${prodPrevious}"`);
     }
   }
 
@@ -143,20 +164,29 @@ async function validateTrend(
 ): Promise<ValidationResult[]> {
   const tileId = getDefaultTileId(category);
   const spec = getSemanticTileSpec(tileId);
-  const query = buildV2TrendQuery(category, tileId, {}, dateRange);
-  const result = await executeMetricQuery(query);
+  const currentQuery = buildV2TrendQuery(category, tileId, {}, dateRange);
+  const previousQuery = buildV2TrendQuery(category, tileId, {}, previousDateRange);
+  const [currentResult, previousResult] = await Promise.all([
+    executeMetricQuery(currentQuery),
+    executeMetricQuery(previousQuery),
+  ]);
 
   // Extract v2 points: bucket key from week dimension, value from measure
   const weekField = `${DASHBOARD_V2_BASE_MODEL}_${spec.dateDimension}_week`;
   const valueField = `${DASHBOARD_V2_BASE_MODEL}_${spec.measure}`;
 
-  const v2Points = result.rows.map((row: ResultRow) => ({
+  const v2CurrentPoints = currentResult.rows.map((row: ResultRow) => ({
+    bucketKey: String(row[weekField]?.value?.formatted ?? '').slice(0, 10),
+    value: row[valueField]?.value?.raw,
+  }));
+
+  const v2PreviousPoints = previousResult.rows.map((row: ResultRow) => ({
     bucketKey: String(row[weekField]?.value?.formatted ?? '').slice(0, 10),
     value: row[valueField]?.value?.raw,
   }));
 
   // Fetch production
-  type ProdTrendPoint = { bucketKey: string; currentValue: unknown };
+  type ProdTrendPoint = { bucketKey: string; currentValue: unknown; previousValue: unknown };
   type ProdTrendResponse = { points: ProdTrendPoint[] };
   const params = new URLSearchParams({
     category,
@@ -169,30 +199,55 @@ async function validateTrend(
     `/api/dashboard-v2/trend/${encodeURIComponent(tileId)}?${params}`,
   );
 
-  const prodPoints = prodData.points.map((p) => ({
+  const prodCurrentPoints = prodData.points.map((p) => ({
     bucketKey: String(p.bucketKey).slice(0, 10),
     value: p.currentValue,
   }));
 
-  // Compare point-by-point
+  const prodPreviousPoints = prodData.points.map((p) => ({
+    bucketKey: String(p.bucketKey).slice(0, 10),
+    value: p.previousValue,
+  }));
+
+  // Compare current-window points
   const mismatches: string[] = [];
-  const maxLen = Math.max(v2Points.length, prodPoints.length);
-  for (let i = 0; i < maxLen; i++) {
-    const v2 = v2Points[i];
-    const prod = prodPoints[i];
+  const currentMaxLen = Math.max(v2CurrentPoints.length, prodCurrentPoints.length);
+  for (let i = 0; i < currentMaxLen; i++) {
+    const v2 = v2CurrentPoints[i];
+    const prod = prodCurrentPoints[i];
     if (!v2 || !prod) {
       mismatches.push(
-        `  index=${i}: v2=${JSON.stringify(v2 ?? null)} prod=${JSON.stringify(prod ?? null)}`,
+        `  current index=${i}: v2=${JSON.stringify(v2 ?? null)} prod=${JSON.stringify(prod ?? null)}`,
       );
     } else if (
       v2.bucketKey !== prod.bucketKey ||
       String(v2.value) !== String(prod.value)
     ) {
       mismatches.push(
-        `  ${v2.bucketKey}: v2=${JSON.stringify(v2.value)} prod=${JSON.stringify(prod.value)}`,
+        `  current ${v2.bucketKey}: v2=${JSON.stringify(v2.value)} prod=${JSON.stringify(prod.value)}`,
       );
     }
     if (mismatches.length >= 3) break;
+  }
+
+  // Compare previous-window points
+  const previousMaxLen = Math.max(v2PreviousPoints.length, prodPreviousPoints.length);
+  for (let i = 0; i < previousMaxLen; i++) {
+    const v2 = v2PreviousPoints[i];
+    const prod = prodPreviousPoints[i];
+    if (!v2 || !prod) {
+      mismatches.push(
+        `  previous index=${i}: v2=${JSON.stringify(v2 ?? null)} prod=${JSON.stringify(prod ?? null)}`,
+      );
+    } else if (
+      v2.bucketKey !== prod.bucketKey ||
+      String(v2.value) !== String(prod.value)
+    ) {
+      mismatches.push(
+        `  previous ${v2.bucketKey}: v2=${JSON.stringify(v2.value)} prod=${JSON.stringify(prod.value)}`,
+      );
+    }
+    if (mismatches.length >= 6) break;
   }
 
   return [

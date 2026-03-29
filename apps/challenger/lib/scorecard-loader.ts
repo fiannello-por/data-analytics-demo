@@ -1,7 +1,7 @@
 // apps/challenger/lib/scorecard-loader.ts
 
 import { unstable_cache } from 'next/cache';
-import { getSnapshotGroups } from '@por/dashboard-constants';
+import { getSnapshotGroups, findTileDefinition } from '@por/dashboard-constants';
 import {
   executeMetricQuery,
   createCallTracker,
@@ -75,7 +75,13 @@ async function fetchScorecard(
         const previousRaw = Number(previousRow[fieldId]?.value?.raw ?? 0);
 
         let pctChange = '';
-        if (previousRaw !== 0) {
+        if (
+          previousFormatted === '—' ||
+          previousFormatted === '' ||
+          Number.isNaN(previousRaw)
+        ) {
+          pctChange = '—';
+        } else if (previousRaw !== 0) {
           const pct =
             ((currentRaw - previousRaw) / Math.abs(previousRaw)) * 100;
           pctChange = pct.toFixed(1);
@@ -92,7 +98,15 @@ async function fetchScorecard(
     }),
   );
 
-  return tileResults.flat();
+  const tiles = tileResults.flat();
+
+  tiles.sort((a, b) => {
+    const aDef = findTileDefinition(category, a.tileId);
+    const bDef = findTileDefinition(category, b.tileId);
+    return (aDef?.sortOrder ?? 0) - (bDef?.sortOrder ?? 0);
+  });
+
+  return tiles;
 }
 
 export async function loadScorecard(
