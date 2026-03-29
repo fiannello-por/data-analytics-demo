@@ -202,18 +202,224 @@ query execution, and priority-ordered loading.
 **Gate:** Full-cold total load < 4s per tab. TTFB < 50ms. All metrics
 present. Waterfall report generated.
 
-#### Phase 4b-3: Full UI Parity
+#### Phase 4b-3: Client-Side Architecture
 
-Matches the production dashboard experience:
+Replaces the 4b-2 server-re-render model with a client-driven
+architecture for instant interactions and smart caching.
 
-- Client-side state management with optimistic updates
-- URL-driven navigation with history support
-- TanStack table for closed-won drilldown
-- Filter draft state with apply/cancel
-- Prefetching and request deduplication
+**Topics (14):**
 
-**Gate:** Feature parity with production analytics-suite. Drop-in
-replacement candidate.
+1. **Client-side dashboard shell** — `"use client"` `DashboardShell`
+   component with `useReducer`. Server page parses URL and passes
+   `initialState` as props. Shell owns all dashboard state:
+
+   ```
+   activeTab
+   committedFilters        committedDateRange
+   draftFilters            draftDateRange
+   selectedTileByCategory  (Partial<Record<Category, string>>)
+   cwSortByCategory        (Partial<Record<Category, ClosedWonSort>>)
+   cwPage
+   ```
+
+   `previousDateRange` is derived from `committedDateRange`, not stored.
+   Cache invalidation is a shell-side effect, not a reducer action.
+
+   Cross-surface reset rules:
+   - `SWITCH_TAB`: reset `cwPage` to 1, discard draft changes (reset
+     drafts to committed). Preserve committed filters, dateRange,
+     selectedTileByCategory, cwSortByCategory.
+   - `APPLY_FILTERS` / `SET_DATE_RANGE`: reset `cwPage` to 1.
+   - `SET_CW_SORT`: reset `cwPage` to 1.
+   - `SELECT_TILE`: no resets.
+
+2. **URL contract** — URL encodes committed state only: `tab`,
+   committed filters (repeated params), `startDate`, `endDate`, `tile`
+   (category tabs only, validated against catalog), `cwPage`, `cwSort`,
+   `cwDir`.
+
+   - `pushState` for meaningful navigations: tab switch, filter apply,
+     date range change, tile selection.
+   - `replaceState` for micro-state: `cwPage`, `cwSort`.
+   - Draft filters/dateRange never touch the URL.
+   - Shell listens to `popstate`, dispatches `RESTORE_URL_STATE`.
+   - Back/forward restores committed state only; drafts are ephemeral.
+   - Server parses URL, passes `initialState` to shell as props — no
+     mount-time re-parse, no hydration mismatch.
+
+3. **Data ownership boundaries** — Three layers:
+   - **Reducer** owns user intent (state listed above). Pure, synchronous.
+   - **TanStack Query** owns server state: fetched payloads, request
+     lifecycle (in-flight, errors, retries, stale/fresh, cancellation,
+     deduplication). Shell never stores fetched data in the reducer.
+   - **Derived** owns computed view decisions: `previousDateRange`,
+     active `selectedTileId`, active `cwSort`, query keys, loading/error
+     states per surface. Computed from reducer + query cache, stored
+     nowhere.
+
+   Filter dictionaries have different freshness semantics from tab data
+   (same ownership layer, different `staleTime`).
+
+4. **Query key / cache identity rules** — First-class design topic, not
+   an implementation detail. A canonical `buildQueryKey` helper produces
+   flat, deterministic keys with normalized inputs (filters: sorted keys
+   + sorted values; dateRange: `start:end`; sort: `field:dir`).
+
+   | Surface | Key |
+   |---------|-----|
+   | Overview | `['overview', filtersKey, dateRangeKey]` |
+   | Scorecard | `['scorecard', category, filtersKey, dateRangeKey]` |
+   | Trend | `['trend', category, tileId, filtersKey, dateRangeKey]` |
+   | Closed-won | `['closed-won', category, filtersKey, dateRangeKey, page, sortField, sortDir]` |
+   | Dictionaries | `['filters']` |
+
+   Policies:
+   - Key change drives refetch, not manual invalidation.
+   - Clear-cache is explicit scoped purge + refetch (see topic 11).
+   - Server revalidation only for explicit refresh, not ordinary state
+     changes.
+   - Prefetched queries use the same `buildQueryKey` with committed
+     state + default tile/page/sort for the target tab.
+
+5. **API routes (BFF layer)** — Thin transport: parse params, validate,
+   call shared loaders, return JSON. No business logic.
+
+   | Route | Returns |
+   |-------|---------|
+   | `GET /api/overview` | All 5 category cards |
+   | `GET /api/scorecard/[category]` | All snapshot groups batched |
+   | `GET /api/trend/[category]/[tileId]` | Trend points |
+   | `GET /api/closed-won/[category]` | Paginated rows |
+   | `GET /api/filters` | All 16 dictionaries batched |
+   | `POST /api/revalidate` | Scoped `revalidateTag()` |
+
+   Scorecard intentionally batched (one request per category, not per
+   group) to reduce client HTTP overhead. Filters batched (one request,
+   not 16) — the per-filter streaming from 4b-2 made sense for SSR but
+   adds unnecessary HTTP overhead from the browser.
+
+6. **TanStack Query setup** — `QueryClientProvider` with `useState`-
+   created `QueryClient`. Custom hooks per surface:
+
+   - `useOverviewBoard(filters, dateRange)`
+   - `useScorecard(category, filters, dateRange)`
+   - `useTrend(category, tileId, filters, dateRange, { enabled })`
+   - `useClosedWon(category, filters, dateRange, page, sort)`
+   - `useFilterDictionaries()`
+   - `prefetchTab(targetTab, committedState)` helper
+
+   Policies:
+   - `staleTime`: 60s for tab data, 15m for filter dictionaries.
+   - Retry: once for network errors and 5xx, none for 4xx.
+   - Hooks return the full TanStack Query object (`isPending`,
+     `isFetching`, `isStale`, `refetch`).
+   - Show stale data while refetching where semantics are valid
+     (tab switches, page changes). Brief loading state where stale data
+     would be misleading (sort changes).
+
+7. **Tab switching** — Three cases:
+   - Cached fresh: instant, no fetch.
+   - Cached stale: instant stale render + background refetch + subtle
+     refreshing indicator per section.
+   - Uncached: per-section skeletons, each populates independently.
+
+   Prefetch fires on tab hover and after active tab settles. Prefetches
+   scorecard + trend (default tile). Does NOT prefetch closed-won
+   (heavier, lower value for instant perception).
+
+   Scorecard, trend, and closed-won are independent query/render
+   boundaries. Tab is not gated on a single combined fetch.
+
+8. **Filter draft state with apply/cancel** — Unified draft model:
+   `committedFilters` + `committedDateRange` vs `draftFilters` +
+   `draftDateRange`. Any diff shows "pending changes" indicator.
+
+   - Global Apply: commits filters + dateRange atomically, resets
+     `cwPage` to 1, `pushState`.
+   - Global Cancel: reverts drafts to committed.
+   - Tab switch: discards uncommitted drafts.
+   - No query key changes until commit.
+   - Filter bar stays interactive during data refresh.
+
+9. **Optimistic updates + error/rollback** —
+   - Optimistic for navigational intent: tab switch + tile selection
+     update UI immediately. Trend fetches normally after tile select.
+   - Stale-while-revalidate for data surfaces on filter/date apply.
+   - No reducer rollback on fetch failure. Committed state remains
+     source of truth. Errors attach to the surfaces that failed.
+   - Stale data preserved alongside error banner where possible. Full
+     error state only when no stale data exists.
+   - Retry is surface-local (`refetch()` on that query), not global.
+
+10. **TanStack Table for closed-won** — Controlled table: reducer owns
+    `cwSort`, TanStack Table reflects and emits intents. Server-side
+    sort + pagination (Lightdash sorts across full dataset).
+
+    - Column resizing: client-side, persisted in `localStorage`
+      (presentation only — no semantic state in localStorage).
+    - Sort change: resets `cwPage` to 1, shows brief loading state
+      (not stale rows from old ordering).
+    - Page change: `replaceState`, previous page visible while next
+      loads. Intentionally not in history (avoids polluting back/forward
+      with page-by-page navigation).
+    - `cwSort` persists per category via `cwSortByCategory`.
+
+11. **Clear cache and refresh button** — Operator/debugging affordance.
+    Operation order:
+    1. `POST /api/revalidate` with active tab's `unstable_cache` tags
+       (bust server cache first)
+    2. `queryClient.removeQueries()` scoped to active tab surfaces +
+       current committed state fingerprint
+    3. Immediate refetch (components remount queries)
+
+    Does NOT invalidate other tabs or filter dictionaries.
+
+12. **Initial hydration** — SSR hydrates state, not dashboard data. No
+    data fetch is allowed to delay initial shell render.
+
+    - Server parses URL → passes `initialState` to shell.
+    - Shell renders immediately with skeletons.
+    - TanStack Query hooks fire on mount, fetching from API routes.
+    - Active tab queries first, filters in parallel, adjacent-tab
+      prefetch after active tab is underway.
+
+13. **Loading UX contract** —
+    - Initial load: shell + skeletons immediately, sections populate
+      independently.
+    - Cached fresh tab: instant.
+    - Cached stale tab: stale data + refreshing indicator.
+    - Uncached tab: per-section skeletons (not full-tab overlay).
+    - Filter/date apply: refreshing indicator over stale data, or
+      skeletons if no stale data for new combination.
+    - Closed-won page change: current page visible + refreshing.
+    - Closed-won sort change: brief loading state (not stale rows).
+    - Error: stale data + error banner, or full error + retry.
+    - Clear cache: sections show loading states during refetch.
+    - Layout stability: skeletons preserve approximate section height.
+
+14. **Metric completeness** — All production data surfaces functional:
+    all `TILE_CATALOG` tiles on correct tabs, trend charts, closed-won
+    with pagination + sort, interactive filters. Verified by existing
+    parity scripts + end-to-end manual testing.
+
+    Visual/auth parity deferred to Phase 4b-4.
+
+**Gate:** All production data surfaces functional with client-side state,
+optimistic transitions, and TanStack Query caching. Performance maintained
+(< 4s per tab). Architecture ready for visual polish in 4b-4.
+
+#### Phase 4b-4: Visual Parity and Production Replacement
+
+Makes the challenger a drop-in replacement for the production dashboard:
+
+- shadcn/Tailwind styling matching production
+- Overview scorecard card structure (hero/supporting/detail grouping)
+- 2-column category layout (tile table + trend panel)
+- next-auth authentication
+- Production URL/routing parity
+
+**Gate:** Visual and functional parity with production analytics-suite.
+Drop-in replacement candidate.
 
 ---
 
@@ -651,16 +857,30 @@ query count.
 | Telemetry waterfall | Report generated | Playwright extracts waterfall JSON |
 | Metric completeness | All TILE_CATALOG tiles present | Parity script per-tab audit |
 
-### Phase 4b-3 Gate (Full UI Parity — Satisfies Original Phase 4)
+### Phase 4b-3 Gate (Client-Side Architecture)
 
 | Metric | Target | How measured |
 |--------|--------|-------------|
-| Feature parity | All production features present | Feature checklist comparison |
-| Performance maintained | < 4s total load per tab | Playwright harness |
-| Query count | ≤ baseline analytics-suite per tab | Telemetry from Playwright |
+| Client-side state | All interactions client-driven | No full-page server re-renders on tab/filter/page/sort |
+| Tab switch (cached) | < 100ms | TanStack Query cache hit, no network |
+| Filter apply | Data refreshes without page reload | TanStack Query refetch via key change |
+| Closed-won pagination | Page change without full re-render | Client-side fetch only |
+| Draft filters | Apply/cancel works correctly | Draft does not affect data until applied |
+| Performance maintained | < 4s per tab initial load | Playwright harness, all 6 tabs |
+| Error resilience | Surface-local errors, stale data preserved | Manual verification |
+| URL round-trip | Back/forward restores committed state | Manual verification |
 
-Phase 4b-3 satisfies the original perf framework gate: "challenger app with
-full dashboard" achieving target performance and feature parity.
+### Phase 4b-4 Gate (Visual Parity — Satisfies Original Phase 4)
+
+| Metric | Target | How measured |
+|--------|--------|-------------|
+| Visual parity | Matches production styling | Side-by-side comparison |
+| Feature parity | All production features present | Feature checklist |
+| Authentication | next-auth working | Login flow test |
+| Performance maintained | < 4s per tab | Playwright harness |
+
+Phase 4b-4 satisfies the original perf framework gate: "challenger app with
+full dashboard" achieving target performance, feature, and visual parity.
 
 ---
 
@@ -714,6 +934,41 @@ full dashboard" achieving target performance and feature parity.
 - No TanStack table (plain HTML table with sort links)
 - No filter draft state (selections apply immediately)
 - No production component naming conventions (own structure)
+
+### What's in Phase 4b-3 (Client-Side Architecture)
+
+- Client-side dashboard shell (useReducer + history API)
+- URL contract (pushState for meaningful navigations, replaceState for micro-state)
+- Data ownership boundaries (reducer / TanStack Query / derived)
+- Query key normalization and cache identity rules
+- API routes as BFF layer (batched scorecard, batched filters)
+- TanStack Query for client-side fetching with stale-while-revalidate
+- Instant tab switching for cached tabs, prefetch on hover
+- Filter draft state with global apply/cancel
+- Optimistic updates for navigational intent, surface-local errors
+- TanStack Table for closed-won (controlled, server-side sort)
+- Clear cache and refresh button (scoped purge + refetch)
+- Shell-only SSR hydration (state, not data)
+- Loading UX contract (skeletons, stale data, layout stability)
+- Metric completeness verification
+
+### What's NOT in Phase 4b-3
+
+- No visual styling (shadcn, Tailwind parity with production)
+- No overview scorecard card structure (hero/supporting/detail)
+- No 2-column category layout (tile table + trend panel)
+- No authentication (next-auth)
+- No production URL/routing parity
+
+These are all Phase 4b-4 scope.
+
+### What's in Phase 4b-4 (Visual Parity)
+
+- shadcn/Tailwind styling matching production
+- Overview scorecard card structure
+- 2-column category layout
+- next-auth authentication
+- Production URL/routing parity
 
 ### What IS in Phase 4a
 
