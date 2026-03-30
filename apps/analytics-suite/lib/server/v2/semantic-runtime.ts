@@ -38,10 +38,27 @@ function getLightdashEnv(): LightdashEnv {
   };
 }
 
+function resolveLightdashSemanticVersion(
+  lightdashEnv: LightdashEnv,
+): string | undefined {
+  const explicitVersion = process.env.LIGHTDASH_SEMANTIC_VERSION?.trim();
+  if (explicitVersion) {
+    return explicitVersion;
+  }
+
+  const deploymentCommitSha = process.env.VERCEL_GIT_COMMIT_SHA?.trim();
+  if (deploymentCommitSha) {
+    return `${lightdashEnv.projectUuid}:${deploymentCommitSha}`;
+  }
+
+  return undefined;
+}
+
 let cachedRuntime: ReturnType<typeof createSemanticRuntime> | null = null;
 
 function createDefaultRuntime() {
   const lightdashEnv = getLightdashEnv();
+  const semanticVersion = resolveLightdashSemanticVersion(lightdashEnv);
   const provider = createLightdashProvider({
     baseUrl: lightdashEnv.url,
     projectUuid: lightdashEnv.projectUuid,
@@ -68,6 +85,11 @@ function createDefaultRuntime() {
         ),
       } satisfies QueryExecutionResult;
     },
+    cache: semanticVersion
+      ? {
+          semanticVersion,
+        }
+      : undefined,
   });
 }
 

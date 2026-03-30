@@ -1,10 +1,24 @@
-import type { SemanticQueryRequest, SemanticQueryResult } from './types';
+import type {
+  CompiledSemanticQuery,
+  SemanticQueryRequest,
+  SemanticQueryResult,
+} from './types';
 
 export type SemanticResultCache = {
   get(
     key: string,
   ): Promise<SemanticQueryResult | undefined> | SemanticQueryResult | undefined;
   set(key: string, value: SemanticQueryResult): Promise<void> | void;
+};
+
+export type SemanticCompileCache = {
+  get(
+    key: string,
+  ):
+    | Promise<CompiledSemanticQuery | undefined>
+    | CompiledSemanticQuery
+    | undefined;
+  set(key: string, value: CompiledSemanticQuery): Promise<void> | void;
 };
 
 export type InFlightRequestDeduper<T> = {
@@ -14,6 +28,15 @@ export type InFlightRequestDeduper<T> = {
 type PersistentCacheKeyInput = {
   request: SemanticQueryRequest;
   semanticVersion: string;
+};
+
+type CompileCacheOptions = {
+  maxAgeMs?: number;
+};
+
+type CachedEntry<T> = {
+  value: T;
+  expiresAt?: number;
 };
 
 function normalizeValue(value: unknown): unknown {
@@ -66,6 +89,16 @@ export function buildPersistentSemanticCacheKey(
   ].join('::');
 }
 
+export function buildCompiledSemanticCacheKey(
+  input: PersistentCacheKeyInput,
+): string {
+  const signature = buildSemanticRequestSignature(input.request);
+
+  return ['semantic-compile-cache', input.semanticVersion, signature].join(
+    '::',
+  );
+}
+
 export function createMemorySemanticResultCache(): SemanticResultCache {
   const entries = new Map<string, SemanticQueryResult>();
 
@@ -76,6 +109,36 @@ export function createMemorySemanticResultCache(): SemanticResultCache {
 
     set(key, value) {
       entries.set(key, value);
+    },
+  };
+}
+
+export function createMemorySemanticCompileCache(
+  options: CompileCacheOptions = {},
+): SemanticCompileCache {
+  const entries = new Map<string, CachedEntry<CompiledSemanticQuery>>();
+
+  return {
+    get(key) {
+      const entry = entries.get(key);
+      if (!entry) {
+        return undefined;
+      }
+
+      if (entry.expiresAt && entry.expiresAt <= Date.now()) {
+        entries.delete(key);
+        return undefined;
+      }
+
+      return entry.value;
+    },
+
+    set(key, value) {
+      entries.set(key, {
+        value,
+        expiresAt:
+          options.maxAgeMs == null ? undefined : Date.now() + options.maxAgeMs,
+      });
     },
   };
 }
