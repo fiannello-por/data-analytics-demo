@@ -3,13 +3,11 @@ import type { Metadata } from 'next';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import {
   CATEGORY_ORDER,
-  GLOBAL_FILTER_KEYS,
   isCategory,
   isOverviewTab,
 } from '@/lib/dashboard/catalog';
 import { parseDashboardSearchParams } from '@/lib/dashboard/query-inputs';
 import { getDashboardV2CategorySnapshot } from '@/lib/server/v2/get-dashboard-category-snapshot';
-import { getDashboardV2FilterDictionary } from '@/lib/server/v2/get-dashboard-filter-dictionary';
 import { getDashboardV2OverviewBoard } from '@/lib/server/v2/get-dashboard-overview-board';
 import { getDashboardV2TileTrend } from '@/lib/server/v2/get-dashboard-tile-trend';
 
@@ -89,12 +87,6 @@ export default async function DashboardPageV2({
         })
       ).data
     : null;
-  const dictionaries = await Promise.all(
-    GLOBAL_FILTER_KEYS.map(async (key) => [
-      key,
-      (await getDashboardV2FilterDictionary(key)).data,
-    ]),
-  );
 
   return (
     <DashboardShell
@@ -103,7 +95,7 @@ export default async function DashboardPageV2({
       initialTrend={initialTrend}
       initialClosedWonOpportunities={null}
       initialOverviewBoard={initialOverviewBoard}
-      initialDictionaries={Object.fromEntries(dictionaries)}
+      initialDictionaries={{}}
       renderedAt={renderedAt}
       apiBasePath="/api/dashboard-v2"
     />

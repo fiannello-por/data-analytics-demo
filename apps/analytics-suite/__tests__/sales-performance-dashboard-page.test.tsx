@@ -88,16 +88,6 @@ describe('sales performance dashboard page', { timeout: 20000 }, () => {
       meta: { source: 'lightdash', queryCount: 20, bytesProcessed: 2048 },
     });
 
-    getDashboardV2FilterDictionaryMock.mockImplementation(
-      async (key: string) => ({
-        data: {
-          filterKey: key,
-          options: [{ value: 'Enterprise', label: 'Enterprise', sortOrder: 1 }],
-        },
-        meta: { source: 'lightdash', queryCount: 1, bytesProcessed: 10 },
-      }),
-    );
-
     const { default: SalesPerformanceDashboardPage } =
       await import('@/app/dashboards/sales-performance/page');
     const html = renderToStaticMarkup(
@@ -114,8 +104,10 @@ describe('sales performance dashboard page', { timeout: 20000 }, () => {
         initialOverviewBoard: expect.objectContaining({
           snapshots: expect.any(Array),
         }),
+        initialDictionaries: {},
         initialClosedWonOpportunities: null,
       }),
     );
+    expect(getDashboardV2FilterDictionaryMock).not.toHaveBeenCalled();
   });
 });

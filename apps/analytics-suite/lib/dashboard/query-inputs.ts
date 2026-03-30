@@ -8,6 +8,7 @@ import {
   OVERVIEW_TAB,
   type Category,
   type DashboardTab,
+  type GlobalFilterKey,
 } from '@/lib/dashboard/catalog';
 import type {
   DashboardFilters,
@@ -41,6 +42,7 @@ export type DashboardUrlFactory = {
   buildClosedWonUrl: (
     input: DashboardStateKeyInput & { activeCategory: Category },
   ) => string;
+  buildFilterDictionaryUrl: (key: GlobalFilterKey) => string;
 };
 
 function normalizeFilterValues(values: string[]): string[] {
@@ -220,6 +222,10 @@ export function buildDashboardUrlFactory(
     ): string {
       const searchParams = serializeDashboardSnapshotSearchParams(input);
       return `${basePath}/closed-won/${encodeURIComponent(input.activeCategory)}?${searchParams.toString()}`;
+    },
+
+    buildFilterDictionaryUrl(key: GlobalFilterKey): string {
+      return `${basePath}/filter-dictionaries/${encodeURIComponent(key)}`;
     },
   };
 }

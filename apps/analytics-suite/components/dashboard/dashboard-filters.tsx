@@ -60,8 +60,10 @@ import { cn } from '@/lib/utils';
 type DashboardFiltersProps = {
   state: DashboardState;
   dictionaries: Record<string, FilterDictionaryPayload>;
+  dictionaryLoading?: Partial<Record<GlobalFilterKey, boolean>>;
   lastRefreshedAt?: string | null;
   renderedAt: string;
+  onFilterOpen?: (key: GlobalFilterKey) => void;
   onFilterValueAdd: (key: GlobalFilterKey, value: string) => void;
   onFilterValueRemove: (key: GlobalFilterKey, value: string) => void;
   onDateRangeApply: (range: DateRange) => void;
@@ -228,8 +230,10 @@ function getApplyButtonClassName(): string {
 export function DashboardFilters({
   state,
   dictionaries,
+  dictionaryLoading,
   lastRefreshedAt,
   renderedAt,
+  onFilterOpen,
   onFilterValueAdd,
   onFilterValueRemove,
   onDateRangeApply,
@@ -552,6 +556,9 @@ export function DashboardFilters({
                       option.label.toLowerCase().includes(searchQuery),
                   );
                   const isOpen = openFilterKey === filter.key;
+                  const isDictionaryLoading = Boolean(
+                    dictionaryLoading?.[filter.key],
+                  );
                   const selectedCount = selectedValues.length;
                   const hasChanges =
                     selectedValues.length !== draftValues.length ||
@@ -565,6 +572,9 @@ export function DashboardFilters({
                       open={isOpen}
                       onOpenChange={(open) => {
                         setOpenFilterKey(open ? filter.key : null);
+                        if (open) {
+                          onFilterOpen?.(filter.key);
+                        }
                         if (!open) {
                           setSearchQueries((current) => ({
                             ...current,
@@ -679,7 +689,9 @@ export function DashboardFilters({
                             })}
                             {filteredOptions.length === 0 ? (
                               <div className="px-2 py-4 text-sm text-muted-foreground">
-                                No matches
+                                {isDictionaryLoading
+                                  ? 'Loading options...'
+                                  : 'No matches'}
                               </div>
                             ) : null}
                           </div>

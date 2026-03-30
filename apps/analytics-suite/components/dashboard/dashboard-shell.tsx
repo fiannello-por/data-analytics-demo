@@ -15,8 +15,10 @@ import {
   findTileDefinition,
   isCategory,
   isOverviewTab,
+  type GlobalFilterKey,
   type Category,
 } from '@/lib/dashboard/catalog';
+import { fetchFilterDictionary } from '@/lib/dashboard/filter-dictionary-client';
 import {
   addDashboardFilterValue,
   buildDashboardUrlFactory,
@@ -164,6 +166,11 @@ export function DashboardShell({
     React.useState<ClosedWonOpportunitiesPayload | null>(
       initialClosedWonOpportunities ?? null,
     );
+  const [dictionaries, setDictionaries] =
+    React.useState<Record<string, FilterDictionaryPayload>>(initialDictionaries);
+  const [dictionaryLoading, setDictionaryLoading] = React.useState<
+    Partial<Record<GlobalFilterKey, boolean>>
+  >({});
   const [isSnapshotLoading, setSnapshotLoading] = React.useState(false);
   const [isTrendLoading, setTrendLoading] = React.useState(false);
   const [isClosedWonLoading, setClosedWonLoading] = React.useState(false);
@@ -563,6 +570,51 @@ export function DashboardShell({
     });
   }
 
+  function handleFilterOpen(key: GlobalFilterKey) {
+    if (dictionaries[key] || dictionaryLoading[key]) {
+      return;
+    }
+
+    setDictionaryLoading((current) => ({
+      ...current,
+      [key]: true,
+    }));
+
+    void fetchFilterDictionary(apiBasePath, key)
+      .then((payload) => {
+        if (!isMountedRef.current) {
+          return;
+        }
+
+        React.startTransition(() => {
+          setDictionaries((current) => ({
+            ...current,
+            [key]: payload,
+          }));
+        });
+      })
+      .catch((reason) => {
+        if (!isMountedRef.current) {
+          return;
+        }
+
+        setError(
+          (current) =>
+            current ?? formatRefreshError(`${key} filter`, reason),
+        );
+      })
+      .finally(() => {
+        if (!isMountedRef.current) {
+          return;
+        }
+
+        setDictionaryLoading((current) => ({
+          ...current,
+          [key]: false,
+        }));
+      });
+  }
+
   const detailCategory = isCategory(state.activeCategory)
     ? state.activeCategory
     : CATEGORY_ORDER[0];
@@ -624,9 +676,11 @@ export function DashboardShell({
 
         <DashboardFilters
           state={state}
-          dictionaries={initialDictionaries}
+          dictionaries={dictionaries}
+          dictionaryLoading={dictionaryLoading}
           lastRefreshedAt={lastRefreshedAt}
           renderedAt={renderedAt}
+          onFilterOpen={handleFilterOpen}
           onFilterValueAdd={handleFilterValueAdd}
           onFilterValueRemove={handleFilterValueRemove}
           onDateRangeApply={handleDateRangeApply}
