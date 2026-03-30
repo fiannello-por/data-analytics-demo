@@ -3,7 +3,7 @@
 
 import { useEffect, useReducer, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { CATEGORY_ORDER } from '@por/dashboard-constants';
+import { CATEGORY_ORDER, getCategoryTiles } from '@por/dashboard-constants';
 import type { Category } from '@por/dashboard-constants';
 
 import {
@@ -85,8 +85,6 @@ export function DashboardShell({
 
   // ── URL sync: push/replace after state changes ─────────────────────────
 
-  const prevKeyRef = useRef(committedStateKey(state));
-
   useEffect(() => {
     const mode = pendingSyncRef.current;
     pendingSyncRef.current = 'none'; // consume
@@ -118,6 +116,16 @@ export function DashboardShell({
       }
 
       const parsed = parseDashboardUrl(params);
+
+      // Validate the tile against the category's catalog (mirrors page.tsx)
+      let validatedTile: string | undefined;
+      if (parsed.tile && isCategory(parsed.tab)) {
+        const tiles = getCategoryTiles(parsed.tab as Category);
+        if (tiles.some((t) => t.tileId === parsed.tile)) {
+          validatedTile = parsed.tile;
+        }
+      }
+
       const restored = createInitialState({
         activeTab: parsed.tab,
         committedFilters: parsed.filters,
@@ -128,8 +136,8 @@ export function DashboardShell({
             ? { [parsed.tab]: parsed.cwSort }
             : {},
         selectedTileByCategory:
-          parsed.tile && isCategory(parsed.tab)
-            ? { [parsed.tab]: parsed.tile }
+          validatedTile && isCategory(parsed.tab)
+            ? { [parsed.tab as Category]: validatedTile }
             : {},
       });
 
@@ -141,23 +149,21 @@ export function DashboardShell({
   }, []);
 
   // ── Fetch orchestration ────────────────────────────────────────────────
-  // Called synchronously during render (before hooks in child components
-  // fire) so that prefetch queries enter the TanStack Query cache first.
-  // `prefetchQuery` initiation is synchronous — it adds the query to the
-  // cache and starts the fetch immediately. Hooks in children will
-  // deduplicate against these in-flight queries.
+  // Hooks in child components initiate their own fetches on mount via
+  // TanStack Query's useSyncExternalStore subscription (render-time).
+  // The orchestrator runs in useEffect (commit-safe) and handles
+  // re-fetches on state changes (filter apply, sort change, page change)
+  // where hooks are already mounted and won't re-trigger on their own.
+  // prefetchQuery is idempotent — duplicate calls for the same key are
+  // deduplicated by TanStack Query, so overlap with hook fetches is safe.
 
   const stateKey = committedStateKey(state);
-  const fullKey = `${stateKey}:${refreshToken}`;
-  const prevOrchestrateKeyRef = useRef('');
 
-  if (prevOrchestrateKeyRef.current !== fullKey) {
-    prevOrchestrateKeyRef.current = fullKey;
+  useEffect(() => {
     resetTimingStore();
-    // Fire-and-forget: initiation is synchronous, starts the fetch.
-    // Hooks will deduplicate against these in-flight queries.
     void orchestratePrefetch(queryClient, state);
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stateKey, refreshToken, queryClient]);
 
   // ── Idle-time adjacent tab prefetch ───────────────────────────────────
   // After active-tab data settles, speculatively prefetch the next tab in
@@ -250,6 +256,11 @@ export function DashboardShell({
         <ClearCacheButton
           activeTab={state.activeTab}
           category={isCategory(state.activeTab) ? state.activeTab : undefined}
+          committedFilters={state.committedFilters}
+          committedDateRange={state.committedDateRange}
+          cwPage={state.cwPage}
+          cwSort={getActiveCwSort(state)}
+          selectedTileId={getActiveSelectedTileId(state) || undefined}
           onRefreshComplete={() => setRefreshToken((t) => t + 1)}
         />
       </div>

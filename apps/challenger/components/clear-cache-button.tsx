@@ -9,15 +9,21 @@
 
 import { useState, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import type { Category } from '@por/dashboard-constants';
+import type { Category, DashboardFilters, DateRange } from '@por/dashboard-constants';
 
-import type { DashboardTab } from '@/lib/dashboard-reducer';
+import type { ClosedWonSort, DashboardTab } from '@/lib/dashboard-reducer';
+import { queryKeys } from '@/lib/query-keys';
 
 // ─── Props ──────────────────────────────────────────────────────────────────
 
 export type ClearCacheButtonProps = {
   activeTab: DashboardTab;
   category: Category | undefined;
+  committedFilters: DashboardFilters;
+  committedDateRange: DateRange;
+  cwPage: number;
+  cwSort: ClosedWonSort;
+  selectedTileId: string | undefined;
   onRefreshComplete?: () => void;
 };
 
@@ -44,31 +50,46 @@ async function invalidateAndRefetchClientQueries(
   queryClient: ReturnType<typeof useQueryClient>,
   activeTab: DashboardTab,
   category: Category | undefined,
+  filters: DashboardFilters,
+  dateRange: DateRange,
+  cwPage: number,
+  cwSort: ClosedWonSort,
+  selectedTileId: string | undefined,
 ): Promise<void> {
-  const prefixes: unknown[][] = [];
+  // Use exact query keys matching the current committed state so that only
+  // the visible data is invalidated — not stale entries for other filter /
+  // dateRange / page combinations that may still be in the cache.
+  const keys: (readonly unknown[])[] = [];
+
   if (activeTab === 'Overview') {
-    prefixes.push(['overview']);
+    keys.push(queryKeys.overview(filters, dateRange));
   } else if (category) {
-    prefixes.push(['scorecard', category]);
-    prefixes.push(['trend', category]);
-    prefixes.push(['closed-won', category]);
+    keys.push(queryKeys.scorecard(category, filters, dateRange));
+    if (selectedTileId) {
+      keys.push(queryKeys.trend(category, selectedTileId, filters, dateRange));
+    }
+    keys.push(queryKeys.closedWon(category, filters, dateRange, cwPage, cwSort));
   }
 
-  // Invalidate all cached data for the active tab surfaces.
-  // This marks queries as stale and triggers an immediate refetch
-  // for any mounted query observers. Unlike removeQueries, the query
-  // stays in the cache so components remain mounted and the refetch
-  // is visible via isFetching.
   await Promise.all(
-    prefixes.map((prefix) =>
-      queryClient.invalidateQueries({ queryKey: prefix, refetchType: 'all' }),
+    keys.map((key) =>
+      queryClient.invalidateQueries({ queryKey: [...key], exact: true, refetchType: 'all' }),
     ),
   );
 }
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
-export function ClearCacheButton({ activeTab, category, onRefreshComplete }: ClearCacheButtonProps) {
+export function ClearCacheButton({
+  activeTab,
+  category,
+  committedFilters,
+  committedDateRange,
+  cwPage,
+  cwSort,
+  selectedTileId,
+  onRefreshComplete,
+}: ClearCacheButtonProps) {
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
 
@@ -86,8 +107,17 @@ export function ClearCacheButton({ activeTab, category, onRefreshComplete }: Cle
         });
       }
 
-      // Step 2: invalidate client cache + trigger refetch
-      await invalidateAndRefetchClientQueries(queryClient, activeTab, category);
+      // Step 2: invalidate client cache + trigger refetch (exact keys only)
+      await invalidateAndRefetchClientQueries(
+        queryClient,
+        activeTab,
+        category,
+        committedFilters,
+        committedDateRange,
+        cwPage,
+        cwSort,
+        selectedTileId,
+      );
 
       // Step 3: trigger re-orchestration if needed
       onRefreshComplete?.();
@@ -96,7 +126,7 @@ export function ClearCacheButton({ activeTab, category, onRefreshComplete }: Cle
     } finally {
       setRefreshing(false);
     }
-  }, [activeTab, category, queryClient, onRefreshComplete]);
+  }, [activeTab, category, committedFilters, committedDateRange, cwPage, cwSort, selectedTileId, queryClient, onRefreshComplete]);
 
   return (
     <button
