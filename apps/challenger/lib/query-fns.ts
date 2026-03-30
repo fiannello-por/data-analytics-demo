@@ -21,8 +21,15 @@ const timingSpans: QuerySpan[] = [];
 /** Epoch used to compute relative start/end times. */
 let timingEpoch = typeof performance !== 'undefined' ? performance.now() : 0;
 
+/**
+ * Generation counter — incremented on every reset so that in-flight fetches
+ * from a previous state can detect they are stale and skip recording spans.
+ */
+let timingGeneration = 0;
+
 /** Reset the timing store (called when orchestration starts). */
 export function resetTimingStore(): void {
+  timingGeneration++;
   timingSpans.length = 0;
   timingEpoch = typeof performance !== 'undefined' ? performance.now() : 0;
 }
@@ -56,29 +63,36 @@ async function fetchJson<T>(url: string): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-/** Wraps a fetchJson call, recording a QuerySpan with client-side timing. */
+/** Wraps a fetchJson call, recording a QuerySpan with client-side timing.
+ *  Captures the timing generation at start so that spans from stale
+ *  (pre-reset) fetches are silently dropped instead of polluting the store. */
 async function timedFetch<T>(
   label: string,
   section: string,
   priority: number,
   url: string,
 ): Promise<T> {
+  const gen = timingGeneration;
   const start = performance.now() - timingEpoch;
   const result = await fetchJson<T>(url);
   const end = performance.now() - timingEpoch;
-  timingSpans.push({
-    id: label,
-    section,
-    priority,
-    startMs: start,
-    endMs: end,
-    limiterWaitMs: 0,
-    submitMs: 0,
-    pollMs: end - start,
-    lightdashExecMs: 0,
-    lightdashPageMs: 0,
-    cacheHit: false,
-  });
+
+  // Only record if the store hasn't been reset since we started
+  if (gen === timingGeneration) {
+    timingSpans.push({
+      id: label,
+      section,
+      priority,
+      startMs: start,
+      endMs: end,
+      limiterWaitMs: 0,
+      submitMs: 0,
+      pollMs: end - start,
+      lightdashExecMs: 0,
+      lightdashPageMs: 0,
+      cacheHit: false,
+    });
+  }
   return result;
 }
 

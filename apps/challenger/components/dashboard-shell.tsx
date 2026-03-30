@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useReducer, useRef, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useIsFetching, useQueryClient } from '@tanstack/react-query';
 import { CATEGORY_ORDER, getCategoryTiles } from '@por/dashboard-constants';
 import type { Category } from '@por/dashboard-constants';
 
@@ -168,8 +168,29 @@ export function DashboardShell({
   // ── Idle-time adjacent tab prefetch ───────────────────────────────────
   // After active-tab data settles, speculatively prefetch the next tab in
   // CATEGORY_ORDER so that navigating there feels instant.
+  //
+  // Instead of a fixed timer we watch TanStack Query's in-flight count for
+  // the active tab. When it drops to 0 the active tab's data has settled
+  // and we can safely start prefetching adjacent-tab data without competing
+  // for bandwidth.
+
+  const activeFetchCount = useIsFetching({
+    predicate: (query) => {
+      const key = query.queryKey;
+      if (state.activeTab === 'Overview') {
+        return key[0] === 'overview';
+      }
+      const category = state.activeTab;
+      return (
+        (key[0] === 'scorecard' || key[0] === 'trend' || key[0] === 'closed-won') &&
+        key[1] === category
+      );
+    },
+  });
 
   useEffect(() => {
+    if (activeFetchCount > 0) return; // active tab still loading
+
     const activeTab = state.activeTab;
     const allTabs = [...CATEGORY_ORDER] as Category[];
 
@@ -178,14 +199,9 @@ export function DashboardShell({
 
     if (!nextTab || nextTab === activeTab) return;
 
-    // Delay adjacent-tab prefetch to let active tab queries settle first
-    const handle = setTimeout(() => {
-      void prefetchAdjacentTab(queryClient, nextTab, state);
-    }, 3000);
-
-    return () => clearTimeout(handle);
+    void prefetchAdjacentTab(queryClient, nextTab, state);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stateKey, queryClient]);
+  }, [activeFetchCount, stateKey, queryClient]);
 
   // ── Waterfall telemetry ────────────────────────────────────────────────
   // After orchestration, snapshot client-side timing into sessionStorage

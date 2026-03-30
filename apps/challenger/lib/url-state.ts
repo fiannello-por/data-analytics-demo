@@ -2,6 +2,7 @@
 
 import {
   CATEGORY_ORDER,
+  CLOSED_WON_DIMENSIONS,
   GLOBAL_FILTER_KEYS,
   type Category,
   type DashboardFilters,
@@ -114,8 +115,13 @@ export function parseDashboardUrl(params: SearchParams): DashboardUrlState {
   // cwPageSize — fixed
   const cwPageSize = 50;
 
-  // cwSort
-  const cwSortField = getParam(params, 'cwSort') ?? 'close_date';
+  // cwSort — validate against known dimensions (server also validates, but
+  // this keeps the client-side URL / query-key / UI in sync with what the
+  // server will actually return).
+  const rawSortField = getParam(params, 'cwSort') ?? 'close_date';
+  const cwSortField = (CLOSED_WON_DIMENSIONS as readonly string[]).includes(rawSortField)
+    ? rawSortField
+    : 'close_date';
   const rawCwDir = getParam(params, 'cwDir');
   const cwDir: 'asc' | 'desc' =
     rawCwDir === 'asc' || rawCwDir === 'desc' ? rawCwDir : 'desc';
