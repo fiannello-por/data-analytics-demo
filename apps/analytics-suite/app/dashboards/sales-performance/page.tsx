@@ -16,6 +16,10 @@ export const metadata: Metadata = {
     'Executive sales performance dashboard backed by Lightdash and BigQuery.',
 };
 
+export const runtime = 'nodejs';
+export const preferredRegion = 'pdx1';
+export const maxDuration = 300;
+
 type SearchParamsInput =
   | Record<string, string | string[] | undefined>
   | undefined;

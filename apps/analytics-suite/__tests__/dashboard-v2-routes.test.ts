@@ -1,3 +1,5 @@
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 
@@ -112,5 +114,42 @@ describe('dashboard v2 routes', () => {
       '43.5',
     );
     expect(response.headers.get('x-analytics-suite-cache-status')).toBe('hit');
+  });
+
+  it('exports explicit Vercel runtime settings for dashboard routes and the sales page', async () => {
+    const salesPageModule = await import('@/app/dashboards/sales-performance/page');
+    const overviewRouteModule = await import('@/app/api/dashboard-v2/overview/route');
+    const categoryRouteModule = await import(
+      '@/app/api/dashboard-v2/category/[category]/route'
+    );
+    const trendRouteModule = await import(
+      '@/app/api/dashboard-v2/trend/[tileId]/route'
+    );
+    const closedWonRouteModule = await import(
+      '@/app/api/dashboard-v2/closed-won/[category]/route'
+    );
+    const filterDictionaryRouteModule = await import(
+      '@/app/api/dashboard-v2/filter-dictionaries/[key]/route'
+    );
+    const vercelConfigPath = path.resolve(process.cwd(), 'vercel.json');
+    const vercelConfig = JSON.parse(await readFile(vercelConfigPath, 'utf8'));
+
+    for (const routeModule of [
+      salesPageModule,
+      overviewRouteModule,
+      categoryRouteModule,
+      trendRouteModule,
+      closedWonRouteModule,
+      filterDictionaryRouteModule,
+    ]) {
+      expect(routeModule.runtime).toBe('nodejs');
+      expect(routeModule.preferredRegion).toBe('pdx1');
+      expect(routeModule.maxDuration).toBe(300);
+    }
+
+    expect(vercelConfig).toMatchObject({
+      fluid: true,
+      regions: ['pdx1'],
+    });
   });
 });

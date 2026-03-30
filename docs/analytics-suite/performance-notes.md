@@ -47,6 +47,19 @@ Compare:
 - bytes processed
 - cache status changes between first and second request
 
+## Vercel Runtime Policy
+
+- Runtime: `nodejs`
+- Preferred region: `pdx1`
+- Max duration: `300`
+- Fluid Compute: enabled in `apps/analytics-suite/vercel.json`
+
+Why this app is not an Edge candidate:
+
+- the dashboard execution path uses the BigQuery Node client in `apps/analytics-suite/lib/server/v2/semantic-runtime.ts`
+- backend trace helpers use `node:fs` and `node:child_process` in `apps/analytics-suite/lib/server/v2/tile-backend-trace.ts`
+- the workload is long-lived compile + BigQuery orchestration, which matches Node functions better than Edge isolates
+
 ## Current Query Fanout
 
 These counts reflect the current code paths and `queryCount` metadata in the
