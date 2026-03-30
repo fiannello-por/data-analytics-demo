@@ -10,6 +10,9 @@ export type ProbeResponseMeta = {
   source: string;
   queryCount: number;
   bytesProcessed?: number;
+  compileDurationMs?: number;
+  executionDurationMs?: number;
+  cacheStatus?: 'hit' | 'miss' | 'mixed';
   cacheMode: ProbeCacheMode;
 };
 
@@ -43,6 +46,27 @@ export function applyProbeHeaders(
     response.headers.set(
       'x-analytics-suite-bytes-processed',
       String(meta.bytesProcessed),
+    );
+  }
+
+  if (meta.compileDurationMs != null) {
+    response.headers.set(
+      'x-analytics-suite-compile-ms',
+      String(meta.compileDurationMs),
+    );
+  }
+
+  if (meta.executionDurationMs != null) {
+    response.headers.set(
+      'x-analytics-suite-execution-ms',
+      String(meta.executionDurationMs),
+    );
+  }
+
+  if (meta.cacheStatus != null) {
+    response.headers.set(
+      'x-analytics-suite-cache-status',
+      meta.cacheStatus,
     );
   }
 

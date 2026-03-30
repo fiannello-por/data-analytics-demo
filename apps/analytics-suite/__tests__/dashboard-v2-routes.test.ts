@@ -39,6 +39,9 @@ describe('dashboard v2 routes', () => {
         source: 'lightdash',
         queryCount: 10,
         bytesProcessed: 1024,
+        compileDurationMs: 35.5,
+        executionDurationMs: 84.25,
+        cacheStatus: 'miss',
         cacheMode: 'off',
       },
     });
@@ -62,6 +65,13 @@ describe('dashboard v2 routes', () => {
     );
     expect(response.status).toBe(200);
     expect(response.headers.get('x-analytics-suite-source')).toBe('lightdash');
+    expect(response.headers.get('x-analytics-suite-compile-ms')).toBe('35.5');
+    expect(response.headers.get('x-analytics-suite-execution-ms')).toBe(
+      '84.25',
+    );
+    expect(response.headers.get('x-analytics-suite-cache-status')).toBe(
+      'miss',
+    );
   });
 
   it('returns the v2 filter dictionary payload from analytics-suite', async () => {
@@ -74,6 +84,9 @@ describe('dashboard v2 routes', () => {
         source: 'lightdash',
         queryCount: 1,
         bytesProcessed: 120,
+        compileDurationMs: 11.75,
+        executionDurationMs: 43.5,
+        cacheStatus: 'hit',
         cacheMode: 'off',
       },
     });
@@ -94,5 +107,10 @@ describe('dashboard v2 routes', () => {
     );
     expect(response.status).toBe(200);
     expect(response.headers.get('x-analytics-suite-source')).toBe('lightdash');
+    expect(response.headers.get('x-analytics-suite-compile-ms')).toBe('11.75');
+    expect(response.headers.get('x-analytics-suite-execution-ms')).toBe(
+      '43.5',
+    );
+    expect(response.headers.get('x-analytics-suite-cache-status')).toBe('hit');
   });
 });

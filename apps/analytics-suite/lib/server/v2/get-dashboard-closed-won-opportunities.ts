@@ -93,6 +93,9 @@ export async function getDashboardV2ClosedWonOpportunities(
         source: 'lightdash' as const,
         queryCount: result.meta.queryCount,
         bytesProcessed: result.meta.bytesProcessed ?? 0,
+        compileDurationMs: result.meta.compileDurationMs,
+        executionDurationMs: result.meta.executionDurationMs,
+        cacheStatus: result.meta.cacheStatus,
         cacheMode: execution.cacheMode,
       },
     } satisfies DashboardLoaderResult<ClosedWonOpportunitiesPayload>;

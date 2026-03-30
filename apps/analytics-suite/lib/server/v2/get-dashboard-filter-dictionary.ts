@@ -37,6 +37,9 @@ export async function getDashboardV2FilterDictionary(
         source: 'lightdash' as const,
         queryCount: result.meta.queryCount,
         bytesProcessed: result.meta.bytesProcessed,
+        compileDurationMs: result.meta.compileDurationMs,
+        executionDurationMs: result.meta.executionDurationMs,
+        cacheStatus: result.meta.cacheStatus,
         cacheMode: execution.cacheMode,
       },
     } satisfies DashboardLoaderResult<FilterDictionaryPayload>;

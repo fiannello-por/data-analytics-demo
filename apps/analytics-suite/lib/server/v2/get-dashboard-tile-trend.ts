@@ -9,7 +9,11 @@ import type {
   TileTrendPayload,
 } from '@/lib/dashboard/contracts';
 import type { ProbeExecutionOptions } from '@/lib/probe-cache-mode';
-import { type DashboardLoaderResult } from '@/lib/server/dashboard-query-runtime';
+import {
+  aggregateTimingMetrics,
+  resolveAggregateCacheStatus,
+  type DashboardLoaderResult,
+} from '@/lib/server/dashboard-query-runtime';
 import { buildTrendQuery } from '@/lib/dashboard-v2/semantic-registry';
 import {
   getDashboardV2Runtime,
@@ -66,6 +70,10 @@ export async function getDashboardV2TileTrend(
     const [current, previous] = await Promise.all([
       runtime.runQuery(currentRequest),
       runtime.runQuery(previousRequest),
+    ]);
+    const timingMetrics = aggregateTimingMetrics([
+      current.meta,
+      previous.meta,
     ]);
     const bucketField =
       Object.keys(current.rows[0] ?? {}).find((field) =>
@@ -145,6 +153,12 @@ export async function getDashboardV2TileTrend(
         bytesProcessed:
           (current.meta.bytesProcessed ?? 0) +
           (previous.meta.bytesProcessed ?? 0),
+        compileDurationMs: timingMetrics.compileDurationMs,
+        executionDurationMs: timingMetrics.executionDurationMs,
+        cacheStatus: resolveAggregateCacheStatus([
+          current.meta.cacheStatus,
+          previous.meta.cacheStatus,
+        ]),
         cacheMode: execution.cacheMode,
       },
     } satisfies DashboardLoaderResult<TileTrendPayload>;
