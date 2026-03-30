@@ -110,4 +110,53 @@ describe('sales performance dashboard page', { timeout: 20000 }, () => {
     );
     expect(getDashboardV2FilterDictionaryMock).not.toHaveBeenCalled();
   });
+
+  it('does not fetch trend data during the initial server render for category views', async () => {
+    getDashboardV2OverviewBoardMock.mockReset();
+    getDashboardV2CategorySnapshotMock.mockReset();
+    getDashboardV2TileTrendMock.mockReset();
+    dashboardShellMock.mockReset();
+
+    getDashboardV2CategorySnapshotMock.mockResolvedValue({
+      data: {
+        category: 'New Logo',
+        currentWindowLabel: 'Jan 1, 2026 - Mar 23, 2026',
+        previousWindowLabel: 'Jan 1, 2025 - Mar 23, 2025',
+        lastRefreshedAt: '2026-03-24T00:00:00.000Z',
+        rows: [
+          {
+            tileId: 'new_logo_bookings_amount',
+            label: 'Bookings $',
+            sortOrder: 1,
+            formatType: 'currency',
+            currentValue: '$100',
+            previousValue: '$80',
+            pctChange: '+25%',
+          },
+        ],
+        tileTimings: [],
+      },
+      meta: { source: 'lightdash', queryCount: 12, bytesProcessed: 1024 },
+    });
+
+    const { default: SalesPerformanceDashboardPage } =
+      await import('@/app/dashboards/sales-performance/page');
+
+    renderToStaticMarkup(
+      await SalesPerformanceDashboardPage({
+        searchParams: Promise.resolve({
+          category: 'New Logo',
+          tile: 'new_logo_bookings_amount',
+        }),
+      }),
+    );
+
+    expect(getDashboardV2CategorySnapshotMock).toHaveBeenCalledTimes(1);
+    expect(getDashboardV2TileTrendMock).not.toHaveBeenCalled();
+    expect(dashboardShellMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        initialTrend: null,
+      }),
+    );
+  });
 });

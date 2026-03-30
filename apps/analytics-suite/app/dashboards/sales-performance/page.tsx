@@ -9,7 +9,6 @@ import {
 import { parseDashboardSearchParams } from '@/lib/dashboard/query-inputs';
 import { getDashboardV2CategorySnapshot } from '@/lib/server/v2/get-dashboard-category-snapshot';
 import { getDashboardV2OverviewBoard } from '@/lib/server/v2/get-dashboard-overview-board';
-import { getDashboardV2TileTrend } from '@/lib/server/v2/get-dashboard-tile-trend';
 
 export const metadata: Metadata = {
   title: 'Sales Performance Dashboard',
@@ -75,24 +74,11 @@ export default async function DashboardPageV2({
     : (initialOverviewBoard?.snapshots.find(
         (snapshot) => snapshot.category === CATEGORY_ORDER[0],
       ) ?? null);
-  const initialTrend = isCategory(initialState.activeCategory)
-    ? (
-        await getDashboardV2TileTrend({
-          activeCategory: initialState.activeCategory,
-          selectedTileId: initialState.selectedTileId,
-          filters: initialState.filters,
-          dateRange: initialState.dateRange,
-          previousDateRange: initialState.previousDateRange,
-          trendGrain: initialState.trendGrain,
-        })
-      ).data
-    : null;
-
   return (
     <DashboardShell
       initialState={initialState}
       initialSnapshot={initialSnapshot}
-      initialTrend={initialTrend}
+      initialTrend={null}
       initialClosedWonOpportunities={null}
       initialOverviewBoard={initialOverviewBoard}
       initialDictionaries={{}}

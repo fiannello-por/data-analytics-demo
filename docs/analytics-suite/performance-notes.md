@@ -47,6 +47,36 @@ Compare:
 - bytes processed
 - cache status changes between first and second request
 
+## Current Query Fanout
+
+These counts reflect the current code paths and `queryCount` metadata in the
+`v2` loaders.
+
+- Overview board first render: `52` semantic queries total
+  - `New Logo`: `12`
+  - `Expansion`: `14`
+  - `Migration`: `12`
+  - `Renewal`: `8`
+  - `Total`: `6`
+- Category snapshot route: `2 * getSnapshotGroups(category)`
+  - `New Logo`: `12`
+  - `Expansion`: `14`
+  - `Migration`: `12`
+  - `Renewal`: `8`
+  - `Total`: `6`
+- Trend route: `2` semantic queries
+  - one current-window request
+  - one previous-window request
+- Filter dictionary route: `1` semantic query per opened filter
+- Closed won route: `1` semantic query per category refresh
+
+## Current Safe Reduction
+
+The category page no longer performs the initial SSR trend fetch. The trend
+panel is hidden until the user selects a tile, so the server-side trend call
+added two non-critical compile+BigQuery cycles to the first category render
+without improving the first paint.
+
 ### Notes
 
 - Treat Lightdash compile time and BigQuery execution time as separate bottlenecks.
