@@ -124,6 +124,67 @@ function getClosedWonCategory(
   return isCategory(activeCategory) ? activeCategory : 'Total';
 }
 
+export function getInitialBootstrapScope(input: {
+  activeCategory: DashboardState['activeCategory'];
+  snapshotByCategory: Partial<Record<Category, CategorySnapshotPayload>>;
+  hasClosedWonData: boolean;
+}): RefreshScope | null {
+  const detailCategory = isCategory(input.activeCategory)
+    ? input.activeCategory
+    : CATEGORY_ORDER[0];
+  const closedWonCategory = getClosedWonCategory(input.activeCategory);
+
+  if (isOverviewTab(input.activeCategory)) {
+    if (!hasFullSnapshotCache(input.snapshotByCategory)) {
+      return {
+        overview: true,
+        snapshot: false,
+        trend: false,
+        closedWon: !input.hasClosedWonData,
+        detailCategory,
+        closedWonCategory,
+      };
+    }
+
+    if (!input.hasClosedWonData) {
+      return {
+        overview: false,
+        snapshot: false,
+        trend: false,
+        closedWon: true,
+        detailCategory,
+        closedWonCategory,
+      };
+    }
+
+    return null;
+  }
+
+  if (!input.snapshotByCategory[detailCategory]) {
+    return {
+      overview: false,
+      snapshot: true,
+      trend: false,
+      closedWon: !input.hasClosedWonData,
+      detailCategory,
+      closedWonCategory,
+    };
+  }
+
+  if (!input.hasClosedWonData) {
+    return {
+      overview: false,
+      snapshot: false,
+      trend: false,
+      closedWon: true,
+      detailCategory,
+      closedWonCategory,
+    };
+  }
+
+  return null;
+}
+
 export function buildClosedWonPrefetchUrls(
   apiBasePath: string,
   input: Pick<DashboardState, 'filters' | 'dateRange'>,
@@ -178,6 +239,7 @@ export function DashboardShell({
   const [revealedTrendCategory, setRevealedTrendCategory] =
     React.useState<Category | null>(null);
   const refreshRequestIdRef = React.useRef(0);
+  const didBootstrapInitialLoadRef = React.useRef(false);
   const isMountedRef = React.useRef(true);
 
   React.useEffect(
@@ -214,25 +276,6 @@ export function DashboardShell({
       }
     };
   }, [closedWonPrefetchUrls]);
-
-  React.useEffect(() => {
-    if (closedWonOpportunities) {
-      return;
-    }
-
-    const detailCategory = isCategory(state.activeCategory)
-      ? state.activeCategory
-      : CATEGORY_ORDER[0];
-
-    void refreshDashboard(state, {
-      overview: false,
-      snapshot: false,
-      trend: false,
-      closedWon: true,
-      detailCategory,
-      closedWonCategory: getClosedWonCategory(state.activeCategory),
-    });
-  }, [closedWonOpportunities, state]);
 
   function updateUrl(nextState: DashboardState) {
     if (typeof window === 'undefined') return;
@@ -443,6 +486,26 @@ export function DashboardShell({
   ) {
     void refreshDashboard(nextState, scope, options);
   }
+
+  React.useEffect(() => {
+    if (didBootstrapInitialLoadRef.current) {
+      return;
+    }
+
+    const bootstrapScope = getInitialBootstrapScope({
+      activeCategory: state.activeCategory,
+      snapshotByCategory,
+      hasClosedWonData: Boolean(closedWonOpportunities),
+    });
+
+    didBootstrapInitialLoadRef.current = true;
+
+    if (!bootstrapScope) {
+      return;
+    }
+
+    void refreshDashboard(state, bootstrapScope);
+  }, [closedWonOpportunities, snapshotByCategory, state]);
 
   function handleCategoryChange(category: DashboardState['activeCategory']) {
     const nextState = setDashboardActiveCategory(state, category);
