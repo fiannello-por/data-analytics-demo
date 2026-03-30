@@ -1,14 +1,7 @@
 import * as React from 'react';
 import type { Metadata } from 'next';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
-import {
-  CATEGORY_ORDER,
-  isCategory,
-  isOverviewTab,
-} from '@/lib/dashboard/catalog';
 import { parseDashboardSearchParams } from '@/lib/dashboard/query-inputs';
-import { getDashboardV2CategorySnapshot } from '@/lib/server/v2/get-dashboard-category-snapshot';
-import { getDashboardV2OverviewBoard } from '@/lib/server/v2/get-dashboard-overview-board';
 
 export const metadata: Metadata = {
   title: 'Sales Performance Dashboard',
@@ -57,34 +50,14 @@ export default async function DashboardPageV2({
   const initialState = parseDashboardSearchParams(
     toUrlSearchParams(resolvedSearchParams),
   );
-  const initialOverviewBoard = isOverviewTab(initialState.activeCategory)
-    ? (
-        await getDashboardV2OverviewBoard({
-          filters: initialState.filters,
-          dateRange: initialState.dateRange,
-          previousDateRange: initialState.previousDateRange,
-        })
-      ).data
-    : null;
-  const initialSnapshot = isCategory(initialState.activeCategory)
-    ? (
-        await getDashboardV2CategorySnapshot({
-          activeCategory: initialState.activeCategory,
-          filters: initialState.filters,
-          dateRange: initialState.dateRange,
-          previousDateRange: initialState.previousDateRange,
-        })
-      ).data
-    : (initialOverviewBoard?.snapshots.find(
-        (snapshot) => snapshot.category === CATEGORY_ORDER[0],
-      ) ?? null);
+
   return (
     <DashboardShell
       initialState={initialState}
-      initialSnapshot={initialSnapshot}
+      initialSnapshot={null}
       initialTrend={null}
       initialClosedWonOpportunities={null}
-      initialOverviewBoard={initialOverviewBoard}
+      initialOverviewBoard={null}
       initialDictionaries={{}}
       renderedAt={renderedAt}
       apiBasePath="/api/dashboard-v2"

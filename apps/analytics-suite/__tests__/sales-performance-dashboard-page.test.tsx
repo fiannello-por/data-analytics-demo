@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 const getDashboardV2CategorySnapshotMock = vi.fn();
@@ -38,56 +38,15 @@ vi.mock('@/lib/server/v2/get-dashboard-filter-dictionary', () => ({
 }));
 
 describe('sales performance dashboard page', { timeout: 20000 }, () => {
+  beforeEach(() => {
+    getDashboardV2OverviewBoardMock.mockReset();
+    getDashboardV2CategorySnapshotMock.mockReset();
+    getDashboardV2TileTrendMock.mockReset();
+    getDashboardV2FilterDictionaryMock.mockReset();
+    dashboardShellMock.mockReset();
+  });
+
   it('renders the real sales dashboard shell at the canonical analytics-suite route', async () => {
-    const newLogoSnapshot = {
-      category: 'New Logo',
-      currentWindowLabel: 'Jan 1, 2026 - Mar 23, 2026',
-      previousWindowLabel: 'Jan 1, 2025 - Mar 23, 2025',
-      lastRefreshedAt: '2026-03-24T00:00:00.000Z',
-      rows: [
-        {
-          tileId: 'new_logo_bookings_amount',
-          label: 'Bookings $',
-          sortOrder: 1,
-          formatType: 'currency',
-          currentValue: '$100',
-          previousValue: '$80',
-          pctChange: '+25%',
-        },
-      ],
-      tileTimings: [],
-    } as const;
-
-    getDashboardV2OverviewBoardMock.mockResolvedValue({
-      data: {
-        currentWindowLabel: 'Jan 1, 2026 - Mar 23, 2026',
-        previousWindowLabel: 'Jan 1, 2025 - Mar 23, 2025',
-        lastRefreshedAt: '2026-03-24T00:00:00.000Z',
-        snapshots: [
-          newLogoSnapshot,
-          { ...newLogoSnapshot, category: 'Expansion' },
-          { ...newLogoSnapshot, category: 'Migration' },
-          { ...newLogoSnapshot, category: 'Renewal' },
-          {
-            ...newLogoSnapshot,
-            category: 'Total',
-            rows: [
-              {
-                tileId: 'total_bookings_amount',
-                label: 'Bookings $',
-                sortOrder: 1,
-                formatType: 'currency',
-                currentValue: '$400',
-                previousValue: '$320',
-                pctChange: '+25%',
-              },
-            ],
-          },
-        ],
-      },
-      meta: { source: 'lightdash', queryCount: 20, bytesProcessed: 2048 },
-    });
-
     const { default: SalesPerformanceDashboardPage } =
       await import('@/app/dashboards/sales-performance/page');
     const html = renderToStaticMarkup(
@@ -98,12 +57,13 @@ describe('sales performance dashboard page', { timeout: 20000 }, () => {
 
     expect(html).toContain('shell:/api/dashboard-v2');
     expect(html).not.toContain('iframe');
+    expect(getDashboardV2OverviewBoardMock).not.toHaveBeenCalled();
+    expect(getDashboardV2CategorySnapshotMock).not.toHaveBeenCalled();
     expect(dashboardShellMock).toHaveBeenCalledWith(
       expect.objectContaining({
         apiBasePath: '/api/dashboard-v2',
-        initialOverviewBoard: expect.objectContaining({
-          snapshots: expect.any(Array),
-        }),
+        initialOverviewBoard: null,
+        initialSnapshot: null,
         initialDictionaries: {},
         initialClosedWonOpportunities: null,
       }),
@@ -112,33 +72,6 @@ describe('sales performance dashboard page', { timeout: 20000 }, () => {
   });
 
   it('does not fetch trend data during the initial server render for category views', async () => {
-    getDashboardV2OverviewBoardMock.mockReset();
-    getDashboardV2CategorySnapshotMock.mockReset();
-    getDashboardV2TileTrendMock.mockReset();
-    dashboardShellMock.mockReset();
-
-    getDashboardV2CategorySnapshotMock.mockResolvedValue({
-      data: {
-        category: 'New Logo',
-        currentWindowLabel: 'Jan 1, 2026 - Mar 23, 2026',
-        previousWindowLabel: 'Jan 1, 2025 - Mar 23, 2025',
-        lastRefreshedAt: '2026-03-24T00:00:00.000Z',
-        rows: [
-          {
-            tileId: 'new_logo_bookings_amount',
-            label: 'Bookings $',
-            sortOrder: 1,
-            formatType: 'currency',
-            currentValue: '$100',
-            previousValue: '$80',
-            pctChange: '+25%',
-          },
-        ],
-        tileTimings: [],
-      },
-      meta: { source: 'lightdash', queryCount: 12, bytesProcessed: 1024 },
-    });
-
     const { default: SalesPerformanceDashboardPage } =
       await import('@/app/dashboards/sales-performance/page');
 
@@ -151,10 +84,12 @@ describe('sales performance dashboard page', { timeout: 20000 }, () => {
       }),
     );
 
-    expect(getDashboardV2CategorySnapshotMock).toHaveBeenCalledTimes(1);
+    expect(getDashboardV2OverviewBoardMock).not.toHaveBeenCalled();
+    expect(getDashboardV2CategorySnapshotMock).not.toHaveBeenCalled();
     expect(getDashboardV2TileTrendMock).not.toHaveBeenCalled();
     expect(dashboardShellMock).toHaveBeenCalledWith(
       expect.objectContaining({
+        initialSnapshot: null,
         initialTrend: null,
       }),
     );
