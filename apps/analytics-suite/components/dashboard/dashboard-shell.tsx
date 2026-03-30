@@ -13,15 +13,16 @@ import type {
 import {
   CATEGORY_ORDER,
   findTileDefinition,
+  GLOBAL_FILTER_KEYS,
   isCategory,
   isOverviewTab,
   type GlobalFilterKey,
   type Category,
 } from '@/lib/dashboard/catalog';
-import { fetchFilterDictionary } from '@/lib/dashboard/filter-dictionary-client';
 import {
   addDashboardFilterValue,
   buildDashboardUrlFactory,
+  normalizeDashboardFilters,
   removeDashboardFilterValue,
   serializeDashboardStateSearchParams,
   setDashboardActiveCategory,
@@ -81,6 +82,20 @@ type RefreshOptions = {
   revertState?: DashboardState;
 };
 
+type BackgroundWarmupTask =
+  | {
+      kind: 'snapshot';
+      category: Category;
+    }
+  | {
+      kind: 'closedWon';
+      category: Category;
+    }
+  | {
+      kind: 'dictionary';
+      key: GlobalFilterKey;
+    };
+
 async function readJson<T>(response: Response, label: string): Promise<T> {
   if (!response.ok) {
     throw new Error(`${label} request failed with status ${response.status}.`);
@@ -110,6 +125,18 @@ function buildSnapshotCache(
   return cache;
 }
 
+function buildClosedWonCache(
+  initialClosedWonOpportunities?: ClosedWonOpportunitiesPayload | null,
+): Partial<Record<Category, ClosedWonOpportunitiesPayload>> {
+  if (!initialClosedWonOpportunities) {
+    return {};
+  }
+
+  return {
+    [initialClosedWonOpportunities.category]: initialClosedWonOpportunities,
+  };
+}
+
 function hasFullSnapshotCache(
   snapshotByCategory: Partial<Record<Category, CategorySnapshotPayload>>,
 ) {
@@ -122,6 +149,46 @@ function getClosedWonCategory(
   activeCategory: DashboardState['activeCategory'],
 ): Category {
   return isCategory(activeCategory) ? activeCategory : 'Total';
+}
+
+function getWarmupTaskKey(task: BackgroundWarmupTask): string {
+  switch (task.kind) {
+    case 'snapshot':
+      return `snapshot:${task.category}`;
+    case 'closedWon':
+      return `closedWon:${task.category}`;
+    case 'dictionary':
+      return `dictionary:${task.key}`;
+  }
+}
+
+function buildWarmupQueryKey(
+  input: Pick<DashboardState, 'filters' | 'dateRange'>,
+): string {
+  return JSON.stringify({
+    dateRange: input.dateRange,
+    filters: normalizeDashboardFilters(input.filters),
+  });
+}
+
+function hasWarmActiveTabData(input: {
+  activeCategory: DashboardState['activeCategory'];
+  snapshotByCategory: Partial<Record<Category, CategorySnapshotPayload>>;
+  closedWonByCategory: Partial<Record<Category, ClosedWonOpportunitiesPayload>>;
+}): boolean {
+  const closedWonCategory = getClosedWonCategory(input.activeCategory);
+
+  if (isOverviewTab(input.activeCategory)) {
+    return (
+      hasFullSnapshotCache(input.snapshotByCategory) &&
+      Boolean(input.closedWonByCategory[closedWonCategory])
+    );
+  }
+
+  return Boolean(
+    input.snapshotByCategory[input.activeCategory] &&
+      input.closedWonByCategory[closedWonCategory],
+  );
 }
 
 export function getInitialBootstrapScope(input: {
@@ -200,6 +267,70 @@ export function buildClosedWonPrefetchUrls(
   );
 }
 
+export function getWarmupCategoryOrder(
+  activeCategory: DashboardState['activeCategory'],
+): Category[] {
+  if (isOverviewTab(activeCategory)) {
+    return [...CATEGORY_ORDER];
+  }
+
+  return CATEGORY_ORDER.filter((category) => category !== activeCategory);
+}
+
+export function getNextBackgroundWarmupTask(input: {
+  activeCategory: DashboardState['activeCategory'];
+  snapshotByCategory: Partial<Record<Category, CategorySnapshotPayload>>;
+  closedWonByCategory: Partial<Record<Category, ClosedWonOpportunitiesPayload>>;
+  dictionaries: Partial<Record<GlobalFilterKey, FilterDictionaryPayload>>;
+  settledTaskKeys?: ReadonlySet<string>;
+}): BackgroundWarmupTask | null {
+  const settledTaskKeys = input.settledTaskKeys ?? new Set<string>();
+
+  for (const category of getWarmupCategoryOrder(input.activeCategory)) {
+    const task = {
+      kind: 'snapshot',
+      category,
+    } satisfies BackgroundWarmupTask;
+
+    if (
+      !input.snapshotByCategory[category] &&
+      !settledTaskKeys.has(getWarmupTaskKey(task))
+    ) {
+      return task;
+    }
+  }
+
+  for (const category of getWarmupCategoryOrder(input.activeCategory)) {
+    const task = {
+      kind: 'closedWon',
+      category,
+    } satisfies BackgroundWarmupTask;
+
+    if (
+      !input.closedWonByCategory[category] &&
+      !settledTaskKeys.has(getWarmupTaskKey(task))
+    ) {
+      return task;
+    }
+  }
+
+  for (const key of GLOBAL_FILTER_KEYS) {
+    const task = {
+      kind: 'dictionary',
+      key,
+    } satisfies BackgroundWarmupTask;
+
+    if (
+      !input.dictionaries[key] &&
+      !settledTaskKeys.has(getWarmupTaskKey(task))
+    ) {
+      return task;
+    }
+  }
+
+  return null;
+}
+
 export function DashboardShell({
   initialState,
   initialSnapshot,
@@ -223,15 +354,19 @@ export function DashboardShell({
   const [trend, setTrend] = React.useState<TileTrendPayload | null>(
     initialTrend ?? null,
   );
-  const [closedWonOpportunities, setClosedWonOpportunities] =
-    React.useState<ClosedWonOpportunitiesPayload | null>(
-      initialClosedWonOpportunities ?? null,
-    );
+  const [closedWonByCategory, setClosedWonByCategory] = React.useState<
+    Partial<Record<Category, ClosedWonOpportunitiesPayload>>
+  >(() => buildClosedWonCache(initialClosedWonOpportunities));
   const [dictionaries, setDictionaries] =
     React.useState<Record<string, FilterDictionaryPayload>>(initialDictionaries);
   const [dictionaryLoading, setDictionaryLoading] = React.useState<
     Partial<Record<GlobalFilterKey, boolean>>
   >({});
+  const [backgroundSettledTaskKeys, setBackgroundSettledTaskKeys] =
+    React.useState<string[]>([]);
+  const [pendingDictionaryKeys, setPendingDictionaryKeys] = React.useState<
+    GlobalFilterKey[]
+  >([]);
   const [isSnapshotLoading, setSnapshotLoading] = React.useState(false);
   const [isTrendLoading, setTrendLoading] = React.useState(false);
   const [isClosedWonLoading, setClosedWonLoading] = React.useState(false);
@@ -241,6 +376,19 @@ export function DashboardShell({
   const refreshRequestIdRef = React.useRef(0);
   const didBootstrapInitialLoadRef = React.useRef(false);
   const isMountedRef = React.useRef(true);
+  const warmupQueryKey = React.useMemo(
+    () =>
+      buildWarmupQueryKey({
+        filters: state.filters,
+        dateRange: state.dateRange,
+      }),
+    [state.dateRange, state.filters],
+  );
+  const warmupQueryKeyRef = React.useRef(warmupQueryKey);
+  const backgroundSettledTaskKeySet = React.useMemo(
+    () => new Set(backgroundSettledTaskKeys),
+    [backgroundSettledTaskKeys],
+  );
 
   React.useEffect(
     () => () => {
@@ -249,33 +397,13 @@ export function DashboardShell({
     [],
   );
 
-  const closedWonPrefetchUrls = React.useMemo(
-    () =>
-      buildClosedWonPrefetchUrls(apiBasePath, {
-        filters: state.filters,
-        dateRange: state.dateRange,
-      }),
-    [apiBasePath, state.dateRange, state.filters],
-  );
+  React.useEffect(() => {
+    warmupQueryKeyRef.current = warmupQueryKey;
+  }, [warmupQueryKey]);
 
   React.useEffect(() => {
-    const abortController = new AbortController();
-    const timeoutIds = closedWonPrefetchUrls.map((url, index) =>
-      window.setTimeout(() => {
-        void fetch(url, {
-          headers: { Accept: 'application/json' },
-          signal: abortController.signal,
-        }).catch(() => {});
-      }, index * 75),
-    );
-
-    return () => {
-      abortController.abort();
-      for (const timeoutId of timeoutIds) {
-        window.clearTimeout(timeoutId);
-      }
-    };
-  }, [closedWonPrefetchUrls]);
+    setBackgroundSettledTaskKeys([]);
+  }, [warmupQueryKey]);
 
   function updateUrl(nextState: DashboardState) {
     if (typeof window === 'undefined') return;
@@ -365,7 +493,10 @@ export function DashboardShell({
             return;
           }
 
-          setClosedWonOpportunities(payload);
+          setClosedWonByCategory((current) => ({
+            ...current,
+            [payload.category]: payload,
+          }));
           setClosedWonLoading(false);
         })
         .catch((reason) => {
@@ -495,7 +626,9 @@ export function DashboardShell({
     const bootstrapScope = getInitialBootstrapScope({
       activeCategory: state.activeCategory,
       snapshotByCategory,
-      hasClosedWonData: Boolean(closedWonOpportunities),
+      hasClosedWonData: Boolean(
+        closedWonByCategory[getClosedWonCategory(state.activeCategory)],
+      ),
     });
 
     didBootstrapInitialLoadRef.current = true;
@@ -505,25 +638,266 @@ export function DashboardShell({
     }
 
     void refreshDashboard(state, bootstrapScope);
-  }, [closedWonOpportunities, snapshotByCategory, state]);
+  }, [closedWonByCategory, snapshotByCategory, state]);
+
+  const hasWarmActiveTab = React.useMemo(
+    () =>
+      hasWarmActiveTabData({
+        activeCategory: state.activeCategory,
+        snapshotByCategory,
+        closedWonByCategory,
+      }),
+    [closedWonByCategory, snapshotByCategory, state.activeCategory],
+  );
+
+  const nextBackgroundWarmupTask = React.useMemo(
+    () =>
+      getNextBackgroundWarmupTask({
+        activeCategory: state.activeCategory,
+        snapshotByCategory,
+        closedWonByCategory,
+        dictionaries,
+        settledTaskKeys: backgroundSettledTaskKeySet,
+      }),
+    [
+      backgroundSettledTaskKeySet,
+      closedWonByCategory,
+      dictionaries,
+      snapshotByCategory,
+      state.activeCategory,
+    ],
+  );
+
+  React.useEffect(() => {
+    if (
+      !hasWarmActiveTab ||
+      isSnapshotLoading ||
+      isClosedWonLoading ||
+      isTrendLoading
+    ) {
+      return;
+    }
+
+    let task = nextBackgroundWarmupTask;
+    if (!task) {
+      return;
+    }
+
+    const prioritizedDictionaryKey = pendingDictionaryKeys.find((key) => {
+      if (dictionaries[key]) {
+        return false;
+      }
+
+      return !backgroundSettledTaskKeySet.has(
+        getWarmupTaskKey({
+          kind: 'dictionary',
+          key,
+        }),
+      );
+    });
+
+    if (task.kind === 'dictionary' && prioritizedDictionaryKey) {
+      task = {
+        kind: 'dictionary',
+        key: prioritizedDictionaryKey,
+      };
+    }
+
+    const taskKey = getWarmupTaskKey(task);
+    const queryKey = warmupQueryKey;
+    const abortController = new AbortController();
+    let wasCancelled = false;
+
+    if (task.kind === 'dictionary') {
+      setDictionaryLoading((current) => ({
+        ...current,
+        [task.key]: true,
+      }));
+    }
+
+    const request =
+      task.kind === 'snapshot'
+        ? fetch(
+            urls.buildCategoryUrl({
+              ...state,
+              activeCategory: task.category,
+            }),
+            {
+              headers: { Accept: 'application/json' },
+              signal: abortController.signal,
+            },
+          ).then((response) =>
+            readJson<CategorySnapshotPayload>(response, 'Snapshot prefetch'),
+          )
+        : task.kind === 'closedWon'
+          ? fetch(
+              urls.buildClosedWonUrl({
+                ...state,
+                activeCategory: task.category,
+              }),
+              {
+                headers: { Accept: 'application/json' },
+                signal: abortController.signal,
+              },
+            ).then((response) =>
+              readJson<ClosedWonOpportunitiesPayload>(
+                response,
+                'Closed won prefetch',
+              ),
+            )
+          : fetch(urls.buildFilterDictionaryUrl(task.key), {
+              headers: { Accept: 'application/json' },
+              signal: abortController.signal,
+            }).then((response) =>
+              readJson<FilterDictionaryPayload>(
+                response,
+                `${task.key} filter prefetch`,
+              ),
+            );
+
+    void request
+      .then((payload) => {
+        if (
+          wasCancelled ||
+          !isMountedRef.current ||
+          warmupQueryKeyRef.current !== queryKey
+        ) {
+          return;
+        }
+
+        React.startTransition(() => {
+          if (task.kind === 'snapshot') {
+            const snapshotPayload = payload as CategorySnapshotPayload;
+            setSnapshotByCategory((current) => ({
+              ...current,
+              [snapshotPayload.category]: snapshotPayload,
+            }));
+            return;
+          }
+
+          if (task.kind === 'closedWon') {
+            const closedWonPayload = payload as ClosedWonOpportunitiesPayload;
+            setClosedWonByCategory((current) => ({
+              ...current,
+              [closedWonPayload.category]: closedWonPayload,
+            }));
+            return;
+          }
+
+          const dictionaryPayload = payload as FilterDictionaryPayload;
+          setDictionaries((current) => ({
+            ...current,
+            [dictionaryPayload.filterKey]: dictionaryPayload,
+          }));
+        });
+
+        setBackgroundSettledTaskKeys((current) =>
+          current.includes(taskKey) ? current : [...current, taskKey],
+        );
+        if (task.kind === 'dictionary') {
+          setPendingDictionaryKeys((current) =>
+            current.filter((key) => key !== task.key),
+          );
+          setDictionaryLoading((current) => ({
+            ...current,
+            [task.key]: false,
+          }));
+        }
+      })
+      .catch((reason) => {
+        if (
+          wasCancelled ||
+          abortController.signal.aborted ||
+          !isMountedRef.current ||
+          warmupQueryKeyRef.current !== queryKey
+        ) {
+          return;
+        }
+
+        setBackgroundSettledTaskKeys((current) =>
+          current.includes(taskKey) ? current : [...current, taskKey],
+        );
+        setError((current) => {
+          if (current) {
+            return current;
+          }
+
+          if (task.kind === 'dictionary') {
+            return formatRefreshError(`${task.key} filter`, reason);
+          }
+
+          return formatRefreshError(`${task.kind} warmup`, reason);
+        });
+        if (task.kind === 'dictionary') {
+          setPendingDictionaryKeys((current) =>
+            current.filter((key) => key !== task.key),
+          );
+          setDictionaryLoading((current) => ({
+            ...current,
+            [task.key]: false,
+          }));
+        }
+      });
+
+    return () => {
+      wasCancelled = true;
+      abortController.abort();
+
+      if (
+        task.kind === 'dictionary' &&
+        isMountedRef.current &&
+        !pendingDictionaryKeys.includes(task.key)
+      ) {
+        setDictionaryLoading((current) => ({
+          ...current,
+          [task.key]: false,
+        }));
+      }
+    };
+  }, [
+    backgroundSettledTaskKeySet,
+    closedWonByCategory,
+    dictionaries,
+    hasWarmActiveTab,
+    isClosedWonLoading,
+    isSnapshotLoading,
+    isTrendLoading,
+    nextBackgroundWarmupTask,
+    pendingDictionaryKeys,
+    state,
+    urls,
+    warmupQueryKey,
+  ]);
+
+  function resetWarmCachesForForegroundRefresh() {
+    setOverviewBoard(null);
+    setSnapshotByCategory({});
+    setClosedWonByCategory({});
+    setTrend(null);
+    setBackgroundSettledTaskKeys([]);
+    setRevealedTrendCategory(null);
+  }
 
   function handleCategoryChange(category: DashboardState['activeCategory']) {
     const nextState = setDashboardActiveCategory(state, category);
     setRevealedTrendCategory(null);
+    const detailCategory = isCategory(category) ? category : CATEGORY_ORDER[0];
+    const closedWonCategory = getClosedWonCategory(category);
     const shouldLoadOverview =
       isOverviewTab(category) && !hasFullSnapshotCache(snapshotByCategory);
     const shouldLoadSnapshot =
       isCategory(category) && !snapshotByCategory[category];
+    const shouldLoadClosedWon = !closedWonByCategory[closedWonCategory];
 
     applyStateChange(
       nextState,
       {
         overview: shouldLoadOverview,
         snapshot: shouldLoadSnapshot,
-        trend: isCategory(category),
-        closedWon: true,
-        detailCategory: isCategory(category) ? category : CATEGORY_ORDER[0],
-        closedWonCategory: getClosedWonCategory(category),
+        trend: false,
+        closedWon: shouldLoadClosedWon,
+        detailCategory,
+        closedWonCategory,
       },
       {
         optimisticState: nextState,
@@ -571,18 +945,22 @@ export function DashboardShell({
     const detailCategory = isCategory(nextState.activeCategory)
       ? nextState.activeCategory
       : CATEGORY_ORDER[0];
-    const shouldRefreshOverview =
-      isOverviewTab(nextState.activeCategory) ||
-      hasFullSnapshotCache(snapshotByCategory);
-
-    applyStateChange(nextState, {
-      overview: shouldRefreshOverview,
-      snapshot: !shouldRefreshOverview,
-      trend: isCategory(nextState.activeCategory),
-      closedWon: true,
-      detailCategory,
-      closedWonCategory: getClosedWonCategory(nextState.activeCategory),
-    });
+    resetWarmCachesForForegroundRefresh();
+    applyStateChange(
+      nextState,
+      {
+        overview: isOverviewTab(nextState.activeCategory),
+        snapshot: isCategory(nextState.activeCategory),
+        trend: false,
+        closedWon: true,
+        detailCategory,
+        closedWonCategory: getClosedWonCategory(nextState.activeCategory),
+      },
+      {
+        optimisticState: nextState,
+        revertState: state,
+      },
+    );
   }
 
   function handleFilterValueRemove(
@@ -596,18 +974,22 @@ export function DashboardShell({
     const detailCategory = isCategory(nextState.activeCategory)
       ? nextState.activeCategory
       : CATEGORY_ORDER[0];
-    const shouldRefreshOverview =
-      isOverviewTab(nextState.activeCategory) ||
-      hasFullSnapshotCache(snapshotByCategory);
-
-    applyStateChange(nextState, {
-      overview: shouldRefreshOverview,
-      snapshot: !shouldRefreshOverview,
-      trend: isCategory(nextState.activeCategory),
-      closedWon: true,
-      detailCategory,
-      closedWonCategory: getClosedWonCategory(nextState.activeCategory),
-    });
+    resetWarmCachesForForegroundRefresh();
+    applyStateChange(
+      nextState,
+      {
+        overview: isOverviewTab(nextState.activeCategory),
+        snapshot: isCategory(nextState.activeCategory),
+        trend: false,
+        closedWon: true,
+        detailCategory,
+        closedWonCategory: getClosedWonCategory(nextState.activeCategory),
+      },
+      {
+        optimisticState: nextState,
+        revertState: state,
+      },
+    );
   }
 
   function handleDateRangeApply(dateRange: DateRange) {
@@ -619,18 +1001,22 @@ export function DashboardShell({
     const detailCategory = isCategory(nextState.activeCategory)
       ? nextState.activeCategory
       : CATEGORY_ORDER[0];
-    const shouldRefreshOverview =
-      isOverviewTab(nextState.activeCategory) ||
-      hasFullSnapshotCache(snapshotByCategory);
-
-    applyStateChange(nextState, {
-      overview: shouldRefreshOverview,
-      snapshot: !shouldRefreshOverview,
-      trend: isCategory(nextState.activeCategory),
-      closedWon: true,
-      detailCategory,
-      closedWonCategory: getClosedWonCategory(nextState.activeCategory),
-    });
+    resetWarmCachesForForegroundRefresh();
+    applyStateChange(
+      nextState,
+      {
+        overview: isOverviewTab(nextState.activeCategory),
+        snapshot: isCategory(nextState.activeCategory),
+        trend: false,
+        closedWon: true,
+        detailCategory,
+        closedWonCategory: getClosedWonCategory(nextState.activeCategory),
+      },
+      {
+        optimisticState: nextState,
+        revertState: state,
+      },
+    );
   }
 
   function handleFilterOpen(key: GlobalFilterKey) {
@@ -642,46 +1028,17 @@ export function DashboardShell({
       ...current,
       [key]: true,
     }));
-
-    void fetchFilterDictionary(apiBasePath, key)
-      .then((payload) => {
-        if (!isMountedRef.current) {
-          return;
-        }
-
-        React.startTransition(() => {
-          setDictionaries((current) => ({
-            ...current,
-            [key]: payload,
-          }));
-        });
-      })
-      .catch((reason) => {
-        if (!isMountedRef.current) {
-          return;
-        }
-
-        setError(
-          (current) =>
-            current ?? formatRefreshError(`${key} filter`, reason),
-        );
-      })
-      .finally(() => {
-        if (!isMountedRef.current) {
-          return;
-        }
-
-        setDictionaryLoading((current) => ({
-          ...current,
-          [key]: false,
-        }));
-      });
+    setPendingDictionaryKeys((current) =>
+      current.includes(key) ? current : [...current, key],
+    );
   }
 
   const detailCategory = isCategory(state.activeCategory)
     ? state.activeCategory
     : CATEGORY_ORDER[0];
   const activeSnapshot = snapshotByCategory[detailCategory] ?? null;
+  const activeClosedWon =
+    closedWonByCategory[getClosedWonCategory(state.activeCategory)] ?? null;
   const overviewSnapshots =
     overviewBoard?.snapshots ??
     CATEGORY_ORDER.map((category) => snapshotByCategory[category]).filter(
@@ -760,7 +1117,7 @@ export function DashboardShell({
             ) : (
               <OverviewTab
                 board={buildOverviewBoard(overviewSnapshots)}
-                closedWonOpportunities={closedWonOpportunities}
+                closedWonOpportunities={activeClosedWon}
               />
             )
           ) : (
@@ -816,10 +1173,10 @@ export function DashboardShell({
                   </div>
                 </CardContent>
               </Card>
-              {isClosedWonLoading || !closedWonOpportunities ? (
+              {isClosedWonLoading || !activeClosedWon ? (
                 <ClosedWonOpportunitiesTableSkeleton />
               ) : (
-                <ClosedWonOpportunitiesTable payload={closedWonOpportunities} />
+                <ClosedWonOpportunitiesTable payload={activeClosedWon} />
               )}
             </div>
           )}
