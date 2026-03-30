@@ -4,6 +4,20 @@
 
 Use this procedure when comparing the current baseline against any optimization branch.
 
+### First paint vs hydrated data
+
+The sales-performance route now uses a shell-first load model:
+
+- the initial HTML response renders the dashboard shell immediately
+- overview or category data then load after first paint through the client
+  refresh flow
+
+When comparing performance, treat these as separate measurements:
+
+- shell response time: how quickly the page frame appears
+- dashboard hydration time: how long it takes the first overview or category
+  payload to replace the skeletons
+
 ### Local production-mode check
 
 Run from the repo root:
@@ -41,6 +55,7 @@ Use:
 
 Compare:
 
+- shell-first paint timing separately from post-paint hydration timing
 - cold request behavior
 - warm request behavior
 - compile time vs execution time
@@ -89,6 +104,12 @@ The category page no longer performs the initial SSR trend fetch. The trend
 panel is hidden until the user selects a tile, so the server-side trend call
 added two non-critical compile+BigQuery cycles to the first category render
 without improving the first paint.
+
+The page entrypoint also no longer blocks the initial response on overview or
+category snapshot loaders. First-load overview and snapshot data now arrive
+through the dashboard shell after the initial paint, which improves perceived
+performance on Vercel even when the underlying compile+BigQuery work remains
+expensive.
 
 ### Notes
 
