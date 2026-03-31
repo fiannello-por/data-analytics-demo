@@ -102,6 +102,13 @@ type BackgroundWarmupTask =
       key: GlobalFilterKey;
     };
 
+type InFlightBackgroundWarmupRequest = {
+  task: BackgroundWarmupTask;
+  taskKey: string;
+  queryKey: string;
+  abortController: AbortController;
+};
+
 async function readJson<T>(response: Response, label: string): Promise<T> {
   if (!response.ok) {
     throw new Error(`${label} request failed with status ${response.status}.`);
@@ -180,6 +187,22 @@ function getWarmupTaskKey(task: BackgroundWarmupTask): string {
     case 'dictionary':
       return `dictionary:${task.key}`;
   }
+}
+
+export function shouldReuseBackgroundWarmupRequest(input: {
+  currentTaskKey: string | null;
+  currentQueryKey: string | null;
+  nextTask: BackgroundWarmupTask | null;
+  nextQueryKey: string;
+}): boolean {
+  if (!input.currentTaskKey || !input.currentQueryKey || !input.nextTask) {
+    return false;
+  }
+
+  return (
+    input.currentQueryKey === input.nextQueryKey &&
+    input.currentTaskKey === getWarmupTaskKey(input.nextTask)
+  );
 }
 
 function buildWarmupQueryKey(
@@ -408,6 +431,8 @@ export function DashboardShell({
   const refreshRequestIdRef = React.useRef(0);
   const didBootstrapInitialLoadRef = React.useRef(false);
   const isMountedRef = React.useRef(true);
+  const backgroundWarmupRequestRef =
+    React.useRef<InFlightBackgroundWarmupRequest | null>(null);
   const warmupQueryKey = React.useMemo(
     () =>
       buildWarmupQueryKey({
@@ -416,22 +441,36 @@ export function DashboardShell({
       }),
     [state.dateRange, state.filters],
   );
-  const warmupQueryKeyRef = React.useRef(warmupQueryKey);
   const backgroundSettledTaskKeySet = React.useMemo(
     () => new Set(backgroundSettledTaskKeys),
     [backgroundSettledTaskKeys],
   );
 
+  function cancelBackgroundWarmupRequest(
+    request: InFlightBackgroundWarmupRequest,
+  ) {
+    request.abortController.abort();
+
+    if (request.task.kind === 'dictionary' && isMountedRef.current) {
+      const dictionaryKey = request.task.key;
+      setDictionaryLoading((current) => ({
+        ...current,
+        [dictionaryKey]: false,
+      }));
+    }
+  }
+
   React.useEffect(
     () => () => {
       isMountedRef.current = false;
+      const currentRequest = backgroundWarmupRequestRef.current;
+      backgroundWarmupRequestRef.current = null;
+      if (currentRequest) {
+        cancelBackgroundWarmupRequest(currentRequest);
+      }
     },
     [],
   );
-
-  React.useEffect(() => {
-    warmupQueryKeyRef.current = warmupQueryKey;
-  }, [warmupQueryKey]);
 
   React.useEffect(() => {
     setBackgroundSettledTaskKeys([]);
@@ -747,6 +786,32 @@ export function DashboardShell({
     [closedWonByCategory, snapshotByCategory, state.activeCategory],
   );
 
+  React.useEffect(() => {
+    const currentRequest = backgroundWarmupRequestRef.current;
+    if (!currentRequest) {
+      return;
+    }
+
+    if (
+      currentRequest.queryKey === warmupQueryKey &&
+      hasWarmActiveTab &&
+      !isSnapshotLoading &&
+      !isClosedWonLoading &&
+      !isTrendLoading
+    ) {
+      return;
+    }
+
+    backgroundWarmupRequestRef.current = null;
+    cancelBackgroundWarmupRequest(currentRequest);
+  }, [
+    hasWarmActiveTab,
+    isClosedWonLoading,
+    isSnapshotLoading,
+    isTrendLoading,
+    warmupQueryKey,
+  ]);
+
   const nextBackgroundWarmupTask = React.useMemo(
     () =>
       getNextBackgroundWarmupTask({
@@ -802,8 +867,31 @@ export function DashboardShell({
 
     const taskKey = getWarmupTaskKey(task);
     const queryKey = warmupQueryKey;
+    const currentRequest = backgroundWarmupRequestRef.current;
+
+    if (
+      shouldReuseBackgroundWarmupRequest({
+        currentTaskKey: currentRequest?.taskKey ?? null,
+        currentQueryKey: currentRequest?.queryKey ?? null,
+        nextTask: task,
+        nextQueryKey: queryKey,
+      })
+    ) {
+      return;
+    }
+
+    if (currentRequest) {
+      backgroundWarmupRequestRef.current = null;
+      cancelBackgroundWarmupRequest(currentRequest);
+    }
+
     const abortController = new AbortController();
-    let wasCancelled = false;
+    backgroundWarmupRequestRef.current = {
+      task,
+      taskKey,
+      queryKey,
+      abortController,
+    };
 
     if (task.kind === 'dictionary') {
       setDictionaryLoading((current) => ({
@@ -854,13 +942,19 @@ export function DashboardShell({
 
     void request
       .then((payload) => {
+        const activeRequest = backgroundWarmupRequestRef.current;
+
         if (
-          wasCancelled ||
           !isMountedRef.current ||
-          warmupQueryKeyRef.current !== queryKey
+          !activeRequest ||
+          activeRequest.abortController !== abortController ||
+          activeRequest.taskKey !== taskKey ||
+          activeRequest.queryKey !== queryKey
         ) {
           return;
         }
+
+        backgroundWarmupRequestRef.current = null;
 
         React.startTransition(() => {
           if (task.kind === 'snapshot') {
@@ -902,11 +996,20 @@ export function DashboardShell({
         }
       })
       .catch((reason) => {
+        const activeRequest = backgroundWarmupRequestRef.current;
+        const isCurrentRequest =
+          activeRequest?.abortController === abortController &&
+          activeRequest.taskKey === taskKey &&
+          activeRequest.queryKey === queryKey;
+
+        if (isCurrentRequest) {
+          backgroundWarmupRequestRef.current = null;
+        }
+
         if (
-          wasCancelled ||
           abortController.signal.aborted ||
           !isMountedRef.current ||
-          warmupQueryKeyRef.current !== queryKey
+          !isCurrentRequest
         ) {
           return;
         }
@@ -935,22 +1038,6 @@ export function DashboardShell({
           }));
         }
       });
-
-    return () => {
-      wasCancelled = true;
-      abortController.abort();
-
-      if (
-        task.kind === 'dictionary' &&
-        isMountedRef.current &&
-        !pendingDictionaryKeys.includes(task.key)
-      ) {
-        setDictionaryLoading((current) => ({
-          ...current,
-          [task.key]: false,
-        }));
-      }
-    };
   }, [
     backgroundSettledTaskKeySet,
     closedWonByCategory,
