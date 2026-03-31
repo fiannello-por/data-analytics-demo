@@ -71,9 +71,7 @@ describe('dashboard v2 routes', () => {
     expect(response.headers.get('x-analytics-suite-execution-ms')).toBe(
       '84.25',
     );
-    expect(response.headers.get('x-analytics-suite-cache-status')).toBe(
-      'miss',
-    );
+    expect(response.headers.get('x-analytics-suite-cache-status')).toBe('miss');
   });
 
   it('returns the v2 filter dictionary payload from analytics-suite', async () => {
@@ -110,27 +108,23 @@ describe('dashboard v2 routes', () => {
     expect(response.status).toBe(200);
     expect(response.headers.get('x-analytics-suite-source')).toBe('lightdash');
     expect(response.headers.get('x-analytics-suite-compile-ms')).toBe('11.75');
-    expect(response.headers.get('x-analytics-suite-execution-ms')).toBe(
-      '43.5',
-    );
+    expect(response.headers.get('x-analytics-suite-execution-ms')).toBe('43.5');
     expect(response.headers.get('x-analytics-suite-cache-status')).toBe('hit');
   });
 
   it('exports explicit Vercel runtime settings for dashboard routes and the sales page', async () => {
-    const salesPageModule = await import('@/app/dashboards/sales-performance/page');
-    const overviewRouteModule = await import('@/app/api/dashboard-v2/overview/route');
-    const categoryRouteModule = await import(
-      '@/app/api/dashboard-v2/category/[category]/route'
-    );
-    const trendRouteModule = await import(
-      '@/app/api/dashboard-v2/trend/[tileId]/route'
-    );
-    const closedWonRouteModule = await import(
-      '@/app/api/dashboard-v2/closed-won/[category]/route'
-    );
-    const filterDictionaryRouteModule = await import(
-      '@/app/api/dashboard-v2/filter-dictionaries/[key]/route'
-    );
+    const salesPageModule =
+      await import('@/app/dashboards/sales-performance/page');
+    const overviewRouteModule =
+      await import('@/app/api/dashboard-v2/overview/route');
+    const categoryRouteModule =
+      await import('@/app/api/dashboard-v2/category/[category]/route');
+    const trendRouteModule =
+      await import('@/app/api/dashboard-v2/trend/[tileId]/route');
+    const closedWonRouteModule =
+      await import('@/app/api/dashboard-v2/closed-won/[category]/route');
+    const filterDictionaryRouteModule =
+      await import('@/app/api/dashboard-v2/filter-dictionaries/[key]/route');
     const vercelConfigPath = path.resolve(process.cwd(), 'vercel.json');
     const vercelConfig = JSON.parse(await readFile(vercelConfigPath, 'utf8'));
 

@@ -71,10 +71,7 @@ export async function getDashboardV2TileTrend(
       runtime.runQuery(currentRequest),
       runtime.runQuery(previousRequest),
     ]);
-    const timingMetrics = aggregateTimingMetrics([
-      current.meta,
-      previous.meta,
-    ]);
+    const timingMetrics = aggregateTimingMetrics([current.meta, previous.meta]);
     const bucketField =
       Object.keys(current.rows[0] ?? {}).find((field) =>
         field.endsWith('_week'),

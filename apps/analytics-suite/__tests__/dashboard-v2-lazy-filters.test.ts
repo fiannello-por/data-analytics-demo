@@ -14,9 +14,8 @@ describe('dashboard v2 lazy filter dictionaries', () => {
       },
     }));
 
-    const { fetchFilterDictionary } = await import(
-      '@/lib/dashboard/filter-dictionary-client'
-    );
+    const { fetchFilterDictionary } =
+      await import('@/lib/dashboard/filter-dictionary-client');
     const result = await fetchFilterDictionary(
       '/api/dashboard-v2',
       'Division',

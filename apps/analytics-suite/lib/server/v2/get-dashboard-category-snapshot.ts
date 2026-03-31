@@ -110,7 +110,10 @@ export async function getDashboardV2CategorySnapshot(
       }),
     );
     const timingMetrics = aggregateTimingMetrics(
-      groupResults.flatMap((result) => [result.current.meta, result.previous.meta]),
+      groupResults.flatMap((result) => [
+        result.current.meta,
+        result.previous.meta,
+      ]),
     );
 
     const rows = groupResults.flatMap(

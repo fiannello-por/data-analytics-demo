@@ -64,10 +64,7 @@ export function applyProbeHeaders(
   }
 
   if (meta.cacheStatus != null) {
-    response.headers.set(
-      'x-analytics-suite-cache-status',
-      meta.cacheStatus,
-    );
+    response.headers.set('x-analytics-suite-cache-status', meta.cacheStatus);
   }
 
   response.headers.set(

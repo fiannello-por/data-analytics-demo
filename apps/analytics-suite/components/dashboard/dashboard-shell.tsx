@@ -187,7 +187,7 @@ function hasWarmActiveTabData(input: {
 
   return Boolean(
     input.snapshotByCategory[input.activeCategory] &&
-      input.closedWonByCategory[closedWonCategory],
+    input.closedWonByCategory[closedWonCategory],
   );
 }
 
@@ -358,7 +358,9 @@ export function DashboardShell({
     Partial<Record<Category, ClosedWonOpportunitiesPayload>>
   >(() => buildClosedWonCache(initialClosedWonOpportunities));
   const [dictionaries, setDictionaries] =
-    React.useState<Record<string, FilterDictionaryPayload>>(initialDictionaries);
+    React.useState<Record<string, FilterDictionaryPayload>>(
+      initialDictionaries,
+    );
   const [dictionaryLoading, setDictionaryLoading] = React.useState<
     Partial<Record<GlobalFilterKey, boolean>>
   >({});

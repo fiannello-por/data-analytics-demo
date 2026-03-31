@@ -23,8 +23,12 @@ describe('dashboard refresh structure', () => {
     );
 
     expect(source).toContain('export function getInitialBootstrapScope');
-    expect(source).toContain('const didBootstrapInitialLoadRef = React.useRef(false);');
-    expect(source).toContain('const bootstrapScope = getInitialBootstrapScope({');
+    expect(source).toContain(
+      'const didBootstrapInitialLoadRef = React.useRef(false);',
+    );
+    expect(source).toContain(
+      'const bootstrapScope = getInitialBootstrapScope({',
+    );
     expect(source).toContain('void refreshDashboard(state, bootstrapScope);');
   });
 });
