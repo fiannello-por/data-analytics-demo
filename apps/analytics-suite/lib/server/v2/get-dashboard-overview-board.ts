@@ -10,7 +10,9 @@ import type {
 } from '@/lib/dashboard/contracts';
 import type { ProbeExecutionOptions } from '@/lib/probe-cache-mode';
 import {
+  aggregateTimingMetrics,
   nowIsoString,
+  resolveAggregateCacheStatus,
   type DashboardLoaderResult,
 } from '@/lib/server/dashboard-query-runtime';
 import { getDashboardV2CategorySnapshot } from '@/lib/server/v2/get-dashboard-category-snapshot';
@@ -48,6 +50,9 @@ export async function getDashboardV2OverviewBoard(
         ),
       ),
     );
+    const timingMetrics = aggregateTimingMetrics(
+      snapshots.map((snapshot) => snapshot.meta),
+    );
 
     return {
       data: {
@@ -65,6 +70,11 @@ export async function getDashboardV2OverviewBoard(
         bytesProcessed: snapshots.reduce(
           (sum, snapshot) => sum + (snapshot.meta.bytesProcessed ?? 0),
           0,
+        ),
+        compileDurationMs: timingMetrics.compileDurationMs,
+        executionDurationMs: timingMetrics.executionDurationMs,
+        cacheStatus: resolveAggregateCacheStatus(
+          snapshots.map((snapshot) => snapshot.meta.cacheStatus),
         ),
         cacheMode: options.cacheMode ?? 'auto',
       },

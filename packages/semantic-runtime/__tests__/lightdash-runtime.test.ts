@@ -14,6 +14,7 @@ import type {
 import { createSemanticRuntime, createLightdashProvider } from '../src';
 
 afterEach(() => {
+  vi.useRealTimers();
   vi.restoreAllMocks();
 });
 
@@ -217,5 +218,49 @@ describe('Lightdash semantic runtime', () => {
         },
       },
     ]);
+  });
+
+  it('times out slow Lightdash compile requests and logs the failure', async () => {
+    vi.useFakeTimers();
+
+    const errorLogger = vi.fn();
+    const fetchMock = vi.fn(
+      (_input: RequestInfo | URL, init?: RequestInit) =>
+        new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener('abort', () => {
+            const error = new Error('The operation was aborted.');
+            error.name = 'AbortError';
+            reject(error);
+          });
+        }),
+    );
+
+    const provider = createLightdashProvider({
+      baseUrl: 'https://lightdash.example.com',
+      projectUuid: 'project-123',
+      apiKey: 'secret',
+      fetch: fetchMock,
+      compileTimeoutMs: 50,
+      logger: {
+        warn: vi.fn(),
+        error: errorLogger,
+      },
+    });
+
+    const compilePromise = provider.compileQuery({
+      model: 'sales_dashboard_v2_opportunity_base',
+      measures: ['bookings_amount'],
+    });
+    const compileExpectation = expect(compilePromise).rejects.toThrow(
+      'Lightdash compileQuery timed out after 50ms.',
+    );
+
+    await vi.advanceTimersByTimeAsync(50);
+
+    await compileExpectation;
+    expect(errorLogger).toHaveBeenCalledTimes(1);
+    expect(errorLogger.mock.calls[0]?.[0]).toContain(
+      '"event":"lightdash_compile_timeout"',
+    );
   });
 });

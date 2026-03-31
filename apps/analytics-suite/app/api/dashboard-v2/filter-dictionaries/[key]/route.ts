@@ -6,6 +6,10 @@ import {
 } from '@/lib/server/probe-http';
 import { getDashboardV2FilterDictionary } from '@/lib/server/v2/get-dashboard-filter-dictionary';
 
+export const runtime = 'nodejs';
+export const preferredRegion = 'pdx1';
+export const maxDuration = 300;
+
 function badRequest(message: string) {
   return NextResponse.json({ error: message }, { status: 400 });
 }

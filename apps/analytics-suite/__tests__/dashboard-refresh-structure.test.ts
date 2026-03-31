@@ -15,4 +15,20 @@ describe('dashboard refresh structure', () => {
       'const [overviewResult, snapshotResult, trendResult, closedWonResult] = await Promise.allSettled([',
     );
   });
+
+  it('bootstraps first-load dashboard requests through the shared refresh path', () => {
+    const source = fs.readFileSync(
+      path.join(appRoot, 'components/dashboard/dashboard-shell.tsx'),
+      'utf8',
+    );
+
+    expect(source).toContain('export function getInitialBootstrapScope');
+    expect(source).toContain(
+      'const didBootstrapInitialLoadRef = React.useRef(false);',
+    );
+    expect(source).toContain(
+      'const bootstrapScope = getInitialBootstrapScope({',
+    );
+    expect(source).toContain('void refreshDashboard(state, bootstrapScope);');
+  });
 });

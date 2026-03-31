@@ -15,6 +15,9 @@ export type LightdashProviderConfig = {
   projectUuid: string;
   apiKey: string;
   fetch?: FetchLike;
+  compileTimeoutMs?: number;
+  slowCompileThresholdMs?: number;
+  logger?: Pick<Console, 'warn' | 'error'>;
 };
 
 type LightdashFilterRule = {
@@ -59,6 +62,17 @@ function sortToLightdashSort(model: string, sort: SemanticSort) {
   return {
     fieldId: buildFieldId(model, sort.field),
     descending: sort.descending,
+  };
+}
+
+function summarizeRequest(request: SemanticQueryRequest) {
+  return {
+    model: request.model,
+    measureCount: request.measures?.length ?? 0,
+    dimensionCount: request.dimensions?.length ?? 0,
+    filterCount: request.filters?.length ?? 0,
+    sortCount: request.sorts?.length ?? 0,
+    limit: request.limit ?? 500,
   };
 }
 
@@ -138,6 +152,9 @@ export function createLightdashProvider(
   const fetchImpl = config.fetch ?? fetch;
   const baseUrl = trimTrailingSlash(config.baseUrl);
   const headers = toHeaders(config.apiKey);
+  const compileTimeoutMs = config.compileTimeoutMs ?? 10_000;
+  const slowCompileThresholdMs = config.slowCompileThresholdMs ?? 750;
+  const logger = config.logger ?? console;
 
   return {
     async compileQuery(
@@ -172,11 +189,19 @@ export function createLightdashProvider(
         },
       };
 
-      const response = await fetchImpl(
-        `${baseUrl}/api/v1/projects/${config.projectUuid}/explores/${request.model}/compileQuery`,
-        {
+      const compileUrl = `${baseUrl}/api/v1/projects/${config.projectUuid}/explores/${request.model}/compileQuery`;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        controller.abort();
+      }, compileTimeoutMs);
+      const startedAt = performance.now();
+
+      let response: Response;
+      try {
+        response = await fetchImpl(compileUrl, {
           method: 'POST',
           headers,
+          signal: controller.signal,
           body: JSON.stringify({
             exploreName: request.model,
             metrics: measures,
@@ -186,16 +211,67 @@ export function createLightdashProvider(
             limit: request.limit ?? 500,
             tableCalculations: [],
           }),
-        },
-      );
+        });
+      } catch (error) {
+        const durationMs = performance.now() - startedAt;
+        const event =
+          controller.signal.aborted ||
+          (error instanceof Error && error.name === 'AbortError')
+            ? 'lightdash_compile_timeout'
+            : 'lightdash_compile_failed';
+
+        logger.error(
+          JSON.stringify({
+            event,
+            durationMs,
+            compileTimeoutMs,
+            projectUuid: config.projectUuid,
+            ...summarizeRequest(request),
+            error: error instanceof Error ? error.message : String(error),
+          }),
+        );
+
+        if (event === 'lightdash_compile_timeout') {
+          throw new Error(
+            `Lightdash compileQuery timed out after ${compileTimeoutMs}ms.`,
+          );
+        }
+
+        throw error;
+      } finally {
+        clearTimeout(timeoutId);
+      }
 
       if (!response.ok) {
+        logger.error(
+          JSON.stringify({
+            event: 'lightdash_compile_failed',
+            durationMs: performance.now() - startedAt,
+            compileTimeoutMs,
+            projectUuid: config.projectUuid,
+            status: response.status,
+            ...summarizeRequest(request),
+          }),
+        );
         throw new Error(
           `Lightdash compileQuery failed with status ${response.status}.`,
         );
       }
 
       const sql = normalizeCompiledQueryPayload(await response.json());
+      const durationMs = performance.now() - startedAt;
+
+      if (durationMs >= slowCompileThresholdMs) {
+        logger.warn(
+          JSON.stringify({
+            event: 'lightdash_compile_slow',
+            durationMs,
+            slowCompileThresholdMs,
+            projectUuid: config.projectUuid,
+            ...summarizeRequest(request),
+          }),
+        );
+      }
 
       return {
         model: request.model,

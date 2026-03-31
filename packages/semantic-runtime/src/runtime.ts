@@ -6,13 +6,17 @@ import {
 } from '@google-cloud/bigquery';
 import type { DashboardBudgetTracker } from './budgets';
 import {
+  buildCompiledSemanticCacheKey,
   buildPersistentSemanticCacheKey,
   createInFlightRequestDeduper,
+  createMemorySemanticCompileCache,
   type InFlightRequestDeduper,
+  type SemanticCompileCache,
   type SemanticResultCache,
 } from './cache';
 import {
   type CatalogRequest,
+  type CompiledSemanticQuery,
   type SemanticCatalogEntry,
   type SemanticFieldValue,
   type SemanticProvider,
@@ -32,10 +36,19 @@ export type SemanticRuntimeConfig = {
   cache?: {
     semanticVersion: string;
     resultCache?: SemanticResultCache;
+    compileCache?: SemanticCompileCache;
     inFlightDeduper?: InFlightRequestDeduper<SemanticQueryResult>;
+    compileInFlightDeduper?: InFlightRequestDeduper<CompiledQueryLoad>;
   };
   budgetTracker?: DashboardBudgetTracker;
 };
+
+type CompiledQueryLoad = {
+  compiled: CompiledSemanticQuery;
+  compileDurationMs: number;
+};
+
+const DEFAULT_COMPILE_CACHE_TTL_MS = 60_000;
 
 function normalizeScalarValue(value: unknown): unknown {
   if (
@@ -137,6 +150,16 @@ export function createSemanticRuntime(
   const inFlightDeduper =
     config.cache?.inFlightDeduper ??
     createInFlightRequestDeduper<SemanticQueryResult>();
+  const compileInFlightDeduper =
+    config.cache?.compileInFlightDeduper ??
+    createInFlightRequestDeduper<CompiledQueryLoad>();
+  const compileCache =
+    config.cache?.compileCache ??
+    (config.cache?.semanticVersion
+      ? createMemorySemanticCompileCache({
+          maxAgeMs: DEFAULT_COMPILE_CACHE_TTL_MS,
+        })
+      : undefined);
 
   return {
     async getCatalogEntries(
@@ -178,10 +201,49 @@ export function createSemanticRuntime(
         }
       }
 
+      const loadCompiledQuery = async (): Promise<CompiledQueryLoad> => {
+        const compileCacheKey =
+          semanticVersion == null
+            ? undefined
+            : buildCompiledSemanticCacheKey({
+                request,
+                semanticVersion,
+              });
+
+        if (compileCacheKey && compileCache) {
+          const cachedCompiledQuery = await compileCache.get(compileCacheKey);
+          if (cachedCompiledQuery) {
+            return {
+              compiled: cachedCompiledQuery,
+              compileDurationMs: 0,
+            };
+          }
+        }
+
+        const compileFreshQuery = async (): Promise<CompiledQueryLoad> => {
+          const compileStartedAt = performance.now();
+          const compiled = await config.provider.compileQuery(request);
+          const compileDurationMs = performance.now() - compileStartedAt;
+
+          if (compileCacheKey && compileCache) {
+            await compileCache.set(compileCacheKey, compiled);
+          }
+
+          return {
+            compiled,
+            compileDurationMs,
+          };
+        };
+
+        if (compileCacheKey) {
+          return compileInFlightDeduper.run(compileCacheKey, compileFreshQuery);
+        }
+
+        return compileFreshQuery();
+      };
+
       const executeFreshQuery = async (): Promise<SemanticQueryResult> => {
-        const compileStartedAt = performance.now();
-        const compiled = await config.provider.compileQuery(request);
-        const compileDurationMs = performance.now() - compileStartedAt;
+        const { compiled, compileDurationMs } = await loadCompiledQuery();
 
         const executionStartedAt = performance.now();
         const execution = await config.executeQuery({ sql: compiled.sql });
@@ -225,9 +287,7 @@ export function createSemanticRuntime(
         );
       }
 
-      const compileStartedAt = performance.now();
-      const compiled = await config.provider.compileQuery(request);
-      const compileDurationMs = performance.now() - compileStartedAt;
+      const { compiled, compileDurationMs } = await loadCompiledQuery();
 
       const executionStartedAt = performance.now();
       const execution = await config.executeQuery({ sql: compiled.sql });

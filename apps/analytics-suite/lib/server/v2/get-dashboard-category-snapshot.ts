@@ -16,9 +16,11 @@ import type {
 } from '@/lib/dashboard/contracts';
 import type { ProbeExecutionOptions } from '@/lib/probe-cache-mode';
 import {
+  aggregateTimingMetrics,
   formatMetricValue,
   formatPctChange,
   nowIsoString,
+  resolveAggregateCacheStatus,
   type DashboardLoaderResult,
 } from '@/lib/server/dashboard-query-runtime';
 import {
@@ -107,6 +109,12 @@ export async function getDashboardV2CategorySnapshot(
         return { group, current, previous, backendTrace };
       }),
     );
+    const timingMetrics = aggregateTimingMetrics(
+      groupResults.flatMap((result) => [
+        result.current.meta,
+        result.previous.meta,
+      ]),
+    );
 
     const rows = groupResults.flatMap(
       ({ group, current, previous, backendTrace }) =>
@@ -155,6 +163,14 @@ export async function getDashboardV2CategorySnapshot(
             (result.current.meta.bytesProcessed ?? 0) +
             (result.previous.meta.bytesProcessed ?? 0),
           0,
+        ),
+        compileDurationMs: timingMetrics.compileDurationMs,
+        executionDurationMs: timingMetrics.executionDurationMs,
+        cacheStatus: resolveAggregateCacheStatus(
+          groupResults.flatMap((result) => [
+            result.current.meta.cacheStatus,
+            result.previous.meta.cacheStatus,
+          ]),
         ),
         cacheMode: execution.cacheMode,
       },

@@ -1,23 +1,17 @@
 import * as React from 'react';
 import type { Metadata } from 'next';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
-import {
-  CATEGORY_ORDER,
-  GLOBAL_FILTER_KEYS,
-  isCategory,
-  isOverviewTab,
-} from '@/lib/dashboard/catalog';
 import { parseDashboardSearchParams } from '@/lib/dashboard/query-inputs';
-import { getDashboardV2CategorySnapshot } from '@/lib/server/v2/get-dashboard-category-snapshot';
-import { getDashboardV2FilterDictionary } from '@/lib/server/v2/get-dashboard-filter-dictionary';
-import { getDashboardV2OverviewBoard } from '@/lib/server/v2/get-dashboard-overview-board';
-import { getDashboardV2TileTrend } from '@/lib/server/v2/get-dashboard-tile-trend';
 
 export const metadata: Metadata = {
   title: 'Sales Performance Dashboard',
   description:
     'Executive sales performance dashboard backed by Lightdash and BigQuery.',
 };
+
+export const runtime = 'nodejs';
+export const preferredRegion = 'pdx1';
+export const maxDuration = 300;
 
 type SearchParamsInput =
   | Record<string, string | string[] | undefined>
@@ -56,54 +50,15 @@ export default async function DashboardPageV2({
   const initialState = parseDashboardSearchParams(
     toUrlSearchParams(resolvedSearchParams),
   );
-  const initialOverviewBoard = isOverviewTab(initialState.activeCategory)
-    ? (
-        await getDashboardV2OverviewBoard({
-          filters: initialState.filters,
-          dateRange: initialState.dateRange,
-          previousDateRange: initialState.previousDateRange,
-        })
-      ).data
-    : null;
-  const initialSnapshot = isCategory(initialState.activeCategory)
-    ? (
-        await getDashboardV2CategorySnapshot({
-          activeCategory: initialState.activeCategory,
-          filters: initialState.filters,
-          dateRange: initialState.dateRange,
-          previousDateRange: initialState.previousDateRange,
-        })
-      ).data
-    : (initialOverviewBoard?.snapshots.find(
-        (snapshot) => snapshot.category === CATEGORY_ORDER[0],
-      ) ?? null);
-  const initialTrend = isCategory(initialState.activeCategory)
-    ? (
-        await getDashboardV2TileTrend({
-          activeCategory: initialState.activeCategory,
-          selectedTileId: initialState.selectedTileId,
-          filters: initialState.filters,
-          dateRange: initialState.dateRange,
-          previousDateRange: initialState.previousDateRange,
-          trendGrain: initialState.trendGrain,
-        })
-      ).data
-    : null;
-  const dictionaries = await Promise.all(
-    GLOBAL_FILTER_KEYS.map(async (key) => [
-      key,
-      (await getDashboardV2FilterDictionary(key)).data,
-    ]),
-  );
 
   return (
     <DashboardShell
       initialState={initialState}
-      initialSnapshot={initialSnapshot}
-      initialTrend={initialTrend}
+      initialSnapshot={null}
+      initialTrend={null}
       initialClosedWonOpportunities={null}
-      initialOverviewBoard={initialOverviewBoard}
-      initialDictionaries={Object.fromEntries(dictionaries)}
+      initialOverviewBoard={null}
+      initialDictionaries={{}}
       renderedAt={renderedAt}
       apiBasePath="/api/dashboard-v2"
     />

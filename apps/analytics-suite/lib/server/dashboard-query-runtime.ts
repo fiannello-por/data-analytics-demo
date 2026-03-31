@@ -36,6 +36,9 @@ export type DashboardLoaderMeta = {
   source: 'bigquery' | 'lightdash';
   queryCount: number;
   bytesProcessed?: number;
+  compileDurationMs?: number;
+  executionDurationMs?: number;
+  cacheStatus?: 'hit' | 'miss' | 'mixed';
   cacheMode: ProbeCacheMode;
 };
 
@@ -43,6 +46,58 @@ export type DashboardLoaderResult<T> = {
   data: T;
   meta: DashboardLoaderMeta;
 };
+
+export function aggregateTimingMetrics(
+  metrics: Array<{
+    compileDurationMs?: number;
+    executionDurationMs?: number;
+  }>,
+): {
+  compileDurationMs: number;
+  executionDurationMs: number;
+} {
+  return metrics.reduce<{
+    compileDurationMs: number;
+    executionDurationMs: number;
+  }>(
+    (totals, metric) => ({
+      compileDurationMs:
+        totals.compileDurationMs + (metric.compileDurationMs ?? 0),
+      executionDurationMs:
+        totals.executionDurationMs + (metric.executionDurationMs ?? 0),
+    }),
+    {
+      compileDurationMs: 0,
+      executionDurationMs: 0,
+    },
+  );
+}
+
+export function resolveAggregateCacheStatus(
+  statuses: Array<DashboardLoaderMeta['cacheStatus']>,
+): DashboardLoaderMeta['cacheStatus'] {
+  const observedStatuses = statuses.filter(
+    (status): status is 'hit' | 'miss' | 'mixed' => status != null,
+  );
+
+  if (observedStatuses.length === 0) {
+    return undefined;
+  }
+
+  if (observedStatuses.every((status) => status === 'hit')) {
+    return 'hit';
+  }
+
+  if (observedStatuses.every((status) => status === 'miss')) {
+    return 'miss';
+  }
+
+  if (observedStatuses.every((status) => status === 'mixed')) {
+    return 'mixed';
+  }
+
+  return 'mixed';
+}
 
 export const defaultDashboardQueryClient: DashboardQueryClient = {
   async queryRows(query, execution) {

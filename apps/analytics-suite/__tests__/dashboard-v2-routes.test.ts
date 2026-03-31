@@ -1,3 +1,5 @@
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 
@@ -39,6 +41,9 @@ describe('dashboard v2 routes', () => {
         source: 'lightdash',
         queryCount: 10,
         bytesProcessed: 1024,
+        compileDurationMs: 35.5,
+        executionDurationMs: 84.25,
+        cacheStatus: 'miss',
         cacheMode: 'off',
       },
     });
@@ -62,6 +67,11 @@ describe('dashboard v2 routes', () => {
     );
     expect(response.status).toBe(200);
     expect(response.headers.get('x-analytics-suite-source')).toBe('lightdash');
+    expect(response.headers.get('x-analytics-suite-compile-ms')).toBe('35.5');
+    expect(response.headers.get('x-analytics-suite-execution-ms')).toBe(
+      '84.25',
+    );
+    expect(response.headers.get('x-analytics-suite-cache-status')).toBe('miss');
   });
 
   it('returns the v2 filter dictionary payload from analytics-suite', async () => {
@@ -74,6 +84,9 @@ describe('dashboard v2 routes', () => {
         source: 'lightdash',
         queryCount: 1,
         bytesProcessed: 120,
+        compileDurationMs: 11.75,
+        executionDurationMs: 43.5,
+        cacheStatus: 'hit',
         cacheMode: 'off',
       },
     });
@@ -94,5 +107,43 @@ describe('dashboard v2 routes', () => {
     );
     expect(response.status).toBe(200);
     expect(response.headers.get('x-analytics-suite-source')).toBe('lightdash');
+    expect(response.headers.get('x-analytics-suite-compile-ms')).toBe('11.75');
+    expect(response.headers.get('x-analytics-suite-execution-ms')).toBe('43.5');
+    expect(response.headers.get('x-analytics-suite-cache-status')).toBe('hit');
+  });
+
+  it('exports explicit Vercel runtime settings for dashboard routes and the sales page', async () => {
+    const salesPageModule =
+      await import('@/app/dashboards/sales-performance/page');
+    const overviewRouteModule =
+      await import('@/app/api/dashboard-v2/overview/route');
+    const categoryRouteModule =
+      await import('@/app/api/dashboard-v2/category/[category]/route');
+    const trendRouteModule =
+      await import('@/app/api/dashboard-v2/trend/[tileId]/route');
+    const closedWonRouteModule =
+      await import('@/app/api/dashboard-v2/closed-won/[category]/route');
+    const filterDictionaryRouteModule =
+      await import('@/app/api/dashboard-v2/filter-dictionaries/[key]/route');
+    const vercelConfigPath = path.resolve(process.cwd(), 'vercel.json');
+    const vercelConfig = JSON.parse(await readFile(vercelConfigPath, 'utf8'));
+
+    for (const routeModule of [
+      salesPageModule,
+      overviewRouteModule,
+      categoryRouteModule,
+      trendRouteModule,
+      closedWonRouteModule,
+      filterDictionaryRouteModule,
+    ]) {
+      expect(routeModule.runtime).toBe('nodejs');
+      expect(routeModule.preferredRegion).toBe('pdx1');
+      expect(routeModule.maxDuration).toBe(300);
+    }
+
+    expect(vercelConfig).toMatchObject({
+      fluid: true,
+      regions: ['pdx1'],
+    });
   });
 });
