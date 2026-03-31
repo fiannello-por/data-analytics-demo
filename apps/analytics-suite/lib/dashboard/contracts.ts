@@ -71,6 +71,22 @@ export type CategorySnapshotPayload = {
   tileTimings: TileTiming[];
 };
 
+export type CategorySnapshotGroupManifest = {
+  category: Category;
+  groupId: string;
+  tileIds: string[];
+};
+
+export type CategorySnapshotGroupPayload = {
+  category: Category;
+  groupId: string;
+  currentWindowLabel: string;
+  previousWindowLabel: string;
+  lastRefreshedAt: string;
+  rows: CategorySnapshotRow[];
+  tileTimings: TileTiming[];
+};
+
 export type OverviewBoardPayload = {
   currentWindowLabel: string;
   previousWindowLabel: string;

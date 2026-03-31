@@ -24,6 +24,32 @@ const changeCellStyles = {
   neutral: 'text-neutral-change',
 } as const;
 
+export function getTileTableDisplayRows(snapshot: CategorySnapshotPayload) {
+  const rowsByTileId = new Map(
+    snapshot.rows.map((row) => [row.tileId, row] as const),
+  );
+
+  return getCategoryTiles(snapshot.category).map((tile) => {
+    const row = rowsByTileId.get(tile.tileId);
+
+    if (row) {
+      return {
+        kind: 'loaded' as const,
+        tileId: row.tileId,
+        label: row.label,
+        row,
+      };
+    }
+
+    return {
+      kind: 'skeleton' as const,
+      tileId: tile.tileId,
+      label: tile.label,
+      formatType: tile.formatType,
+    };
+  });
+}
+
 export function TileTable({
   snapshot,
   selectedTileId,
@@ -33,6 +59,8 @@ export function TileTable({
   selectedTileId: string;
   onRowSelect?: (tileId: string) => void;
 }) {
+  const displayRows = getTileTableDisplayRows(snapshot);
+
   return (
     <div className="rounded-lg border">
       <Table>
@@ -48,61 +76,89 @@ export function TileTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {snapshot.rows.map((row) => (
-            <TableRow
-              key={row.tileId}
-              data-state={
-                row.tileId === selectedTileId ? 'selected' : undefined
-              }
-              className={
-                onRowSelect
-                  ? 'group cursor-pointer transition-colors hover:bg-muted/50'
-                  : undefined
-              }
-              role={onRowSelect ? 'button' : undefined}
-              tabIndex={onRowSelect ? 0 : undefined}
-              aria-label={
-                onRowSelect ? `Select trend for ${row.label}` : undefined
-              }
-              onClick={onRowSelect ? () => onRowSelect(row.tileId) : undefined}
-              onKeyDown={
-                onRowSelect
-                  ? (event) => {
-                      if (event.key !== 'Enter' && event.key !== ' ') return;
-                      event.preventDefault();
-                      onRowSelect(row.tileId);
-                    }
-                  : undefined
-              }
-            >
-              <TableCell className="font-medium">
-                <div className="flex items-center gap-1.5">
-                  <span className="truncate">{row.label}</span>
-                  <TileBackendSheet
-                    title={row.label}
-                    trace={row.backendTrace}
-                    triggerStopsPropagation
-                    triggerClassName="shrink-0 group-hover:opacity-100"
-                  />
-                </div>
-              </TableCell>
-              <TableCell>{row.currentValue}</TableCell>
-              <TableCell>{row.previousValue}</TableCell>
-              <TableCell
-                className={cn(
-                  changeCellStyles[parseChange(row.pctChange).direction],
-                )}
+          {displayRows.map((displayRow) =>
+            displayRow.kind === 'loaded' ? (
+              <TableRow
+                key={displayRow.tileId}
+                data-state={
+                  displayRow.tileId === selectedTileId ? 'selected' : undefined
+                }
+                className={
+                  onRowSelect
+                    ? 'group cursor-pointer transition-colors hover:bg-muted/50'
+                    : undefined
+                }
+                role={onRowSelect ? 'button' : undefined}
+                tabIndex={onRowSelect ? 0 : undefined}
+                aria-label={
+                  onRowSelect
+                    ? `Select trend for ${displayRow.row.label}`
+                    : undefined
+                }
+                onClick={
+                  onRowSelect
+                    ? () => onRowSelect(displayRow.row.tileId)
+                    : undefined
+                }
+                onKeyDown={
+                  onRowSelect
+                    ? (event) => {
+                        if (event.key !== 'Enter' && event.key !== ' ') return;
+                        event.preventDefault();
+                        onRowSelect(displayRow.row.tileId);
+                      }
+                    : undefined
+                }
               >
-                {row.pctChange}
-              </TableCell>
-              <TableCell className="w-8 pr-3 text-right">
-                <ChevronRightIcon
-                  aria-hidden="true"
-                  className="ml-auto size-4 text-muted-foreground/50 transition-all group-hover:text-foreground/80 group-data-[state=selected]:translate-x-0.5 group-data-[state=selected]:text-foreground"
-                />
-              </TableCell>
-            </TableRow>
-          ))}
+                <TableCell className="font-medium">
+                  <div className="flex items-center gap-1.5">
+                    <span className="truncate">{displayRow.row.label}</span>
+                    <TileBackendSheet
+                      title={displayRow.row.label}
+                      trace={displayRow.row.backendTrace}
+                      triggerStopsPropagation
+                      triggerClassName="shrink-0 group-hover:opacity-100"
+                    />
+                  </div>
+                </TableCell>
+                <TableCell>{displayRow.row.currentValue}</TableCell>
+                <TableCell>{displayRow.row.previousValue}</TableCell>
+                <TableCell
+                  className={cn(
+                    changeCellStyles[
+                      parseChange(displayRow.row.pctChange).direction
+                    ],
+                  )}
+                >
+                  {displayRow.row.pctChange}
+                </TableCell>
+                <TableCell className="w-8 pr-3 text-right">
+                  <ChevronRightIcon
+                    aria-hidden="true"
+                    className="ml-auto size-4 text-muted-foreground/50 transition-all group-hover:text-foreground/80 group-data-[state=selected]:translate-x-0.5 group-data-[state=selected]:text-foreground"
+                  />
+                </TableCell>
+              </TableRow>
+            ) : (
+              <TableRow key={displayRow.tileId}>
+                <TableCell className="font-medium">
+                  {displayRow.label}
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-16" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-16" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-14" />
+                </TableCell>
+                <TableCell className="w-8 pr-3">
+                  <Skeleton className="ml-auto h-4 w-4 rounded-full" />
+                </TableCell>
+              </TableRow>
+            ),
+          )}
         </TableBody>
       </Table>
     </div>
