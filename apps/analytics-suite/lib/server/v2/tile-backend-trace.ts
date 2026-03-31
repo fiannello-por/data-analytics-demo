@@ -237,6 +237,20 @@ function getGithubContext() {
     return cachedGithubContext;
   }
 
+  const explicitOwner = process.env.GITHUB_REPO_OWNER;
+  const explicitRepo = process.env.GITHUB_REPO_SLUG;
+  const explicitBranch =
+    process.env.GITHUB_REPO_BRANCH ?? process.env.GITHUB_DEFAULT_BRANCH;
+
+  if (explicitOwner && explicitRepo) {
+    cachedGithubContext = {
+      owner: explicitOwner,
+      repo: explicitRepo,
+      branch: explicitBranch ?? resolveGithubBranch(),
+    };
+    return cachedGithubContext;
+  }
+
   const owner = process.env.VERCEL_GIT_REPO_OWNER;
   const repo = process.env.VERCEL_GIT_REPO_SLUG;
 
