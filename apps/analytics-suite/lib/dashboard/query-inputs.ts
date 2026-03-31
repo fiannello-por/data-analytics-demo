@@ -22,6 +22,8 @@ import {
   isValidDateRange,
 } from '@/lib/dashboard/date-range';
 
+const DEFAULT_DASHBOARD_LANDING_CATEGORY: Category = 'Expansion';
+
 export type DashboardStateKeyInput = {
   activeCategory: DashboardTab;
   filters?: DashboardFilters;
@@ -170,7 +172,7 @@ export function serializeDashboardStateSearchParams(
     input.selectedTileId ??
     (isCategory(input.activeCategory)
       ? getDefaultTileId(input.activeCategory)
-      : getDefaultTileId(CATEGORY_ORDER[0]));
+      : getDefaultTileId(DEFAULT_DASHBOARD_LANDING_CATEGORY));
 
   if (selectedTileId) {
     searchParams.set('tileId', selectedTileId);
@@ -300,7 +302,7 @@ export function parseDashboardSearchParams(
   const activeCategory =
     activeCategoryParam && isDashboardTab(activeCategoryParam)
       ? activeCategoryParam
-      : OVERVIEW_TAB;
+      : DEFAULT_DASHBOARD_LANDING_CATEGORY;
   const dateRange = parseDateRange(searchParams);
   const requestedTileId = searchParams.get('tileId')?.trim();
   const selectedTileId = isCategory(activeCategory)
@@ -309,7 +311,7 @@ export function parseDashboardSearchParams(
       : getDefaultTileId(activeCategory)
     : requestedTileId && findCategoryForTileId(requestedTileId)
       ? requestedTileId
-      : getDefaultTileId(CATEGORY_ORDER[0]);
+      : getDefaultTileId(DEFAULT_DASHBOARD_LANDING_CATEGORY);
 
   return {
     activeCategory,
@@ -331,7 +333,7 @@ export function serializeDashboardStateKey(
       input.selectedTileId ??
       (isCategory(input.activeCategory)
         ? getDefaultTileId(input.activeCategory)
-        : getDefaultTileId(CATEGORY_ORDER[0])),
+        : getDefaultTileId(DEFAULT_DASHBOARD_LANDING_CATEGORY)),
     dateRange,
     filters: normalizeDashboardFilters(input.filters ?? {}),
   });
