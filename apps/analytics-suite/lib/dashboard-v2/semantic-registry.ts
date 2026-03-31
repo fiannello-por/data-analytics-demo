@@ -360,6 +360,7 @@ export function buildFilterDictionaryQuery(
 }
 
 type SnapshotGroup = {
+  groupId: string;
   dateDimension: string;
   extraFilters?: SemanticFilter[];
   dateRangeStrategy?: DateRangeStrategy;
@@ -398,6 +399,7 @@ export function getSnapshotGroups(category: Category): SnapshotGroup[] {
     const semantic = getSemanticTileSpec(tile.tileId);
     const key = `${semantic.dateDimension}:${semantic.dateRangeStrategy ?? 'selected'}:${buildFilterSignature(semantic.extraFilters)}`;
     const group = groups.get(key) ?? {
+      groupId: tile.tileId,
       dateDimension: semantic.dateDimension,
       extraFilters: semantic.extraFilters,
       dateRangeStrategy: semantic.dateRangeStrategy,

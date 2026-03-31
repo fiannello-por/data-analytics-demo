@@ -10,6 +10,7 @@ import type {
   OverviewBoardPayload,
   TileTrendPayload,
 } from '@/lib/dashboard/contracts';
+import { isCategorySnapshotComplete } from '@/lib/dashboard/progressive-snapshot';
 import {
   CATEGORY_ORDER,
   findTileDefinition,
@@ -96,6 +97,13 @@ type BackgroundWarmupTask =
       key: GlobalFilterKey;
     };
 
+type InFlightBackgroundWarmupRequest = {
+  task: BackgroundWarmupTask;
+  taskKey: string;
+  queryKey: string;
+  abortController: AbortController;
+};
+
 async function readJson<T>(response: Response, label: string): Promise<T> {
   if (!response.ok) {
     throw new Error(`${label} request failed with status ${response.status}.`);
@@ -141,7 +149,7 @@ function hasFullSnapshotCache(
   snapshotByCategory: Partial<Record<Category, CategorySnapshotPayload>>,
 ) {
   return CATEGORY_ORDER.every((category) =>
-    Boolean(snapshotByCategory[category]),
+    isCategorySnapshotComplete(category, snapshotByCategory[category]),
   );
 }
 
@@ -160,6 +168,22 @@ function getWarmupTaskKey(task: BackgroundWarmupTask): string {
     case 'dictionary':
       return `dictionary:${task.key}`;
   }
+}
+
+export function shouldReuseBackgroundWarmupRequest(input: {
+  currentTaskKey: string | null;
+  currentQueryKey: string | null;
+  nextTask: BackgroundWarmupTask | null;
+  nextQueryKey: string;
+}): boolean {
+  if (!input.currentTaskKey || !input.currentQueryKey || !input.nextTask) {
+    return false;
+  }
+
+  return (
+    input.currentQueryKey === input.nextQueryKey &&
+    input.currentTaskKey === getWarmupTaskKey(input.nextTask)
+  );
 }
 
 function buildWarmupQueryKey(
@@ -186,8 +210,10 @@ function hasWarmActiveTabData(input: {
   }
 
   return Boolean(
-    input.snapshotByCategory[input.activeCategory] &&
-    input.closedWonByCategory[closedWonCategory],
+    isCategorySnapshotComplete(
+      input.activeCategory,
+      input.snapshotByCategory[input.activeCategory],
+    ) && input.closedWonByCategory[closedWonCategory],
   );
 }
 
@@ -227,7 +253,12 @@ export function getInitialBootstrapScope(input: {
     return null;
   }
 
-  if (!input.snapshotByCategory[detailCategory]) {
+  if (
+    !isCategorySnapshotComplete(
+      detailCategory,
+      input.snapshotByCategory[detailCategory],
+    )
+  ) {
     return {
       overview: false,
       snapshot: true,
@@ -293,7 +324,10 @@ export function getNextBackgroundWarmupTask(input: {
     } satisfies BackgroundWarmupTask;
 
     if (
-      !input.snapshotByCategory[category] &&
+      !isCategorySnapshotComplete(
+        category,
+        input.snapshotByCategory[category],
+      ) &&
       !settledTaskKeys.has(getWarmupTaskKey(task))
     ) {
       return task;
@@ -378,6 +412,8 @@ export function DashboardShell({
   const refreshRequestIdRef = React.useRef(0);
   const didBootstrapInitialLoadRef = React.useRef(false);
   const isMountedRef = React.useRef(true);
+  const backgroundWarmupRequestRef =
+    React.useRef<InFlightBackgroundWarmupRequest | null>(null);
   const warmupQueryKey = React.useMemo(
     () =>
       buildWarmupQueryKey({
@@ -386,22 +422,36 @@ export function DashboardShell({
       }),
     [state.dateRange, state.filters],
   );
-  const warmupQueryKeyRef = React.useRef(warmupQueryKey);
   const backgroundSettledTaskKeySet = React.useMemo(
     () => new Set(backgroundSettledTaskKeys),
     [backgroundSettledTaskKeys],
   );
 
+  function cancelBackgroundWarmupRequest(
+    request: InFlightBackgroundWarmupRequest,
+  ) {
+    request.abortController.abort();
+
+    if (request.task.kind === 'dictionary' && isMountedRef.current) {
+      const dictionaryKey = request.task.key;
+      setDictionaryLoading((current) => ({
+        ...current,
+        [dictionaryKey]: false,
+      }));
+    }
+  }
+
   React.useEffect(
     () => () => {
       isMountedRef.current = false;
+      const currentRequest = backgroundWarmupRequestRef.current;
+      backgroundWarmupRequestRef.current = null;
+      if (currentRequest) {
+        cancelBackgroundWarmupRequest(currentRequest);
+      }
     },
     [],
   );
-
-  React.useEffect(() => {
-    warmupQueryKeyRef.current = warmupQueryKey;
-  }, [warmupQueryKey]);
 
   React.useEffect(() => {
     setBackgroundSettledTaskKeys([]);
@@ -652,6 +702,32 @@ export function DashboardShell({
     [closedWonByCategory, snapshotByCategory, state.activeCategory],
   );
 
+  React.useEffect(() => {
+    const currentRequest = backgroundWarmupRequestRef.current;
+    if (!currentRequest) {
+      return;
+    }
+
+    if (
+      currentRequest.queryKey === warmupQueryKey &&
+      hasWarmActiveTab &&
+      !isSnapshotLoading &&
+      !isClosedWonLoading &&
+      !isTrendLoading
+    ) {
+      return;
+    }
+
+    backgroundWarmupRequestRef.current = null;
+    cancelBackgroundWarmupRequest(currentRequest);
+  }, [
+    hasWarmActiveTab,
+    isClosedWonLoading,
+    isSnapshotLoading,
+    isTrendLoading,
+    warmupQueryKey,
+  ]);
+
   const nextBackgroundWarmupTask = React.useMemo(
     () =>
       getNextBackgroundWarmupTask({
@@ -707,8 +783,31 @@ export function DashboardShell({
 
     const taskKey = getWarmupTaskKey(task);
     const queryKey = warmupQueryKey;
+    const currentRequest = backgroundWarmupRequestRef.current;
+
+    if (
+      shouldReuseBackgroundWarmupRequest({
+        currentTaskKey: currentRequest?.taskKey ?? null,
+        currentQueryKey: currentRequest?.queryKey ?? null,
+        nextTask: task,
+        nextQueryKey: queryKey,
+      })
+    ) {
+      return;
+    }
+
+    if (currentRequest) {
+      backgroundWarmupRequestRef.current = null;
+      cancelBackgroundWarmupRequest(currentRequest);
+    }
+
     const abortController = new AbortController();
-    let wasCancelled = false;
+    backgroundWarmupRequestRef.current = {
+      task,
+      taskKey,
+      queryKey,
+      abortController,
+    };
 
     if (task.kind === 'dictionary') {
       setDictionaryLoading((current) => ({
@@ -759,13 +858,19 @@ export function DashboardShell({
 
     void request
       .then((payload) => {
+        const activeRequest = backgroundWarmupRequestRef.current;
+
         if (
-          wasCancelled ||
           !isMountedRef.current ||
-          warmupQueryKeyRef.current !== queryKey
+          !activeRequest ||
+          activeRequest.abortController !== abortController ||
+          activeRequest.taskKey !== taskKey ||
+          activeRequest.queryKey !== queryKey
         ) {
           return;
         }
+
+        backgroundWarmupRequestRef.current = null;
 
         React.startTransition(() => {
           if (task.kind === 'snapshot') {
@@ -807,11 +912,20 @@ export function DashboardShell({
         }
       })
       .catch((reason) => {
+        const activeRequest = backgroundWarmupRequestRef.current;
+        const isCurrentRequest =
+          activeRequest?.abortController === abortController &&
+          activeRequest.taskKey === taskKey &&
+          activeRequest.queryKey === queryKey;
+
+        if (isCurrentRequest) {
+          backgroundWarmupRequestRef.current = null;
+        }
+
         if (
-          wasCancelled ||
           abortController.signal.aborted ||
           !isMountedRef.current ||
-          warmupQueryKeyRef.current !== queryKey
+          !isCurrentRequest
         ) {
           return;
         }
@@ -840,22 +954,6 @@ export function DashboardShell({
           }));
         }
       });
-
-    return () => {
-      wasCancelled = true;
-      abortController.abort();
-
-      if (
-        task.kind === 'dictionary' &&
-        isMountedRef.current &&
-        !pendingDictionaryKeys.includes(task.key)
-      ) {
-        setDictionaryLoading((current) => ({
-          ...current,
-          [task.key]: false,
-        }));
-      }
-    };
   }, [
     backgroundSettledTaskKeySet,
     closedWonByCategory,
@@ -888,7 +986,8 @@ export function DashboardShell({
     const shouldLoadOverview =
       isOverviewTab(category) && !hasFullSnapshotCache(snapshotByCategory);
     const shouldLoadSnapshot =
-      isCategory(category) && !snapshotByCategory[category];
+      isCategory(category) &&
+      !isCategorySnapshotComplete(category, snapshotByCategory[category]);
     const shouldLoadClosedWon = !closedWonByCategory[closedWonCategory];
 
     applyStateChange(
@@ -1139,7 +1238,7 @@ export function DashboardShell({
                 </CardHeader>
                 <CardContent className="grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(22rem,0.95fr)] xl:items-stretch">
                   <div className="min-w-0">
-                    {isSnapshotLoading || !activeSnapshot ? (
+                    {!activeSnapshot ? (
                       <TileTableSkeleton category={detailCategory} />
                     ) : (
                       <TileTable

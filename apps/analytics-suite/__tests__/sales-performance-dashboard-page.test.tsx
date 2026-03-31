@@ -62,6 +62,10 @@ describe('sales performance dashboard page', { timeout: 20000 }, () => {
     expect(dashboardShellMock).toHaveBeenCalledWith(
       expect.objectContaining({
         apiBasePath: '/api/dashboard-v2',
+        initialState: expect.objectContaining({
+          activeCategory: 'Expansion',
+          selectedTileId: 'expansion_bookings_amount',
+        }),
         initialOverviewBoard: null,
         initialSnapshot: null,
         initialDictionaries: {},
