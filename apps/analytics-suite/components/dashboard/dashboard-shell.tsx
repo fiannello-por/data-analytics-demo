@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 import type {
-  CategorySnapshotGroupPayload,
   CategorySnapshotPayload,
   ClosedWonOpportunitiesPayload,
   DashboardState,
@@ -11,11 +10,7 @@ import type {
   OverviewBoardPayload,
   TileTrendPayload,
 } from '@/lib/dashboard/contracts';
-import {
-  getCategorySnapshotGroupManifest,
-  isCategorySnapshotComplete,
-  mergeCategorySnapshotGroupPayload,
-} from '@/lib/dashboard/progressive-snapshot';
+import { isCategorySnapshotComplete } from '@/lib/dashboard/progressive-snapshot';
 import {
   CATEGORY_ORDER,
   findTileDefinition,
@@ -147,20 +142,6 @@ function buildClosedWonCache(
 
   return {
     [initialClosedWonOpportunities.category]: initialClosedWonOpportunities,
-  };
-}
-
-function createEmptyCategorySnapshot(
-  category: Category,
-  input: Pick<DashboardState, 'dateRange' | 'previousDateRange'>,
-): CategorySnapshotPayload {
-  return {
-    category,
-    currentWindowLabel: formatDateRange(input.dateRange),
-    previousWindowLabel: formatDateRange(input.previousDateRange),
-    lastRefreshedAt: new Date().toISOString(),
-    rows: [],
-    tileTimings: [],
   };
 }
 
@@ -500,18 +481,6 @@ export function DashboardShell({
       updateUrl(options.optimisticState);
     }
 
-    const progressiveSnapshotEnabled =
-      scope.snapshot && isCategory(scope.detailCategory);
-
-    if (progressiveSnapshotEnabled) {
-      setSnapshotByCategory((current) => ({
-        ...current,
-        [scope.detailCategory]:
-          current[scope.detailCategory] ??
-          createEmptyCategorySnapshot(scope.detailCategory, nextState),
-      }));
-    }
-
     const overviewFetch = scope.overview
       ? fetch(
           urls.buildOverviewUrl({
@@ -526,70 +495,17 @@ export function DashboardShell({
         )
       : Promise.resolve(null);
     const snapshotFetch = scope.snapshot
-      ? progressiveSnapshotEnabled
-        ? (async () => {
-            const manifest = getCategorySnapshotGroupManifest(
-              scope.detailCategory,
-            );
-            let nextSnapshot =
-              snapshotByCategory[scope.detailCategory] ??
-              createEmptyCategorySnapshot(scope.detailCategory, nextState);
-            const loadedTileIds = new Set(
-              nextSnapshot.rows.map((row) => row.tileId),
-            );
-            const pendingGroups = manifest.filter((group) =>
-              group.tileIds.some((tileId) => !loadedTileIds.has(tileId)),
-            );
-
-            for (const group of pendingGroups) {
-              const groupPayload = await fetch(
-                urls.buildCategoryGroupUrl({
-                  ...nextState,
-                  activeCategory: scope.detailCategory,
-                  groupId: group.groupId,
-                }),
-                {
-                  headers: { Accept: 'application/json' },
-                },
-              ).then((response) =>
-                readJson<CategorySnapshotGroupPayload>(
-                  response,
-                  `Snapshot group ${group.groupId}`,
-                ),
-              );
-
-              nextSnapshot = mergeCategorySnapshotGroupPayload(
-                nextSnapshot,
-                groupPayload,
-              );
-
-              if (
-                isMountedRef.current &&
-                requestId === refreshRequestIdRef.current
-              ) {
-                const snapshotForState = nextSnapshot;
-                React.startTransition(() => {
-                  setSnapshotByCategory((current) => ({
-                    ...current,
-                    [snapshotForState.category]: snapshotForState,
-                  }));
-                });
-              }
-            }
-
-            return nextSnapshot;
-          })()
-        : fetch(
-            urls.buildCategoryUrl({
-              ...nextState,
-              activeCategory: scope.detailCategory,
-            }),
-            {
-              headers: { Accept: 'application/json' },
-            },
-          ).then((response) =>
-            readJson<CategorySnapshotPayload>(response, 'Snapshot'),
-          )
+      ? fetch(
+          urls.buildCategoryUrl({
+            ...nextState,
+            activeCategory: scope.detailCategory,
+          }),
+          {
+            headers: { Accept: 'application/json' },
+          },
+        ).then((response) =>
+          readJson<CategorySnapshotPayload>(response, 'Snapshot'),
+        )
       : Promise.resolve(null);
     const trendFetch = scope.trend
       ? fetch(
