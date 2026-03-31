@@ -31,4 +31,14 @@ describe('dashboard refresh structure', () => {
     );
     expect(source).toContain('void refreshDashboard(state, bootstrapScope);');
   });
+
+  it('keeps the table shell visible once a partial active snapshot exists', () => {
+    const source = fs.readFileSync(
+      path.join(appRoot, 'components/dashboard/dashboard-shell.tsx'),
+      'utf8',
+    );
+
+    expect(source).toContain('!activeSnapshot ? (');
+    expect(source).not.toContain('isSnapshotLoading || !activeSnapshot ? (');
+  });
 });

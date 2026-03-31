@@ -33,6 +33,12 @@ export type DashboardUrlFactory = {
   buildCategoryUrl: (
     input: DashboardStateKeyInput & { activeCategory: Category },
   ) => string;
+  buildCategoryGroupUrl: (
+    input: DashboardStateKeyInput & {
+      activeCategory: Category;
+      groupId: string;
+    },
+  ) => string;
   buildOverviewUrl: (
     input: Pick<DashboardStateKeyInput, 'filters' | 'dateRange'>,
   ) => string;
@@ -182,6 +188,16 @@ export function buildDashboardUrlFactory(
     ): string {
       const searchParams = serializeDashboardSnapshotSearchParams(input);
       return `${basePath}/category/${encodeURIComponent(input.activeCategory)}?${searchParams.toString()}`;
+    },
+
+    buildCategoryGroupUrl(
+      input: DashboardStateKeyInput & {
+        activeCategory: Category;
+        groupId: string;
+      },
+    ): string {
+      const searchParams = serializeDashboardSnapshotSearchParams(input);
+      return `${basePath}/category/${encodeURIComponent(input.activeCategory)}/groups/${encodeURIComponent(input.groupId)}?${searchParams.toString()}`;
     },
 
     buildOverviewUrl(

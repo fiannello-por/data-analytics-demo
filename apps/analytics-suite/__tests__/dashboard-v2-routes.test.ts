@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 
 const getDashboardV2CategorySnapshotMock = vi.fn();
+const getDashboardV2CategorySnapshotGroupMock = vi.fn();
 const getDashboardV2ClosedWonOpportunitiesMock = vi.fn();
 const getDashboardV2FilterDictionaryMock = vi.fn();
 
@@ -11,6 +12,7 @@ vi.mock('server-only', () => ({}));
 
 vi.mock('@/lib/server/v2/get-dashboard-category-snapshot', () => ({
   getDashboardV2CategorySnapshot: getDashboardV2CategorySnapshotMock,
+  getDashboardV2CategorySnapshotGroup: getDashboardV2CategorySnapshotGroupMock,
 }));
 
 vi.mock('@/lib/server/v2/get-dashboard-closed-won-opportunities', () => ({
@@ -112,6 +114,58 @@ describe('dashboard v2 routes', () => {
     expect(response.headers.get('x-analytics-suite-cache-status')).toBe('hit');
   });
 
+  it('returns the v2 category snapshot group payload from analytics-suite', async () => {
+    getDashboardV2CategorySnapshotGroupMock.mockResolvedValueOnce({
+      data: {
+        category: 'New Logo',
+        groupId: 'new_logo_bookings_amount',
+        currentWindowLabel: 'Jan 1, 2026 - Mar 31, 2026',
+        previousWindowLabel: 'Jan 1, 2025 - Mar 31, 2025',
+        lastRefreshedAt: '2026-03-24T00:00:00.000Z',
+        rows: [],
+        tileTimings: [],
+      },
+      meta: {
+        source: 'lightdash',
+        queryCount: 2,
+        bytesProcessed: 256,
+        compileDurationMs: 12.25,
+        executionDurationMs: 42.5,
+        cacheStatus: 'miss',
+        cacheMode: 'off',
+      },
+    });
+
+    const { GET } =
+      await import('@/app/api/dashboard-v2/category/[category]/groups/[groupId]/route');
+    const response = await GET(
+      new NextRequest(
+        'http://localhost/api/dashboard-v2/category/New%20Logo/groups/new_logo_bookings_amount?Division=Enterprise&cache=off',
+      ),
+      {
+        params: Promise.resolve({
+          category: 'New Logo',
+          groupId: 'new_logo_bookings_amount',
+        }),
+      },
+    );
+
+    expect(getDashboardV2CategorySnapshotGroupMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        activeCategory: 'New Logo',
+        groupId: 'new_logo_bookings_amount',
+        filters: { Division: ['Enterprise'] },
+      }),
+      undefined,
+      { cacheMode: 'off' },
+    );
+    expect(response.status).toBe(200);
+    expect(response.headers.get('x-analytics-suite-source')).toBe('lightdash');
+    expect(response.headers.get('x-analytics-suite-query-count')).toBe('2');
+    expect(response.headers.get('x-analytics-suite-compile-ms')).toBe('12.25');
+    expect(response.headers.get('x-analytics-suite-execution-ms')).toBe('42.5');
+  });
+
   it('exports explicit Vercel runtime settings for dashboard routes and the sales page', async () => {
     const salesPageModule =
       await import('@/app/dashboards/sales-performance/page');
@@ -119,6 +173,8 @@ describe('dashboard v2 routes', () => {
       await import('@/app/api/dashboard-v2/overview/route');
     const categoryRouteModule =
       await import('@/app/api/dashboard-v2/category/[category]/route');
+    const categoryGroupRouteModule =
+      await import('@/app/api/dashboard-v2/category/[category]/groups/[groupId]/route');
     const trendRouteModule =
       await import('@/app/api/dashboard-v2/trend/[tileId]/route');
     const closedWonRouteModule =
@@ -132,6 +188,7 @@ describe('dashboard v2 routes', () => {
       salesPageModule,
       overviewRouteModule,
       categoryRouteModule,
+      categoryGroupRouteModule,
       trendRouteModule,
       closedWonRouteModule,
       filterDictionaryRouteModule,

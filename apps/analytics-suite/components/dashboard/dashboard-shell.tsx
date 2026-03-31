@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import type {
+  CategorySnapshotGroupPayload,
   CategorySnapshotPayload,
   ClosedWonOpportunitiesPayload,
   DashboardState,
@@ -10,6 +11,11 @@ import type {
   OverviewBoardPayload,
   TileTrendPayload,
 } from '@/lib/dashboard/contracts';
+import {
+  getCategorySnapshotGroupManifest,
+  isCategorySnapshotComplete,
+  mergeCategorySnapshotGroupPayload,
+} from '@/lib/dashboard/progressive-snapshot';
 import {
   CATEGORY_ORDER,
   findTileDefinition,
@@ -137,11 +143,25 @@ function buildClosedWonCache(
   };
 }
 
+function createEmptyCategorySnapshot(
+  category: Category,
+  input: Pick<DashboardState, 'dateRange' | 'previousDateRange'>,
+): CategorySnapshotPayload {
+  return {
+    category,
+    currentWindowLabel: formatDateRange(input.dateRange),
+    previousWindowLabel: formatDateRange(input.previousDateRange),
+    lastRefreshedAt: new Date().toISOString(),
+    rows: [],
+    tileTimings: [],
+  };
+}
+
 function hasFullSnapshotCache(
   snapshotByCategory: Partial<Record<Category, CategorySnapshotPayload>>,
 ) {
   return CATEGORY_ORDER.every((category) =>
-    Boolean(snapshotByCategory[category]),
+    isCategorySnapshotComplete(category, snapshotByCategory[category]),
   );
 }
 
@@ -186,8 +206,10 @@ function hasWarmActiveTabData(input: {
   }
 
   return Boolean(
-    input.snapshotByCategory[input.activeCategory] &&
-    input.closedWonByCategory[closedWonCategory],
+    isCategorySnapshotComplete(
+      input.activeCategory,
+      input.snapshotByCategory[input.activeCategory],
+    ) && input.closedWonByCategory[closedWonCategory],
   );
 }
 
@@ -227,7 +249,12 @@ export function getInitialBootstrapScope(input: {
     return null;
   }
 
-  if (!input.snapshotByCategory[detailCategory]) {
+  if (
+    !isCategorySnapshotComplete(
+      detailCategory,
+      input.snapshotByCategory[detailCategory],
+    )
+  ) {
     return {
       overview: false,
       snapshot: true,
@@ -293,7 +320,10 @@ export function getNextBackgroundWarmupTask(input: {
     } satisfies BackgroundWarmupTask;
 
     if (
-      !input.snapshotByCategory[category] &&
+      !isCategorySnapshotComplete(
+        category,
+        input.snapshotByCategory[category],
+      ) &&
       !settledTaskKeys.has(getWarmupTaskKey(task))
     ) {
       return task;
@@ -431,6 +461,18 @@ export function DashboardShell({
       updateUrl(options.optimisticState);
     }
 
+    const progressiveSnapshotEnabled =
+      scope.snapshot && isCategory(scope.detailCategory);
+
+    if (progressiveSnapshotEnabled) {
+      setSnapshotByCategory((current) => ({
+        ...current,
+        [scope.detailCategory]:
+          current[scope.detailCategory] ??
+          createEmptyCategorySnapshot(scope.detailCategory, nextState),
+      }));
+    }
+
     const overviewFetch = scope.overview
       ? fetch(
           urls.buildOverviewUrl({
@@ -445,17 +487,70 @@ export function DashboardShell({
         )
       : Promise.resolve(null);
     const snapshotFetch = scope.snapshot
-      ? fetch(
-          urls.buildCategoryUrl({
-            ...nextState,
-            activeCategory: scope.detailCategory,
-          }),
-          {
-            headers: { Accept: 'application/json' },
-          },
-        ).then((response) =>
-          readJson<CategorySnapshotPayload>(response, 'Snapshot'),
-        )
+      ? progressiveSnapshotEnabled
+        ? (async () => {
+            const manifest = getCategorySnapshotGroupManifest(
+              scope.detailCategory,
+            );
+            let nextSnapshot =
+              snapshotByCategory[scope.detailCategory] ??
+              createEmptyCategorySnapshot(scope.detailCategory, nextState);
+            const loadedTileIds = new Set(
+              nextSnapshot.rows.map((row) => row.tileId),
+            );
+            const pendingGroups = manifest.filter((group) =>
+              group.tileIds.some((tileId) => !loadedTileIds.has(tileId)),
+            );
+
+            for (const group of pendingGroups) {
+              const groupPayload = await fetch(
+                urls.buildCategoryGroupUrl({
+                  ...nextState,
+                  activeCategory: scope.detailCategory,
+                  groupId: group.groupId,
+                }),
+                {
+                  headers: { Accept: 'application/json' },
+                },
+              ).then((response) =>
+                readJson<CategorySnapshotGroupPayload>(
+                  response,
+                  `Snapshot group ${group.groupId}`,
+                ),
+              );
+
+              nextSnapshot = mergeCategorySnapshotGroupPayload(
+                nextSnapshot,
+                groupPayload,
+              );
+
+              if (
+                isMountedRef.current &&
+                requestId === refreshRequestIdRef.current
+              ) {
+                const snapshotForState = nextSnapshot;
+                React.startTransition(() => {
+                  setSnapshotByCategory((current) => ({
+                    ...current,
+                    [snapshotForState.category]: snapshotForState,
+                  }));
+                });
+              }
+            }
+
+            return nextSnapshot;
+          })()
+        : fetch(
+            urls.buildCategoryUrl({
+              ...nextState,
+              activeCategory: scope.detailCategory,
+            }),
+            {
+              headers: { Accept: 'application/json' },
+            },
+          ).then((response) =>
+            readJson<CategorySnapshotPayload>(response, 'Snapshot'),
+          )
       : Promise.resolve(null);
     const trendFetch = scope.trend
       ? fetch(
@@ -888,7 +983,8 @@ export function DashboardShell({
     const shouldLoadOverview =
       isOverviewTab(category) && !hasFullSnapshotCache(snapshotByCategory);
     const shouldLoadSnapshot =
-      isCategory(category) && !snapshotByCategory[category];
+      isCategory(category) &&
+      !isCategorySnapshotComplete(category, snapshotByCategory[category]);
     const shouldLoadClosedWon = !closedWonByCategory[closedWonCategory];
 
     applyStateChange(
@@ -1139,7 +1235,7 @@ export function DashboardShell({
                 </CardHeader>
                 <CardContent className="grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(22rem,0.95fr)] xl:items-stretch">
                   <div className="min-w-0">
-                    {isSnapshotLoading || !activeSnapshot ? (
+                    {!activeSnapshot ? (
                       <TileTableSkeleton category={detailCategory} />
                     ) : (
                       <TileTable

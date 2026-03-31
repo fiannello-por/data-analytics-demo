@@ -1,7 +1,4 @@
-import {
-  getCategoryTiles,
-  type Category,
-} from '@/lib/dashboard/catalog';
+import { getCategoryTiles, type Category } from '@/lib/dashboard/catalog';
 import type {
   CategorySnapshotGroupManifest,
   CategorySnapshotGroupPayload,

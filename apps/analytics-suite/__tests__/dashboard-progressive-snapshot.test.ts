@@ -156,7 +156,9 @@ describe('progressive category snapshots', () => {
     expect(isCategorySnapshotComplete('New Logo', null)).toBe(false);
     expect(isCategorySnapshotComplete('New Logo', partialSnapshot)).toBe(false);
 
-    const completeSnapshot = getCategorySnapshotGroupManifest('New Logo').reduce(
+    const completeSnapshot = getCategorySnapshotGroupManifest(
+      'New Logo',
+    ).reduce(
       (snapshot, group, index) =>
         mergeCategorySnapshotGroupPayload(
           snapshot,
