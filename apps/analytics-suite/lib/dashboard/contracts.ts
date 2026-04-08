@@ -5,13 +5,12 @@ import type {
   TileFormatType,
 } from '@/lib/dashboard/catalog';
 import type { SemanticQueryRequest } from '@por/semantic-runtime';
+import type {
+  DateRange,
+  DashboardFilters,
+} from '@por/dashboard-constants';
 
-export type DateRange = {
-  startDate: string;
-  endDate: string;
-};
-
-export type DashboardFilters = Partial<Record<GlobalFilterKey, string[]>>;
+export type { DateRange, DashboardFilters };
 
 export type DashboardTrendGrain = 'weekly';
 

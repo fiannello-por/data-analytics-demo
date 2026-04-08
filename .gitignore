@@ -39,3 +39,7 @@ logs/
 
 # Local planning artifacts
 docs/superpowers/plans/
+
+# Perf sandbox results
+apps/perf-sandbox/results/
+apps/perf-sandbox/.next/

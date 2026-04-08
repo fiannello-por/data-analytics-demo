@@ -1,7 +1,8 @@
 import type { DashboardRegistrySummary } from '@/lib/suite/contracts';
-
-const DASHBOARD_V2_BASE_MODEL = 'sales_dashboard_v2_opportunity_base';
-const DASHBOARD_V2_CLOSED_WON_MODEL = 'sales_dashboard_v2_closed_won';
+import {
+  DASHBOARD_V2_BASE_MODEL,
+  DASHBOARD_V2_CLOSED_WON_MODEL,
+} from '@por/dashboard-constants';
 
 export const salesPerformanceRegistry: DashboardRegistrySummary = {
   models: [DASHBOARD_V2_BASE_MODEL, DASHBOARD_V2_CLOSED_WON_MODEL],
