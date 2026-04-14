@@ -58,7 +58,7 @@ jobs:
 
       - name: Create GitHub deployment
         id: deployment
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const deployment = await github.rest.repos.createDeployment({
@@ -75,7 +75,7 @@ jobs:
             return deployment.data.id;
 
       - name: Set deployment to in_progress
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             await github.rest.repos.createDeploymentStatus({
@@ -137,7 +137,7 @@ jobs:
           PREVIEW_UUID: ${{ steps.preview_url.outputs.uuid }}
 
       - name: Set deployment to success
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             await github.rest.repos.createDeploymentStatus({
@@ -150,7 +150,7 @@ jobs:
             });
 
       - name: Comment preview link on pull request
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const marker = '<!-- lightdash-preview -->';
@@ -194,7 +194,7 @@ jobs:
       # --- Failure handler: mark deployment failed if any step above fails ---
       - name: Set deployment to failure
         if: failure() && steps.deployment.outputs.result
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             await github.rest.repos.createDeploymentStatus({
